@@ -165,7 +165,7 @@ def decode(text):
 
 
 def generate_html(fname, grandchildren, itemtype):
-    html = "<html><body>"
+    html = "<html><head><link rel='stylesheet' type='text/css' href='/style.css'></head><body><div class='content'>"
     for grandchild in grandchildren:
         pathcomponent = grandchild[0]
         title = grandchild[1]
@@ -174,8 +174,8 @@ def generate_html(fname, grandchildren, itemtype):
         else:
             thumbcomponent = pathcomponent
 
-        html += "<div class='object'><a href='./{0}'><img src='./t__{1}' class='thumbnail'/><div class='title'>{2}</div></a></div>".format(pathcomponent, thumbcomponent, title)
-    html += "</body></html>"
+        html += "<div class='object'><a href='./{0}'><img src='./{0}/t__{1}' class='thumbnail'/><div class='title'>{2}</div></a></div>".format(pathcomponent, thumbcomponent, title)
+    html += "</div></body></html>"
 
     with open(fname, 'w') as f:
         f.write(html)
@@ -245,9 +245,9 @@ def get_children(id, fspath, uipath, depth):
             child_objects.append((pathcomponent, title, itemtype))
             if not options['dry_run']:
                 orig_file = os.path.join(scriptdir, "gall", ('/'.join(fspath))[1:], pathcomponent)
-                link_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], uipathcomponent) + '.jpg'
-                thumb_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], 't__' + uipathcomponent) + '.jpg'
-                album_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], 't__album.jpg') + '.jpg'
+                link_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], uipathcomponent + '.jpg')
+                thumb_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], 't__' + uipathcomponent + '.jpg')
+                album_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], 't__album.jpg')
 
                 try:
                     e = os.path.isfile(orig_file)
@@ -291,11 +291,13 @@ def get_children(id, fspath, uipath, depth):
                             im = Image.open(orig_file)
                             thumb = cropped_thumbnail(im, (150,150))
                             thumb.save(thumb_target, "JPEG")
+                            # if it's the first item make it the thumb for the album.
                             if itemid == rows[0][0] and not os.path.exists(album_target):
                                 thumb.save(album_target, "JPEG")
                             sys.stdout.write('T')
                         except Exception, e:
                             sys.stdout.write('Y')
+                            print e
                     else:
                         sys.stdout.write('t')
                     if not os.path.exists(link_target):
