@@ -169,12 +169,12 @@ def generate_html(fname, grandchildren, itemtype):
     for grandchild in grandchildren:
         pathcomponent = grandchild[0]
         title = grandchild[1]
-        if itemtype == 'GalleryAlbumItem':
-            thumbcomponent = 't__album.jpg'
+        if grandchild[2] == 'GalleryAlbumItem':
+            thumbcomponent = 'album.jpg'
         else:
             thumbcomponent = pathcomponent
 
-        html += "<div class='object'><a href='./{0}'><img src='./t__{1}' width='150' height='150'/><div class='title'>{2}</div></a></div>".format(pathcomponent, thumbcomponent, title)
+        html += "<div class='object'><a href='./{0}'><img src='./t__{1}' class='thumbnail'/><div class='title'>{2}</div></a></div>".format(pathcomponent, thumbcomponent, title)
     html += "</body></html>"
 
     with open(fname, 'w') as f:
@@ -245,9 +245,9 @@ def get_children(id, fspath, uipath, depth):
             child_objects.append((pathcomponent, title, itemtype))
             if not options['dry_run']:
                 orig_file = os.path.join(scriptdir, "gall", ('/'.join(fspath))[1:], pathcomponent)
-                link_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], uipathcomponent)
-                thumb_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], 't__'+uipathcomponent)
-                album_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], 't__album.jpg')
+                link_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], uipathcomponent) + '.jpg'
+                thumb_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], 't__' + uipathcomponent) + '.jpg'
+                album_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], 't__album.jpg') + '.jpg'
 
                 try:
                     e = os.path.isfile(orig_file)
