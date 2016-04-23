@@ -17,12 +17,15 @@ re_markup = re.compile(r"\[.*?\]")
 import HTMLParser
 h = HTMLParser.HTMLParser()
 
-from config import mysql
+from config import mysql_cfg, file_cfg
+if not file_cfg['thumb_prefix']:
+    file_cfg['thumb_prefix'] = 't__'
 
 from PIL import Image
 
 scriptdir = os.path.dirname(os.path.abspath(__file__))
 
+log = False
 
 # cli options
 def parse_options():
@@ -153,7 +156,7 @@ LEFT JOIN {1}PhotoItem pi ON pi.{0}id=ce.{0}id
 -- thumbinfo
 LEFT JOIN {1}DerivativeImage di on di.{0}id = ce.{0}id
 
-WHERE {0}parentId = %s;""".format(mysql['cp'], mysql['tp'])
+WHERE {0}parentId = %s;""".format(mysql_cfg['cp'], mysql_cfg['tp'])
 
 missing_files = []
 all_files = []
@@ -167,21 +170,26 @@ def decode(text):
 def generate_html(fname, grandchildren, itemtype):
     html = "<html><head><link rel='stylesheet' type='text/css' href='/style.css'></head><body><div class='content'>"
     for grandchild in grandchildren:
-        pathcomponent = grandchild[0]
+        pathcomponent = grandchild[0].lower()
         title = grandchild[1]
         if grandchild[2] == 'GalleryAlbumItem':
             thumbcomponent = 'album.jpg'
+            html += "<div class='object'><a href='./{0}'><img src='./{0}/{1}{2}' class='thumbnail'/><div class='title'>{3}</div></a></div>".format(pathcomponent, file_cfg['thumb_prefix'], thumbcomponent, title)
         else:
             thumbcomponent = pathcomponent
+            html += "<div class='object'><a href='./{0}'><img src='./{1}{2}' class='thumbnail'/><div class='title'>{3}</div></a></div>".format(pathcomponent, file_cfg['thumb_prefix'], thumbcomponent, title)
 
-        html += "<div class='object'><a href='./{0}'><img src='./{0}/t__{1}' class='thumbnail'/><div class='title'>{2}</div></a></div>".format(pathcomponent, thumbcomponent, title)
     html += "</div></body></html>"
 
     with open(fname, 'w') as f:
         f.write(html)
 
+def w(message):
+    if log:
+        sys.stdout.write(message)
+
 def get_children(id, fspath, uipath, depth):
-    sys.stdout.write(">")
+    w(">")
     global im
     global thumb
 
@@ -227,27 +235,33 @@ def get_children(id, fspath, uipath, depth):
             mkpath = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:])
             if not os.path.exists(mkpath) and not options['dry_run']:
                 os.makedirs(mkpath)
-                sys.stdout.write('A')
+                w('A')
 
             # traverse deeper into the structure if there's childen
             grandchildren = get_children(itemid, fspath, uipath, depth+1);
 
             if not grandchildren:
-                sys.stdout.write('a')
+                w('a')
                 # print "empty:", ('/'.join(uipath))[1:]
             elif not options['dry_run']:
                 fname = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], "index.html")
                 generate_html(fname, grandchildren, itemtype)
 
+            tmp_uipath = uipath[:]
             fspath.pop()
             uipath.pop()
+            try:
+                os.symlink(os.path.join(scriptdir, "test",('/'.join(tmp_uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg'), os.path.join(scriptdir, "test",('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg'))
+                print os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg') + " --> " + os.path.join(scriptdir, "test",('/'.join(tmp_uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg')
+            except OSError, e:
+                pass
         elif itemtype == 'GalleryPhotoItem':
             child_objects.append((pathcomponent, title, itemtype))
             if not options['dry_run']:
                 orig_file = os.path.join(scriptdir, "gall", ('/'.join(fspath))[1:], pathcomponent)
-                link_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], uipathcomponent + '.jpg')
-                thumb_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], 't__' + uipathcomponent + '.jpg')
-                album_target = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], 't__album.jpg')
+                link_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], uipathcomponent + '.jpg')).lower()
+                thumb_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + uipathcomponent + '.jpg')).lower()
+                album_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg')).lower()
 
                 try:
                     e = os.path.isfile(orig_file)
@@ -284,7 +298,7 @@ def get_children(id, fspath, uipath, depth):
 
                 if not e:
                     missing_files.append(orig_file)
-                    sys.stdout.write('-')
+                    w('-')
                 else:
                     if (not os.path.exists(thumb_target) and not options['no_thumbs']) or options['force_thumbs']:
                         try:
@@ -292,25 +306,27 @@ def get_children(id, fspath, uipath, depth):
                             thumb = cropped_thumbnail(im, (150,150))
                             thumb.save(thumb_target, "JPEG")
                             # if it's the first item make it the thumb for the album.
-                            if itemid == rows[0][0] and not os.path.exists(album_target):
+                            if itemid == rows[0][0] and (os.path.islink(album_target) or not os.path.exists(album_target)):
+                                if os.path.islink(album_target):
+                                    os.remove(album_target)
                                 thumb.save(album_target, "JPEG")
-                            sys.stdout.write('T')
+                            w('T')
                         except Exception, e:
-                            sys.stdout.write('Y')
+                            w('Y')
                             print e
                     else:
-                        sys.stdout.write('t')
+                        w('t')
                     if not os.path.exists(link_target):
                         try:
                             os.symlink(orig_file, link_target)
-                            sys.stdout.write('L')
+                            w('L')
                         except Exception, e:
                             print ""
                             print e.__class__.__name__, e
                             print (os.path.exists(link_target)), orig_file, "->", link_target
                             sys.exit(1)
                     else:
-                        sys.stdout.write('l')
+                        w('l')
 
             # create image html page
         else:
@@ -323,7 +339,7 @@ def get_children(id, fspath, uipath, depth):
 try:
     options = parse_options()
 
-    con = mdb.connect(mysql['hostname'], mysql['username'], mysql['password'], mysql['database']);
+    con = mdb.connect(mysql_cfg['hostname'], mysql_cfg['username'], mysql_cfg['password'], mysql_cfg['database']);
     cur = con.cursor()
 
     fname = os.path.join(scriptdir, "test", "index.html")
