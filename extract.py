@@ -168,6 +168,9 @@ def decode(text):
 
 
 def generate_html(fname, grandchildren, itemtype):
+    if os.path.isfile(fname):
+        print "---", fname
+        return
     html = "<html><head><link rel='stylesheet' type='text/css' href='/style.css'></head><body><div class='content'>"
     for grandchild in grandchildren:
         pathcomponent = grandchild[0].lower()
@@ -182,6 +185,7 @@ def generate_html(fname, grandchildren, itemtype):
     html += "</div></body></html>"
 
     with open(fname, 'w') as f:
+        print "+> ", fname
         f.write(html)
 
 def w(message):
@@ -242,7 +246,6 @@ def get_children(id, fspath, uipath, depth):
 
             if not grandchildren:
                 w('a')
-                # print "empty:", ('/'.join(uipath))[1:]
             elif not options['dry_run']:
                 fname = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], "index.html")
                 generate_html(fname, grandchildren, itemtype)
@@ -252,7 +255,6 @@ def get_children(id, fspath, uipath, depth):
             uipath.pop()
             try:
                 os.symlink(os.path.join(scriptdir, "test",('/'.join(tmp_uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg'), os.path.join(scriptdir, "test",('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg'))
-                print os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg') + " --> " + os.path.join(scriptdir, "test",('/'.join(tmp_uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg')
             except OSError, e:
                 pass
         elif itemtype == 'GalleryPhotoItem':
@@ -343,7 +345,7 @@ try:
     cur = con.cursor()
 
     fname = os.path.join(scriptdir, "test", "index.html")
-    grandchild = get_children(7, [''], [''], 0)
+    grandchildren = get_children(7, [''], [''], 0)
     generate_html(fname, grandchildren, "GalleryAlbumItem");
     try:
         os.symlink(os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg'), os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg'))
