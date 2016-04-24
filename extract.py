@@ -343,7 +343,13 @@ try:
     cur = con.cursor()
 
     fname = os.path.join(scriptdir, "test", "index.html")
-    generate_html(fname, get_children(7, [''], [''], 0), "GalleryAlbumItem");
+    grandchild = get_children(7, [''], [''], 0)
+    generate_html(fname, grandchildren, "GalleryAlbumItem");
+    try:
+        os.symlink(os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg'), os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg'))
+        print os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg') + " --> " + os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg')
+    except OSError, e:
+        pass
 
     print ""
     print "missing", len(missing_files)
