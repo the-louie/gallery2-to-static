@@ -69,6 +69,12 @@ def parse_options():
         default=False
     )
 
+    parser.add_option(
+        '--ignore-albums',
+        dest='ignore_albums',
+        default=''
+    )
+
     return vars(parser.parse_args()[0])
 
 im = None
@@ -167,7 +173,7 @@ def decode(text):
     return text.encode("iso-8859-15","ignore")
 
 
-def generate_html(fname, grandchildren, itemtype):
+def generate_html(fname, grandchildren, itemtype, pathcomponent):
     if os.path.isfile(fname):
         print "---", fname
         return
@@ -192,165 +198,164 @@ def w(message):
     if log:
         sys.stdout.write(message)
 
+
+def generate_album(itemid, fspath, uipath, depth, itemtype, pathcomponent):
+    mkpath = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:])
+    if not os.path.exists(mkpath) and not options['dry_run']:
+        os.makedirs(mkpath)
+        w('A')
+
+    # traverse deeper into the structure if there's childen
+    grandchildren = get_children(itemid, fspath, uipath, depth+1);
+
+    if not grandchildren:
+        w('a')
+    elif not options['dry_run']:
+        fname = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], "index.html")
+        generate_html(fname, grandchildren, itemtype, pathcomponent)
+
+    return grandchildren
+
+def generate_content(itemid, fspath, uipath, uipathcomponent, pathcomponent, firstimage):
+    if not options['dry_run']:
+        orig_file = os.path.join(scriptdir, "gall", ('/'.join(fspath))[1:], pathcomponent)
+        link_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], uipathcomponent + '.jpg')).lower()
+        thumb_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + uipathcomponent + '.jpg')).lower()
+        album_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg')).lower()
+
+        try:
+            e = os.path.isfile(orig_file)
+        except Exception, e:
+            print e.__class__.__name__, e, orig_file
+            sys.exit(1)
+
+        try:
+            t = os.path.exists(thumb_target)
+        except Exception, e:
+            print e.__class__.__name__, e, thumb_target
+            sys.exit(1)
+
+        if not e:
+            missing_files.append(orig_file)
+            w('-')
+        else:
+            if (not os.path.exists(thumb_target) and not options['no_thumbs']) or options['force_thumbs']:
+                try:
+                    im = Image.open(orig_file)
+                    thumb = cropped_thumbnail(im, (150,150))
+                    thumb.save(thumb_target, "JPEG")
+                    # if it's the first item make it the thumb for the album.
+                    if firstimage and (os.path.islink(album_target) or not os.path.exists(album_target)):
+                        if os.path.islink(album_target):
+                            os.remove(album_target)
+                        thumb.save(album_target, "JPEG")
+                    w('T')
+                except Exception, e:
+                    w('Y')
+                    print e
+            else:
+                w('t')
+            if not os.path.exists(link_target):
+                try:
+                    os.symlink(orig_file, link_target)
+                    w('L')
+                except Exception, e:
+                    print ""
+                    print e.__class__.__name__, e
+                    print (os.path.exists(link_target)), orig_file, "->", link_target
+                    sys.exit(1)
+            else:
+                w('l')
+
+def cleanup_title(raw_title, pathcomponent):
+    title = re_markup.sub("", decode(raw_title)).replace('\00','')
+    if not title:
+        title = pathcomponent
+    if not title:
+        title = "notitle"
+
+    return title
+
+def cleanup_uipathcomponent(pathcomponent):
+        uipathcomponent = pathcomponent
+        # replace latin1 stuff fast
+        uipathcomponent = uipathcomponent.replace("&auml;", "a")
+        uipathcomponent = uipathcomponent.replace("&aring;", "a")
+        uipathcomponent = uipathcomponent.replace("&ouml;", "o")
+        # remove illigal filepath chars
+        uipathcomponent = re_illigal.sub("_", uipathcomponent)
+        # remove sillyness
+        uipathcomponent = uipathcomponent.replace("__","_").replace("_-_","-")
+
+        return uipathcomponent
+
 def get_children(id, fspath, uipath, depth):
     w(">")
-    global im
-    global thumb
 
     cur.execute(SQLgetChildren, (id,));
     rows = cur.fetchall()
 
     child_objects = [];
     for row in rows:
+        # get sql result
         itemid = row[0]
         itemtype = decode(row[1])
-        children = row[2]
-
+        has_children = row[2]
+        title = cleanup_title(row[3], row[5])
         pathcomponent = decode(row[5])
-        title = re_markup.sub("", decode(row[3])).replace('\00','')
-        if not title:
-            title = pathcomponent
-        if not title:
-            title = "notitle"
+        uipathcomponent = cleanup_uipathcomponent((title or pathcomponent).lower())
 
-        a=title
-        uipathcomponent = (title or pathcomponent).lower()
-        b = uipathcomponent
-        # replace latin1 stuff fast
-        uipathcomponent = uipathcomponent.replace("&auml;", "a")
-        c = uipathcomponent
-        uipathcomponent = uipathcomponent.replace("&aring;", "a")
-        d = uipathcomponent
-        uipathcomponent = uipathcomponent.replace("&ouml;", "o")
-        e = uipathcomponent
-        # remove illigal filepath chars
-        uipathcomponent = re_illigal.sub("_", uipathcomponent)
-        f = uipathcomponent
-        # remove sillyness
-        uipathcomponent = uipathcomponent.replace("__","_").replace("_-_","-")
-        g = uipathcomponent
 
-        if itemtype == 'GalleryAlbumItem' and children == 1:
+        if itemtype == 'GalleryAlbumItem' and has_children == 1:
+            if pathcomponent in ignore_albums or uipathcomponent in ignore_albums:
+                print "***", pathcomponent
+                return child_objects
+
             child_objects.append((uipathcomponent, title, itemtype))
 
             fspath.append(pathcomponent);
+            uipath.append(uipathcomponent);
 
-            uipath.append( uipathcomponent );
-            mkpath = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:])
-            if not os.path.exists(mkpath) and not options['dry_run']:
-                os.makedirs(mkpath)
-                w('A')
+            generate_album(itemid, fspath, uipath, depth, itemtype, pathcomponent)
+            tmp_uipath = uipath[:] # clone uipath
 
-            # traverse deeper into the structure if there's childen
-            grandchildren = get_children(itemid, fspath, uipath, depth+1);
-
-            if not grandchildren:
-                w('a')
-            elif not options['dry_run']:
-                fname = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], "index.html")
-                generate_html(fname, grandchildren, itemtype)
-
-            tmp_uipath = uipath[:]
             fspath.pop()
             uipath.pop()
             try:
-                os.symlink(os.path.join(scriptdir, "test",('/'.join(tmp_uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg'), os.path.join(scriptdir, "test",('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg'))
+                link_target = os.path.join(scriptdir, "test",('/'.join(tmp_uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg')
+                link_source = os.path.join(scriptdir, "test",('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg')
+                os.symlink(link_target, link_source)
             except OSError, e:
                 pass
+
         elif itemtype == 'GalleryPhotoItem':
             child_objects.append((pathcomponent, title, itemtype))
-            if not options['dry_run']:
-                orig_file = os.path.join(scriptdir, "gall", ('/'.join(fspath))[1:], pathcomponent)
-                link_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], uipathcomponent + '.jpg')).lower()
-                thumb_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + uipathcomponent + '.jpg')).lower()
-                album_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg')).lower()
+            generate_content(itemid, fspath, uipath, uipathcomponent, pathcomponent, itemid == rows[0][0])
 
-                try:
-                    e = os.path.isfile(orig_file)
-                except Exception, e:
-                    print ""
-                    print "orig_file"
-                    print e.__class__.__name__, e
-                    print orig_file
-                    sys.exit(1)
-                try:
-                    t = os.path.exists(thumb_target)
-                except Exception, e:
-                    print ""
-                    print e.__class__.__name__, e
-                    print "row[3]", row[3]
-                    print "row[5]", row[5]
-                    print "title", title
-                    print "pathcomponent", pathcomponent
-                    print "thumb_target", thumb_target
-                    print "link_target", link_target
-                    print "orig_file", orig_file
-                    print "uipathcomponent", uipathcomponent
-                    print "--"
-                    print "a", a
-                    print "A", ' '.join(('x'+str(ord(c))+' ' for c in a.replace('\00','')))
-                    print "bool(a)", bool(a.replace('\00',''))
-                    print "b", b
-                    print "c", c
-                    print "d", d
-                    print "e", e
-                    print "f", f
-                    print "g", g
-                    sys.exit(1)
-
-                if not e:
-                    missing_files.append(orig_file)
-                    w('-')
-                else:
-                    if (not os.path.exists(thumb_target) and not options['no_thumbs']) or options['force_thumbs']:
-                        try:
-                            im = Image.open(orig_file)
-                            thumb = cropped_thumbnail(im, (150,150))
-                            thumb.save(thumb_target, "JPEG")
-                            # if it's the first item make it the thumb for the album.
-                            if itemid == rows[0][0] and (os.path.islink(album_target) or not os.path.exists(album_target)):
-                                if os.path.islink(album_target):
-                                    os.remove(album_target)
-                                thumb.save(album_target, "JPEG")
-                            w('T')
-                        except Exception, e:
-                            w('Y')
-                            print e
-                    else:
-                        w('t')
-                    if not os.path.exists(link_target):
-                        try:
-                            os.symlink(orig_file, link_target)
-                            w('L')
-                        except Exception, e:
-                            print ""
-                            print e.__class__.__name__, e
-                            print (os.path.exists(link_target)), orig_file, "->", link_target
-                            sys.exit(1)
-                    else:
-                        w('l')
-
-            # create image html page
         else:
             #print itemtype, fspath, pathcomponent
             pass
 
     return child_objects
 
-
+con = None
 try:
     options = parse_options()
+    ignore_albums = []
+    if options['ignore_albums'] != '':
+        ignore_albums = options['ignore_albums'].split(',')
 
     con = mdb.connect(mysql_cfg['hostname'], mysql_cfg['username'], mysql_cfg['password'], mysql_cfg['database']);
     cur = con.cursor()
 
     fname = os.path.join(scriptdir, "test", "index.html")
     grandchildren = get_children(7, [''], [''], 0)
-    generate_html(fname, grandchildren, "GalleryAlbumItem");
+    generate_html(fname, grandchildren, "GalleryAlbumItem", '');
     try:
         os.symlink(os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg'), os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg'))
-        print os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg') + " --> " + os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg')
+        print "!!", os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg') + " --> " + os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg')
     except OSError, e:
+        print "XX", os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg') + " --> " + os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg')
         pass
 
     print ""
@@ -359,11 +364,9 @@ try:
 
 
 except mdb.Error, e:
-
     print "Error %d: %s" % (e.args[0],e.args[1])
     sys.exit(1)
 
 finally:
-
     if con:
         con.close()
