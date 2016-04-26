@@ -351,12 +351,6 @@ try:
     fname = os.path.join(scriptdir, "test", "index.html")
     grandchildren = get_children(7, [''], [''], 0)
     generate_html(fname, grandchildren, "GalleryAlbumItem", '');
-    try:
-        os.symlink(os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg'), os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg'))
-        print "!!", os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg') + " --> " + os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg')
-    except OSError, e:
-        print "XX", os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg') + " --> " + os.path.join(scriptdir, "test", file_cfg['thumb_prefix'] + 'album.jpg')
-        pass
 
     print ""
     print "missing", len(missing_files)
