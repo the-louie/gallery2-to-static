@@ -9,6 +9,8 @@ reload(sys)
 sys.setdefaultencoding('iso-8859-15')
 import os.path
 import re
+from unidecode import unidecode
+
 re_latin1 = re.compile(r"[åäÅÄ]", re.IGNORECASE)
 re_latin2 = re.compile(r"[öÖ]", re.IGNORECASE)
 re_illigal = re.compile(r"[\[\]\\\/\?%:|\"'><#\s&]", re.IGNORECASE)
@@ -176,7 +178,9 @@ all_files = []
 def decode(text):
     if text is None:
         return ""
-    return text.encode("iso-8859-15","ignore")
+
+    return unidecode(unicode(text)).encode("iso-8859-15")
+    #return text.decode("iso-8859-15", "replace").encode("iso-8859-15", "replace")
 
 
 def generate_html(fname, grandchildren, itemtype, pathcomponent):
@@ -185,14 +189,16 @@ def generate_html(fname, grandchildren, itemtype, pathcomponent):
         return
     html = "<html><head><link rel='stylesheet' type='text/css' href='/style.css'></head><body><div class='content'>"
     for grandchild in grandchildren:
+        print "\t", ' | '.join(grandchild)
         pathcomponent = grandchild[0].lower()
         title = grandchild[1]
         if grandchild[2] == 'GalleryAlbumItem':
             thumbcomponent = 'album.jpg'
             html += "<div class='object'><a href='./{0}'><img src='./{0}/{1}{2}' class='thumbnail'/><div class='title'>{3}</div></a></div>".format(pathcomponent, file_cfg['thumb_prefix'], thumbcomponent, title)
         else:
-            thumbcomponent = pathcomponent
-            html += "<div class='object'><a href='./{0}'><img src='./{1}{2}' class='thumbnail'/><div class='title'>{3}</div></a></div>".format(pathcomponent, file_cfg['thumb_prefix'], thumbcomponent, title)
+            #thumbcomponent = pathcomponent
+            thumbcomponent = (cleanup_uipathcomponent(cleanup_title(title)) + '.' + get_extention(pathcomponent)).lower()
+            html += "<div class='object'><a href='./{0}'><img src='./{1}{2}' class='thumbnail'/><div class='title'>{3}</div></a></div>".format(thumbcomponent, file_cfg['thumb_prefix'], thumbcomponent, title)
 
     html += "</div></body></html>"
 
@@ -204,6 +210,14 @@ def w(message):
     if log:
         sys.stdout.write(message)
 
+def get_extention(filename):
+    return filename[(filename.rfind(".")+1):]
+
+def get_link_target(uipath, uipathcomponent):
+    return (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], uipathcomponent + '.jpg')).lower().replace('.jpg.jpg','.jpg') # FIXME: Ugly workaround for double extentions
+
+def get_thumb_target(uipath, uipathcomponent):
+    return (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + uipathcomponent + '.jpg')).lower().replace('.jpg.jpg','.jpg') # FIXME: Ugly workaround for double extentions
 
 def generate_album(itemid, fspath, uipath, depth, itemtype, pathcomponent):
     mkpath = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:])
@@ -225,9 +239,9 @@ def generate_album(itemid, fspath, uipath, depth, itemtype, pathcomponent):
 def generate_content(itemid, fspath, uipath, uipathcomponent, pathcomponent, firstimage):
     if not options['dry_run']:
         orig_file = os.path.join(scriptdir, "gall", ('/'.join(fspath))[1:], pathcomponent)
-        link_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], uipathcomponent + '.jpg')).lower().replace('.jpg.jpg','.jpg') # FIXME: Ugly workaround for double extentions
-        thumb_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + uipathcomponent + '.jpg')).lower().replace('.jpg.jpg','.jpg')
-        album_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg')).lower().replace('.jpg.jpg','.jpg')
+        link_target = get_link_target(uipath, uipathcomponent)
+        thumb_target = get_thumb_target(uipath, uipathcomponent)
+        album_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg')).lower().replace('.jpg.jpg','.jpg') # FIXME: Ugly workaround for double extentions
 
         try:
             e = os.path.isfile(orig_file)
@@ -258,7 +272,7 @@ def generate_content(itemid, fspath, uipath, uipathcomponent, pathcomponent, fir
                     w('T')
                 except Exception, e:
                     w('Y')
-                    print e
+                    print e.__class__.__name__, e, orig_file
             else:
                 w('t')
             if not os.path.exists(link_target):
@@ -273,7 +287,7 @@ def generate_content(itemid, fspath, uipath, uipathcomponent, pathcomponent, fir
             else:
                 w('l')
 
-def cleanup_title(raw_title, pathcomponent):
+def cleanup_title(raw_title, pathcomponent = None):
     title = re_markup.sub("", decode(raw_title)).replace('\00','')
     if not title:
         title = pathcomponent
@@ -290,12 +304,13 @@ def cleanup_uipathcomponent(pathcomponent):
         uipathcomponent = uipathcomponent.replace("&aring;", "a")
         uipathcomponent = uipathcomponent.replace("&ouml;", "o")
         uipathcomponent = uipathcomponent.replace("&amp;", "and")
+        uipathcomponent = uipathcomponent.replace("&quot;", "_")
         # remove illigal filepath chars
         uipathcomponent = re_illigal.sub("_", uipathcomponent)
         # remove sillyness
         uipathcomponent = uipathcomponent.replace("__","_").replace("_-_","-")
 
-        return uipathcomponent
+        return decode(uipathcomponent)
 
 def get_children(id, fspath, uipath, depth):
     w(">")
