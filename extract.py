@@ -11,7 +11,7 @@ import os.path
 import re
 re_latin1 = re.compile(r"[åäÅÄ]", re.IGNORECASE)
 re_latin2 = re.compile(r"[öÖ]", re.IGNORECASE)
-re_illigal = re.compile(r"[\[\]\\\/\?%:|\"'><#\s]", re.IGNORECASE)
+re_illigal = re.compile(r"[\[\]\\\/\?%:|\"'><#\s&]", re.IGNORECASE)
 re_markup = re.compile(r"\[.*?\]")
 
 import HTMLParser
@@ -72,6 +72,12 @@ def parse_options():
     parser.add_option(
         '--ignore-albums',
         dest='ignore_albums',
+        default=''
+    )
+
+    parser.add_option(
+        '--only-albums',
+        dest='only_albums',
         default=''
     )
 
@@ -219,9 +225,9 @@ def generate_album(itemid, fspath, uipath, depth, itemtype, pathcomponent):
 def generate_content(itemid, fspath, uipath, uipathcomponent, pathcomponent, firstimage):
     if not options['dry_run']:
         orig_file = os.path.join(scriptdir, "gall", ('/'.join(fspath))[1:], pathcomponent)
-        link_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], uipathcomponent + '.jpg')).lower()
-        thumb_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + uipathcomponent + '.jpg')).lower()
-        album_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg')).lower()
+        link_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], uipathcomponent + '.jpg')).lower().replace('.jpg.jpg','.jpg') # FIXME: Ugly workaround for double extentions
+        thumb_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + uipathcomponent + '.jpg')).lower().replace('.jpg.jpg','.jpg')
+        album_target = (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg')).lower().replace('.jpg.jpg','.jpg')
 
         try:
             e = os.path.isfile(orig_file)
@@ -278,10 +284,12 @@ def cleanup_title(raw_title, pathcomponent):
 
 def cleanup_uipathcomponent(pathcomponent):
         uipathcomponent = pathcomponent
+        # FIXME: fix html entitiets in a generic way
         # replace latin1 stuff fast
         uipathcomponent = uipathcomponent.replace("&auml;", "a")
         uipathcomponent = uipathcomponent.replace("&aring;", "a")
         uipathcomponent = uipathcomponent.replace("&ouml;", "o")
+        uipathcomponent = uipathcomponent.replace("&amp;", "and")
         # remove illigal filepath chars
         uipathcomponent = re_illigal.sub("_", uipathcomponent)
         # remove sillyness
@@ -309,7 +317,10 @@ def get_children(id, fspath, uipath, depth):
         if itemtype == 'GalleryAlbumItem' and has_children == 1:
             if pathcomponent in ignore_albums or uipathcomponent in ignore_albums:
                 print "***", pathcomponent
-                return child_objects
+                continue
+            if only_albums and pathcomponent not in only_albums:
+                print "+++", pathcomponent
+                continue
 
             child_objects.append((uipathcomponent, title, itemtype))
 
@@ -344,6 +355,11 @@ try:
     ignore_albums = []
     if options['ignore_albums'] != '':
         ignore_albums = options['ignore_albums'].split(',')
+        ignore_albums = filter(None, ignore_albums)
+    only_albums = []
+    if options['only_albums'] != '':
+        only_albums = options['only_albums'].split(',')
+        only_albums = filter(None, only_albums)
 
     con = mdb.connect(mysql_cfg['hostname'], mysql_cfg['username'], mysql_cfg['password'], mysql_cfg['database']);
     cur = con.cursor()
