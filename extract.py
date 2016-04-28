@@ -14,6 +14,8 @@ sys.setdefaultencoding('iso-8859-15')
 import os.path
 import re
 from unidecode import unidecode
+import HTMLParser
+html_parser = HTMLParser.HTMLParser()
 
 re_latin1 = re.compile(r"[åäÅÄ]", re.IGNORECASE)
 re_latin2 = re.compile(r"[öÖ]", re.IGNORECASE)
@@ -122,10 +124,11 @@ def parse_options():
 im = None
 thumb = None
 
+def w(text):
+    sys.stdout.write(text)
 
 def flat( *nums ):
     'Build a tuple of ints from float or integer arguments. Useful because PIL crop and resize require integer points.'
-
     return tuple( int(round(n)) for n in nums )
 
 class Size(object):
@@ -212,10 +215,7 @@ all_files = []
 def decode(text):
     if text is None:
         return ""
-
     return unidecode(unicode(text)).encode("iso-8859-15")
-    #return text.decode("iso-8859-15", "replace").encode("iso-8859-15", "replace")
-
 
 def generate_html(fname, grandchildren, itemtype, pathcomponent):
     if os.path.isfile(fname):
@@ -227,6 +227,7 @@ def generate_html(fname, grandchildren, itemtype, pathcomponent):
     html += "<div class='content'>"
 
     for grandchild in grandchildren:
+        # FIXME: grandchild[0] == grandchilde[1]
         pathcomponent = grandchild[0].lower()
         title = grandchild[1]
         if grandchild[2] == 'GalleryAlbumItem':
@@ -236,9 +237,6 @@ def generate_html(fname, grandchildren, itemtype, pathcomponent):
             thumb_target = get_thumb_target('', cleanup_uipathcomponent(title), pathcomponent, False)
             link_target = get_link_target('', cleanup_uipathcomponent(title), pathcomponent, False)
             html += "<div class='object'><a href='./{0}'><img src='./{1}' class='thumbnail'/><div class='title'>{2}</div></a></div>".format(link_target, thumb_target, title)
-            #thumbcomponent = decode(cleanup_uipathcomponent(cleanup_title(title)) + '___' + pathcomponent).lower()
-            #html += "<div class='object'><a href='./{0}'><img src='./{1}{2}' class='thumbnail'/><div class='title'>{3}</div></a></div>".format(thumbcomponent, file_cfg['thumb_prefix'], thumbcomponent, title)
-        #print "\t", ' | '.join(grandchild) #, cleanup_uipathcomponent(cleanup_title(title)), pathcomponent, thumbcomponent
 
     html += "</div></body></html>"
 
@@ -246,17 +244,15 @@ def generate_html(fname, grandchildren, itemtype, pathcomponent):
         print "+++", fname
         f.write(html)
 
-def w(message):
-    if log:
-        sys.stdout.write(message)
-
 def get_extention(filename):
     return filename[(filename.rfind(".")+1):]
 
 def get_link_target(uipath, uipathcomponent, pathcomponent = '', full_path = False):
-    if pathcomponent:
-        pathcomponent = '___' + pathcomponent
-    file_name = (uipathcomponent + pathcomponent + '.jpg').lower().replace('.jpg.jpg','.jpg') # FIXME: Ugly workaround for double extentions
+    if pathcomponent and uipathcomponent.lower() != pathcomponent.lower():
+        new_pathcomponent = '___' + pathcomponent
+    else:
+        new_pathcomponent = ''
+    file_name = (uipathcomponent + new_pathcomponent + '.jpg').lower().replace('.jpg.jpg','.jpg') # FIXME: Ugly workaround for double extentions
     if full_path:
         return (os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], file_name)).lower()
     else:
@@ -275,22 +271,20 @@ def generate_album(itemid, fspath, uipath, depth, itemtype, pathcomponent):
     mkpath = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:])
     if not os.path.exists(mkpath) and not options['dry_run']:
         os.makedirs(mkpath)
-        w('A')
+
 
     # traverse deeper into the structure if there's childen
     grandchildren = get_children(itemid, fspath, uipath, depth+1);
 
-    if not grandchildren:
-        w('a')
-    elif not options['dry_run']:
+    if grandchildren and not options['dry_run']:
         fname = os.path.join(scriptdir, "test", ('/'.join(uipath))[1:], "index.html")
+        w('\n')
         generate_html(fname, grandchildren, itemtype, pathcomponent)
 
     return grandchildren
 
 def generate_content(itemid, fspath, uipath, uipathcomponent, pathcomponent, firstimage):
     if not options['dry_run']:
-        # thumbcomponent = decode(cleanup_uipathcomponent(cleanup_title(title)) + '__' + pathcomponent).lower()
         orig_file = os.path.join(scriptdir, "gall", ('/'.join(fspath))[1:], pathcomponent)
         link_target = get_link_target(uipath, uipathcomponent, pathcomponent, True)
         thumb_target = get_thumb_target(uipath, uipathcomponent, pathcomponent, True)
@@ -298,7 +292,6 @@ def generate_content(itemid, fspath, uipath, uipathcomponent, pathcomponent, fir
 
         if not os.path.isfile(orig_file):
             missing_files.append(orig_file)
-            w('-')
         else:
             if (not os.path.exists(thumb_target) and not options['no_thumbs']) or options['force_thumbs']:
                 try:
@@ -311,9 +304,9 @@ def generate_content(itemid, fspath, uipath, uipathcomponent, pathcomponent, fir
                             os.remove(album_target)
                         thumb.save(album_target, "JPEG")
                     w('T')
+
                 except Exception, e:
-                    w('Y')
-                    print e.__class__.__name__, e, orig_file
+                    sys.stderr.write(str(e.__class__.__name__) + str(e) + orig_file + "\n")
                     return False
             else:
                 w('t')
@@ -323,69 +316,61 @@ def generate_content(itemid, fspath, uipath, uipathcomponent, pathcomponent, fir
                     os.symlink(orig_file, link_target)
                     w('L')
                 except Exception, e:
-                    print ""
-                    print e.__class__.__name__, e
-                    print (os.path.exists(link_target)), orig_file, "->", link_target
+                    print e.__class__.__name__, e, orig_file, "->", link_target
                     sys.exit(1)
             else:
                 w('l')
+
     return True
 
-def cleanup_title(raw_title, pathcomponent = None):
-    title = re_markup.sub("", decode(raw_title)).replace('\00','')
-    if not title:
-        title = pathcomponent
-    if not title:
-        title = "notitle"
+def cleanup_uipathcomponent(uipathcomponent):
+    uipathcomponent = decode(uipathcomponent.replace('\00',''))
+    uipathcomponent = re_markup.sub("", uipathcomponent)
 
-    return title
+    # incremental html entities decode
+    prev_uipathcomponent = ""
+    while prev_uipathcomponent != uipathcomponent:
+        prev_uipathcomponent = uipathcomponent
+        uipathcomponent = html_parser.unescape(uipathcomponent)
 
-def cleanup_uipathcomponent(pathcomponent):
-        uipathcomponent = pathcomponent
-        # FIXME: fix html entitiets in a generic way
-        # replace latin1 stuff fast
-        uipathcomponent = uipathcomponent.replace("&auml;", "a")
-        uipathcomponent = uipathcomponent.replace("&aring;", "a")
-        uipathcomponent = uipathcomponent.replace("&ouml;", "o")
-        uipathcomponent = uipathcomponent.replace("&amp;", "and")
-        uipathcomponent = re_htmlentity.sub("_", uipathcomponent) # replace all &[^;]+; with _
-        # remove illigal filepath chars
-        uipathcomponent = re_illigal.sub("_", uipathcomponent)
-        # remove sillyness
-        uipathcomponent = uipathcomponent.replace("__","_").replace("_-_","-")
+    # remove illigal filepath chars
+    uipathcomponent = re_illigal.sub("_", uipathcomponent)
 
-        return decode(uipathcomponent)
+    # remove dash sillyness
+    uipathcomponent = uipathcomponent.replace("__","_").replace("_-_","-")
+
+    return decode(uipathcomponent).lower()
 
 def get_children(id, fspath, uipath, depth):
-    w(">")
-
     cur.execute(SQLgetChildren, (id,));
     rows = cur.fetchall()
 
     child_objects = [];
     first_image = True
     for row in rows:
-        # get sql result
         itemid = row[0]
         itemtype = decode(row[1])
         has_children = row[2]
-        title = cleanup_title(row[3], row[5])
-        pathcomponent = decode(row[5])
-        uipathcomponent = cleanup_uipathcomponent((title or pathcomponent).lower())
 
+        if not (itemtype == 'GalleryAlbumItem' and has_children == 1) and not (itemtype == 'GalleryPhotoItem'):
+            continue
+
+        # get sql result
+        title = cleanup_uipathcomponent(row[3] or row[5])
+        pathcomponent = decode(row[5])
 
         if itemtype == 'GalleryAlbumItem' and has_children == 1:
-            if pathcomponent in ignore_albums or uipathcomponent in ignore_albums:
+            if pathcomponent in ignore_albums or title in ignore_albums:
                 print "***", pathcomponent
                 continue
             if only_albums and pathcomponent not in only_albums:
                 print "+++", pathcomponent
                 continue
 
-            child_objects.append((uipathcomponent, title, itemtype))
+            child_objects.append((title, title, itemtype))
 
             fspath.append(pathcomponent);
-            uipath.append(uipathcomponent);
+            uipath.append(title);
 
             generate_album(itemid, fspath, uipath, depth, itemtype, pathcomponent)
             tmp_uipath = uipath[:] # clone uipath
@@ -394,22 +379,17 @@ def get_children(id, fspath, uipath, depth):
             uipath.pop()
             try:
                 link_target = os.path.join(scriptdir, "test",('/'.join(tmp_uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg')
-                link_source = os.path.join(scriptdir, "test",('/'.join(uipath))[1:], file_cfg['thumb_prefix'] + 'album.jpg')
-                os.symlink(link_target, link_source)
-                #print "LINK:", link_source, "-->", link_target
+                link_source = os.path.join(scriptdir, "test",('/'.join(tmp_uipath[:-1]))[1:], file_cfg['thumb_prefix'] + 'album.jpg')
+                if not os.path.exists(link_source) and os.path.exists(link_target):
+                    os.symlink(link_target, link_source)
             except OSError, e:
                 pass
 
         elif itemtype == 'GalleryPhotoItem':
-            # if fspath[1].lower() == 'cv-lan':
-            #     print fspath[1], itemid == rows[0][0], itemid, rows[0][0]
-            if generate_content(itemid, fspath, uipath, uipathcomponent, pathcomponent, first_image):
+            if generate_content(itemid, fspath, uipath, title, pathcomponent, first_image):
                 child_objects.append((pathcomponent, title, itemtype))
                 first_image = False
 
-        else:
-            #print itemtype, fspath, pathcomponent
-            pass
 
     return child_objects
 
@@ -420,6 +400,7 @@ try:
     if options['ignore_albums'] != '':
         ignore_albums = options['ignore_albums'].split(',')
         ignore_albums = filter(None, ignore_albums)
+
     only_albums = []
     if options['only_albums'] != '':
         only_albums = options['only_albums'].split(',')
@@ -428,12 +409,14 @@ try:
     con = mdb.connect(mysql_cfg['hostname'], mysql_cfg['username'], mysql_cfg['password'], mysql_cfg['database']);
     cur = con.cursor()
 
+    with open(os.path.join(scriptdir, "test", 'style.css'), 'w') as f:
+        f.write(style)
+
+    # generate root album
     fname = os.path.join(scriptdir, "test", "index.html")
     grandchildren = get_children(7, [''], [''], 0)
     generate_html(fname, grandchildren, "GalleryAlbumItem", '');
 
-    with open(os.path.join(scriptdir, "test", 'style.css'), 'w') as f:
-        f.write(style)
 
     print ""
     print "missing", len(missing_files)
