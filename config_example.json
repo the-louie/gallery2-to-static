@@ -1,0 +1,11 @@
+{
+    "mysql_settings": {
+        "host": "127.0.0.1",
+        "user": "root",
+        "password": "password",
+        "database": "gallery2"
+    },
+    "thumbPrefix": "__t_",
+    "ignoreAlbums": [],
+    "onlyAlbums": []
+}

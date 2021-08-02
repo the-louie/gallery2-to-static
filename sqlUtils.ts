@@ -1,4 +1,4 @@
-import type mysql from '@types/mysql'
+import type mysql from 'mysql2'
 const config = {
     tp: 'g2_', // table prefix
     cp: 'g_',  // column prefix
@@ -41,9 +41,11 @@ LEFT JOIN ${config.tp}PhotoItem pi ON pi.${config.cp}id=ce.${config.cp}id
 -- thumbinfo
 LEFT JOIN ${config.tp}DerivativeImage di on di.${config.cp}id = ce.${config.cp}id
 
-WHERE ${config.cp}parentId = %s`
+WHERE
+    e.${config.cp}entityType in ('GalleryAlbumItem', 'GalleryPhotoItem') AND
+    ${config.cp}parentId = ?`
 
-interface grandChildren {
+export interface Children {
     id: number;
     type: string;
     hasChildren: boolean;
@@ -51,17 +53,18 @@ interface grandChildren {
     description: string;
     pathComponent: string;
     timestamp: number;
-    width: number;
-    height: number;
-    thumb_width: number;
-    thumb_height: number;
+    width: number | null;
+    height: number | null;
+    thumb_width: number | null;
+    thumb_height: number | null;
 }
 
+
 export default (connection: mysql.Connection) => ({
-    getGrandChildren: (itemId: number): Promise<Array<grandChildren>> => new Promise((resolve, reject) => {
+    getChildren: (itemId: number): Promise<Array<Children>> => new Promise((resolve, reject) => {
        connection.query(SQL_GET_CHILDREN, [itemId], (error, results) => {
            if (error) return reject(error);
-           resolve(results)
+           resolve(results as Array<Children>)
        })
     })
-}
+})

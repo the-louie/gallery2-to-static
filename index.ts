@@ -1,29 +1,30 @@
-import fs from 'fs'
-import mysql from 'mysql'
-import path from 'path'
+import * as fs from 'fs'
+import mysql from 'mysql2'
+import * as path from 'path'
 import sqlUtils from './sqlUtils'
+import config from './config.json'
 
-interface config {
-    thumbPrefix: string;
-    ignoreAlbums: Array<string>;
-    onlyAlbums: Array<string>;
-}
+// import type { Children } from './sqlUtils'
 
-const config = {
-    thumbPrefix: '__t_',
-    ignoreAlbums: [],
-    onlyAlbums: [],
-}
+// import type Children from './sqlUtils'
+
+// interface config {
+//     thumbPrefix: string;
+//     ignoreAlbums: Array<string>;
+//     onlyAlbums: Array<string>;
+// }
+
+// const config = {
+//     thumbPrefix: '__t_',
+//     ignoreAlbums: [],
+//     onlyAlbums: [],
+// }
 
 
-const connection = mysql.createConnection({
-  host     : 'localhost',
-  user     : 'me',
-  password : 'secret',
-  database : 'my_db'
-});
+const connection = mysql.createConnection(config.mysql_settings);
 const sql = sqlUtils(connection)
- 
+
+/*
 const fixDoubleExt = (filename: string): string => filename.toLocaleLowerCase().replace('.jpg.jpg', '.jpg')
 
 const cleanupUiPathComponent = (uiPathComponent: string): string => {
@@ -33,7 +34,7 @@ const cleanupUiPathComponent = (uiPathComponent: string): string => {
 
 const decode = (text: string): string => Buffer.from(text).toString('ascii')
 
-const getThumbTarget = (uiPath, uiPathComponent, pathComponent='', fullPath=false) => {
+const getThumbTarget = (uiPath: string[], uiPathComponent: string, pathComponent='', fullPath=false) => {
     if (pathComponent !== undefined) {
         pathComponent = '___' + pathComponent
     }
@@ -47,7 +48,7 @@ const getThumbTarget = (uiPath, uiPathComponent, pathComponent='', fullPath=fals
     }
 }
 
-const getLinkTarget =(uiPath, uiPathComponent, pathComponent='', fullPath=false) => {
+const getLinkTarget =(uiPath: string[], uiPathComponent: string, pathComponent='', fullPath=false) => {
     let newPathComponent = ''
     if (pathComponent !== '' && uiPathComponent.toLocaleLowerCase() !== pathComponent.toLocaleLowerCase()) {
         newPathComponent = '___' + pathComponent
@@ -61,7 +62,7 @@ const getLinkTarget =(uiPath, uiPathComponent, pathComponent='', fullPath=false)
 
 
 }
-const generateJson = (filename, grandchildren, pathComponent) => {
+const generateJson = (filename: string, grandchildren: Array<Array<string>>, pathComponent: string[]) => {
     if (fs.existsSync(filename)) {
         console.log(` -- already done: ${filename}`)
         return
@@ -81,8 +82,8 @@ const generateJson = (filename, grandchildren, pathComponent) => {
             }
         } else {
             return {
-                link: getLinkTarget('', title, childPath, false),
-                img: getThumbTarget('', title, childPath, false),
+                link: getLinkTarget([''], title, childPath, false),
+                img: getThumbTarget([''], title, childPath, false),
                 title: title,
             }
 
@@ -90,21 +91,25 @@ const generateJson = (filename, grandchildren, pathComponent) => {
     })
 }
 
-const generateAlbum = (itemId, fsPath, uiPath, depth, pathComponent) {
-    const grandChildren = getGrandChildren(itemId, fsPath, uiPath, ++depth)
+const generateAlbum = async (itemId: number, fsPath: string[], uiPath: string[], depth: number, pathComponent: string[])  => {
+    const grandChildren = await getGrandChildren(itemId, fsPath, uiPath, ++depth)
     const fName = path.join(__dirname, 'test', uiPath.join('/').substring(1), 'index.json')
     generateJson(fName, grandChildren, pathComponent)
 }
 
-const getGrandChildren = async (itemId, fsPath = [''], uiPath = [''], depth = 0) {
+const generateContent = (itemId, fsPath, uiPath, depth, pathComponent)  => {
+    return true
+}
+
+const getGrandChildren = async (itemId, fsPath = [''], uiPath = [''], depth = 0) => {
     connection.connect();
     const grandChildren = await sql.getGrandChildren(itemId)
 
     let childObjects = []
     let firstImage = true
-    const title = cleanupUiPathComponent(row.title ?? row.pathComponent)
 
     for (const row of grandChildren) {
+        const title = cleanupUiPathComponent(row.title ?? row.pathComponent)
         if (!(row.type === 'GalleryAlbumItem' && row.hasChildren) && !(row.type === 'GalleryPhotoItem')) {
             continue
         }
@@ -142,4 +147,24 @@ const main = async () => {
     generateJson(fname, grandChildren, '')
 }
 
- 
+
+*/
+
+const main = async (root: number, pathComponent: Array<string> = [], depth: number = 0) => {
+    const children = await sql.getChildren(root);
+    if (children.length > 0) {
+        // console.log(root)
+        fs.writeFileSync(`./data/${root}.json`, JSON.stringify(children))
+        children.forEach(child => {
+            if (child.hasChildren) {
+                main(child.id, pathComponent.concat([child.pathComponent]), ++depth)
+                --depth
+            } else {
+                console.log(depth, root, child.id, pathComponent.concat([child.pathComponent]).join('/'), 'no child')
+                // child.filePath = pathComponent.concat([child.pathComponent]).join('/');
+            }
+        });
+    }
+}
+
+main(7)
