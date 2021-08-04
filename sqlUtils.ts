@@ -1,70 +1,55 @@
 import type mysql from 'mysql2'
-const config = {
-    tp: 'g2_', // table prefix
-    cp: 'g_',  // column prefix
+import type { Child, Config } from './types'
+
+
+
+export default (connection: mysql.Connection, config: Config) => {
+    const SQL_GET_CHILDREN = `
+        SELECT
+            ce.${config.gallerySettings.columnPrefix}id as id,    -- main id
+            e.${config.gallerySettings.columnPrefix}entityType as type,
+            i.${config.gallerySettings.columnPrefix}canContainChildren as hasChildren,
+        
+            i.${config.gallerySettings.columnPrefix}title as title,
+            i.${config.gallerySettings.columnPrefix}description as description,
+        
+            fse.${config.gallerySettings.columnPrefix}pathComponent as pathComponent,
+            i.${config.gallerySettings.columnPrefix}originationTimestamp as timestamp,
+        
+            pi.${config.gallerySettings.columnPrefix}width as width,
+            pi.${config.gallerySettings.columnPrefix}height as height,
+        
+            di.${config.gallerySettings.columnPrefix}width as thumb_width,
+            di.${config.gallerySettings.columnPrefix}height as thumb_height
+        
+        
+        -- relations table
+        FROM ${config.gallerySettings.tablePrefix}ChildEntity ce
+        
+        -- master table
+        LEFT JOIN ${config.gallerySettings.tablePrefix}Entity e ON e.${config.gallerySettings.columnPrefix}id=ce.${config.gallerySettings.columnPrefix}id
+        
+        -- item information
+        LEFT JOIN ${config.gallerySettings.tablePrefix}Item i ON i.${config.gallerySettings.columnPrefix}id=ce.${config.gallerySettings.columnPrefix}id
+        
+        -- file system information
+        LEFT JOIN ${config.gallerySettings.tablePrefix}FileSystemEntity fse ON fse.${config.gallerySettings.columnPrefix}id = ce.${config.gallerySettings.columnPrefix}id
+        
+        -- photo-info
+        LEFT JOIN ${config.gallerySettings.tablePrefix}PhotoItem pi ON pi.${config.gallerySettings.columnPrefix}id=ce.${config.gallerySettings.columnPrefix}id
+        
+        -- thumbinfo
+        LEFT JOIN ${config.gallerySettings.tablePrefix}DerivativeImage di on di.${config.gallerySettings.columnPrefix}id = ce.${config.gallerySettings.columnPrefix}id
+        
+        WHERE
+            e.${config.gallerySettings.columnPrefix}entityType in ('GalleryAlbumItem', 'GalleryPhotoItem') AND
+            ${config.gallerySettings.columnPrefix}parentId = ?`
+    return {
+        getChildren: (itemId: number): Promise<Array<Child>> => new Promise((resolve, reject) => {
+            connection.query(SQL_GET_CHILDREN, [itemId], (error, results) => {
+                if (error) return reject(error);
+                resolve(results as Array<Child>)
+            })
+        })
+    }
 }
-
-const SQL_GET_CHILDREN = `
-SELECT
-    ce.${config.cp}id as id,    -- main id
-    e.${config.cp}entityType as type,
-    i.${config.cp}canContainChildren as hasChildren,
-
-    i.${config.cp}title as title,
-    i.${config.cp}description as description,
-
-    fse.${config.cp}pathComponent as pathComponent,
-    i.${config.cp}originationTimestamp as timestamp,
-
-    pi.${config.cp}width as width,
-    pi.${config.cp}height as height,
-
-    di.${config.cp}width as thumb_width,
-    di.${config.cp}height as thumb_height
-
-
--- relations table
-FROM ${config.tp}ChildEntity ce
-
--- master table
-LEFT JOIN ${config.tp}Entity e ON e.${config.cp}id=ce.${config.cp}id
-
--- item information
-LEFT JOIN ${config.tp}Item i ON i.${config.cp}id=ce.${config.cp}id
-
--- file system information
-LEFT JOIN ${config.tp}FileSystemEntity fse ON fse.${config.cp}id = ce.${config.cp}id
-
--- photo-info
-LEFT JOIN ${config.tp}PhotoItem pi ON pi.${config.cp}id=ce.${config.cp}id
-
--- thumbinfo
-LEFT JOIN ${config.tp}DerivativeImage di on di.${config.cp}id = ce.${config.cp}id
-
-WHERE
-    e.${config.cp}entityType in ('GalleryAlbumItem', 'GalleryPhotoItem') AND
-    ${config.cp}parentId = ?`
-
-export interface Children {
-    id: number;
-    type: string;
-    hasChildren: boolean;
-    title: string;
-    description: string;
-    pathComponent: string;
-    timestamp: number;
-    width: number | null;
-    height: number | null;
-    thumb_width: number | null;
-    thumb_height: number | null;
-}
-
-
-export default (connection: mysql.Connection) => ({
-    getChildren: (itemId: number): Promise<Array<Children>> => new Promise((resolve, reject) => {
-       connection.query(SQL_GET_CHILDREN, [itemId], (error, results) => {
-           if (error) return reject(error);
-           resolve(results as Array<Children>)
-       })
-    })
-})

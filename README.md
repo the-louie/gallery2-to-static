@@ -6,9 +6,12 @@ This script is meant to be used to create a static archive of a Gallery 2. It re
 creates a static directory structure and HTML files to display the albums. 
 
 ## Why
-Since Menalto seased development of the Gallery product it's almost impossible to maintain a secure
+Since Menalto ceased development of the Gallery product it's almost impossible to maintain a secure
 gallery. So the options are to convert to another gallery like Flikr or Piwig, or just create a
 static dump of the current state. This does the latter.
 
 ## How
-Under development :P
+Copy `config_example.json` to `config.json` and edit it to your liking, then just run `index.ts`.
+
+## Does it really work?
+Well, works for me.

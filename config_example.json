@@ -1,9 +1,13 @@
 {
-    "mysql_settings": {
+    "mysqlSettings": {
         "host": "127.0.0.1",
         "user": "root",
         "password": "password",
         "database": "gallery2"
+    },
+    "gallerySettings": {
+        "tablePrefix": "g2_",
+        "columnPrefix": "g_"
     },
     "thumbPrefix": "__t_",
     "ignoreAlbums": [],
