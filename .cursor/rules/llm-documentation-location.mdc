@@ -1,0 +1,8 @@
+---
+name: llm-documentation-location
+description: Storage of all LLM file output MUST be in the correct sub-directory of the llm-documentation directory @/__docs/
+---
+
+# Overview
+
+If any filebase documentation is created, plans, verifications, internal LLM-documentation, code synthesis, api-information or anything else meant for internal use or for llm-agent use only MUST be placed in a subdirectory to the directory /__docs

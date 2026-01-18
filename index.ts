@@ -1,6 +1,5 @@
 import * as fs from 'fs'
 import mysql from 'mysql2'
-import * as path from 'path'
 import sqlUtils from './sqlUtils'
 import config from './config.json'
 import { Config } from './types'
@@ -10,7 +9,7 @@ const sql = sqlUtils(connection, config as Config)
 
 const main = async (root: number, pathComponent: Array<string> = [], depth: number = 0) => {
     const children = await sql.getChildren(root);
-    if (children.length > 0) { 
+    if (children.length > 0) {
         children.forEach(child => {
             if (child.hasChildren) {
                 main(child.id, pathComponent.concat([child.pathComponent]), ++depth)
