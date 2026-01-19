@@ -1,11 +1,11 @@
 import { useAlbumData } from './hooks/useAlbumData';
+import { Layout } from './components/Layout';
 
 function App() {
   const { data, isLoading, error, refetch } = useAlbumData(7);
 
   return (
-    <div>
-      <h1>Gallery 2 to Static</h1>
+    <Layout>
       <p>Frontend application initialized</p>
       <button onClick={refetch} disabled={isLoading} aria-label="Reload data">
         {isLoading ? 'Loading...' : 'Reload Data'}
@@ -18,7 +18,7 @@ function App() {
           <pre>{JSON.stringify(data, null, 2)}</pre>
         </div>
       )}
-    </div>
+    </Layout>
   );
 }
 

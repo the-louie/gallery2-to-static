@@ -2,7 +2,6 @@
 
 ## Pending Tasks
 
-- Create Base Layout Component - High - 3-4 hours - Create the base layout component with header, main content area, and footer
 - Create Album List/Grid Component - High - 5-6 hours - Create a grid component to display album thumbnails in a responsive grid layout
 - Create Image Thumbnail Component - High - 4-5 hours - Create a reusable image thumbnail component with lazy loading and error handling
 - Create Album Detail View Component - High - 5-6 hours - Create a component to display album details, including child albums and images
@@ -17,6 +16,7 @@
 - Implement CSS Variable Theme System - Medium - 4-5 hours - Implement CSS variable theme system with light and dark themes
 - Create Theme Context and Switching UI - Medium - 4-5 hours - Create React context for theme management and UI component for switching themes
 - Add Theme Persistence and System Preference - Low - 2-3 hours - Enhance theme system with error handling and system preference detection
+- Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
 - Implement Lazy Loading for Images - High - 4-5 hours - Implement lazy loading for images to improve initial page load performance
 - Implement Progressive Image Loading - Medium - 4-5 hours - Implement progressive image loading with blur-up technique
 - Implement Virtual Scrolling for Large Albums - Medium - 5-6 hours - Implement virtual scrolling for album and image grids to handle large datasets
@@ -43,4 +43,4 @@
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 119-149 hours
+**Estimated Total Time:** 120-150 hours
