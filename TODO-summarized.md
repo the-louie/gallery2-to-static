@@ -2,8 +2,6 @@
 
 ## Pending Tasks
 
-- Research and Design Frontend Architecture - High - 4-5 hours - Research and design frontend architecture for React SPA with Vite
-- Initialize React + Vite Project Structure - High - 3-4 hours - Set up Vite + React + TypeScript project structure in frontend directory
 - Extend Type Definitions for Frontend - High - 2-3 hours - Extend existing type definitions from types.ts to create frontend-specific types
 - Create JSON Data Loading Utilities - High - 4-5 hours - Create utilities and React hooks for loading JSON data from ./data/ directory
 - Set Up Testing Infrastructure - High - 3-4 hours - Set up testing infrastructure for React frontend using Vitest and React Testing Library
@@ -42,10 +40,10 @@
 
 ## Summary
 
-**Total Tasks:** 35
-**Pending:** 35
+**Total Tasks:** 33
+**Pending:** 33
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 135-170 hours
+**Estimated Total Time:** 128-161 hours
