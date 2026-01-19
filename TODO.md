@@ -2,47 +2,6 @@
 
 ---
 
-## Extend Type Definitions for Frontend
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Low
-**Estimated Time:** 2-3 hours
-
-### Description
-Extend existing type definitions from `types.ts` to create frontend-specific types for React components and application state.
-
-### Requirements
-
-#### Research Tasks
-- Analyze existing `types.ts` to understand `Child` interface structure
-- Research React component prop type patterns
-- Research type utilities for frontend (Pick, Omit, Partial, etc.)
-
-#### Implementation Tasks
-- Create `frontend/src/types/index.ts`
-- Export frontend-specific types extending `Child` from root `types.ts`
-- Create types for album data, image data, navigation state
-- Create types for theme configuration
-- Create types for view modes (grid/list)
-- Create types for filter/sort state
-- Add JSDoc comments to all type definitions
-
-### Deliverable
-Complete type definitions in `frontend/src/types/index.ts` with tests verifying type correctness
-
-### Testing Requirements
-- Verify types are properly exported and importable
-- Check type compatibility with existing JSON structure
-- Ensure types support all planned features (theming, filtering, etc.)
-
-### Technical Notes
-- Types should extend existing `Child` interface from root `types.ts`
-- Must maintain compatibility with existing JSON data structure
-- Types should support all planned frontend features
-
----
-
 ## Create JSON Data Loading Utilities
 
 **Status:** Pending

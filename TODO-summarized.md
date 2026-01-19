@@ -2,7 +2,6 @@
 
 ## Pending Tasks
 
-- Extend Type Definitions for Frontend - High - 2-3 hours - Extend existing type definitions from types.ts to create frontend-specific types
 - Create JSON Data Loading Utilities - High - 4-5 hours - Create utilities and React hooks for loading JSON data from ./data/ directory
 - Create Base Layout Component - High - 3-4 hours - Create the base layout component with header, main content area, and footer
 - Create Album List/Grid Component - High - 5-6 hours - Create a grid component to display album thumbnails in a responsive grid layout
@@ -39,10 +38,10 @@
 
 ## Summary
 
-**Total Tasks:** 32
-**Pending:** 32
+**Total Tasks:** 31
+**Pending:** 31
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 125-157 hours
+**Estimated Total Time:** 123-154 hours
