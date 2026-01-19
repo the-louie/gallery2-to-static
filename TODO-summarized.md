@@ -4,7 +4,6 @@
 
 - Extend Type Definitions for Frontend - High - 2-3 hours - Extend existing type definitions from types.ts to create frontend-specific types
 - Create JSON Data Loading Utilities - High - 4-5 hours - Create utilities and React hooks for loading JSON data from ./data/ directory
-- Set Up Testing Infrastructure - High - 3-4 hours - Set up testing infrastructure for React frontend using Vitest and React Testing Library
 - Create Base Layout Component - High - 3-4 hours - Create the base layout component with header, main content area, and footer
 - Create Album List/Grid Component - High - 5-6 hours - Create a grid component to display album thumbnails in a responsive grid layout
 - Create Image Thumbnail Component - High - 4-5 hours - Create a reusable image thumbnail component with lazy loading and error handling
@@ -40,10 +39,10 @@
 
 ## Summary
 
-**Total Tasks:** 33
-**Pending:** 33
+**Total Tasks:** 32
+**Pending:** 32
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 128-161 hours
+**Estimated Total Time:** 125-157 hours

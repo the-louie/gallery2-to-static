@@ -89,50 +89,6 @@ Working data loading utilities with tests, hook ready for component integration
 
 ---
 
-## Set Up Testing Infrastructure
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Medium
-**Estimated Time:** 3-4 hours
-
-### Description
-Set up testing infrastructure for the React frontend using Vitest and React Testing Library.
-
-### Requirements
-
-#### Research Tasks
-- Research testing libraries for React + Vite (Vitest recommended)
-- Research React Testing Library best practices
-- Research test file organization patterns
-- Research mocking strategies for JSON imports
-
-#### Implementation Tasks
-- Install and configure Vitest for unit testing
-- Install React Testing Library for component testing
-- Configure test scripts in `package.json`
-- Create test utilities: `test-utils.tsx` with custom render function
-- Set up mock data files in `frontend/src/__mocks__/`
-- Create example test file demonstrating testing patterns
-- Configure code coverage reporting
-- Add test script to CI/CD considerations (document in README)
-
-### Deliverable
-Complete testing infrastructure with example tests and documentation
-
-### Testing Requirements
-- Verify test setup works with Vite
-- Check test utilities follow React Testing Library best practices
-- Ensure mock data structure matches real JSON structure
-
-### Technical Notes
-- Use Vitest for unit testing (works well with Vite)
-- React Testing Library for component testing
-- Mock data should match real JSON structure from `./data/` directory
-- Code coverage should be configured and documented
-
----
-
 ## Create Base Layout Component
 
 **Status:** Pending
