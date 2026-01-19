@@ -1,0 +1,125 @@
+/**
+ * ImageThumbnail Component Styles
+ *
+ * Styles for the ImageThumbnail component including aspect ratio container,
+ * image scaling, loading states, error states, and accessibility features.
+ *
+ * CSS Variables:
+ * - Uses CSS custom properties for theming (prepared for theme system)
+ * - Variables have fallback values for compatibility
+ *
+ * Responsive Design:
+ * - Mobile-first approach
+ * - Images scale responsively within their containers
+ */
+
+.image-thumbnail-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--image-bg, #f5f5f5);
+  border-radius: var(--image-border-radius, 4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-thumbnail-container:focus {
+  outline: 2px solid var(--image-focus, #0066cc);
+  outline-offset: 2px;
+}
+
+.image-thumbnail-container[role='button'] {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.image-thumbnail-container[role='button']:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-thumbnail-container[role='button']:active {
+  transform: translateY(0);
+}
+
+.image-thumbnail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+.image-thumbnail-image-loading {
+  opacity: 0;
+}
+
+.image-thumbnail-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--image-bg, #f5f5f5);
+}
+
+.image-thumbnail-skeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-bg-1, #e0e0e0) 0%,
+    var(--skeleton-bg-2, #f0f0f0) 50%,
+    var(--skeleton-bg-1, #e0e0e0) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.image-thumbnail-error {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--image-error-bg, #f5f5f5);
+  color: var(--image-error-text, #666);
+  padding: 1rem;
+  text-align: center;
+}
+
+.image-thumbnail-error-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+.image-thumbnail-error-text {
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .image-thumbnail-container[role='button']:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+}
