@@ -140,51 +140,6 @@ Breadcrumb component showing album hierarchy with tests
 
 ---
 
-## Create Basic Image Grid Component
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Medium
-**Estimated Time:** 4-5 hours
-
-### Description
-Create a grid component for displaying image thumbnails. Should handle click events for lightbox integration and display metadata.
-
-### Requirements
-
-#### Research Tasks
-- Research masonry vs grid layouts for images
-- Research image grid spacing and gap patterns
-- Research click/tap handling for image grids
-
-#### Implementation Tasks
-- Create `frontend/src/components/ImageGrid/ImageGrid.tsx`
-- Implement grid layout for images (similar to AlbumGrid)
-- Use ImageThumbnail component for each image
-- Handle click events (prepare for lightbox integration)
-- Display image metadata on hover (title, date if available)
-- Add loading and empty states
-- Make grid responsive
-- Write component tests for grid rendering
-- Write tests for click handling
-
-### Deliverable
-Image grid component for displaying photo collections
-
-### Testing Requirements
-- Verify grid displays images correctly
-- Check click events are properly handled
-- Ensure responsive behavior works
-- Review component reusability
-
-### Technical Notes
-- Should reuse ImageThumbnail component
-- Click events should prepare for lightbox integration
-- Metadata display on hover is optional but recommended
-- Must handle loading and empty states
-
----
-
 ## Create Image Lightbox/Modal Component
 
 **Status:** Pending

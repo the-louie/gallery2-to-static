@@ -5,7 +5,6 @@
 - Create Album Detail View Component - High - 5-6 hours - Create a component to display album details, including child albums and images
 - Set Up React Router and Basic Routing - High - 4-5 hours - Set up React Router for client-side routing with routes for albums and images
 - Create Breadcrumb Navigation Component - Medium - 3-4 hours - Create a breadcrumb navigation component showing album hierarchy path
-- Create Basic Image Grid Component - High - 4-5 hours - Create a grid component for displaying image thumbnails with click events
 - Create Image Lightbox/Modal Component - High - 5-6 hours - Create an accessible lightbox/modal component for full-screen image viewing
 - Implement Image Navigation (Previous/Next) - High - 4-5 hours - Extend lightbox component with navigation functionality to browse through images
 - Integrate Lightbox with Image Grid - High - 3-4 hours - Integrate lightbox component with image grid and sync state with URL
@@ -35,10 +34,10 @@
 
 ## Summary
 
-**Total Tasks:** 28
-**Pending:** 28
+**Total Tasks:** 27
+**Pending:** 27
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 115-145 hours
+**Estimated Total Time:** 110-140 hours

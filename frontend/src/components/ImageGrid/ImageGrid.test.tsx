@@ -1,0 +1,285 @@
+/**
+ * ImageGrid Component Tests
+ *
+ * Comprehensive tests for the ImageGrid component covering rendering,
+ * data loading, filtering, states, and integration.
+ */
+
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen } from '@/test-utils';
+import userEvent from '@testing-library/user-event';
+import { ImageGrid } from './ImageGrid';
+import { mockPhotos, mockChildren, mockEmptyChildren } from '@/__mocks__/mockData';
+import * as useAlbumDataHook from '@/hooks/useAlbumData';
+
+// Mock the useAlbumData hook
+vi.mock('@/hooks/useAlbumData', () => ({
+  useAlbumData: vi.fn(),
+}));
+
+describe('ImageGrid', () => {
+  const mockUseAlbumData = vi.mocked(useAlbumDataHook.useAlbumData);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('Component Rendering with Images Prop', () => {
+    it('renders images from props', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid images={mockPhotos} />);
+      expect(screen.getByAltText('Test Photo')).toBeInTheDocument();
+      expect(screen.getByAltText('Portrait Photo')).toBeInTheDocument();
+    });
+
+    it('renders loading state when isLoading prop is true', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid images={[]} isLoading={true} />);
+      expect(screen.getByLabelText('Loading images')).toBeInTheDocument();
+    });
+
+    it('renders empty state when images array is empty', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid images={[]} />);
+      expect(screen.getByText('No images found')).toBeInTheDocument();
+    });
+  });
+
+  describe('Data Loading Integration', () => {
+    it('loads data using useAlbumData when albumId is provided', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid albumId={7} />);
+      expect(mockUseAlbumData).toHaveBeenCalledWith(7);
+    });
+
+    it('filters images from loaded data', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid albumId={7} />);
+      // Should only show images, not albums
+      expect(screen.getByAltText('Test Photo')).toBeInTheDocument();
+      // Albums don't render as images, so we check that no album title appears
+      expect(screen.queryByText('Test Album')).not.toBeInTheDocument();
+    });
+
+    it('renders loading state from hook', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: null,
+        isLoading: true,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid albumId={7} />);
+      expect(screen.getByLabelText('Loading images')).toBeInTheDocument();
+    });
+
+    it('renders error state from hook', () => {
+      const mockError = {
+        message: 'Failed to load',
+        code: 'NETWORK_ERROR',
+        cause: new Error('Network error'),
+      };
+
+      mockUseAlbumData.mockReturnValue({
+        data: null,
+        isLoading: false,
+        error: mockError,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid albumId={7} />);
+      expect(screen.getByText(/Error loading images/)).toBeInTheDocument();
+      expect(screen.getByText('Failed to load')).toBeInTheDocument();
+    });
+
+    it('handles empty data from hook', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockEmptyChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid albumId={7} />);
+      expect(screen.getByText('No images found')).toBeInTheDocument();
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('displays retry button on error', async () => {
+      const mockRefetch = vi.fn();
+      const mockError = {
+        message: 'Failed to load',
+        code: 'NETWORK_ERROR',
+        cause: new Error('Network error'),
+      };
+
+      mockUseAlbumData.mockReturnValue({
+        data: null,
+        isLoading: false,
+        error: mockError,
+        refetch: mockRefetch,
+      });
+
+      const user = userEvent.setup();
+      render(<ImageGrid albumId={7} />);
+
+      const retryButton = screen.getByLabelText('Retry loading images');
+      await user.click(retryButton);
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Image Click Handling', () => {
+    it('calls onImageClick when image is clicked', async () => {
+      const user = userEvent.setup();
+      const handleClick = vi.fn();
+
+      mockUseAlbumData.mockReturnValue({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid images={mockPhotos} onImageClick={handleClick} />);
+
+      const imageThumbnail = screen.getByRole('button', { name: 'Test Photo' });
+      await user.click(imageThumbnail);
+      expect(handleClick).toHaveBeenCalledWith(mockPhotos[0]);
+    });
+  });
+
+  describe('View Mode', () => {
+    it('applies grid view mode class', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      const { container } = render(
+        <ImageGrid images={mockPhotos} viewMode="grid" />,
+      );
+      const grid = container.querySelector('.image-grid');
+      expect(grid).toHaveClass('image-grid-grid');
+    });
+
+    it('applies list view mode class', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      const { container } = render(
+        <ImageGrid images={mockPhotos} viewMode="list" />,
+      );
+      const grid = container.querySelector('.image-grid');
+      expect(grid).toHaveClass('image-grid-list');
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('has proper ARIA attributes', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid images={mockPhotos} />);
+      const grid = screen.getByRole('region', { name: 'Image grid' });
+      expect(grid).toBeInTheDocument();
+    });
+
+    it('has aria-busy during loading', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: null,
+        isLoading: true,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid albumId={7} />);
+      // Loading state is shown via skeleton, but grid itself should not be busy
+      expect(screen.getByLabelText('Loading images')).toHaveAttribute('aria-busy', 'true');
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('handles null albumId gracefully', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: null,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid albumId={null} />);
+      expect(mockUseAlbumData).toHaveBeenCalledWith(null);
+    });
+
+    it('prioritizes images prop over loaded data', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid images={mockPhotos} albumId={7} />);
+      // Should show images from prop, not from loaded data
+      expect(screen.getByAltText('Test Photo')).toBeInTheDocument();
+      expect(screen.getByAltText('Portrait Photo')).toBeInTheDocument();
+    });
+
+    it('handles mixed data with albums and photos', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<ImageGrid albumId={7} />);
+      // Should only show images
+      expect(screen.getByAltText('Test Photo')).toBeInTheDocument();
+      expect(screen.queryByText('Test Album')).not.toBeInTheDocument();
+    });
+  });
+});

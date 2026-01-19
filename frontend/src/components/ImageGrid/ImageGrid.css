@@ -1,0 +1,77 @@
+/**
+ * ImageGrid Component Styles
+ *
+ * Responsive CSS Grid layout for image display.
+ * Uses mobile-first approach with breakpoints at 768px, 1024px, and 1440px.
+ */
+
+.image-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--image-grid-gap, 1rem);
+  width: 100%;
+}
+
+.image-grid-grid {
+  display: grid;
+}
+
+.image-grid-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--image-grid-gap, 1rem);
+}
+
+/* Tablet breakpoint: 2-3 columns */
+@media (min-width: 768px) {
+  .image-grid-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--image-grid-gap-tablet, 1.5rem);
+  }
+}
+
+/* Desktop breakpoint: 4 columns */
+@media (min-width: 1024px) {
+  .image-grid-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--image-grid-gap-desktop, 2rem);
+  }
+}
+
+/* Large desktop breakpoint: 5+ columns */
+@media (min-width: 1440px) {
+  .image-grid-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.image-grid-error {
+  padding: 2rem;
+  text-align: center;
+  color: var(--image-grid-error-color, #d32f2f);
+  background-color: var(--image-grid-error-bg, #ffebee);
+  border-radius: var(--image-grid-border-radius, 8px);
+}
+
+.image-grid-error p {
+  margin: 0 0 1rem 0;
+}
+
+.image-grid-error button {
+  padding: 0.5rem 1rem;
+  background-color: var(--image-grid-error-button-bg, #d32f2f);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.image-grid-error button:hover {
+  background-color: var(--image-grid-error-button-hover, #b71c1c);
+}
+
+.image-grid-error button:focus {
+  outline: 2px solid var(--image-grid-error-button-focus, #0066cc);
+  outline-offset: 2px;
+}

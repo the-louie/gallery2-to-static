@@ -1,0 +1,17 @@
+/**
+ * ImageGridEmpty Component Styles
+ *
+ * Empty state styling for when no images are found.
+ */
+
+.image-grid-empty {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--image-grid-empty-color, #666);
+}
+
+.image-grid-empty-message {
+  margin: 0;
+  font-size: var(--image-grid-empty-font-size, 1.125rem);
+  color: var(--image-grid-empty-color, #666);
+}

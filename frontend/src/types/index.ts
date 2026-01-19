@@ -385,6 +385,7 @@ export interface AlbumGridProps {
  * Props for image grid component
  *
  * Used by components that display multiple images in a grid layout.
+ * Can work with provided images prop or load data using albumId.
  */
 export interface ImageGridProps {
   /** Array of images to display */
