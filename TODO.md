@@ -2,52 +2,6 @@
 
 ---
 
-## Create JSON Data Loading Utilities
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Medium
-**Estimated Time:** 4-5 hours
-
-### Description
-Create utilities and React hooks for loading JSON data from the `./data/` directory. Implement error handling, caching, and loading states.
-
-### Requirements
-
-#### Research Tasks
-- Research Vite's static asset handling for JSON files
-- Research error handling patterns for failed JSON loads
-- Research caching strategies for static JSON in browser
-- Research async data loading patterns in React
-
-#### Implementation Tasks
-- Create `frontend/src/utils/dataLoader.ts`
-- Implement function to load album JSON by ID: `loadAlbum(id: number): Promise<Child[]>`
-- Implement function to find root album ID (check for `7.json` or discover root)
-- Implement error handling for missing JSON files
-- Implement basic caching mechanism (in-memory Map)
-- Create React hook `useAlbumData(id: number)` for component usage
-- Add loading and error states to hook
-- Write unit tests for data loading functions
-- Write tests for error cases (missing files, invalid JSON)
-
-### Deliverable
-Working data loading utilities with tests, hook ready for component integration
-
-### Testing Requirements
-- Verify error handling covers all edge cases
-- Check caching doesn't cause stale data issues
-- Ensure hook follows React best practices (cleanup, dependency arrays)
-- Review test coverage (aim for 80%+)
-
-### Technical Notes
-- Must handle missing JSON files gracefully
-- Caching should prevent unnecessary re-fetches
-- Hook should provide loading and error states
-- Must work with Vite's static asset handling
-
----
-
 ## Create Base Layout Component
 
 **Status:** Pending

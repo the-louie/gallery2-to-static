@@ -2,7 +2,6 @@
 
 ## Pending Tasks
 
-- Create JSON Data Loading Utilities - High - 4-5 hours - Create utilities and React hooks for loading JSON data from ./data/ directory
 - Create Base Layout Component - High - 3-4 hours - Create the base layout component with header, main content area, and footer
 - Create Album List/Grid Component - High - 5-6 hours - Create a grid component to display album thumbnails in a responsive grid layout
 - Create Image Thumbnail Component - High - 4-5 hours - Create a reusable image thumbnail component with lazy loading and error handling
@@ -38,10 +37,10 @@
 
 ## Summary
 
-**Total Tasks:** 31
-**Pending:** 31
+**Total Tasks:** 30
+**Pending:** 30
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 123-154 hours
+**Estimated Total Time:** 119-149 hours
