@@ -1,1 +1,0 @@
-review the TODO and TODO-summarized files and remove any and all completed tasks. move partial tasks to the top regardless of priority.
