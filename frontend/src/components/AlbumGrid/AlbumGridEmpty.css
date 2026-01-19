@@ -1,0 +1,17 @@
+/**
+ * AlbumGridEmpty Component Styles
+ *
+ * Empty state styling for when no albums are found.
+ */
+
+.album-grid-empty {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--album-grid-empty-color, #666);
+}
+
+.album-grid-empty-message {
+  margin: 0;
+  font-size: var(--album-grid-empty-font-size, 1.125rem);
+  color: var(--album-grid-empty-color, #666);
+}
