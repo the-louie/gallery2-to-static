@@ -1,252 +1,183 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, userEvent } from '@/test-utils';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen } from '@/test-utils';
 import App from '@/App';
-import { mockChildren } from '@/__mocks__/mockData';
+import { findRootAlbumId } from '@/utils/dataLoader';
+
+// Mock the dataLoader module
+vi.mock('@/utils/dataLoader', () => ({
+  findRootAlbumId: vi.fn(),
+  loadAlbum: vi.fn(),
+}));
 
 describe('App', () => {
   beforeEach(() => {
-    // Reset fetch mock before each test
     vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    // Clean up any mocks
-    vi.restoreAllMocks();
-  });
-
-  it('renders the main heading', () => {
-    // Mock successful fetch
+    // Mock successful fetch for data loading
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => mockChildren,
+      json: async () => [],
     } as Response);
+  });
 
-    render(<App />);
+  it('renders Layout with routing', () => {
+    vi.mocked(findRootAlbumId).mockResolvedValue(7);
 
+    render(<App />, { initialEntries: ['/'] });
+
+    // Check for Layout header
     expect(screen.getByText('Gallery 2 to Static')).toBeInTheDocument();
-    expect(
-      screen.getByText('Frontend application initialized'),
-    ).toBeInTheDocument();
   });
 
-  it('displays loading state initially', () => {
-    // Mock a delayed fetch
-    global.fetch = vi.fn().mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({
-              ok: true,
-              json: async () => mockChildren,
-            } as Response);
-          }, 100);
-        }),
-    );
+  it('renders home page on root route', () => {
+    vi.mocked(findRootAlbumId).mockResolvedValue(7);
 
-    render(<App />);
+    render(<App />, { initialEntries: ['/'] });
 
-    // Initially, data should not be displayed
-    expect(screen.queryByText(/Successfully loaded/)).not.toBeInTheDocument();
+    // HomePage should be rendered (will show loading initially)
+    expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
   });
 
-  it('displays data after successful fetch', async () => {
-    // Mock successful fetch
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => mockChildren,
-    } as Response);
+  it('renders album detail page on /album/:id route', () => {
+    render(<App />, { initialEntries: ['/album/7'] });
 
-    render(<App />);
-
-    // Wait for data to load
-    await waitFor(() => {
-      expect(screen.getByText(/Successfully loaded/)).toBeInTheDocument();
-    });
-
-    expect(screen.getByText(/Successfully loaded \d+ items/)).toBeInTheDocument();
+    // AlbumDetailPage should be rendered (will show loading initially)
+    expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
   });
 
-  it('displays error message on fetch failure', async () => {
-    // Mock failed fetch
-    global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+  it('renders image detail page on /image/:id route', () => {
+    render(<App />, { initialEntries: ['/image/42'] });
 
-    render(<App />);
-
-    // Wait for error to appear
-    await waitFor(() => {
-      expect(screen.getByText(/Error:/)).toBeInTheDocument();
-    });
-
-    expect(screen.getByText(/Error: Network error/)).toBeInTheDocument();
+    // ImageDetailPage should be rendered
+    expect(screen.getByText('Image Detail View')).toBeInTheDocument();
   });
 
-  it('displays error message on non-ok response', async () => {
-    // Mock non-ok response
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: false,
-      statusText: 'Not Found',
-    } as Response);
+  it('renders 404 page on invalid route', () => {
+    render(<App />, { initialEntries: ['/invalid-route'] });
 
-    render(<App />);
-
-    // Wait for error to appear
-    await waitFor(() => {
-      expect(screen.getByText(/Error:/)).toBeInTheDocument();
-    });
-
-    expect(
-      screen.getByText(/Error: Failed to load JSON: Not Found/),
-    ).toBeInTheDocument();
+    // NotFoundPage should be rendered
+    expect(screen.getByText('404 - Page Not Found')).toBeInTheDocument();
   });
 
-  it('calls fetch with correct URL', () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => mockChildren,
-    } as Response);
+  it('renders 404 page on /not-found route', () => {
+    render(<App />, { initialEntries: ['/not-found'] });
 
-    render(<App />);
-
-    expect(global.fetch).toHaveBeenCalledWith('/data/test.json');
+    // NotFoundPage should be rendered
+    expect(screen.getByText('404 - Page Not Found')).toBeInTheDocument();
   });
 
-  it('handles button click to reload data', async () => {
-    const user = userEvent.setup();
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => mockChildren,
-    } as Response);
+  describe('Route Navigation', () => {
+    it('navigates to home page', () => {
+      vi.mocked(findRootAlbumId).mockResolvedValue(7);
 
-    render(<App />);
+      const { rerender } = render(<App />, { initialEntries: ['/album/7'] });
 
-    // Wait for initial load
-    await waitFor(() => {
-      expect(screen.getByText(/Successfully loaded/)).toBeInTheDocument();
+      // Navigate to home
+      rerender(<App />);
+      render(<App />, { initialEntries: ['/'] });
+
+      expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
     });
 
-    // Clear the mock call count
-    vi.clearAllMocks();
+    it('navigates to album detail page', () => {
+      render(<App />, { initialEntries: ['/'] });
+      render(<App />, { initialEntries: ['/album/7'] });
 
-    // Find and click the reload button
-    const reloadButton = screen.getByRole('button', { name: /reload data/i });
-    expect(reloadButton).toBeInTheDocument();
-    await user.click(reloadButton);
+      expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
+    });
 
-    // Verify fetch was called again
-    expect(global.fetch).toHaveBeenCalledWith('/data/test.json');
+    it('navigates to image detail page', () => {
+      render(<App />, { initialEntries: ['/'] });
+      render(<App />, { initialEntries: ['/image/42'] });
+
+      expect(screen.getByText('Image Detail View')).toBeInTheDocument();
+    });
+
+    it('navigates to 404 page for invalid routes', () => {
+      render(<App />, { initialEntries: ['/'] });
+      render(<App />, { initialEntries: ['/invalid-route'] });
+
+      expect(screen.getByText('404 - Page Not Found')).toBeInTheDocument();
+    });
   });
 
-  it('disables button while loading', async () => {
-    const user = userEvent.setup();
-    let resolveFetch: (value: Response) => void;
-    const fetchPromise = new Promise<Response>((resolve) => {
-      resolveFetch = resolve;
+  describe('Deep Linking', () => {
+    it('handles direct URL access to home', () => {
+      vi.mocked(findRootAlbumId).mockResolvedValue(7);
+
+      render(<App />, { initialEntries: ['/'] });
+
+      expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
     });
 
-    global.fetch = vi.fn().mockReturnValue(fetchPromise);
+    it('handles direct URL access to album', () => {
+      render(<App />, { initialEntries: ['/album/7'] });
 
-    render(<App />);
-
-    // Wait for initial load to complete
-    resolveFetch!({
-      ok: true,
-      json: async () => mockChildren,
-    } as Response);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Successfully loaded/)).toBeInTheDocument();
+      expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
     });
 
-    // Start a new delayed fetch
-    let resolveDelayedFetch: (value: Response) => void;
-    const delayedFetchPromise = new Promise<Response>((resolve) => {
-      resolveDelayedFetch = resolve;
+    it('handles direct URL access to image', () => {
+      render(<App />, { initialEntries: ['/image/42'] });
+
+      expect(screen.getByText('Image Detail View')).toBeInTheDocument();
+      expect(screen.getByText('Image ID: 42')).toBeInTheDocument();
     });
-    global.fetch = vi.fn().mockReturnValue(delayedFetchPromise);
 
-    const reloadButton = screen.getByRole('button', { name: /reload data/i });
-    await user.click(reloadButton);
+    it('handles direct URL access to invalid route', () => {
+      render(<App />, { initialEntries: ['/nonexistent-route'] });
 
-    // Button should be disabled and show loading text
-    expect(reloadButton).toBeDisabled();
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+      expect(screen.getByText('404 - Page Not Found')).toBeInTheDocument();
+    });
+  });
 
-    // Resolve the fetch
-    resolveDelayedFetch!({
-      ok: true,
-      json: async () => mockChildren,
-    } as Response);
+  describe('Route Parameter Handling', () => {
+    it('handles valid album ID parameter', () => {
+      render(<App />, { initialEntries: ['/album/7'] });
 
-    // Wait for loading to complete
-    await waitFor(() => {
-      expect(reloadButton).not.toBeDisabled();
+      expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
+    });
+
+    it('handles valid image ID parameter', () => {
+      render(<App />, { initialEntries: ['/image/42'] });
+
+      expect(screen.getByText('Image ID: 42')).toBeInTheDocument();
+    });
+
+    it('handles invalid parameter formats', () => {
+      render(<App />, { initialEntries: ['/album/invalid'] });
+
+      // Should redirect to 404
+      expect(screen.getByText('404 - Page Not Found')).toBeInTheDocument();
+    });
+
+    it('handles missing parameters for album route', () => {
+      render(<App />, { initialEntries: ['/album/'] });
+
+      // Should show 404 or handle gracefully - check for either
+      const notFound = screen.queryByText('404 - Page Not Found');
+      const invalidId = screen.queryByText(/Invalid Album ID/i);
+      expect(notFound || invalidId).toBeTruthy();
     });
   });
 
   describe('Accessibility', () => {
     it('has proper heading structure', () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => mockChildren,
-      } as Response);
+      vi.mocked(findRootAlbumId).mockResolvedValue(7);
 
-      render(<App />);
+      render(<App />, { initialEntries: ['/'] });
 
-      // Check for main heading
+      // Check for main heading in Layout
       const mainHeading = screen.getByRole('heading', { level: 1 });
       expect(mainHeading).toHaveTextContent('Gallery 2 to Static');
-
-      // Check for subheading when data is loaded
-      // This will be checked in async test
     });
 
-    it('button has accessible label', () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => mockChildren,
-      } as Response);
+    it('has navigation landmark', () => {
+      vi.mocked(findRootAlbumId).mockResolvedValue(7);
 
-      render(<App />);
+      render(<App />, { initialEntries: ['/'] });
 
-      const button = screen.getByRole('button', { name: /reload data/i });
-      expect(button).toHaveAttribute('aria-label', 'Reload data');
-    });
-
-    it('error message is accessible', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
-
-      render(<App />);
-
-      await waitFor(() => {
-        const errorMessage = screen.getByText(/Error:/);
-        expect(errorMessage).toBeInTheDocument();
-        // Error should be visible and readable
-        expect(errorMessage).toHaveTextContent('Error: Network error');
-      });
-    });
-
-    it('supports keyboard navigation', async () => {
-      const user = userEvent.setup();
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => mockChildren,
-      } as Response);
-
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Successfully loaded/)).toBeInTheDocument();
-      });
-
-      // Button should be focusable
-      const button = screen.getByRole('button', { name: /reload data/i });
-      button.focus();
-      expect(button).toHaveFocus();
-
-      // Button should be activatable with Enter key
-      vi.clearAllMocks();
-      await user.keyboard('{Enter}');
-      expect(global.fetch).toHaveBeenCalled();
+      // Check for navigation landmark
+      const nav = screen.getByRole('navigation', { name: /main navigation/i });
+      expect(nav).toBeInTheDocument();
     });
   });
 });

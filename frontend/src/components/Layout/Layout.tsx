@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Layout.css';
 
 /**
@@ -15,7 +16,7 @@ export interface LayoutProps {
  * Base layout component providing the overall structure for the application.
  *
  * Includes:
- * - Header with title/logo area
+ * - Header with title/logo area (linked to home page)
  * - Main content area with proper semantic HTML
  * - Footer (minimal)
  * - Skip-to-content link for accessibility
@@ -30,15 +31,31 @@ export interface LayoutProps {
  * ```
  */
 export function Layout({ children, className }: LayoutProps) {
+  const handleSkipClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+      mainContent.focus();
+      mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className={className ? `layout ${className}` : 'layout'}>
-      <a href="#main-content" className="skip-link" aria-label="Skip to main content">
+      <a
+        href="#main-content"
+        className="skip-link"
+        aria-label="Skip to main content"
+        onClick={handleSkipClick}
+      >
         Skip to main content
       </a>
       <header className="layout-header">
-        <div className="layout-header-content">
-          <h1 className="layout-title">Gallery 2 to Static</h1>
-        </div>
+        <nav className="layout-header-content" aria-label="Main navigation">
+          <Link to="/" className="layout-title-link" aria-label="Go to home page">
+            <h1 className="layout-title">Gallery 2 to Static</h1>
+          </Link>
+        </nav>
       </header>
       <main id="main-content" className="layout-main">
         {children}

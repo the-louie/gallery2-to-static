@@ -90,13 +90,11 @@ export function isImage(child: Child): child is Image {
  * Route parameters for album and image routes
  *
  * Used with React Router for type-safe route parameter access.
- * Both parameters are optional to support different route patterns.
+ * The `id` parameter is used for both album and image routes.
  */
 export interface RouteParams {
-  /** Album ID from route parameter (e.g., /album/:albumId) */
-  albumId?: string;
-  /** Image ID from route parameter (e.g., /image/:imageId) */
-  imageId?: string;
+  /** ID parameter from route (e.g., /album/:id or /image/:id) */
+  id?: string;
 }
 
 /**

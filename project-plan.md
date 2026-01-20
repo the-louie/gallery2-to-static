@@ -78,6 +78,10 @@ Tasks are grouped into **execution phases** that can be worked on sequentially o
    - **Why Fourth:** Needs ImageThumbnail component
    - **Output:** Image grid for photo collections
 
+
+=========== DONE ========================================================
+
+
 10. **Set Up React Router and Basic Routing** (4-5 hours)
     - **Dependencies:** Task 9
     - **Why Fifth:** Routing needed for navigation between views

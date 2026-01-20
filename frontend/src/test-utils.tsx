@@ -1,5 +1,6 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
@@ -16,19 +17,26 @@ export { userEvent };
  * Custom render function that wraps React Testing Library's render
  * with any necessary providers (Theme, Router, etc.)
  *
- * This can be extended in the future to include providers as needed.
+ * Wraps components with MemoryRouter for testing React Router components.
  *
  * @param ui - The React element to render
  * @param options - Render options from React Testing Library
+ * @param options.initialEntries - Initial route entries for MemoryRouter (default: ['/'])
  * @returns Render result with all testing utilities
  */
 function customRender(
   ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>,
+  options?: Omit<RenderOptions, 'wrapper'> & {
+    initialEntries?: string[];
+  },
 ) {
-  // For now, just use the default render
-  // In the future, this can wrap with ThemeProvider, Router, etc.
-  return render(ui, options);
+  const { initialEntries = ['/'], ...renderOptions } = options || {};
+
+  const Wrapper = ({ children }: { children: React.ReactNode }) => {
+    return <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>;
+  };
+
+  return render(ui, { ...renderOptions, wrapper: Wrapper });
 }
 
 // Override the default render export

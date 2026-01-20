@@ -48,53 +48,6 @@ Album detail view showing albums and images with navigation
 
 ---
 
-## Set Up React Router and Basic Routing
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Medium
-**Estimated Time:** 4-5 hours
-
-### Description
-Set up React Router for client-side routing. Configure routes for albums and images with proper 404 handling.
-
-### Requirements
-
-#### Research Tasks
-- Research React Router v6 patterns for static sites
-- Research hash routing vs browser routing for static hosting
-- Research route parameter patterns for album/image IDs
-- Research 404 handling for static sites
-
-#### Implementation Tasks
-- Install React Router DOM
-- Create `frontend/src/App.tsx` with router setup
-- Create route for root/home page (album list)
-- Create route for album detail: `/album/:id`
-- Create route for image detail: `/image/:id` (prepare for lightbox)
-- Create 404 Not Found page component
-- Set up router configuration (HashRouter for static hosting compatibility)
-- Add navigation links in Layout component
-- Write tests for routing behavior
-- Write tests for 404 handling
-
-### Deliverable
-Working routing system with album and image routes
-
-### Testing Requirements
-- Verify all routes work correctly
-- Check deep linking works (direct URL access)
-- Ensure 404 page displays for invalid routes
-- Review router configuration for static hosting compatibility
-
-### Technical Notes
-- Use HashRouter for static hosting compatibility (or BrowserRouter if server supports it)
-- Routes should support deep linking
-- 404 page must handle invalid routes gracefully
-- Should integrate with Layout component
-
----
-
 ## Create Breadcrumb Navigation Component
 
 **Status:** Pending
