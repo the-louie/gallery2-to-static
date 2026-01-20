@@ -2,55 +2,6 @@
 
 ---
 
-## Create Image Lightbox/Modal Component
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Medium
-**Estimated Time:** 5-6 hours
-
-### Description
-Create an accessible lightbox/modal component for full-screen image viewing. Must include proper focus management and keyboard support.
-
-### Requirements
-
-#### Research Tasks
-- Research lightbox/modal accessibility patterns
-- Research modal focus trap implementation
-- Research full-screen image display patterns
-- Research image loading in modals (preloading next/prev)
-
-#### Implementation Tasks
-- Create `frontend/src/components/Lightbox/Lightbox.tsx`
-- Implement modal overlay with backdrop
-- Display full-size image in modal
-- Add close button (X) with keyboard support (Escape)
-- Implement focus trap (focus stays in modal when open)
-- Add ARIA attributes (role="dialog", aria-modal, aria-label)
-- Add image metadata display (title, description, dimensions, date)
-- Style modal for mobile and desktop
-- Write component tests for modal open/close
-- Write tests for keyboard interactions
-- Write tests for accessibility attributes
-
-### Deliverable
-Accessible lightbox component for full-screen image viewing
-
-### Testing Requirements
-- Verify modal opens/closes correctly
-- Check focus trap works
-- Ensure keyboard navigation (Escape) works
-- Review accessibility compliance
-- Check mobile responsiveness
-
-### Technical Notes
-- Must implement proper focus trap for accessibility
-- ARIA attributes are required for screen readers
-- Should work on both mobile and desktop
-- Metadata display should be included
-
----
-
 ## Implement Image Navigation (Previous/Next)
 
 **Status:** Pending

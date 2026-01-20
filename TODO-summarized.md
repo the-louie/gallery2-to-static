@@ -2,7 +2,6 @@
 
 ## Pending Tasks
 
-- Create Image Lightbox/Modal Component - High - 5-6 hours - Create an accessible lightbox/modal component for full-screen image viewing
 - Implement Image Navigation (Previous/Next) - High - 4-5 hours - Extend lightbox component with navigation functionality to browse through images
 - Integrate Lightbox with Image Grid - High - 3-4 hours - Integrate lightbox component with image grid and sync state with URL
 - Add Image Zoom Functionality - Medium - 4-5 hours - Add zoom and pan functionality to the lightbox component for detailed image viewing
@@ -31,10 +30,10 @@
 
 ## Summary
 
-**Total Tasks:** 24
-**Pending:** 24
+**Total Tasks:** 23
+**Pending:** 23
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 98-125 hours
+**Estimated Total Time:** 93-119 hours

@@ -75,7 +75,7 @@ async function findParentAlbumId(
 
   // Try common parent IDs (sequential IDs are likely)
   const candidatesToTry: number[] = [];
-  
+
   // Try IDs just before the current one (most common case)
   for (let i = 1; i <= 20; i++) {
     const candidateId = childAlbumId - i;
@@ -99,7 +99,7 @@ async function findParentAlbumId(
     try {
       const children = await loadAlbum(candidateId);
       const childAlbum = getAlbumMetadata(childAlbumId, children);
-      
+
       if (childAlbum !== null) {
         // Found parent!
         parentCache.set(childAlbumId, candidateId);
@@ -194,7 +194,7 @@ export async function buildBreadcrumbPath(
         // Try to get album metadata from root's children as fallback
         const rootChildren = await loadAlbum(rootId);
         const albumMetadata = getAlbumMetadata(currentAlbumId, rootChildren);
-        
+
         if (albumMetadata) {
           path.unshift({
             id: currentAlbumId,

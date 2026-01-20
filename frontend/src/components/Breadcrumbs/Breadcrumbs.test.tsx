@@ -233,7 +233,7 @@ describe('Breadcrumbs', () => {
 
       const { container } = render(<Breadcrumbs path={path} />);
       const separators = container.querySelectorAll('.breadcrumbs-separator');
-      
+
       separators.forEach((separator) => {
         expect(separator).toHaveAttribute('aria-hidden', 'true');
       });
