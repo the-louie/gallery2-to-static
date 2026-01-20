@@ -4,7 +4,7 @@
 
 ## Implement Image Navigation (Previous/Next)
 
-**Status:** Pending
+**Status:** Partial
 **Priority:** High
 **Complexity:** Medium
 **Estimated Time:** 4-5 hours
@@ -48,46 +48,6 @@ Lightbox with previous/next navigation and keyboard support
 
 ---
 
-## Integrate Lightbox with Image Grid
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Low
-**Estimated Time:** 3-4 hours
-
-### Description
-Integrate the lightbox component with the image grid so clicking an image opens it in the lightbox. Sync lightbox state with URL for deep linking.
-
-### Requirements
-
-#### Research Tasks
-- Research state management for lightbox (which image is open)
-- Research URL synchronization with lightbox state
-
-#### Implementation Tasks
-- Update ImageGrid to open lightbox on image click
-- Pass current image and album context to lightbox
-- Update routing to support image view: `/album/:albumId/image/:imageId`
-- Sync lightbox state with URL (update URL when navigating images)
-- Handle direct URL access to image (open lightbox on page load)
-- Write integration tests for grid → lightbox flow
-- Write tests for URL synchronization
-
-### Deliverable
-Integrated lightbox that opens from image grid with URL sync
-
-### Testing Requirements
-- Verify clicking image opens lightbox with correct image
-- Check URL updates when navigating in lightbox
-- Ensure direct image URLs work correctly
-- Review state management approach
-
-### Technical Notes
-- URL synchronization enables deep linking and browser back/forward
-- Direct URL access should open lightbox automatically
-- State management should be clean and maintainable
-
----
 
 ## Add Image Zoom Functionality
 

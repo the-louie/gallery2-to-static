@@ -1,9 +1,10 @@
 # TODO Summarized
 
-## Pending Tasks
+## Partial Tasks
 
-- Implement Image Navigation (Previous/Next) - High - 4-5 hours - Extend lightbox component with navigation functionality to browse through images
-- Integrate Lightbox with Image Grid - High - 3-4 hours - Integrate lightbox component with image grid and sync state with URL
+- Implement Image Navigation (Previous/Next) - Partial - High - 4-5 hours - Extend lightbox component with navigation functionality to browse through images (buttons and keyboard done, missing image counter and preloading)
+
+## Pending Tasks
 - Add Image Zoom Functionality - Medium - 4-5 hours - Add zoom and pan functionality to the lightbox component for detailed image viewing
 - Design Theme System Architecture - Medium - 3-4 hours - Design the architecture for the theming system with CSS variables and persistence
 - Implement CSS Variable Theme System - Medium - 4-5 hours - Implement CSS variable theme system with light and dark themes
@@ -31,8 +32,8 @@
 ## Summary
 
 **Total Tasks:** 23
-**Pending:** 23
-**Partial:** 0
+**Pending:** 22
+**Partial:** 1
 **In Progress:** 0
 **Completed:** 0
 

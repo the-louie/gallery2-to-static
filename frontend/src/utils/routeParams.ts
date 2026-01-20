@@ -68,3 +68,31 @@ export function parseImageId(imageIdParam: string | undefined): number | null {
 
   return parsed;
 }
+
+/**
+ * Parse and validate album and image ID parameters from route parameters
+ *
+ * Parses both albumId and imageId from route parameters and validates them.
+ * Returns an object with parsed IDs, or null values if invalid.
+ * Useful for hierarchical routes like `/album/:albumId/image/:imageId`.
+ *
+ * @param albumIdParam - The album ID parameter from the route (string or undefined)
+ * @param imageIdParam - The image ID parameter from the route (string or undefined)
+ * @returns Object with parsed albumId and imageId, or null values if invalid
+ *
+ * @example
+ * ```typescript
+ * const params = parseAlbumImageParams('7', '42'); // Returns { albumId: 7, imageId: 42 }
+ * const params = parseAlbumImageParams('abc', '42'); // Returns { albumId: null, imageId: 42 }
+ * const params = parseAlbumImageParams(undefined, undefined); // Returns { albumId: null, imageId: null }
+ * ```
+ */
+export function parseAlbumImageParams(
+  albumIdParam: string | undefined,
+  imageIdParam: string | undefined,
+): { albumId: number | null; imageId: number | null } {
+  return {
+    albumId: parseAlbumId(albumIdParam),
+    imageId: parseImageId(imageIdParam),
+  };
+}

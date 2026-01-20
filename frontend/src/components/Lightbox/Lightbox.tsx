@@ -41,6 +41,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Image } from '@/types';
 import { getImageUrl } from '@/utils/imageUrl';
+import { useImageNavigation } from '@/hooks/useImageNavigation';
 import './Lightbox.css';
 
 /**
@@ -55,6 +56,14 @@ export interface LightboxProps {
   onClose: () => void;
   /** Optional CSS class name */
   className?: string;
+  /** Optional array of images in album context for navigation */
+  albumContext?: Image[];
+  /** Optional album ID for navigation context */
+  albumId?: number | null;
+  /** Optional callback function for next image navigation */
+  onNext?: () => void;
+  /** Optional callback function for previous image navigation */
+  onPrevious?: () => void;
 }
 
 /**
@@ -71,12 +80,24 @@ export function Lightbox({
   image,
   onClose,
   className,
+  albumContext = [],
+  albumId = null,
+  onNext,
+  onPrevious,
 }: LightboxProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
+
+  // Use image navigation hook for next/previous functionality
+  const navigation = useImageNavigation(albumContext, image?.id || null);
+
+  // Determine if navigation is available
+  const canNavigate = useMemo(() => {
+    return albumContext.length > 1 && (navigation.hasNext || navigation.hasPrevious);
+  }, [albumContext.length, navigation.hasNext, navigation.hasPrevious]);
 
   // Get full-size image URL
   const imageUrl = useMemo(() => {
@@ -219,25 +240,31 @@ export function Lightbox({
     };
   }, [isOpen]);
 
-  // Handle Escape key to close modal
+  // Handle Escape key to close modal and arrow keys for navigation
   useEffect(() => {
     if (!isOpen) {
       return;
     }
 
-    const handleEscape = (event: KeyboardEvent) => {
+    const handleKeyboard = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
         onClose();
+      } else if (event.key === 'ArrowRight' && onNext && navigation.hasNext) {
+        event.preventDefault();
+        onNext();
+      } else if (event.key === 'ArrowLeft' && onPrevious && navigation.hasPrevious) {
+        event.preventDefault();
+        onPrevious();
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleKeyboard);
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleKeyboard);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, onNext, onPrevious, navigation.hasNext, navigation.hasPrevious]);
 
   // Handle image load
   const handleImageLoad = useCallback(() => {
@@ -313,6 +340,34 @@ export function Lightbox({
             ×
           </span>
         </button>
+
+        {/* Navigation Buttons */}
+        {canNavigate && onNext && onPrevious && (
+          <>
+            <button
+              className="lightbox-nav lightbox-nav-previous"
+              onClick={onPrevious}
+              disabled={!navigation.hasPrevious}
+              aria-label="Previous image"
+              type="button"
+            >
+              <span className="lightbox-nav-icon" aria-hidden="true">
+                ‹
+              </span>
+            </button>
+            <button
+              className="lightbox-nav lightbox-nav-next"
+              onClick={onNext}
+              disabled={!navigation.hasNext}
+              aria-label="Next image"
+              type="button"
+            >
+              <span className="lightbox-nav-icon" aria-hidden="true">
+                ›
+              </span>
+            </button>
+          </>
+        )}
 
         {/* Image Container */}
         <div className="lightbox-image-container">

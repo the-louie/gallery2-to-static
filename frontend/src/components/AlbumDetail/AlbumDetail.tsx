@@ -103,10 +103,11 @@ export function AlbumDetail({
       if (onImageClick) {
         onImageClick(clickedImage);
       } else {
-        navigate(`/image/${clickedImage.id}`);
+        // Navigate to hierarchical route: /album/:albumId/image/:imageId
+        navigate(`/album/${albumId}/image/${clickedImage.id}`);
       }
     },
-    [onImageClick, navigate],
+    [onImageClick, navigate, albumId],
   );
 
   const handleBackClick = useCallback(() => {

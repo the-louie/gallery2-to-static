@@ -116,6 +116,71 @@
   line-height: 1;
 }
 
+/* Navigation Buttons */
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background-color: var(--lightbox-nav-bg, rgba(255, 255, 255, 0.1));
+  border: 2px solid var(--lightbox-nav-border, rgba(255, 255, 255, 0.3));
+  border-radius: 50%;
+  color: var(--lightbox-nav-color, #fff);
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    transform 0.2s ease;
+  padding: 0;
+  margin: 0;
+}
+
+.lightbox-nav-previous {
+  left: 0.5rem;
+}
+
+.lightbox-nav-next {
+  right: 0.5rem;
+}
+
+.lightbox-nav:hover {
+  background-color: var(--lightbox-nav-bg-hover, rgba(255, 255, 255, 0.2));
+  border-color: var(--lightbox-nav-border-hover, rgba(255, 255, 255, 0.5));
+  transform: translateY(-50%) scale(1.1);
+}
+
+.lightbox-nav:focus {
+  outline: 2px solid var(--lightbox-focus, #0066cc);
+  outline-offset: 2px;
+}
+
+.lightbox-nav:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.lightbox-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.lightbox-nav:disabled:hover {
+  background-color: var(--lightbox-nav-bg, rgba(255, 255, 255, 0.1));
+  border-color: var(--lightbox-nav-border, rgba(255, 255, 255, 0.3));
+  transform: translateY(-50%) scale(1);
+}
+
+.lightbox-nav-icon {
+  display: block;
+  line-height: 1;
+}
+
 /* Image Container */
 .lightbox-image-container {
   position: relative;
@@ -268,6 +333,22 @@
     margin: 0.75rem;
   }
 
+  .lightbox-nav {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    font-size: 2.25rem;
+  }
+
+  .lightbox-nav-previous {
+    left: 0.75rem;
+  }
+
+  .lightbox-nav-next {
+    right: 0.75rem;
+  }
+
   .lightbox-image-container {
     max-height: calc(100vh - 250px);
   }
@@ -323,7 +404,8 @@
 }
 
 /* Focus visible for keyboard navigation */
-.lightbox-close:focus-visible {
+.lightbox-close:focus-visible,
+.lightbox-nav:focus-visible {
   outline: 2px solid var(--lightbox-focus, #0066cc);
   outline-offset: 2px;
 }
@@ -333,7 +415,8 @@
   .lightbox-overlay,
   .lightbox-container,
   .lightbox-image,
-  .lightbox-close {
+  .lightbox-close,
+  .lightbox-nav {
     animation: none;
     transition: none;
   }

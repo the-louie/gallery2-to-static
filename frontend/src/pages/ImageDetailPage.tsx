@@ -1,39 +1,121 @@
 /**
  * ImageDetailPage Component
  *
- * Placeholder component for image detail view. This component will be
- * integrated with the lightbox component in a future implementation.
+ * Displays image in lightbox modal. Handles both hierarchical route
+ * (`/album/:albumId/image/:imageId`) and legacy route (`/image/:id`).
+ * Loads album data and finds the current image, then displays it in
+ * the lightbox with navigation support.
  *
  * @module frontend/src/pages
  */
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo } from 'react';
-import { parseImageId } from '@/utils/routeParams';
-import type { RouteParams } from '@/types';
+import { parseAlbumImageParams, parseImageId } from '@/utils/routeParams';
+import { useAlbumData } from '@/hooks/useAlbumData';
+import { useLightbox } from '@/hooks/useLightbox';
+import { Lightbox } from '@/components/Lightbox';
+import { isImage } from '@/types';
+import type { RouteParams, Image } from '@/types';
 
 /**
  * ImageDetailPage component
  *
- * Placeholder component that displays a message indicating the lightbox
- * functionality will be implemented in a future task.
+ * Loads album data and displays the current image in a lightbox modal.
+ * Supports both hierarchical routes (`/album/:albumId/image/:imageId`)
+ * and legacy routes (`/image/:id`). Handles loading states, error states,
+ * and invalid IDs.
  *
  * @returns React component
  */
 export function ImageDetailPage() {
-  const { id } = useParams<RouteParams>();
+  const params = useParams<RouteParams>();
   const navigate = useNavigate();
 
-  const imageId = useMemo(() => parseImageId(id), [id]);
+  // Parse route parameters (handle both route patterns)
+  const routeParams = useMemo(() => {
+    // Check for hierarchical route: /album/:albumId/image/:imageId
+    if (params.albumId && params.imageId) {
+      return parseAlbumImageParams(params.albumId, params.imageId);
+    }
+    // Check for legacy route: /image/:id
+    if (params.id) {
+      return { albumId: null, imageId: parseImageId(params.id) };
+    }
+    return { albumId: null, imageId: null };
+  }, [params.albumId, params.imageId, params.id]);
 
-  // Redirect to 404 if image ID is invalid
+  // Load album data if albumId is available
+  const { data: albumData, isLoading, error } = useAlbumData(
+    routeParams.albumId,
+  );
+
+  // Extract images from album data
+  const images = useMemo<Image[]>(() => {
+    if (!albumData) {
+      return [];
+    }
+    return albumData.filter(isImage);
+  }, [albumData]);
+
+  // Find current image from album data
+  const currentImage = useMemo<Image | null>(() => {
+    if (routeParams.imageId === null || images.length === 0) {
+      return null;
+    }
+    return images.find((img) => img.id === routeParams.imageId) || null;
+  }, [routeParams.imageId, images]);
+
+  // Use lightbox hook for state management and navigation
+  const lightboxState = useLightbox(images);
+
+  // Redirect to 404 if IDs are invalid
   useEffect(() => {
-    if (id !== undefined && imageId === null) {
+    if (
+      (params.albumId !== undefined || params.imageId !== undefined || params.id !== undefined) &&
+      (routeParams.imageId === null || (routeParams.albumId !== null && routeParams.imageId === null))
+    ) {
       navigate('/not-found', { replace: true });
     }
-  }, [id, imageId, navigate]);
+  }, [params, routeParams, navigate]);
 
-  if (imageId === null) {
+  // Handle error state (album not found or image not found)
+  if (routeParams.albumId !== null && error) {
+    return (
+      <div className="image-detail-page image-detail-page-error">
+        <h2>Error Loading Image</h2>
+        <p>{error.message}</p>
+        <button onClick={() => navigate('/')} aria-label="Go to home page">
+          Go to Home
+        </button>
+      </div>
+    );
+  }
+
+  // Handle case where image is not found in album
+  if (
+    routeParams.imageId !== null &&
+    !isLoading &&
+    albumData !== null &&
+    currentImage === null &&
+    routeParams.albumId !== null
+  ) {
+    return (
+      <div className="image-detail-page image-detail-page-error">
+        <h2>Image Not Found</h2>
+        <p>The image was not found in this album.</p>
+        <button
+          onClick={() => navigate(`/album/${routeParams.albumId}`)}
+          aria-label="Go back to album"
+        >
+          Go Back to Album
+        </button>
+      </div>
+    );
+  }
+
+  // Handle invalid image ID
+  if (routeParams.imageId === null && (params.imageId !== undefined || params.id !== undefined)) {
     return (
       <div className="image-detail-page image-detail-page-error">
         <h2>Invalid Image ID</h2>
@@ -45,19 +127,46 @@ export function ImageDetailPage() {
     );
   }
 
+  // Show loading state while album data is loading
+  if (routeParams.albumId !== null && isLoading) {
+    return (
+      <div className="image-detail-page image-detail-page-loading">
+        <div>Loading image...</div>
+      </div>
+    );
+  }
+
+  // Handle legacy route without album context
+  if (routeParams.albumId === null && routeParams.imageId !== null) {
+    return (
+      <div className="image-detail-page image-detail-page-error">
+        <h2>Legacy Route Not Supported</h2>
+        <p>
+          The legacy image route requires album context. Please use the album image route format:
+          /album/:albumId/image/:imageId
+        </p>
+        <button onClick={() => navigate('/')} aria-label="Go to home page">
+          Go to Home
+        </button>
+      </div>
+    );
+  }
+
+  // Render lightbox if image is available
+  // Note: Lightbox will only render if isOpen is true and image is not null
   return (
-    <div className="image-detail-page image-detail-page-placeholder">
-      <h2>Image Detail View</h2>
-      <p>Image ID: {imageId}</p>
-      <p>
-        <em>
-          The lightbox component will be implemented in a future task. This
-          page is a placeholder for the image detail view.
-        </em>
-      </p>
-      <button onClick={() => navigate('/')} aria-label="Go to home page">
-        Go to Home
-      </button>
+    <div className="image-detail-page">
+      {currentImage !== null ? (
+        <Lightbox
+          isOpen={true}
+          image={currentImage}
+          albumContext={images}
+          albumId={routeParams.albumId}
+          onClose={lightboxState.closeLightbox}
+          onNext={lightboxState.navigateToNext}
+          onPrevious={lightboxState.navigateToPrevious}
+        />
+      ) : null}
     </div>
   );
 }
