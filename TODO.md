@@ -2,52 +2,6 @@
 
 ---
 
-## Create Album Detail View Component
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Medium
-**Estimated Time:** 5-6 hours
-
-### Description
-Create a component to display album details, including child albums and images. Should handle navigation and empty states.
-
-### Requirements
-
-#### Research Tasks
-- Research album detail page patterns (breadcrumbs, back button)
-- Research nested album navigation patterns
-- Research mixed content display (albums + images together)
-
-#### Implementation Tasks
-- Create `frontend/src/components/AlbumDetail/AlbumDetail.tsx`
-- Display album title and description
-- Show child albums using AlbumGrid component
-- Show child images using image grid (new component or reuse)
-- Implement back button/navigation
-- Add breadcrumb navigation component
-- Handle empty albums (no children)
-- Integrate with routing (prepare for routing task)
-- Write component tests for album display, navigation
-- Write tests for empty states
-
-### Deliverable
-Album detail view showing albums and images with navigation
-
-### Testing Requirements
-- Verify component handles all child types correctly
-- Check navigation works as expected
-- Ensure proper separation of albums vs images
-- Review component composition (reusing AlbumGrid)
-
-### Technical Notes
-- Should reuse AlbumGrid component for child albums
-- Must handle both albums and images as children
-- Navigation should work with routing system
-- Empty states must be handled gracefully
-
----
-
 ## Create Breadcrumb Navigation Component
 
 **Status:** Pending

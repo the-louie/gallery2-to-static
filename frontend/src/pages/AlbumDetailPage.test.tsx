@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import { DataLoadError } from '@/utils/dataLoader';
 import { mockChildren } from '@/__mocks__/mockData';
 
-// Mock the useAlbumData hook
+// Mock the useAlbumData hook (used by AlbumDetail component)
 vi.mock('@/hooks/useAlbumData', () => ({
   useAlbumData: vi.fn(),
 }));
@@ -40,7 +40,8 @@ describe('AlbumDetailPage', () => {
 
     render(<AlbumDetailPage />, { initialEntries: ['/album/7'] });
 
-    expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
+    // AlbumDetail shows loading state with AlbumGridSkeleton
+    expect(screen.getByLabelText('Loading albums')).toBeInTheDocument();
   });
 
   it('displays albums and images when data is loaded', async () => {
