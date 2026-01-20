@@ -2,52 +2,6 @@
 
 ---
 
-## Implement Image Navigation (Previous/Next)
-
-**Status:** Partial
-**Priority:** High
-**Complexity:** Medium
-**Estimated Time:** 4-5 hours
-
-### Description
-Extend the lightbox component with navigation functionality to browse through images in an album using buttons and keyboard.
-
-### Requirements
-
-#### Research Tasks
-- Research image navigation UX patterns
-- Research keyboard navigation for image galleries
-- Research swipe gestures for mobile (future enhancement, plan structure)
-
-#### Implementation Tasks
-- Extend Lightbox component with navigation
-- Add Previous/Next buttons
-- Implement keyboard arrow key navigation (left/right)
-- Load adjacent images from current album
-- Add image counter (e.g., "3 of 15")
-- Handle edge cases (first/last image)
-- Preload adjacent images for smooth navigation
-- Write component tests for navigation
-- Write tests for keyboard events
-- Write tests for edge cases
-
-### Deliverable
-Lightbox with previous/next navigation and keyboard support
-
-### Testing Requirements
-- Verify navigation works in both directions
-- Check keyboard events are handled correctly
-- Ensure edge cases are handled (first/last image)
-- Review preloading doesn't cause performance issues
-
-### Technical Notes
-- Keyboard navigation is essential (arrow keys)
-- Preloading improves UX but must be performance-conscious
-- Edge cases (first/last) must be handled gracefully
-- Image counter provides useful context
-
----
-
 
 ## Add Image Zoom Functionality
 

@@ -464,4 +464,246 @@ describe('Lightbox', () => {
       expect(screen.queryByText('Image unavailable')).not.toBeInTheDocument();
     });
   });
+
+  describe('Image Counter', () => {
+    const mockImages: Image[] = [
+      { ...mockPhoto, id: 1, title: 'Image 1' },
+      { ...mockPhoto, id: 2, title: 'Image 2' },
+      { ...mockPhoto, id: 3, title: 'Image 3' },
+    ];
+
+    it('displays counter when multiple images are available', () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+        />,
+      );
+      expect(screen.getByText('1 of 3')).toBeInTheDocument();
+    });
+
+    it('displays correct counter for middle image', () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[1]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+        />,
+      );
+      expect(screen.getByText('2 of 3')).toBeInTheDocument();
+    });
+
+    it('displays correct counter for last image', () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[2]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+        />,
+      );
+      expect(screen.getByText('3 of 3')).toBeInTheDocument();
+    });
+
+    it('does not display counter for single image', () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={[mockImages[0]]}
+        />,
+      );
+      expect(screen.queryByText(/of/)).not.toBeInTheDocument();
+    });
+
+    it('does not display counter when albumContext is empty', () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={[]}
+        />,
+      );
+      expect(screen.queryByText(/of/)).not.toBeInTheDocument();
+    });
+
+    it('updates counter when image changes', () => {
+      const { rerender } = render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+        />,
+      );
+      expect(screen.getByText('1 of 3')).toBeInTheDocument();
+
+      rerender(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[1]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+        />,
+      );
+      expect(screen.getByText('2 of 3')).toBeInTheDocument();
+    });
+
+    it('has accessible label for counter', () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+        />,
+      );
+      const counter = screen.getByLabelText('Image 1 of 3');
+      expect(counter).toBeInTheDocument();
+    });
+  });
+
+  describe('Image Navigation', () => {
+    const mockImages: Image[] = [
+      { ...mockPhoto, id: 1, title: 'Image 1' },
+      { ...mockPhoto, id: 2, title: 'Image 2' },
+      { ...mockPhoto, id: 3, title: 'Image 3' },
+    ];
+
+    const mockOnNext = vi.fn();
+    const mockOnPrevious = vi.fn();
+
+    it('calls onNext when next button is clicked', async () => {
+      const user = userEvent.setup();
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+      const nextButton = screen.getByLabelText('Next image');
+      await user.click(nextButton);
+      expect(mockOnNext).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls onPrevious when previous button is clicked', async () => {
+      const user = userEvent.setup();
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[1]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+      const previousButton = screen.getByLabelText('Previous image');
+      await user.click(previousButton);
+      expect(mockOnPrevious).toHaveBeenCalledTimes(1);
+    });
+
+    it('disables previous button on first image', () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+      const previousButton = screen.getByLabelText('Previous image');
+      expect(previousButton).toBeDisabled();
+    });
+
+    it('disables next button on last image', () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[2]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+      const nextButton = screen.getByLabelText('Next image');
+      expect(nextButton).toBeDisabled();
+    });
+
+    it('navigates with ArrowRight key', async () => {
+      const user = userEvent.setup();
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+      await user.keyboard('{ArrowRight}');
+      expect(mockOnNext).toHaveBeenCalledTimes(1);
+    });
+
+    it('navigates with ArrowLeft key', async () => {
+      const user = userEvent.setup();
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[1]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+      await user.keyboard('{ArrowLeft}');
+      expect(mockOnPrevious).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not navigate with ArrowRight on last image', async () => {
+      const user = userEvent.setup();
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[2]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+      await user.keyboard('{ArrowRight}');
+      expect(mockOnNext).not.toHaveBeenCalled();
+    });
+
+    it('does not navigate with ArrowLeft on first image', async () => {
+      const user = userEvent.setup();
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+      await user.keyboard('{ArrowLeft}');
+      expect(mockOnPrevious).not.toHaveBeenCalled();
+    });
+  });
 });

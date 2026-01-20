@@ -1,9 +1,5 @@
 # TODO Summarized
 
-## Partial Tasks
-
-- Implement Image Navigation (Previous/Next) - Partial - High - 4-5 hours - Extend lightbox component with navigation functionality to browse through images (buttons and keyboard done, missing image counter and preloading)
-
 ## Pending Tasks
 - Add Image Zoom Functionality - Medium - 4-5 hours - Add zoom and pan functionality to the lightbox component for detailed image viewing
 - Design Theme System Architecture - Medium - 3-4 hours - Design the architecture for the theming system with CSS variables and persistence
@@ -31,10 +27,10 @@
 
 ## Summary
 
-**Total Tasks:** 23
+**Total Tasks:** 22
 **Pending:** 22
-**Partial:** 1
+**Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 93-119 hours
+**Estimated Total Time:** 89-114 hours

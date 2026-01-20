@@ -9,9 +9,12 @@
  *
  * - Full-screen image display in modal overlay
  * - Focus trap for accessibility (focus stays within modal)
- * - Keyboard support (Escape to close, Tab to navigate)
+ * - Keyboard support (Escape to close, Tab to navigate, Arrow keys for navigation)
  * - ARIA attributes for screen readers (role="dialog", aria-modal)
  * - Image metadata display (title, description, dimensions, date)
+ * - Image navigation (Previous/Next buttons and keyboard)
+ * - Image counter display (e.g., "3 of 15")
+ * - Automatic preloading of adjacent images for smooth navigation
  * - Body scroll lock when modal is open
  * - Backdrop click-to-close
  * - Responsive design (mobile and desktop)
@@ -26,6 +29,10 @@
  *   isOpen={isOpen}
  *   image={imageData}
  *   onClose={() => setIsOpen(false)}
+ *   albumContext={albumImages}
+ *   albumId={albumId}
+ *   onNext={navigateToNext}
+ *   onPrevious={navigateToPrevious}
  * />
  * ```
  *
@@ -34,6 +41,8 @@
  * - `Escape` - Close modal
  * - `Tab` - Navigate between focusable elements within modal
  * - `Enter` or `Space` - Activate close button
+ * - `ArrowLeft` - Navigate to previous image (when navigation available)
+ * - `ArrowRight` - Navigate to next image (when navigation available)
  *
  * @module frontend/src/components/Lightbox
  */
@@ -42,6 +51,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import type { Image } from '@/types';
 import { getImageUrl } from '@/utils/imageUrl';
 import { useImageNavigation } from '@/hooks/useImageNavigation';
+import { useImagePreload } from '@/hooks/useImagePreload';
 import './Lightbox.css';
 
 /**
@@ -94,6 +104,9 @@ export function Lightbox({
   // Use image navigation hook for next/previous functionality
   const navigation = useImageNavigation(albumContext, image?.id || null);
 
+  // Preload adjacent images for smooth navigation
+  useImagePreload(image, albumContext);
+
   // Determine if navigation is available
   const canNavigate = useMemo(() => {
     return albumContext.length > 1 && (navigation.hasNext || navigation.hasPrevious);
@@ -139,6 +152,25 @@ export function Lightbox({
     }
     return `${image.width} × ${image.height}`;
   }, [image]);
+
+  // Calculate image counter text (1-based for display)
+  const imageCounter = useMemo(() => {
+    // Don't show counter for single image or empty context
+    if (albumContext.length <= 1) {
+      return null;
+    }
+    // Don't show counter if current image is not found in context
+    if (navigation.currentIndex < 0) {
+      return null;
+    }
+    const currentPosition = navigation.currentIndex + 1;
+    const total = navigation.totalImages;
+    // Ensure we have valid values
+    if (total > 0 && currentPosition > 0) {
+      return `${currentPosition} of ${total}`;
+    }
+    return null;
+  }, [albumContext.length, navigation.currentIndex, navigation.totalImages]);
 
   // Reset state when image changes or modal closes
   useEffect(() => {
@@ -395,6 +427,12 @@ export function Lightbox({
                 decoding="async"
               />
             </>
+          )}
+          {/* Image Counter */}
+          {imageCounter && (
+            <div className="lightbox-counter" aria-label={`Image ${imageCounter}`}>
+              {imageCounter}
+            </div>
           )}
         </div>
 
