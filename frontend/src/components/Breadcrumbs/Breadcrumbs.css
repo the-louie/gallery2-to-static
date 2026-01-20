@@ -1,0 +1,154 @@
+/* Breadcrumbs Component Styles */
+
+/**
+ * CSS Organization Approach:
+ *
+ * Breadcrumb styles are organized in a component-specific CSS file to maintain
+ * component encapsulation and modularity, following the project pattern.
+ *
+ * Responsive Design:
+ * - Mobile-first approach: base styles target mobile, then enhanced for larger screens
+ * - Breakpoints: 768px (tablet), 1024px (desktop)
+ * - Touch-friendly link sizes (minimum 44x44px on mobile)
+ * - Horizontal scrolling option for very long paths on mobile
+ *
+ * Accessibility:
+ * - Focus states are clearly visible
+ * - Touch targets meet minimum size requirements
+ * - Semantic HTML structure supports screen readers
+ */
+
+.breadcrumbs {
+  margin: 0.5rem 0;
+  padding: 0;
+}
+
+.breadcrumbs-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 0.25rem;
+}
+
+.breadcrumbs-item {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumbs-link {
+  color: var(--breadcrumb-link-color, #0066cc);
+  text-decoration: none;
+  padding: 0.5rem 0.25rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.breadcrumbs-link:hover {
+  background-color: var(--breadcrumb-link-hover-bg, #f0f0f0);
+  color: var(--breadcrumb-link-hover-color, #0052a3);
+  text-decoration: underline;
+}
+
+.breadcrumbs-link:focus {
+  outline: 2px solid var(--breadcrumb-link-focus, #0066cc);
+  outline-offset: 2px;
+  background-color: var(--breadcrumb-link-focus-bg, #e6f2ff);
+}
+
+.breadcrumbs-link:active {
+  background-color: var(--breadcrumb-link-active-bg, #d9e9ff);
+}
+
+.breadcrumbs-current {
+  color: var(--breadcrumb-current-color, #333);
+  font-weight: 500;
+  padding: 0.5rem 0.25rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.breadcrumbs-separator {
+  color: var(--breadcrumb-separator-color, #999);
+  margin: 0 0.25rem;
+  user-select: none;
+  font-size: 0.875rem;
+}
+
+/* Tablet and Desktop Responsive Styles */
+@media (min-width: 768px) {
+  .breadcrumbs {
+    margin: 0.75rem 0;
+  }
+
+  .breadcrumbs-link {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.9375rem;
+    min-height: auto;
+  }
+
+  .breadcrumbs-current {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.9375rem;
+    min-height: auto;
+  }
+
+  .breadcrumbs-separator {
+    margin: 0 0.5rem;
+    font-size: 0.9375rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .breadcrumbs-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+  }
+
+  .breadcrumbs-current {
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+  }
+
+  .breadcrumbs-separator {
+    margin: 0 0.75rem;
+  }
+}
+
+/* Long path handling on mobile - allow horizontal scroll if needed */
+@media (max-width: 767px) {
+  .breadcrumbs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .breadcrumbs-list {
+    min-width: max-content;
+  }
+
+  /* Hide scrollbar on mobile for cleaner look */
+  .breadcrumbs::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .breadcrumbs::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .breadcrumbs::-webkit-scrollbar-thumb {
+    background: var(--breadcrumb-scrollbar-color, #ccc);
+    border-radius: 2px;
+  }
+}

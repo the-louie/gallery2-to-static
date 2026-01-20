@@ -2,7 +2,6 @@
 
 ## Pending Tasks
 
-- Create Breadcrumb Navigation Component - Medium - 3-4 hours - Create a breadcrumb navigation component showing album hierarchy path
 - Create Image Lightbox/Modal Component - High - 5-6 hours - Create an accessible lightbox/modal component for full-screen image viewing
 - Implement Image Navigation (Previous/Next) - High - 4-5 hours - Extend lightbox component with navigation functionality to browse through images
 - Integrate Lightbox with Image Grid - High - 3-4 hours - Integrate lightbox component with image grid and sync state with URL
@@ -32,10 +31,10 @@
 
 ## Summary
 
-**Total Tasks:** 25
-**Pending:** 25
+**Total Tasks:** 24
+**Pending:** 24
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 101-129 hours
+**Estimated Total Time:** 98-125 hours

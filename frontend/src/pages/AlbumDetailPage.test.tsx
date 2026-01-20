@@ -2,13 +2,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@/test-utils';
 import { AlbumDetailPage } from './AlbumDetailPage';
 import { useAlbumData } from '@/hooks/useAlbumData';
+import { useBreadcrumbPath } from '@/hooks/useBreadcrumbPath';
 import { useParams } from 'react-router-dom';
 import { DataLoadError } from '@/utils/dataLoader';
 import { mockChildren } from '@/__mocks__/mockData';
+import type { BreadcrumbPath } from '@/types';
 
 // Mock the useAlbumData hook (used by AlbumDetail component)
 vi.mock('@/hooks/useAlbumData', () => ({
   useAlbumData: vi.fn(),
+}));
+
+// Mock the useBreadcrumbPath hook
+vi.mock('@/hooks/useBreadcrumbPath', () => ({
+  useBreadcrumbPath: vi.fn(),
 }));
 
 // Mock react-router-dom
@@ -23,9 +30,18 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('AlbumDetailPage', () => {
+  const mockUseBreadcrumbPath = vi.mocked(useBreadcrumbPath);
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockNavigate.mockClear();
+    // Default breadcrumb mock
+    mockUseBreadcrumbPath.mockReturnValue({
+      path: null,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
   });
 
   it('displays loading state', () => {
@@ -130,5 +146,88 @@ describe('AlbumDetailPage', () => {
     render(<AlbumDetailPage />, { initialEntries: ['/album/invalid'] });
 
     expect(mockNavigate).toHaveBeenCalledWith('/not-found', { replace: true });
+  });
+
+  describe('Breadcrumb Integration', () => {
+    it('displays breadcrumbs when path is available', async () => {
+      const breadcrumbPath: BreadcrumbPath = [
+        { id: 7, title: 'Home', path: '/' },
+        { id: 10, title: 'Photos', path: '/album/10' },
+      ];
+
+      vi.mocked(useAlbumData).mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      mockUseBreadcrumbPath.mockReturnValue({
+        path: breadcrumbPath,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      vi.mocked(useParams).mockReturnValue({ id: '10' });
+
+      render(<AlbumDetailPage />, { initialEntries: ['/album/10'] });
+
+      await waitFor(() => {
+        expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument();
+      });
+
+      expect(screen.getByRole('link', { name: 'Go to home page' })).toBeInTheDocument();
+      expect(screen.getByText('Photos')).toBeInTheDocument();
+    });
+
+    it('does not display breadcrumbs when path is empty', () => {
+      vi.mocked(useAlbumData).mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      mockUseBreadcrumbPath.mockReturnValue({
+        path: [],
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      vi.mocked(useParams).mockReturnValue({ id: '10' });
+
+      render(<AlbumDetailPage />, { initialEntries: ['/album/10'] });
+
+      expect(
+        screen.queryByRole('navigation', { name: 'Breadcrumb' }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('handles breadcrumb loading state', () => {
+      vi.mocked(useAlbumData).mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      mockUseBreadcrumbPath.mockReturnValue({
+        path: null,
+        isLoading: true,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      vi.mocked(useParams).mockReturnValue({ id: '10' });
+
+      render(<AlbumDetailPage />, { initialEntries: ['/album/10'] });
+
+      // Breadcrumb should not render while loading
+      expect(
+        screen.queryByRole('navigation', { name: 'Breadcrumb' }),
+      ).not.toBeInTheDocument();
+    });
   });
 });

@@ -2,51 +2,6 @@
 
 ---
 
-## Create Breadcrumb Navigation Component
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Low
-**Estimated Time:** 3-4 hours
-
-### Description
-Create a breadcrumb navigation component that shows the album hierarchy path and allows navigation to parent albums.
-
-### Requirements
-
-#### Research Tasks
-- Research breadcrumb accessibility patterns (ARIA)
-- Research breadcrumb navigation UX patterns
-- Research how to build album hierarchy path from JSON data
-
-#### Implementation Tasks
-- Create `frontend/src/components/Breadcrumbs/Breadcrumbs.tsx`
-- Implement function to build breadcrumb path from current album ID
-- Display breadcrumb trail with links to parent albums
-- Add home/root link
-- Add ARIA labels and navigation landmark
-- Style breadcrumbs with separators (>/)
-- Make breadcrumbs responsive (collapse on mobile if needed)
-- Write component tests for breadcrumb generation
-- Write tests for navigation behavior
-
-### Deliverable
-Breadcrumb component showing album hierarchy with tests
-
-### Testing Requirements
-- Verify breadcrumb path is correct for nested albums
-- Check accessibility attributes
-- Ensure links navigate correctly
-- Review responsive behavior
-
-### Technical Notes
-- Must build path from JSON data structure
-- Should support nested album hierarchies
-- Accessibility is important (ARIA navigation landmark)
-- Responsive design may require collapsing on mobile
-
----
-
 ## Create Image Lightbox/Modal Component
 
 **Status:** Pending
