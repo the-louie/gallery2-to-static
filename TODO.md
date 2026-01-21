@@ -4,47 +4,6 @@
 
 
 
-## Design Theme System Architecture
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Low
-**Estimated Time:** 3-4 hours
-
-### Description
-Design the architecture for the theming system, including CSS variable structure, theme switching mechanism, and persistence strategy.
-
-### Requirements
-
-#### Research Tasks
-- Research CSS variable theming patterns
-- Research theme switching without page reload
-- Research localStorage persistence patterns
-- Research theme preference detection (prefers-color-scheme)
-
-#### Implementation Tasks
-- Design theme structure (light, dark, custom)
-- Document CSS variable naming convention
-- Design theme configuration object structure
-- Plan theme switching mechanism (Context API)
-- Design localStorage key and schema
-- Create theme architecture document
-
-### Deliverable
-Theme system architecture design document
-
-### Testing Requirements
-- Verify theme structure supports all UI elements
-- Check CSS variable approach is maintainable
-- Ensure theme switching is performant
-
-### Technical Notes
-- CSS variables are the recommended approach
-- Theme switching should not require page reload
-- localStorage persistence is required
-- System preference detection (prefers-color-scheme) should be respected
-
----
 
 ## Implement CSS Variable Theme System
 
