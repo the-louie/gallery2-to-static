@@ -558,5 +558,60 @@ describe('ImageThumbnail', () => {
         expect(screen.queryByText('Image unavailable')).not.toBeInTheDocument();
       });
     });
+
+    it('cleans up observer when image prop changes', () => {
+      const { rerender } = render(<ImageThumbnail image={mockPhoto} />);
+      
+      // Verify observer was created
+      expect(mockIntersectionObserver.observe).toHaveBeenCalled();
+      
+      // Change image
+      const newImage: Image = {
+        ...mockPhoto,
+        id: 999,
+        pathComponent: 'different/path.jpg',
+      };
+      rerender(<ImageThumbnail image={newImage} />);
+      
+      // Observer should be disconnected when image changes
+      expect(mockIntersectionObserver.disconnect).toHaveBeenCalled();
+    });
+
+    it('cleans up observer when useThumbnail prop changes', () => {
+      const { rerender } = render(<ImageThumbnail image={mockPhoto} useThumbnail={false} />);
+      
+      // Verify observer was created
+      expect(mockIntersectionObserver.observe).toHaveBeenCalled();
+      const initialCallCount = mockIntersectionObserver.disconnect.mock.calls.length;
+      
+      // Change useThumbnail
+      rerender(<ImageThumbnail image={mockPhoto} useThumbnail={true} />);
+      
+      // Observer should be disconnected when prop changes
+      expect(mockIntersectionObserver.disconnect).toHaveBeenCalledTimes(initialCallCount + 1);
+    });
+
+    it('disconnects observer after intersection occurs', async () => {
+      render(<ImageThumbnail image={mockPhoto} />);
+      
+      const initialDisconnectCount = mockIntersectionObserver.disconnect.mock.calls.length;
+      
+      // Trigger intersection
+      const callback = (mockIntersectionObserver as any).callback;
+      const container = document.querySelector('.image-thumbnail-container');
+      if (callback && container) {
+        callback([
+          {
+            isIntersecting: true,
+            target: container,
+          } as IntersectionObserverEntry,
+        ]);
+      }
+      
+      // Observer should be disconnected after intersection
+      await waitFor(() => {
+        expect(mockIntersectionObserver.disconnect).toHaveBeenCalledTimes(initialDisconnectCount + 1);
+      });
+    });
   });
 });

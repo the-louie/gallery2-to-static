@@ -63,51 +63,6 @@ Per-album theme configuration system with JSON file and theme resolution logic
 
 ---
 
-## Implement Lazy Loading for Images
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Medium
-**Estimated Time:** 4-5 hours
-
-### Description
-Implement lazy loading for images to improve initial page load performance. Use Intersection Observer API or native lazy loading.
-
-### Requirements
-
-#### Research Tasks
-- Research Intersection Observer API for lazy loading
-- Research native lazy loading attribute (loading="lazy")
-- Research lazy loading performance best practices
-- Research placeholder strategies (blur-up, skeleton, color)
-
-#### Implementation Tasks
-- Update ImageThumbnail component with Intersection Observer
-- Implement lazy loading for images below the fold
-- Add loading="lazy" attribute as fallback
-- Implement placeholder display while loading
-- Add error boundary for failed image loads
-- Optimize observer thresholds for performance
-- Write tests for lazy loading behavior
-- Write tests for Intersection Observer integration
-
-### Deliverable
-Lazy loading implementation for all images
-
-### Testing Requirements
-- Verify images load only when visible
-- Check performance impact (no layout thrashing)
-- Ensure placeholder displays correctly
-- Review observer cleanup (memory leaks)
-
-### Technical Notes
-- Intersection Observer is preferred over scroll listeners
-- Native loading="lazy" can be used as fallback
-- Placeholders prevent layout shift
-- Observer cleanup is important to prevent memory leaks
-
----
-
 ## Implement Progressive Image Loading
 
 **Status:** Pending

@@ -7,12 +7,22 @@
  *
  * ## Features
  *
- * - Lazy loading using Intersection Observer API
- * - Aspect ratio preservation to prevent layout shift
- * - Error handling with fallback placeholder
- * - Loading placeholder display
- * - Accessibility support (alt text, keyboard navigation)
+ * - Lazy loading using Intersection Observer API with optimized rootMargin (200px bottom)
+ * - Native loading="lazy" attribute as fallback for browsers without Intersection Observer
+ * - Aspect ratio preservation to prevent layout shift (CLS optimization)
+ * - Error handling with accessible fallback placeholder
+ * - Loading placeholder display with skeleton animation
+ * - Accessibility support (alt text, keyboard navigation, ARIA attributes)
  * - Support for thumbnail and full image URLs
+ * - Automatic observer cleanup to prevent memory leaks
+ *
+ * ## Lazy Loading Implementation
+ *
+ * The component uses Intersection Observer API with the following configuration:
+ * - rootMargin: '0px 0px 200px 0px' - preloads images 200px before entering viewport
+ * - threshold: 0.01 - triggers when 1% of image is visible
+ * - Observer automatically disconnects after intersection to prevent memory leaks
+ * - Falls back to native loading="lazy" if Intersection Observer is unavailable
  *
  * ## Usage
  *
@@ -58,6 +68,10 @@ export interface ImageThumbnailProps {
  * Displays an image with lazy loading, error handling, and aspect ratio preservation.
  * Supports both thumbnail and full image URLs based on the useThumbnail prop.
  *
+ * The component implements lazy loading using Intersection Observer API to improve
+ * initial page load performance. Images are only loaded when they approach the viewport
+ * (200px before entering), reducing bandwidth usage and improving Core Web Vitals.
+ *
  * @param props - Component props
  * @returns React component
  */
@@ -99,6 +113,11 @@ export function ImageThumbnail({
 
   // Reset state when image or useThumbnail changes
   useEffect(() => {
+    // Clean up existing observer when image changes
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+      observerRef.current = null;
+    }
     setIsLoading(true);
     setHasError(false);
     setShouldLoad(false);
@@ -122,27 +141,43 @@ export function ImageThumbnail({
       return;
     }
 
-    // Create observer
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setShouldLoad(true);
-            // Disconnect observer once image should load
-            observer.disconnect();
-          }
-        });
-      },
-      {
-        rootMargin: '50px', // Start loading 50px before entering viewport
-        threshold: 0.01, // Trigger when 1% is visible
-      },
-    );
+    // Create observer with error handling for edge cases
+    // rootMargin: '0px 0px 200px 0px' - preload 200px below viewport (best practice for lazy loading)
+    // threshold: 0.01 - trigger when 1% is visible (early loading for smooth UX)
+    try {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setShouldLoad(true);
+              // Disconnect observer once image should load to prevent memory leaks
+              observer.disconnect();
+              observerRef.current = null;
+            }
+          });
+        },
+        {
+          rootMargin: '0px 0px 200px 0px', // Start loading 200px before entering viewport (bottom only)
+          threshold: 0.01, // Trigger when 1% is visible
+        },
+      );
 
-    observer.observe(container);
-    observerRef.current = observer;
+      // Observe container with error handling
+      try {
+        observer.observe(container);
+        observerRef.current = observer;
+      } catch (observeError) {
+        // If observe fails (e.g., container is not a valid Element), fall back to immediate loading
+        console.warn('Failed to observe container for lazy loading:', observeError);
+        setShouldLoad(true);
+      }
+    } catch (observerError) {
+      // If observer creation fails (e.g., invalid options), fall back to immediate loading
+      console.warn('Failed to create IntersectionObserver, loading image immediately:', observerError);
+      setShouldLoad(true);
+    }
 
-    // Cleanup function
+    // Cleanup function - disconnect observer on unmount or when dependencies change
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
