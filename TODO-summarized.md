@@ -2,7 +2,6 @@
 
 ## Pending Tasks
 - Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
-- Optimize Bundle Size and Code Splitting - Medium - 4-5 hours - Optimize bundle size and implement code splitting to improve initial load performance
 - Implement Search Functionality - Medium - 5-6 hours - Implement client-side search functionality to search through albums and images
 - Implement Filter Functionality - Medium - 4-5 hours - Implement filtering functionality to filter albums and images by various criteria
 - Implement Sorting Options - Medium - 3-4 hours - Implement sorting functionality to sort albums and images by date, name, or size
@@ -18,10 +17,10 @@
 
 ## Summary
 
-**Total Tasks:** 12
-**Pending:** 12
+**Total Tasks:** 11
+**Pending:** 11
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 50-63 hours
+**Estimated Total Time:** 46-58 hours

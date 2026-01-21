@@ -63,52 +63,6 @@ Per-album theme configuration system with JSON file and theme resolution logic
 
 ---
 
-## Optimize Bundle Size and Code Splitting
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Medium
-**Estimated Time:** 4-5 hours
-
-### Description
-Optimize bundle size and implement code splitting to improve initial load performance. Analyze and reduce bundle size.
-
-### Requirements
-
-#### Research Tasks
-- Research Vite code splitting strategies
-- Research dynamic imports for route-based splitting
-- Research bundle analysis tools (vite-bundle-visualizer)
-- Research tree-shaking optimization
-
-#### Implementation Tasks
-- Configure Vite for code splitting
-- Implement route-based code splitting (lazy load routes)
-- Split large components into separate chunks
-- Analyze bundle size and identify optimization opportunities
-- Remove unused dependencies
-- Optimize imports (tree-shaking)
-- Add bundle size monitoring
-- Write documentation for bundle optimization
-- Test build output size
-
-### Deliverable
-Optimized bundle with code splitting
-
-### Testing Requirements
-- Verify code splitting works correctly
-- Check initial bundle size is reasonable (< 200KB gzipped)
-- Ensure lazy-loaded chunks load correctly
-- Review build performance
-
-### Technical Notes
-- Code splitting improves initial load time
-- Route-based splitting is recommended
-- Bundle size should be monitored
-- Tree-shaking removes unused code
-
----
-
 ## Implement Search Functionality
 
 **Status:** Pending

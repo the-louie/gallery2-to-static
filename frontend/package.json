@@ -4,6 +4,13 @@
   "version": "0.1.0",
   "type": "module",
   "sideEffects": false,
+  "size-limit": [
+    {
+      "path": "dist/assets/js/*.js",
+      "limit": "200 KB",
+      "name": "Initial bundle (entry + vendor chunks)"
+    }
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -17,8 +24,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "build:analyze": "vite build --mode production",
-    "size-check": "vite build --mode production && echo Bundle size check complete - see dist/stats.html for details",
-    "size-check": "vite build --mode production && echo Bundle size check complete - see dist/stats.html for details"
+    "size-check": "size-limit",
+    "size-check:build": "vite build --mode production && size-limit"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -46,6 +53,8 @@
     "jsdom": "^23.0.0",
     "prettier": "^3.1.1",
     "rollup-plugin-visualizer": "^5.12.0",
+    "size-limit": "^11.1.5",
+    "@size-limit/preset-app": "^11.1.5",
     "typescript": "^5.2.2",
     "vite": "^5.0.8",
     "vitest": "^1.0.0"
