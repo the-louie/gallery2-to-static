@@ -1,0 +1,423 @@
+/**
+ * Theme Variables
+ *
+ * This file defines CSS custom properties (variables) for light and dark themes.
+ * All color values are defined here to ensure consistency and maintainability.
+ *
+ * Usage:
+ * - Light theme variables are defined in :root
+ * - Dark theme variables are defined in [data-theme="dark"]
+ * - Components should use these variables instead of hardcoded colors
+ *
+ * Naming Convention:
+ * - Semantic naming: --color-{category}-{element}-{state}
+ * - Component-specific: --{component}-{element}-{property}
+ * - State variants: -hover, -focus, -active, -disabled
+ *
+ * Contrast Requirements:
+ * - All text/background combinations meet WCAG AA (4.5:1 for text, 3:1 for UI)
+ * - Focus indicators meet contrast requirements
+ * - Error states are clearly visible
+ */
+
+/* ============================================================================
+   Light Theme (Default)
+   ============================================================================ */
+
+:root {
+  /* Base Colors */
+  --color-primary: #0066cc;
+  --color-primary-hover: #0052a3;
+  --color-primary-active: #004085;
+  --color-primary-light: #e6f2ff;
+  --color-primary-dark: #003d7a;
+
+  --color-secondary: #6c757d;
+  --color-secondary-hover: #5a6268;
+  --color-secondary-active: #495057;
+
+  --color-accent: #0066cc;
+  --color-accent-hover: #0052a3;
+
+  /* Semantic Colors - Backgrounds */
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f5f5f5;
+  --color-background-tertiary: #e0e0e0;
+
+  /* Semantic Colors - Text */
+  --color-text-primary: #333333;
+  --color-text-secondary: #666666;
+  --color-text-tertiary: #999999;
+  --color-text-inverse: #ffffff;
+  --color-text-muted: rgba(0, 0, 0, 0.7);
+
+  /* Semantic Colors - Borders */
+  --color-border: #e0e0e0;
+  --color-border-light: #f0f0f0;
+  --color-border-dark: #cccccc;
+
+  /* Semantic Colors - Focus */
+  --color-focus: #0066cc;
+  --color-focus-ring: #0066cc;
+
+  /* Error Colors */
+  --color-error: #d32f2f;
+  --color-error-bg: #ffebee;
+  --color-error-text: #d32f2f;
+  --color-error-hover: #b71c1c;
+  --color-error-light: #ffebee;
+
+  /* Success Colors */
+  --color-success: #2e7d32;
+  --color-success-bg: #e8f5e9;
+  --color-success-text: #2e7d32;
+
+  /* Warning Colors */
+  --color-warning: #ed6c02;
+  --color-warning-bg: #fff3e0;
+  --color-warning-text: #ed6c02;
+
+  /* Info Colors */
+  --color-info: #0288d1;
+  --color-info-bg: #e1f5fe;
+  --color-info-text: #0288d1;
+
+  /* Neutral Colors */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f5f5f5;
+  --color-gray-200: #e0e0e0;
+  --color-gray-300: #cccccc;
+  --color-gray-400: #999999;
+  --color-gray-500: #666666;
+  --color-gray-600: #333333;
+  --color-gray-700: #1a1a1a;
+  --color-gray-800: #0d0d0d;
+  --color-gray-900: #000000;
+
+  /* Layout Component */
+  --skip-link-bg: #000000;
+  --skip-link-color: #ffffff;
+  --skip-link-focus: #ffffff;
+  --header-bg: #f5f5f5;
+  --header-border: #e0e0e0;
+  --header-text: #333333;
+  --footer-bg: #f5f5f5;
+  --footer-border: #e0e0e0;
+  --footer-text: #666666;
+
+  /* AlbumCard Component */
+  --album-card-bg: #ffffff;
+  --album-card-border: #e0e0e0;
+  --album-card-border-radius: 8px;
+  --album-card-focus: #0066cc;
+  --album-card-thumbnail-bg: #f5f5f5;
+  --album-card-placeholder-bg: #e0e0e0;
+  --album-card-placeholder-text: #666666;
+  --album-card-title-color: #333333;
+  --album-card-count-color: #666666;
+
+  /* AlbumGrid Component */
+  --album-grid-gap: 1rem;
+  --album-grid-gap-tablet: 1.5rem;
+  --album-grid-gap-desktop: 2rem;
+  --album-grid-error-color: #d32f2f;
+  --album-grid-error-bg: #ffebee;
+  --album-grid-error-button-bg: #d32f2f;
+  --album-grid-error-button-hover: #b71c1c;
+  --album-grid-error-button-focus: #0066cc;
+  --album-grid-border-radius: 8px;
+  --album-grid-empty-color: #666666;
+
+  /* ImageGrid Component */
+  --image-grid-gap: 1rem;
+  --image-grid-gap-tablet: 1.5rem;
+  --image-grid-gap-desktop: 2rem;
+  --image-grid-error-color: #d32f2f;
+  --image-grid-error-bg: #ffebee;
+  --image-grid-error-button-bg: #d32f2f;
+  --image-grid-error-button-hover: #b71c1c;
+  --image-grid-error-button-focus: #0066cc;
+  --image-grid-border-radius: 8px;
+  --image-grid-empty-color: #666666;
+
+  /* ImageThumbnail Component */
+  --image-bg: #f5f5f5;
+  --image-border: #e0e0e0;
+  --image-border-radius: 4px;
+  --image-focus: #0066cc;
+  --image-error-bg: #f5f5f5;
+  --image-error-text: #666666;
+
+  /* Lightbox Component */
+  --lightbox-backdrop: rgba(0, 0, 0, 0.9);
+  --lightbox-z-index: 9999;
+  --lightbox-close-bg: rgba(255, 255, 255, 0.1);
+  --lightbox-close-border: rgba(255, 255, 255, 0.3);
+  --lightbox-close-color: #ffffff;
+  --lightbox-close-bg-hover: rgba(255, 255, 255, 0.2);
+  --lightbox-close-border-hover: rgba(255, 255, 255, 0.5);
+  --lightbox-focus: #0066cc;
+  --lightbox-nav-bg: rgba(255, 255, 255, 0.1);
+  --lightbox-nav-border: rgba(255, 255, 255, 0.3);
+  --lightbox-nav-color: #ffffff;
+  --lightbox-nav-bg-hover: rgba(255, 255, 255, 0.2);
+  --lightbox-nav-border-hover: rgba(255, 255, 255, 0.5);
+  --lightbox-counter-bg: rgba(0, 0, 0, 0.7);
+  --lightbox-counter-color: #ffffff;
+  --lightbox-zoom-bg: rgba(255, 255, 255, 0.1);
+  --lightbox-zoom-border: rgba(255, 255, 255, 0.3);
+  --lightbox-zoom-color: #ffffff;
+  --lightbox-zoom-bg-hover: rgba(255, 255, 255, 0.2);
+  --lightbox-zoom-border-hover: rgba(255, 255, 255, 0.5);
+  --lightbox-loading-bg: rgba(0, 0, 0, 0.5);
+  --lightbox-error-bg: rgba(0, 0, 0, 0.5);
+  --lightbox-error-text: #ffffff;
+  --lightbox-metadata-bg: rgba(0, 0, 0, 0.8);
+  --lightbox-metadata-text: #ffffff;
+  --lightbox-title-color: #ffffff;
+  --lightbox-description-color: rgba(255, 255, 255, 0.9);
+  --lightbox-details-color: rgba(255, 255, 255, 0.7);
+  --lightbox-border-radius: 4px;
+  --lightbox-image-bg: transparent;
+
+  /* Breadcrumbs Component */
+  --breadcrumb-link-color: #0066cc;
+  --breadcrumb-link-hover-bg: #f0f0f0;
+  --breadcrumb-link-hover-color: #0052a3;
+  --breadcrumb-link-focus: #0066cc;
+  --breadcrumb-link-focus-bg: #e6f2ff;
+  --breadcrumb-link-active-bg: #d9e9ff;
+  --breadcrumb-current-color: #333333;
+  --breadcrumb-separator-color: #999999;
+  --breadcrumb-scrollbar-color: #cccccc;
+
+  /* AlbumDetail Component */
+  --album-detail-back-button-bg: transparent;
+  --album-detail-back-button-border: currentColor;
+  --album-detail-back-button-hover-bg: rgba(0, 0, 0, 0.05);
+  --album-detail-back-button-active-bg: rgba(0, 0, 0, 0.1);
+  --album-detail-text-muted: rgba(0, 0, 0, 0.7);
+  --album-detail-error-button-bg: #0066cc;
+  --album-detail-error-button-hover: #0056b3;
+  --album-detail-error-button-focus: #0066cc;
+  --album-detail-error-button-active: #004085;
+
+  /* Skeleton Loading */
+  --skeleton-bg-1: #e0e0e0;
+  --skeleton-bg-2: #f0f0f0;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 6px 12px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 10px 20px rgba(0, 0, 0, 0.2);
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+}
+
+/* ============================================================================
+   Dark Theme
+   ============================================================================ */
+
+[data-theme="dark"] {
+  /* Base Colors */
+  --color-primary: #4da6ff;
+  --color-primary-hover: #66b3ff;
+  --color-primary-active: #3399ff;
+  --color-primary-light: #1a4d80;
+  --color-primary-dark: #0066cc;
+
+  --color-secondary: #9ca3af;
+  --color-secondary-hover: #b1b8c4;
+  --color-secondary-active: #858b98;
+
+  --color-accent: #4da6ff;
+  --color-accent-hover: #66b3ff;
+
+  /* Semantic Colors - Backgrounds */
+  --color-background-primary: #1a1a1a;
+  --color-background-secondary: #2d2d2d;
+  --color-background-tertiary: #404040;
+
+  /* Semantic Colors - Text */
+  --color-text-primary: #e5e5e5;
+  --color-text-secondary: #b3b3b3;
+  --color-text-tertiary: #808080;
+  --color-text-inverse: #000000;
+  --color-text-muted: rgba(255, 255, 255, 0.7);
+
+  /* Semantic Colors - Borders */
+  --color-border: #404040;
+  --color-border-light: #2d2d2d;
+  --color-border-dark: #525252;
+
+  /* Semantic Colors - Focus */
+  --color-focus: #4da6ff;
+  --color-focus-ring: #4da6ff;
+
+  /* Error Colors */
+  --color-error: #f44336;
+  --color-error-bg: #4a1f1f;
+  --color-error-text: #ff6b6b;
+  --color-error-hover: #ff5252;
+  --color-error-light: #4a1f1f;
+
+  /* Success Colors */
+  --color-success: #66bb6a;
+  --color-success-bg: #1f3d21;
+  --color-success-text: #66bb6a;
+
+  /* Warning Colors */
+  --color-warning: #ffa726;
+  --color-warning-bg: #4a2e0f;
+  --color-warning-text: #ffa726;
+
+  /* Info Colors */
+  --color-info: #42a5f5;
+  --color-info-bg: #0d2a3d;
+  --color-info-text: #42a5f5;
+
+  /* Neutral Colors */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-gray-50: #1a1a1a;
+  --color-gray-100: #2d2d2d;
+  --color-gray-200: #404040;
+  --color-gray-300: #525252;
+  --color-gray-400: #808080;
+  --color-gray-500: #b3b3b3;
+  --color-gray-600: #e5e5e5;
+  --color-gray-700: #ffffff;
+  --color-gray-800: #ffffff;
+  --color-gray-900: #ffffff;
+
+  /* Layout Component */
+  --skip-link-bg: #ffffff;
+  --skip-link-color: #000000;
+  --skip-link-focus: #000000;
+  --header-bg: #2d2d2d;
+  --header-border: #404040;
+  --header-text: #e5e5e5;
+  --footer-bg: #2d2d2d;
+  --footer-border: #404040;
+  --footer-text: #b3b3b3;
+
+  /* AlbumCard Component */
+  --album-card-bg: #2d2d2d;
+  --album-card-border: #404040;
+  --album-card-border-radius: 8px;
+  --album-card-focus: #4da6ff;
+  --album-card-thumbnail-bg: #1a1a1a;
+  --album-card-placeholder-bg: #404040;
+  --album-card-placeholder-text: #b3b3b3;
+  --album-card-title-color: #e5e5e5;
+  --album-card-count-color: #b3b3b3;
+
+  /* AlbumGrid Component */
+  --album-grid-gap: 1rem;
+  --album-grid-gap-tablet: 1.5rem;
+  --album-grid-gap-desktop: 2rem;
+  --album-grid-error-color: #ff6b6b;
+  --album-grid-error-bg: #4a1f1f;
+  --album-grid-error-button-bg: #f44336;
+  --album-grid-error-button-hover: #ff5252;
+  --album-grid-error-button-focus: #4da6ff;
+  --album-grid-border-radius: 8px;
+  --album-grid-empty-color: #b3b3b3;
+
+  /* ImageGrid Component */
+  --image-grid-gap: 1rem;
+  --image-grid-gap-tablet: 1.5rem;
+  --image-grid-gap-desktop: 2rem;
+  --image-grid-error-color: #ff6b6b;
+  --image-grid-error-bg: #4a1f1f;
+  --image-grid-error-button-bg: #f44336;
+  --image-grid-error-button-hover: #ff5252;
+  --image-grid-error-button-focus: #4da6ff;
+  --image-grid-border-radius: 8px;
+  --image-grid-empty-color: #b3b3b3;
+
+  /* ImageThumbnail Component */
+  --image-bg: #1a1a1a;
+  --image-border: #404040;
+  --image-border-radius: 4px;
+  --image-focus: #4da6ff;
+  --image-error-bg: #1a1a1a;
+  --image-error-text: #b3b3b3;
+
+  /* Lightbox Component */
+  --lightbox-backdrop: rgba(0, 0, 0, 0.95);
+  --lightbox-z-index: 9999;
+  --lightbox-close-bg: rgba(255, 255, 255, 0.15);
+  --lightbox-close-border: rgba(255, 255, 255, 0.4);
+  --lightbox-close-color: #ffffff;
+  --lightbox-close-bg-hover: rgba(255, 255, 255, 0.25);
+  --lightbox-close-border-hover: rgba(255, 255, 255, 0.6);
+  --lightbox-focus: #4da6ff;
+  --lightbox-nav-bg: rgba(255, 255, 255, 0.15);
+  --lightbox-nav-border: rgba(255, 255, 255, 0.4);
+  --lightbox-nav-color: #ffffff;
+  --lightbox-nav-bg-hover: rgba(255, 255, 255, 0.25);
+  --lightbox-nav-border-hover: rgba(255, 255, 255, 0.6);
+  --lightbox-counter-bg: rgba(0, 0, 0, 0.8);
+  --lightbox-counter-color: #ffffff;
+  --lightbox-zoom-bg: rgba(255, 255, 255, 0.15);
+  --lightbox-zoom-border: rgba(255, 255, 255, 0.4);
+  --lightbox-zoom-color: #ffffff;
+  --lightbox-zoom-bg-hover: rgba(255, 255, 255, 0.25);
+  --lightbox-zoom-border-hover: rgba(255, 255, 255, 0.6);
+  --lightbox-loading-bg: rgba(0, 0, 0, 0.7);
+  --lightbox-error-bg: rgba(0, 0, 0, 0.7);
+  --lightbox-error-text: #ffffff;
+  --lightbox-metadata-bg: rgba(0, 0, 0, 0.9);
+  --lightbox-metadata-text: #ffffff;
+  --lightbox-title-color: #ffffff;
+  --lightbox-description-color: rgba(255, 255, 255, 0.9);
+  --lightbox-details-color: rgba(255, 255, 255, 0.7);
+  --lightbox-border-radius: 4px;
+  --lightbox-image-bg: transparent;
+
+  /* Breadcrumbs Component */
+  --breadcrumb-link-color: #4da6ff;
+  --breadcrumb-link-hover-bg: #404040;
+  --breadcrumb-link-hover-color: #66b3ff;
+  --breadcrumb-link-focus: #4da6ff;
+  --breadcrumb-link-focus-bg: #1a4d80;
+  --breadcrumb-link-active-bg: #0066cc;
+  --breadcrumb-current-color: #e5e5e5;
+  --breadcrumb-separator-color: #808080;
+  --breadcrumb-scrollbar-color: #525252;
+
+  /* AlbumDetail Component */
+  --album-detail-back-button-bg: transparent;
+  --album-detail-back-button-border: currentColor;
+  --album-detail-back-button-hover-bg: rgba(255, 255, 255, 0.1);
+  --album-detail-back-button-active-bg: rgba(255, 255, 255, 0.15);
+  --album-detail-text-muted: rgba(255, 255, 255, 0.7);
+  --album-detail-error-button-bg: #4da6ff;
+  --album-detail-error-button-hover: #66b3ff;
+  --album-detail-error-button-focus: #4da6ff;
+  --album-detail-error-button-active: #3399ff;
+
+  /* Skeleton Loading */
+  --skeleton-bg-1: #404040;
+  --skeleton-bg-2: #2d2d2d;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 6px 12px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 10px 20px rgba(0, 0, 0, 0.6);
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+}

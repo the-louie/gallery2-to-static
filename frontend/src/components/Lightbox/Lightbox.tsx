@@ -111,7 +111,7 @@ export function Lightbox({
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
-  
+
   // Drag state for pan
   const dragStateRef = useRef<{
     isDragging: boolean;

@@ -8,9 +8,9 @@
  * project pattern of component-based organization.
  *
  * CSS Variables:
- * - Layout uses CSS custom properties (variables) defined in global.css for theming
+ * - Layout uses CSS custom properties (variables) defined in themes.css for theming
  * - Variables have fallback values for compatibility
- * - This prepares the component for future theme system integration
+ * - Theme system supports light and dark themes via [data-theme="dark"]
  *
  * Responsive Design:
  * - Mobile-first approach: base styles target mobile, then enhanced for larger screens
@@ -47,7 +47,7 @@
   padding: 8px 16px;
   text-decoration: none;
   z-index: 1000;
-  border-radius: 0 0 4px 0;
+  border-radius: 0 0 var(--radius-sm, 4px) 0;
 }
 
 .skip-link:focus {

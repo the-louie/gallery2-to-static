@@ -50,7 +50,7 @@
   );
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s ease-in-out infinite;
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
   width: 80%;
 }
 
@@ -64,7 +64,7 @@
   );
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s ease-in-out infinite;
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
   width: 60%;
 }
 

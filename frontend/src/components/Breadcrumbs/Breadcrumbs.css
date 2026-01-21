@@ -44,7 +44,7 @@
   color: var(--breadcrumb-link-color, #0066cc);
   text-decoration: none;
   padding: 0.5rem 0.25rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
   transition: background-color 0.2s ease, color 0.2s ease;
   min-height: 44px;
   display: flex;
@@ -149,6 +149,6 @@
 
   .breadcrumbs::-webkit-scrollbar-thumb {
     background: var(--breadcrumb-scrollbar-color, #ccc);
-    border-radius: 2px;
+    border-radius: var(--radius-sm, 4px);
   }
 }

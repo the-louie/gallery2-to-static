@@ -5,50 +5,6 @@
 
 
 
-## Implement CSS Variable Theme System
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Medium
-**Estimated Time:** 4-5 hours
-
-### Description
-Implement the CSS variable theme system with light and dark themes. Apply theme variables to all components.
-
-### Requirements
-
-#### Research Tasks
-- Research CSS custom properties best practices
-- Research theme color palette design
-- Research contrast ratios for accessibility
-
-#### Implementation Tasks
-- Create `frontend/src/styles/themes.css` with CSS variables
-- Define light theme variables (colors, spacing, fonts)
-- Define dark theme variables
-- Apply CSS variables to existing components
-- Update Layout component to use theme variables
-- Update AlbumGrid, ImageGrid to use theme variables
-- Update Lightbox to use theme variables
-- Ensure sufficient color contrast (WCAG AA minimum)
-- Write visual regression tests (document approach)
-
-### Deliverable
-Complete CSS variable theme system applied to all components
-
-### Testing Requirements
-- Verify all components use theme variables
-- Check color contrast meets accessibility standards
-- Ensure theme variables cover all UI elements
-- Review CSS organization and maintainability
-
-### Technical Notes
-- All components must use CSS variables, not hardcoded colors
-- Color contrast must meet WCAG AA standards
-- Theme variables should cover all UI elements (colors, spacing, fonts)
-- CSS organization should be maintainable
-
----
 
 ## Create Theme Context and Switching UI
 

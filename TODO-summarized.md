@@ -1,7 +1,6 @@
 # TODO Summarized
 
 ## Pending Tasks
-- Implement CSS Variable Theme System - Medium - 4-5 hours - Implement CSS variable theme system with light and dark themes
 - Create Theme Context and Switching UI - Medium - 4-5 hours - Create React context for theme management and UI component for switching themes
 - Add Theme Persistence and System Preference - Low - 2-3 hours - Enhance theme system with error handling and system preference detection
 - Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
@@ -25,10 +24,10 @@
 
 ## Summary
 
-**Total Tasks:** 20
-**Pending:** 20
+**Total Tasks:** 19
+**Pending:** 19
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 82-105 hours
+**Estimated Total Time:** 78-100 hours

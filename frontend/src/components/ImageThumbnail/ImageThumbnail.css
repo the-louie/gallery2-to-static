@@ -36,7 +36,7 @@
 
 .image-thumbnail-container[role='button']:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md, 0 4px 8px rgba(0, 0, 0, 0.1));
 }
 
 .image-thumbnail-container[role='button']:active {
@@ -120,6 +120,6 @@
 /* Responsive adjustments */
 @media (min-width: 768px) {
   .image-thumbnail-container[role='button']:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-lg, 0 6px 12px rgba(0, 0, 0, 0.15));
   }
 }

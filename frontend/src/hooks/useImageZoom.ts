@@ -236,7 +236,7 @@ export function useImageZoom(
     (newZoom: number, centerX?: number, centerY?: number) => {
       setZoomState((currentZoom) => {
         const clampedZoom = Math.max(ZOOM_MIN, Math.min(maxZoom, newZoom));
-        
+
         // Adjust pan to keep zoom center point fixed
         // Schedule pan adjustment after state update completes
         if (centerX !== undefined && centerY !== undefined && currentZoom !== clampedZoom) {

@@ -28,7 +28,7 @@
 
 .album-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md, 0 4px 8px rgba(0, 0, 0, 0.1));
 }
 
 .album-card:active {
@@ -98,6 +98,6 @@
 /* Responsive adjustments */
 @media (min-width: 768px) {
   .album-card:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-lg, 0 6px 12px rgba(0, 0, 0, 0.15));
   }
 }

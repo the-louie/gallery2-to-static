@@ -717,7 +717,7 @@ describe('Lightbox', () => {
     it('renders reset zoom button when zoomed', async () => {
       const user = userEvent.setup();
       render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
-      
+
       const zoomInButton = screen.getByLabelText('Zoom in');
       await user.click(zoomInButton);
 
@@ -729,7 +729,7 @@ describe('Lightbox', () => {
     it('zooms in when zoom in button is clicked', async () => {
       const user = userEvent.setup();
       render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
-      
+
       const zoomInButton = screen.getByLabelText('Zoom in');
       await user.click(zoomInButton);
 
@@ -741,7 +741,7 @@ describe('Lightbox', () => {
     it('zooms out when zoom out button is clicked', async () => {
       const user = userEvent.setup();
       render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
-      
+
       const zoomInButton = screen.getByLabelText('Zoom in');
       await user.click(zoomInButton);
       await user.click(zoomInButton);
@@ -757,7 +757,7 @@ describe('Lightbox', () => {
     it('resets zoom when reset button is clicked', async () => {
       const user = userEvent.setup();
       render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
-      
+
       const zoomInButton = screen.getByLabelText('Zoom in');
       await user.click(zoomInButton);
 
@@ -778,9 +778,9 @@ describe('Lightbox', () => {
     it('disables zoom in button at max zoom', async () => {
       const user = userEvent.setup();
       render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
-      
+
       const zoomInButton = screen.getByLabelText('Zoom in');
-      
+
       // Click zoom in multiple times to reach max
       for (let i = 0; i < 15; i++) {
         await user.click(zoomInButton);
@@ -793,7 +793,7 @@ describe('Lightbox', () => {
 
     it('disables zoom out button at min zoom', () => {
       render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
-      
+
       const zoomOutButton = screen.getByLabelText('Zoom out');
       expect(zoomOutButton).toBeDisabled();
     });
@@ -830,7 +830,7 @@ describe('Lightbox', () => {
     it('allows panning when zoomed', async () => {
       const user = userEvent.setup();
       render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
-      
+
       const zoomInButton = screen.getByLabelText('Zoom in');
       await user.click(zoomInButton);
 
@@ -846,7 +846,7 @@ describe('Lightbox', () => {
 
     it('does not allow panning when not zoomed', () => {
       render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
-      
+
       const imageContainer = document.querySelector('.lightbox-image-container');
       expect(imageContainer).toHaveStyle({ cursor: 'default' });
     });
@@ -1026,7 +1026,7 @@ describe('Lightbox', () => {
 
         // Navigate with keyboard
         await user.keyboard('{ArrowRight}');
-        
+
         // Simulate image change
         rerender(
           <Lightbox
@@ -1051,7 +1051,7 @@ describe('Lightbox', () => {
   describe('Mouse Wheel Zoom', () => {
     it('zooms in with Ctrl + wheel scroll up', async () => {
       render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
-      
+
       const imageContainer = document.querySelector('.lightbox-image-container');
       if (!imageContainer) {
         throw new Error('Image container not found');
@@ -1077,7 +1077,7 @@ describe('Lightbox', () => {
 
     it('zooms out with Ctrl + wheel scroll down', async () => {
       render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
-      
+
       const zoomInButton = screen.getByLabelText('Zoom in');
       const user = userEvent.setup();
       await user.click(zoomInButton);
@@ -1113,7 +1113,7 @@ describe('Lightbox', () => {
 
     it('does not zoom without Ctrl/Cmd modifier', () => {
       render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
-      
+
       const imageContainer = document.querySelector('.lightbox-image-container');
       if (!imageContainer) {
         throw new Error('Image container not found');
@@ -1140,7 +1140,7 @@ describe('Lightbox', () => {
   describe('Touch Pinch Zoom', () => {
     it('detects two-finger touch for pinch zoom', () => {
       render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
-      
+
       const imageContainer = document.querySelector('.lightbox-image-container');
       if (!imageContainer) {
         throw new Error('Image container not found');
