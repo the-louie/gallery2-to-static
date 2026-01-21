@@ -6,14 +6,17 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { preloadImage, preloadImages } from './imagePreload';
+import { resetImageCache, getImageCache } from './imageCache';
 
 describe('imagePreload', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetImageCache();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    resetImageCache();
   });
 
   describe('preloadImage', () => {
@@ -67,6 +70,41 @@ describe('imagePreload', () => {
     it('rejects when URL is not provided', async () => {
       // @ts-expect-error - Testing invalid input
       await expect(preloadImage(null)).rejects.toThrow();
+    });
+
+    it('returns immediately if image is cached', async () => {
+      const cache = getImageCache();
+      const img = new Image();
+      img.src = '/images/cached.jpg';
+      cache.set('/images/cached.jpg', img);
+
+      // Should resolve immediately without creating new Image
+      const preloadPromise = preloadImage('/images/cached.jpg');
+      await expect(preloadPromise).resolves.toBeUndefined();
+    });
+
+    it('stores loaded image in cache', async () => {
+      const mockImage = {
+        onload: null as (() => void) | null,
+        onerror: null as (() => void) | null,
+        src: '',
+      };
+
+      global.Image = vi.fn(() => mockImage as unknown as HTMLImageElement) as unknown as typeof Image;
+
+      const url = '/images/test.jpg';
+      const cache = getImageCache();
+      expect(cache.has(url)).toBe(false);
+
+      const preloadPromise = preloadImage(url);
+
+      // Simulate successful load
+      if (mockImage.onload) {
+        mockImage.onload();
+      }
+
+      await expect(preloadPromise).resolves.toBeUndefined();
+      expect(cache.has(url)).toBe(true);
     });
   });
 

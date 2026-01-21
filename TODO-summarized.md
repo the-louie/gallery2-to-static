@@ -2,8 +2,6 @@
 
 ## Pending Tasks
 - Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
-- Implement Virtual Scrolling for Large Albums - Medium - 5-6 hours - Implement virtual scrolling for album and image grids to handle large datasets
-- Add Image Caching Strategy - Medium - 3-4 hours - Implement image caching strategy to improve load times and reduce network requests
 - Optimize Bundle Size and Code Splitting - Medium - 4-5 hours - Optimize bundle size and implement code splitting to improve initial load performance
 - Implement Search Functionality - Medium - 5-6 hours - Implement client-side search functionality to search through albums and images
 - Implement Filter Functionality - Medium - 4-5 hours - Implement filtering functionality to filter albums and images by various criteria
@@ -20,10 +18,10 @@
 
 ## Summary
 
-**Total Tasks:** 15
-**Pending:** 15
+**Total Tasks:** 12
+**Pending:** 12
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 58-73 hours
+**Estimated Total Time:** 50-63 hours

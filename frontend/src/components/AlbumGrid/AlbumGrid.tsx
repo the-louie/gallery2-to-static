@@ -3,17 +3,20 @@
  *
  * A responsive grid component that displays album thumbnails with loading states,
  * empty states, and full accessibility support. Integrates with useAlbumData hook.
+ * Uses virtual scrolling for efficient rendering of large datasets.
  *
  * @module frontend/src/components/AlbumGrid
  */
 
 import React, { useMemo, useCallback } from 'react';
 import { useAlbumData } from '@/hooks/useAlbumData';
+import { useScrollPosition } from '@/hooks/useScrollPosition';
 import type { AlbumGridProps, Album } from '@/types';
 import { isAlbum } from '@/types';
 import { AlbumCard } from './AlbumCard';
 import { AlbumGridSkeleton } from './AlbumGridSkeleton';
 import { AlbumGridEmpty } from './AlbumGridEmpty';
+import { VirtualGrid } from '@/components/VirtualGrid';
 import './AlbumGrid.css';
 
 /**
@@ -59,6 +62,9 @@ export function AlbumGrid({
     return data.filter(isAlbum);
   }, [albumsProp, data]);
 
+  // Scroll position management
+  const { scrollTop, saveScrollPosition } = useScrollPosition(albumId ?? null, 'album-grid');
+
   const handleAlbumClick = useCallback(
     (album: Album) => {
       if (onAlbumClick) {
@@ -71,6 +77,14 @@ export function AlbumGrid({
   const handleRetry = useCallback(() => {
     refetch();
   }, [refetch]);
+
+  // Render function for virtual grid
+  const renderAlbum = useCallback(
+    (album: Album, index: number) => (
+      <AlbumCard key={album.id} album={album} onClick={handleAlbumClick} />
+    ),
+    [handleAlbumClick],
+  );
 
   // Loading state
   if (isLoading) {
@@ -94,21 +108,18 @@ export function AlbumGrid({
     return <AlbumGridEmpty className={className} />;
   }
 
-  // Grid with albums
+  // Grid with albums using virtual scrolling
   return (
-    <div
-      className={className ? `album-grid album-grid-${viewMode} ${className}` : `album-grid album-grid-${viewMode}`}
+    <VirtualGrid
+      items={albums}
+      renderItem={renderAlbum}
+      viewMode={viewMode}
+      className={className ? `album-grid ${className}` : 'album-grid'}
       role="region"
       aria-label="Album grid"
-    >
-      {albums.map((album) => (
-        <AlbumCard
-          key={album.id}
-          album={album}
-          onClick={handleAlbumClick}
-        />
-      ))}
-    </div>
+      onScroll={saveScrollPosition}
+      initialScrollTop={scrollTop}
+    />
   );
 }
 

@@ -3,17 +3,20 @@
  *
  * A responsive grid component that displays image thumbnails with loading states,
  * empty states, and full accessibility support. Integrates with useAlbumData hook.
+ * Uses virtual scrolling for efficient rendering of large datasets.
  *
  * @module frontend/src/components/ImageGrid
  */
 
 import React, { useMemo, useCallback } from 'react';
 import { useAlbumData } from '@/hooks/useAlbumData';
+import { useScrollPosition } from '@/hooks/useScrollPosition';
 import type { ImageGridProps, Image } from '@/types';
 import { isImage } from '@/types';
 import { ImageThumbnail } from '@/components/ImageThumbnail';
 import { ImageGridSkeleton } from './ImageGridSkeleton';
 import { ImageGridEmpty } from './ImageGridEmpty';
+import { VirtualGrid } from '@/components/VirtualGrid';
 import './ImageGrid.css';
 
 /**
@@ -59,6 +62,9 @@ export function ImageGrid({
     return data.filter(isImage);
   }, [imagesProp, data]);
 
+  // Scroll position management
+  const { scrollTop, saveScrollPosition } = useScrollPosition(albumId ?? null, 'image-grid');
+
   const handleImageClick = useCallback(
     (image: Image) => {
       if (onImageClick) {
@@ -71,6 +77,19 @@ export function ImageGrid({
   const handleRetry = useCallback(() => {
     refetch();
   }, [refetch]);
+
+  // Render function for virtual grid
+  const renderImage = useCallback(
+    (image: Image, index: number) => (
+      <ImageThumbnail
+        key={image.id}
+        image={image}
+        useThumbnail={true}
+        onClick={handleImageClick}
+      />
+    ),
+    [handleImageClick],
+  );
 
   // Loading state
   if (isLoading) {
@@ -94,22 +113,18 @@ export function ImageGrid({
     return <ImageGridEmpty className={className} />;
   }
 
-  // Grid with images
+  // Grid with images using virtual scrolling
   return (
-    <div
-      className={className ? `image-grid image-grid-${viewMode} ${className}` : `image-grid image-grid-${viewMode}`}
+    <VirtualGrid
+      items={images}
+      renderItem={renderImage}
+      viewMode={viewMode}
+      className={className ? `image-grid ${className}` : 'image-grid'}
       role="region"
       aria-label="Image grid"
-    >
-      {images.map((image) => (
-        <ImageThumbnail
-          key={image.id}
-          image={image}
-          useThumbnail={true}
-          onClick={handleImageClick}
-        />
-      ))}
-    </div>
+      onScroll={saveScrollPosition}
+      initialScrollTop={scrollTop}
+    />
   );
 }
 

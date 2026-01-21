@@ -44,6 +44,7 @@ import { useState, useEffect, useRef } from 'react';
 import type { Image } from '@/types';
 import { getImageUrl, getImageUrlWithFormat } from '@/utils/imageUrl';
 import { getBestFormat } from '@/utils/imageFormat';
+import { getImageCache } from '@/utils/imageCache';
 
 /**
  * Progressive loading state
@@ -185,6 +186,18 @@ export function useProgressiveImage(
       return;
     }
 
+    // Check cache first
+    const cache = getImageCache();
+    const cachedThumbnail = cache.get(thumbnailUrl);
+    if (cachedThumbnail) {
+      // Thumbnail is cached, update state immediately
+      if (currentImageIdRef.current === imageId && isMountedRef.current) {
+        setState('thumbnail-loaded');
+      }
+      return;
+    }
+
+    // Thumbnail not in cache, load it
     const img = new Image();
     thumbnailImgRef.current = img;
 
@@ -193,6 +206,8 @@ export function useProgressiveImage(
       if (!isMountedRef.current || currentImageIdRef.current !== imageId) {
         return;
       }
+      // Store in cache after successful load
+      cache.set(thumbnailUrl, img);
       setState('thumbnail-loaded');
     };
 
@@ -221,6 +236,21 @@ export function useProgressiveImage(
     }
 
     const imageId = image.id;
+    const cache = getImageCache();
+
+    // Check cache first
+    const cachedFullImage = cache.get(fullImageUrl);
+    if (cachedFullImage) {
+      // Full image is cached, update state immediately
+      if (currentImageIdRef.current === imageId && isMountedRef.current) {
+        setState('full-loaded');
+        setHasError(false);
+        setError(null);
+      }
+      return;
+    }
+
+    // Full image not in cache, load it
     const img = new Image();
     fullImgRef.current = img;
 
@@ -229,6 +259,8 @@ export function useProgressiveImage(
       if (!isMountedRef.current || currentImageIdRef.current !== imageId) {
         return;
       }
+      // Store in cache after successful load
+      cache.set(fullImageUrl, img);
       setState('full-loaded');
       setHasError(false);
       setError(null);
@@ -243,6 +275,22 @@ export function useProgressiveImage(
       // Try fallback to original format if format variant failed
       if (format !== 'original') {
         const originalUrl = getImageUrl(image, false);
+
+        // Check cache for original format
+        const cachedOriginal = cache.get(originalUrl);
+        if (cachedOriginal) {
+          // Original format is cached, use it
+          if (currentImageIdRef.current === imageId && isMountedRef.current) {
+            setFullImageUrl(originalUrl);
+            setFormat('original');
+            setState('full-loaded');
+            setHasError(false);
+            setError(null);
+          }
+          return;
+        }
+
+        // Original format not in cache, load it
         const fallbackImg = new Image();
         fullImgRef.current = fallbackImg;
 
@@ -251,6 +299,8 @@ export function useProgressiveImage(
           if (!isMountedRef.current || currentImageIdRef.current !== imageId) {
             return;
           }
+          // Store in cache after successful load
+          cache.set(originalUrl, fallbackImg);
           setFullImageUrl(originalUrl);
           setFormat('original');
           setState('full-loaded');

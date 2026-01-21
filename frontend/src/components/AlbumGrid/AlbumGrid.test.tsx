@@ -17,6 +17,32 @@ vi.mock('@/hooks/useAlbumData', () => ({
   useAlbumData: vi.fn(),
 }));
 
+// Mock the useScrollPosition hook
+vi.mock('@/hooks/useScrollPosition', () => ({
+  useScrollPosition: vi.fn(() => ({
+    scrollTop: 0,
+    setScrollTop: vi.fn(),
+    saveScrollPosition: vi.fn(),
+    clearScrollPosition: vi.fn(),
+  })),
+}));
+
+// Mock react-virtuoso
+vi.mock('react-virtuoso', () => ({
+  Virtuoso: ({ itemContent, totalCount, ...props }: any) => {
+    const items = Array.from({ length: totalCount }, (_, i) => i);
+    return (
+      <div data-testid="virtuoso-container" {...props}>
+        {items.map((index) => (
+          <div key={index} data-item-index={index}>
+            {itemContent(index)}
+          </div>
+        ))}
+      </div>
+    );
+  },
+}));
+
 describe('AlbumGrid', () => {
   const mockUseAlbumData = vi.mocked(useAlbumDataHook.useAlbumData);
 
