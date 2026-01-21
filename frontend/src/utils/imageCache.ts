@@ -289,10 +289,10 @@ export class ImageCache {
     // Get least recently used URL (first in array)
     const lruUrl = this.lruOrder[0];
     if (lruUrl) {
-      this.cache.delete(lruUrl);
-      this.lruOrder.shift();
+      // Remove from cache (use delete method to properly handle lruOrder removal)
+      this.delete(lruUrl);
       this.stats.evictionCount++;
-      this.stats.size = this.cache.size;
+      // Note: delete() already updates this.stats.size, so no need to update again
     }
   }
 

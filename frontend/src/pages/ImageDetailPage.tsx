@@ -9,14 +9,17 @@
  * @module frontend/src/pages
  */
 
+import { Suspense, lazy } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo } from 'react';
 import { parseAlbumImageParams, parseImageId } from '@/utils/routeParams';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useLightbox } from '@/hooks/useLightbox';
-import { Lightbox } from '@/components/Lightbox';
 import { isImage } from '@/types';
 import type { RouteParams, Image } from '@/types';
+
+// Lazy load Lightbox component for code splitting
+const Lightbox = lazy(() => import('@/components/Lightbox').then((module) => ({ default: module.Lightbox })));
 
 /**
  * ImageDetailPage component
@@ -157,15 +160,17 @@ export function ImageDetailPage() {
   return (
     <div className="image-detail-page">
       {currentImage !== null ? (
-        <Lightbox
-          isOpen={true}
-          image={currentImage}
-          albumContext={images}
-          albumId={routeParams.albumId}
-          onClose={lightboxState.closeLightbox}
-          onNext={lightboxState.navigateToNext}
-          onPrevious={lightboxState.navigateToPrevious}
-        />
+        <Suspense fallback={<div>Loading lightbox...</div>}>
+          <Lightbox
+            isOpen={true}
+            image={currentImage}
+            albumContext={images}
+            albumId={routeParams.albumId}
+            onClose={lightboxState.closeLightbox}
+            onNext={lightboxState.navigateToNext}
+            onPrevious={lightboxState.navigateToPrevious}
+          />
+        </Suspense>
       ) : null}
     </div>
   );

@@ -1,11 +1,13 @@
+import { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import {
-  HomePage,
-  AlbumDetailPage,
-  ImageDetailPage,
-  NotFoundPage,
-} from './pages';
+import { PageLoader } from './components/PageLoader';
+
+// Lazy load page components for code splitting
+const HomePage = lazy(() => import('./pages/HomePage').then((module) => ({ default: module.HomePage })));
+const AlbumDetailPage = lazy(() => import('./pages/AlbumDetailPage').then((module) => ({ default: module.AlbumDetailPage })));
+const ImageDetailPage = lazy(() => import('./pages/ImageDetailPage').then((module) => ({ default: module.ImageDetailPage })));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((module) => ({ default: module.NotFoundPage })));
 
 /**
  * App Component
@@ -29,14 +31,16 @@ import {
 function App() {
   return (
     <Layout>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/album/:albumId/image/:imageId" element={<ImageDetailPage />} />
-        <Route path="/album/:id" element={<AlbumDetailPage />} />
-        <Route path="/image/:id" element={<ImageDetailPage />} />
-        <Route path="/not-found" element={<NotFoundPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/album/:albumId/image/:imageId" element={<ImageDetailPage />} />
+          <Route path="/album/:id" element={<AlbumDetailPage />} />
+          <Route path="/image/:id" element={<ImageDetailPage />} />
+          <Route path="/not-found" element={<NotFoundPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
     </Layout>
   );
 }
