@@ -6,55 +6,6 @@
 
 
 
-## Create Theme Context and Switching UI
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Medium
-**Estimated Time:** 4-5 hours
-
-### Description
-Create React context for theme management and UI component for switching themes. Implement localStorage persistence and system preference detection.
-
-### Requirements
-
-#### Research Tasks
-- Research React Context API patterns for theme management
-- Research theme switching UI patterns (dropdown, toggle, menu)
-- Research localStorage persistence with React hooks
-- Research system preference detection (prefers-color-scheme media query)
-
-#### Implementation Tasks
-- Create `frontend/src/contexts/ThemeContext.tsx`
-- Implement theme context with light/dark themes
-- Add theme switching function
-- Implement localStorage persistence hook
-- Add system preference detection (respect prefers-color-scheme)
-- Create theme switcher UI component (toggle button or dropdown)
-- Add theme switcher to Layout header
-- Apply theme class to root element on mount and theme change
-- Write tests for theme context
-- Write tests for theme persistence
-- Write tests for system preference detection
-
-### Deliverable
-Working theme context with UI switcher and persistence
-
-### Testing Requirements
-- Verify theme switching works without page reload
-- Check localStorage persistence works correctly
-- Ensure system preference is respected on first load
-- Review context performance (no unnecessary re-renders)
-- Verify theme switcher is accessible
-
-### Technical Notes
-- Context API is appropriate for theme management
-- localStorage persistence is required
-- System preference should be detected on first load
-- Theme switching should be instant (no page reload)
-
----
-
 ## Add Theme Persistence and System Preference
 
 **Status:** Pending

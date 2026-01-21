@@ -1,7 +1,6 @@
 # TODO Summarized
 
 ## Pending Tasks
-- Create Theme Context and Switching UI - Medium - 4-5 hours - Create React context for theme management and UI component for switching themes
 - Add Theme Persistence and System Preference - Low - 2-3 hours - Enhance theme system with error handling and system preference detection
 - Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
 - Implement Lazy Loading for Images - High - 4-5 hours - Implement lazy loading for images to improve initial page load performance
@@ -24,10 +23,10 @@
 
 ## Summary
 
-**Total Tasks:** 19
-**Pending:** 19
+**Total Tasks:** 18
+**Pending:** 18
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 78-100 hours
+**Estimated Total Time:** 74-95 hours

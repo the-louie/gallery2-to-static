@@ -219,6 +219,14 @@
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-full: 9999px;
+
+  /* ThemeSwitcher Component */
+  --theme-switcher-bg: transparent;
+  --theme-switcher-border: #e0e0e0;
+  --theme-switcher-color: #333333;
+  --theme-switcher-bg-hover: #f0f0f0;
+  --theme-switcher-border-hover: #cccccc;
+  --theme-switcher-focus: #0066cc;
 }
 
 /* ============================================================================
@@ -420,4 +428,12 @@
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-full: 9999px;
+
+  /* ThemeSwitcher Component */
+  --theme-switcher-bg: transparent;
+  --theme-switcher-border: #404040;
+  --theme-switcher-color: #e5e5e5;
+  --theme-switcher-bg-hover: #404040;
+  --theme-switcher-border-hover: #525252;
+  --theme-switcher-focus: #4da6ff;
 }

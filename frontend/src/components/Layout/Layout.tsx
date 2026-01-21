@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ThemeSwitcher } from '../ThemeSwitcher';
 import './Layout.css';
 
 /**
@@ -51,11 +52,16 @@ export function Layout({ children, className }: LayoutProps) {
         Skip to main content
       </a>
       <header className="layout-header">
-        <nav className="layout-header-content" aria-label="Main navigation">
-          <Link to="/" className="layout-title-link" aria-label="Go to home page">
-            <h1 className="layout-title">Gallery 2 to Static</h1>
-          </Link>
-        </nav>
+        <div className="layout-header-content">
+          <nav aria-label="Main navigation">
+            <Link to="/" className="layout-title-link" aria-label="Go to home page">
+              <h1 className="layout-title">Gallery 2 to Static</h1>
+            </Link>
+          </nav>
+          <div className="layout-header-actions">
+            <ThemeSwitcher />
+          </div>
+        </div>
       </header>
       <main id="main-content" className="layout-main">
         {children}

@@ -284,3 +284,77 @@ describe('Layout Responsive Design', () => {
     expect(headerContent).toBeInTheDocument();
   });
 });
+
+describe('Layout Theme Switcher', () => {
+  it('renders theme switcher in header', () => {
+    render(
+      <Layout>
+        <div>Content</div>
+      </Layout>,
+    );
+
+    const themeSwitcher = screen.getByRole('button', { name: /theme/i });
+    expect(themeSwitcher).toBeInTheDocument();
+  });
+
+  it('theme switcher is in header actions area', () => {
+    const { container } = render(
+      <Layout>
+        <div>Content</div>
+      </Layout>,
+    );
+
+    const headerActions = container.querySelector('.layout-header-actions');
+    expect(headerActions).toBeInTheDocument();
+
+    const themeSwitcher = headerActions?.querySelector('.theme-switcher');
+    expect(themeSwitcher).toBeInTheDocument();
+  });
+
+  it('theme switcher is keyboard accessible', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Layout>
+        <div>Content</div>
+      </Layout>,
+    );
+
+    const themeSwitcher = screen.getByRole('button', { name: /theme/i });
+    themeSwitcher.focus();
+    expect(themeSwitcher).toHaveFocus();
+
+    // Should be able to activate with keyboard
+    await user.keyboard('{Enter}');
+    // The button should still be accessible after activation
+    expect(themeSwitcher).toBeInTheDocument();
+  });
+
+  it('theme switcher cycles through themes on click', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Layout>
+        <div>Content</div>
+      </Layout>,
+      { defaultThemePreference: 'light' },
+    );
+
+    const themeSwitcher = screen.getByRole('button', { name: /theme/i });
+
+    // Initial state: light
+    expect(themeSwitcher).toHaveTextContent('light');
+
+    // Click to change to dark
+    await user.click(themeSwitcher);
+    expect(themeSwitcher).toHaveTextContent('dark');
+
+    // Click to change to system
+    await user.click(themeSwitcher);
+    expect(themeSwitcher).toHaveTextContent('system');
+
+    // Click to change back to light
+    await user.click(themeSwitcher);
+    expect(themeSwitcher).toHaveTextContent('light');
+  });
+});
