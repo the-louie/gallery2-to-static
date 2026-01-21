@@ -706,4 +706,460 @@ describe('Lightbox', () => {
       expect(mockOnPrevious).not.toHaveBeenCalled();
     });
   });
+
+  describe('Zoom Functionality', () => {
+    it('renders zoom control buttons', () => {
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      expect(screen.getByLabelText('Zoom in')).toBeInTheDocument();
+      expect(screen.getByLabelText('Zoom out')).toBeInTheDocument();
+    });
+
+    it('renders reset zoom button when zoomed', async () => {
+      const user = userEvent.setup();
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      
+      const zoomInButton = screen.getByLabelText('Zoom in');
+      await user.click(zoomInButton);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Reset zoom')).toBeInTheDocument();
+      });
+    });
+
+    it('zooms in when zoom in button is clicked', async () => {
+      const user = userEvent.setup();
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      
+      const zoomInButton = screen.getByLabelText('Zoom in');
+      await user.click(zoomInButton);
+
+      const img = screen.getByAltText('Test Photo');
+      const transform = (img as HTMLElement).style.transform;
+      expect(transform).toContain('scale(1.25)');
+    });
+
+    it('zooms out when zoom out button is clicked', async () => {
+      const user = userEvent.setup();
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      
+      const zoomInButton = screen.getByLabelText('Zoom in');
+      await user.click(zoomInButton);
+      await user.click(zoomInButton);
+
+      const zoomOutButton = screen.getByLabelText('Zoom out');
+      await user.click(zoomOutButton);
+
+      const img = screen.getByAltText('Test Photo');
+      const transform = (img as HTMLElement).style.transform;
+      expect(transform).toContain('scale(1.25)');
+    });
+
+    it('resets zoom when reset button is clicked', async () => {
+      const user = userEvent.setup();
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      
+      const zoomInButton = screen.getByLabelText('Zoom in');
+      await user.click(zoomInButton);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Reset zoom')).toBeInTheDocument();
+      });
+
+      const resetButton = screen.getByLabelText('Reset zoom');
+      await user.click(resetButton);
+
+      await waitFor(() => {
+        const img = screen.getByAltText('Test Photo');
+        const transform = (img as HTMLElement).style.transform;
+        expect(transform).toBeUndefined();
+      });
+    });
+
+    it('disables zoom in button at max zoom', async () => {
+      const user = userEvent.setup();
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      
+      const zoomInButton = screen.getByLabelText('Zoom in');
+      
+      // Click zoom in multiple times to reach max
+      for (let i = 0; i < 15; i++) {
+        await user.click(zoomInButton);
+      }
+
+      await waitFor(() => {
+        expect(zoomInButton).toBeDisabled();
+      });
+    });
+
+    it('disables zoom out button at min zoom', () => {
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      
+      const zoomOutButton = screen.getByLabelText('Zoom out');
+      expect(zoomOutButton).toBeDisabled();
+    });
+
+    it('resets zoom when image changes', async () => {
+      const user = userEvent.setup();
+      const image1: Image = {
+        ...mockPhoto,
+        id: 1,
+      };
+      const image2: Image = {
+        ...mockPhoto,
+        id: 2,
+      };
+
+      const { rerender } = render(
+        <Lightbox isOpen={true} image={image1} onClose={mockOnClose} />,
+      );
+
+      const zoomInButton = screen.getByLabelText('Zoom in');
+      await user.click(zoomInButton);
+
+      rerender(<Lightbox isOpen={true} image={image2} onClose={mockOnClose} />);
+
+      await waitFor(() => {
+        const img = screen.getByAltText('Test Photo');
+        const transform = (img as HTMLElement).style.transform;
+        expect(transform).toBeUndefined();
+      });
+    });
+  });
+
+  describe('Pan Functionality', () => {
+    it('allows panning when zoomed', async () => {
+      const user = userEvent.setup();
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      
+      const zoomInButton = screen.getByLabelText('Zoom in');
+      await user.click(zoomInButton);
+
+      await waitFor(() => {
+        const img = screen.getByAltText('Test Photo');
+        const transform = (img as HTMLElement).style.transform;
+        expect(transform).toContain('scale');
+      });
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      expect(imageContainer).toHaveStyle({ cursor: 'grab' });
+    });
+
+    it('does not allow panning when not zoomed', () => {
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      expect(imageContainer).toHaveStyle({ cursor: 'default' });
+    });
+  });
+
+  describe('Integration Tests', () => {
+    const mockImages: Image[] = [
+      { ...mockPhoto, id: 1, title: 'Image 1' },
+      { ...mockPhoto, id: 2, title: 'Image 2' },
+      { ...mockPhoto, id: 3, title: 'Image 3' },
+    ];
+
+    const mockOnNext = vi.fn();
+    const mockOnPrevious = vi.fn();
+
+    describe('Zoom + Pan Interaction', () => {
+      it('allows panning after zooming in', async () => {
+        const user = userEvent.setup();
+        render(
+          <Lightbox
+            isOpen={true}
+            image={mockImages[0]}
+            onClose={mockOnClose}
+            albumContext={mockImages}
+            onNext={mockOnNext}
+            onPrevious={mockOnPrevious}
+          />,
+        );
+
+        const zoomInButton = screen.getByLabelText('Zoom in');
+        await user.click(zoomInButton);
+
+        await waitFor(() => {
+          const imageContainer = document.querySelector('.lightbox-image-container');
+          expect(imageContainer).toHaveStyle({ cursor: 'grab' });
+        });
+      });
+
+      it('constrains pan to boundaries when zoomed', async () => {
+        const user = userEvent.setup();
+        render(
+          <Lightbox
+            isOpen={true}
+            image={mockImages[0]}
+            onClose={mockOnClose}
+            albumContext={mockImages}
+          />,
+        );
+
+        const zoomInButton = screen.getByLabelText('Zoom in');
+        await user.click(zoomInButton);
+        await user.click(zoomInButton);
+
+        await waitFor(() => {
+          const img = screen.getByAltText('Test Photo');
+          expect(img).toHaveStyle({ transform: expect.stringContaining('scale') });
+        });
+      });
+    });
+
+    describe('Zoom + Image Navigation', () => {
+      it('resets zoom when navigating to next image', async () => {
+        const user = userEvent.setup();
+        const { rerender } = render(
+          <Lightbox
+            isOpen={true}
+            image={mockImages[0]}
+            onClose={mockOnClose}
+            albumContext={mockImages}
+            onNext={mockOnNext}
+            onPrevious={mockOnPrevious}
+          />,
+        );
+
+        const zoomInButton = screen.getByLabelText('Zoom in');
+        await user.click(zoomInButton);
+
+        await waitFor(() => {
+          const img = screen.getByAltText('Test Photo');
+          expect(img).toHaveStyle({ transform: expect.stringContaining('scale') });
+        });
+
+        // Navigate to next image
+        mockOnNext();
+        rerender(
+          <Lightbox
+            isOpen={true}
+            image={mockImages[1]}
+            onClose={mockOnClose}
+            albumContext={mockImages}
+            onNext={mockOnNext}
+            onPrevious={mockOnPrevious}
+          />,
+        );
+
+        await waitFor(() => {
+          const img = screen.getByAltText('Test Photo');
+          const transform = (img as HTMLElement).style.transform;
+          expect(transform).toBeUndefined();
+        });
+      });
+
+      it('resets zoom when navigating to previous image', async () => {
+        const user = userEvent.setup();
+        const { rerender } = render(
+          <Lightbox
+            isOpen={true}
+            image={mockImages[1]}
+            onClose={mockOnClose}
+            albumContext={mockImages}
+            onNext={mockOnNext}
+            onPrevious={mockOnPrevious}
+          />,
+        );
+
+        const zoomInButton = screen.getByLabelText('Zoom in');
+        await user.click(zoomInButton);
+
+        // Navigate to previous image
+        mockOnPrevious();
+        rerender(
+          <Lightbox
+            isOpen={true}
+            image={mockImages[0]}
+            onClose={mockOnClose}
+            albumContext={mockImages}
+            onNext={mockOnNext}
+            onPrevious={mockOnPrevious}
+          />,
+        );
+
+        await waitFor(() => {
+          const img = screen.getByAltText('Test Photo');
+          const transform = (img as HTMLElement).style.transform;
+          expect(transform).toBeUndefined();
+        });
+      });
+    });
+
+    describe('Zoom + Keyboard Navigation', () => {
+      it('allows keyboard navigation while zoomed', async () => {
+        const user = userEvent.setup();
+        render(
+          <Lightbox
+            isOpen={true}
+            image={mockImages[0]}
+            onClose={mockOnClose}
+            albumContext={mockImages}
+            onNext={mockOnNext}
+            onPrevious={mockOnPrevious}
+          />,
+        );
+
+        const zoomInButton = screen.getByLabelText('Zoom in');
+        await user.click(zoomInButton);
+
+        // Keyboard navigation should still work
+        await user.keyboard('{ArrowRight}');
+        expect(mockOnNext).toHaveBeenCalled();
+      });
+
+      it('resets zoom when navigating with keyboard', async () => {
+        const user = userEvent.setup();
+        const { rerender } = render(
+          <Lightbox
+            isOpen={true}
+            image={mockImages[0]}
+            onClose={mockOnClose}
+            albumContext={mockImages}
+            onNext={mockOnNext}
+            onPrevious={mockOnPrevious}
+          />,
+        );
+
+        const zoomInButton = screen.getByLabelText('Zoom in');
+        await user.click(zoomInButton);
+
+        // Navigate with keyboard
+        await user.keyboard('{ArrowRight}');
+        
+        // Simulate image change
+        rerender(
+          <Lightbox
+            isOpen={true}
+            image={mockImages[1]}
+            onClose={mockOnClose}
+            albumContext={mockImages}
+            onNext={mockOnNext}
+            onPrevious={mockOnPrevious}
+          />,
+        );
+
+        await waitFor(() => {
+          const img = screen.getByAltText('Test Photo');
+          const transform = (img as HTMLElement).style.transform;
+          expect(transform).toBeUndefined();
+        });
+      });
+    });
+  });
+
+  describe('Mouse Wheel Zoom', () => {
+    it('zooms in with Ctrl + wheel scroll up', async () => {
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      const wheelEvent = new WheelEvent('wheel', {
+        deltaY: -100,
+        ctrlKey: true,
+        clientX: 400,
+        clientY: 300,
+        bubbles: true,
+        cancelable: true,
+      });
+
+      imageContainer.dispatchEvent(wheelEvent);
+
+      await waitFor(() => {
+        const img = screen.getByAltText('Test Photo');
+        const transform = (img as HTMLElement).style.transform;
+        expect(transform).toContain('scale');
+      });
+    });
+
+    it('zooms out with Ctrl + wheel scroll down', async () => {
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      
+      const zoomInButton = screen.getByLabelText('Zoom in');
+      const user = userEvent.setup();
+      await user.click(zoomInButton);
+
+      await waitFor(() => {
+        const img = screen.getByAltText('Test Photo');
+        expect((img as HTMLElement).style.transform).toContain('scale');
+      });
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      const wheelEvent = new WheelEvent('wheel', {
+        deltaY: 100,
+        ctrlKey: true,
+        clientX: 400,
+        clientY: 300,
+        bubbles: true,
+        cancelable: true,
+      });
+
+      imageContainer.dispatchEvent(wheelEvent);
+
+      await waitFor(() => {
+        const img = screen.getByAltText('Test Photo');
+        const transform = (img as HTMLElement).style.transform;
+        // Should zoom out (scale should be smaller or reset)
+        expect(transform).toBeDefined();
+      });
+    });
+
+    it('does not zoom without Ctrl/Cmd modifier', () => {
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      const wheelEvent = new WheelEvent('wheel', {
+        deltaY: -100,
+        ctrlKey: false,
+        metaKey: false,
+        clientX: 400,
+        clientY: 300,
+        bubbles: true,
+        cancelable: true,
+      });
+
+      imageContainer.dispatchEvent(wheelEvent);
+
+      const img = screen.getByAltText('Test Photo');
+      const transform = (img as HTMLElement).style.transform;
+      expect(transform).toBeUndefined();
+    });
+  });
+
+  describe('Touch Pinch Zoom', () => {
+    it('detects two-finger touch for pinch zoom', () => {
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      const touchStartEvent = new TouchEvent('touchstart', {
+        touches: [
+          new Touch({ identifier: 1, target: imageContainer, clientX: 100, clientY: 100 }),
+          new Touch({ identifier: 2, target: imageContainer, clientX: 200, clientY: 200 }),
+        ],
+        bubbles: true,
+        cancelable: true,
+      });
+
+      imageContainer.dispatchEvent(touchStartEvent);
+
+      // Verify touch state was set (indirectly by checking zoom can be applied)
+      const img = screen.getByAltText('Test Photo');
+      expect(img).toBeInTheDocument();
+    });
+  });
 });

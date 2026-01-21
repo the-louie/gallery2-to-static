@@ -3,52 +3,6 @@
 ---
 
 
-## Add Image Zoom Functionality
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Medium
-**Estimated Time:** 4-5 hours
-
-### Description
-Add zoom and pan functionality to the lightbox component for detailed image viewing.
-
-### Requirements
-
-#### Research Tasks
-- Research image zoom/pan implementation patterns
-- Research touch gesture handling for zoom (pinch)
-- Research mouse wheel zoom patterns
-- Research zoom performance optimization
-
-#### Implementation Tasks
-- Add zoom functionality to Lightbox component
-- Implement mouse wheel zoom (Ctrl/Cmd + scroll)
-- Implement zoom buttons (+/-) or slider
-- Add pan functionality when zoomed (drag to move)
-- Add reset zoom button
-- Implement touch pinch zoom (basic implementation)
-- Limit zoom range (min 100%, max 400% or fit-to-screen)
-- Write component tests for zoom functionality
-- Write tests for zoom limits
-
-### Deliverable
-Image zoom and pan functionality in lightbox
-
-### Testing Requirements
-- Verify zoom works smoothly
-- Check pan works when zoomed
-- Ensure zoom limits are enforced
-- Review performance with large images
-- Check mobile touch interactions
-
-### Technical Notes
-- Zoom should be smooth and performant
-- Pan should work when image is zoomed beyond viewport
-- Touch pinch zoom is important for mobile
-- Zoom limits prevent excessive zooming
-
----
 
 ## Design Theme System Architecture
 

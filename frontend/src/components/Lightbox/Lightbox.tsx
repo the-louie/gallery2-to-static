@@ -19,6 +19,10 @@
  * - Backdrop click-to-close
  * - Responsive design (mobile and desktop)
  * - Loading and error states
+ * - Image zoom and pan functionality
+ * - Mouse wheel zoom (Ctrl/Cmd + scroll)
+ * - Touch pinch zoom for mobile devices
+ * - Zoom controls (zoom in, zoom out, reset)
  *
  * ## Usage
  *
@@ -43,6 +47,10 @@
  * - `Enter` or `Space` - Activate close button
  * - `ArrowLeft` - Navigate to previous image (when navigation available)
  * - `ArrowRight` - Navigate to next image (when navigation available)
+ * - `Ctrl/Cmd + Mouse Wheel` - Zoom in/out
+ * - `Mouse Drag` - Pan when zoomed
+ * - `Touch Pinch` - Zoom on mobile devices
+ * - `Touch Drag` - Pan on mobile devices
  *
  * @module frontend/src/components/Lightbox
  */
@@ -52,6 +60,7 @@ import type { Image } from '@/types';
 import { getImageUrl } from '@/utils/imageUrl';
 import { useImageNavigation } from '@/hooks/useImageNavigation';
 import { useImagePreload } from '@/hooks/useImagePreload';
+import { useImageZoom } from '@/hooks/useImageZoom';
 import './Lightbox.css';
 
 /**
@@ -100,12 +109,84 @@ export function Lightbox({
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  
+  // Drag state for pan
+  const dragStateRef = useRef<{
+    isDragging: boolean;
+    startX: number;
+    startY: number;
+    startPanX: number;
+    startPanY: number;
+  }>({
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+    startPanX: 0,
+    startPanY: 0,
+  });
+
+  // Touch state for pinch zoom
+  const touchStateRef = useRef<{
+    touches: Map<number, { x: number; y: number }>;
+    initialDistance: number;
+    initialZoom: number;
+    initialPan: { x: number; y: number };
+  }>({
+    touches: new Map(),
+    initialDistance: 0,
+    initialZoom: 100,
+    initialPan: { x: 0, y: 0 },
+  });
 
   // Use image navigation hook for next/previous functionality
   const navigation = useImageNavigation(albumContext, image?.id || null);
 
   // Preload adjacent images for smooth navigation
   useImagePreload(image, albumContext);
+
+  // Get image dimensions for zoom
+  const imageWidth = image?.width || 0;
+  const imageHeight = image?.height || 0;
+
+  // Get container dimensions for zoom calculations
+  const [containerDimensions, setContainerDimensions] = useState<{
+    width: number;
+    height: number;
+  }>({ width: 0, height: 0 });
+
+  // Update container dimensions
+  useEffect(() => {
+    if (!imageContainerRef.current) {
+      return;
+    }
+
+    const updateDimensions = () => {
+      if (imageContainerRef.current) {
+        const rect = imageContainerRef.current.getBoundingClientRect();
+        setContainerDimensions({
+          width: rect.width,
+          height: rect.height,
+        });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+
+    return () => {
+      window.removeEventListener('resize', updateDimensions);
+    };
+  }, [isOpen]);
+
+  // Use zoom hook
+  const zoom = useImageZoom(
+    imageWidth,
+    imageHeight,
+    containerDimensions.width,
+    containerDimensions.height,
+  );
 
   // Determine if navigation is available
   const canNavigate = useMemo(() => {
@@ -182,6 +263,13 @@ export function Lightbox({
       setHasError(false);
     }
   }, [isOpen, image]);
+
+  // Reset zoom when image ID changes (separate effect to avoid dependency issues)
+  useEffect(() => {
+    if (isOpen && image && image.id !== undefined) {
+      zoom.resetZoom();
+    }
+  }, [isOpen, image?.id, zoom.resetZoom]);
 
   // Handle body scroll lock when modal opens/closes
   useEffect(() => {
@@ -298,6 +386,255 @@ export function Lightbox({
     };
   }, [isOpen, onClose, onNext, onPrevious, navigation.hasNext, navigation.hasPrevious]);
 
+  // Handle mouse wheel zoom (Ctrl/Cmd + scroll)
+  useEffect(() => {
+    if (!isOpen || !imageContainerRef.current) {
+      return;
+    }
+
+    const handleWheel = (event: WheelEvent) => {
+      // Only zoom if Ctrl (Windows/Linux) or Cmd (Mac) is pressed
+      if (!event.ctrlKey && !event.metaKey) {
+        return;
+      }
+
+      event.preventDefault();
+
+      // Get mouse position relative to image container
+      const rect = imageContainerRef.current?.getBoundingClientRect();
+      if (!rect) {
+        return;
+      }
+
+      const centerX = event.clientX - rect.left;
+      const centerY = event.clientY - rect.top;
+
+      // Get current zoom state
+      const currentZoom = zoom.zoom;
+
+      // Calculate zoom delta from wheel delta
+      const zoomDelta = -event.deltaY * 0.5; // Adjust sensitivity
+      const newZoom = Math.max(
+        100,
+        Math.min(400, currentZoom + zoomDelta),
+      );
+
+      zoom.setZoom(newZoom, centerX, centerY);
+    };
+
+    const container = imageContainerRef.current;
+    container.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, [isOpen, zoom.zoom, zoom.setZoom]);
+
+  // Handle mouse drag pan
+  const handleMouseDown = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      // Only pan if zoomed
+      if (!zoom.isZoomed) {
+        return;
+      }
+
+      // Don't start drag if clicking on buttons or other controls
+      if (
+        (event.target as HTMLElement).closest('button') ||
+        (event.target as HTMLElement).closest('.lightbox-counter')
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      dragStateRef.current = {
+        isDragging: true,
+        startX: event.clientX,
+        startY: event.clientY,
+        startPanX: zoom.pan.x,
+        startPanY: zoom.pan.y,
+      };
+
+      // Change cursor to grabbing
+      if (imageContainerRef.current) {
+        imageContainerRef.current.style.cursor = 'grabbing';
+      }
+    },
+    [zoom.isZoomed, zoom.pan],
+  );
+
+  const handleMouseMove = useCallback(
+    (event: MouseEvent) => {
+      if (!dragStateRef.current.isDragging) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const deltaX = event.clientX - dragStateRef.current.startX;
+      const deltaY = event.clientY - dragStateRef.current.startY;
+
+      zoom.setPan(
+        dragStateRef.current.startPanX + deltaX,
+        dragStateRef.current.startPanY + deltaY,
+      );
+    },
+    [zoom],
+  );
+
+  const handleMouseUp = useCallback(() => {
+    if (dragStateRef.current.isDragging) {
+      dragStateRef.current.isDragging = false;
+      if (imageContainerRef.current) {
+        imageContainerRef.current.style.cursor = zoom.isZoomed ? 'grab' : 'default';
+      }
+    }
+  }, [zoom.isZoomed]);
+
+  // Add mouse event listeners for pan
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isOpen, handleMouseMove, handleMouseUp]);
+
+  // Handle touch events for pinch zoom and pan
+  const handleTouchStart = useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      const touches = Array.from(event.touches);
+
+      if (touches.length === 1) {
+        // Single touch - pan
+        if (!zoom.isZoomed) {
+          return;
+        }
+
+        event.preventDefault();
+        const touch = touches[0];
+        dragStateRef.current = {
+          isDragging: true,
+          startX: touch.clientX,
+          startY: touch.clientY,
+          startPanX: zoom.pan.x,
+          startPanY: zoom.pan.y,
+        };
+      } else if (touches.length === 2) {
+        // Two touches - pinch zoom
+        event.preventDefault();
+
+        const touch1 = touches[0];
+        const touch2 = touches[1];
+
+        const distance = Math.hypot(
+          touch2.clientX - touch1.clientX,
+          touch2.clientY - touch1.clientY,
+        );
+
+        const centerX = (touch1.clientX + touch2.clientX) / 2;
+        const centerY = (touch1.clientY + touch2.clientY) / 2;
+
+        const rect = imageContainerRef.current?.getBoundingClientRect();
+        if (rect) {
+          touchStateRef.current = {
+            touches: new Map([
+              [touch1.identifier, { x: touch1.clientX, y: touch1.clientY }],
+              [touch2.identifier, { x: touch2.clientX, y: touch2.clientY }],
+            ]),
+            initialDistance: distance,
+            initialZoom: zoom.zoom,
+            initialPan: { ...zoom.pan },
+          };
+        }
+      }
+    },
+    [zoom.isZoomed, zoom.pan, zoom.zoom],
+  );
+
+  const handleTouchMove = useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      const touches = Array.from(event.touches);
+
+      if (touches.length === 1 && dragStateRef.current.isDragging) {
+        // Single touch pan
+        event.preventDefault();
+        const touch = touches[0];
+        const deltaX = touch.clientX - dragStateRef.current.startX;
+        const deltaY = touch.clientY - dragStateRef.current.startY;
+
+        zoom.setPan(
+          dragStateRef.current.startPanX + deltaX,
+          dragStateRef.current.startPanY + deltaY,
+        );
+      } else if (touches.length === 2) {
+        // Two touch pinch zoom
+        event.preventDefault();
+
+        const touch1 = touches[0];
+        const touch2 = touches[1];
+
+        const distance = Math.hypot(
+          touch2.clientX - touch1.clientX,
+          touch2.clientY - touch1.clientY,
+        );
+
+        if (touchStateRef.current.initialDistance > 0) {
+          const scale = distance / touchStateRef.current.initialDistance;
+          const newZoom = Math.max(
+            100,
+            Math.min(400, touchStateRef.current.initialZoom * scale),
+          );
+
+          const centerX = (touch1.clientX + touch2.clientX) / 2;
+          const centerY = (touch1.clientY + touch2.clientY) / 2;
+
+          const rect = imageContainerRef.current?.getBoundingClientRect();
+          if (rect) {
+            const relativeX = centerX - rect.left;
+            const relativeY = centerY - rect.top;
+            zoom.setZoom(newZoom, relativeX, relativeY);
+          }
+        }
+      }
+    },
+    [zoom.setPan, zoom.setZoom],
+  );
+
+  const handleTouchEnd = useCallback(() => {
+    dragStateRef.current.isDragging = false;
+    touchStateRef.current = {
+      touches: new Map(),
+      initialDistance: 0,
+      initialZoom: 100,
+      initialPan: { x: 0, y: 0 },
+    };
+  }, []);
+
+  const handleTouchCancel = useCallback(() => {
+    dragStateRef.current.isDragging = false;
+    touchStateRef.current = {
+      touches: new Map(),
+      initialDistance: 0,
+      initialZoom: 100,
+      initialPan: { x: 0, y: 0 },
+    };
+  }, []);
+
+  // Calculate image transform style
+  const imageTransform = useMemo(() => {
+    if (!zoom.isZoomed) {
+      return undefined;
+    }
+    return `scale(${zoom.zoom / 100}) translate(${zoom.pan.x}px, ${zoom.pan.y}px)`;
+  }, [zoom.zoom, zoom.pan, zoom.isZoomed]);
+
   // Handle image load
   const handleImageLoad = useCallback(() => {
     setIsLoading(false);
@@ -401,8 +738,57 @@ export function Lightbox({
           </>
         )}
 
+        {/* Zoom Controls */}
+        <div className="lightbox-zoom-controls">
+          <button
+            className="lightbox-zoom-btn lightbox-zoom-in"
+            onClick={() => zoom.zoomIn()}
+            disabled={!zoom.canZoomIn}
+            aria-label="Zoom in"
+            type="button"
+          >
+            <span className="lightbox-zoom-icon" aria-hidden="true">
+              +
+            </span>
+          </button>
+          <button
+            className="lightbox-zoom-btn lightbox-zoom-out"
+            onClick={() => zoom.zoomOut()}
+            disabled={!zoom.canZoomOut}
+            aria-label="Zoom out"
+            type="button"
+          >
+            <span className="lightbox-zoom-icon" aria-hidden="true">
+              −
+            </span>
+          </button>
+          {zoom.isZoomed && (
+            <button
+              className="lightbox-zoom-btn lightbox-zoom-reset"
+              onClick={() => zoom.resetZoom()}
+              aria-label="Reset zoom"
+              type="button"
+            >
+              <span className="lightbox-zoom-icon" aria-hidden="true">
+                ↻
+              </span>
+            </button>
+          )}
+        </div>
+
         {/* Image Container */}
-        <div className="lightbox-image-container">
+        <div
+          className="lightbox-image-container"
+          ref={imageContainerRef}
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchCancel}
+          style={{
+            cursor: zoom.isZoomed ? 'grab' : 'default',
+          }}
+        >
           {hasError ? (
             <div className="lightbox-error" role="img" aria-label={altText}>
               <span className="lightbox-error-icon" aria-hidden="true">
@@ -418,6 +804,7 @@ export function Lightbox({
                 </div>
               )}
               <img
+                ref={imageRef}
                 src={imageUrl}
                 alt={altText}
                 className={`lightbox-image ${isLoading ? 'lightbox-image-loading' : ''}`}
@@ -425,6 +812,10 @@ export function Lightbox({
                 onError={handleImageError}
                 loading="eager"
                 decoding="async"
+                style={{
+                  transform: imageTransform,
+                  transformOrigin: 'center center',
+                }}
               />
             </>
           )}

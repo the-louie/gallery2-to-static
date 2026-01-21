@@ -198,6 +198,72 @@
   -webkit-backdrop-filter: blur(4px);
 }
 
+/* Zoom Controls */
+.lightbox-zoom-controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10;
+  margin: 0.5rem;
+}
+
+.lightbox-zoom-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background-color: var(--lightbox-zoom-bg, rgba(255, 255, 255, 0.1));
+  border: 2px solid var(--lightbox-zoom-border, rgba(255, 255, 255, 0.3));
+  border-radius: 50%;
+  color: var(--lightbox-zoom-color, #fff);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    transform 0.2s ease;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.lightbox-zoom-btn:hover:not(:disabled) {
+  background-color: var(--lightbox-zoom-bg-hover, rgba(255, 255, 255, 0.2));
+  border-color: var(--lightbox-zoom-border-hover, rgba(255, 255, 255, 0.5));
+  transform: scale(1.1);
+}
+
+.lightbox-zoom-btn:focus {
+  outline: 2px solid var(--lightbox-focus, #0066cc);
+  outline-offset: 2px;
+}
+
+.lightbox-zoom-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.lightbox-zoom-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.lightbox-zoom-btn:disabled:hover {
+  background-color: var(--lightbox-zoom-bg, rgba(255, 255, 255, 0.1));
+  border-color: var(--lightbox-zoom-border, rgba(255, 255, 255, 0.3));
+  transform: scale(1);
+}
+
+.lightbox-zoom-icon {
+  display: block;
+  line-height: 1;
+  font-weight: 300;
+}
+
 /* Image Container */
 .lightbox-image-container {
   position: relative;
@@ -210,6 +276,10 @@
   background-color: var(--lightbox-image-bg, transparent);
   border-radius: var(--lightbox-border-radius, 4px);
   overflow: hidden;
+  will-change: transform;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Image */
@@ -222,6 +292,12 @@
   object-position: center;
   display: block;
   transition: opacity 0.3s ease;
+  will-change: transform;
+  transform-origin: center center;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  user-drag: none;
 }
 
 .lightbox-image-loading {
@@ -399,6 +475,18 @@
     padding: 0.375rem 0.625rem;
     font-size: 0.8125rem;
   }
+
+  .lightbox-zoom-controls {
+    margin: 0.75rem;
+  }
+
+  .lightbox-zoom-btn {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    font-size: 1.75rem;
+  }
 }
 
 /* Desktop Enhancements */
@@ -429,7 +517,8 @@
 
 /* Focus visible for keyboard navigation */
 .lightbox-close:focus-visible,
-.lightbox-nav:focus-visible {
+.lightbox-nav:focus-visible,
+.lightbox-zoom-btn:focus-visible {
   outline: 2px solid var(--lightbox-focus, #0066cc);
   outline-offset: 2px;
 }
@@ -440,7 +529,8 @@
   .lightbox-container,
   .lightbox-image,
   .lightbox-close,
-  .lightbox-nav {
+  .lightbox-nav,
+  .lightbox-zoom-btn {
     animation: none;
     transition: none;
   }
