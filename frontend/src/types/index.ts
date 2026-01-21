@@ -140,51 +140,45 @@ export interface NavigationState {
 }
 
 /**
+ * Note: Theme-related types are defined in frontend/src/contexts/ThemeContext.tsx
+ * - Theme: 'light' | 'dark'
+ * - ThemePreference: 'light' | 'dark' | 'system'
+ * - ThemeContextValue: interface with theme, preference, setPreference, isDark, isLight
+ * 
+ * The old types below (ThemeMode, ThemeColors, ThemeConfig, ThemeState) were from
+ * an earlier design and are not used in the current implementation. They are kept
+ * for reference but should not be imported or used.
+ */
+
+/**
+ * @deprecated Use ThemePreference from ThemeContext instead
  * Theme mode - determines which theme is active
- *
- * 'system' mode respects the user's system preference (prefers-color-scheme media query).
  */
 export type ThemeMode = 'light' | 'dark' | 'system';
 
 /**
+ * @deprecated Not used in current implementation - themes use CSS variables
  * Theme color palette structure
- *
- * Defines the color values used throughout the application theme.
- * All colors should be defined as CSS-compatible color values (hex, rgb, hsl, etc.).
  */
 export interface ThemeColors {
-  /** Primary background color */
   background: string;
-  /** Secondary background color (for cards, panels, etc.) */
   backgroundSecondary: string;
-  /** Primary text color */
   text: string;
-  /** Secondary text color (for muted text) */
   textSecondary: string;
-  /** Primary accent color (for links, buttons, etc.) */
   accent: string;
-  /** Border color */
   border: string;
-  /** Hover state color */
   hover: string;
-  /** Focus state color */
   focus: string;
-  /** Error state color */
   error: string;
-  /** Success state color */
   success: string;
 }
 
 /**
+ * @deprecated Not used in current implementation - themes use CSS variables
  * Complete theme configuration
- *
- * Contains all theme variables including colors, spacing, typography, etc.
- * This structure maps to CSS custom properties for dynamic theming.
  */
 export interface ThemeConfig {
-  /** Color palette for the theme */
   colors: ThemeColors;
-  /** Spacing scale (in pixels or rem units) */
   spacing: {
     xs: string;
     sm: string;
@@ -192,7 +186,6 @@ export interface ThemeConfig {
     lg: string;
     xl: string;
   };
-  /** Typography settings */
   typography: {
     fontFamily: string;
     fontSize: {
@@ -202,7 +195,6 @@ export interface ThemeConfig {
       xl: string;
     };
   };
-  /** Border radius values */
   borderRadius: {
     sm: string;
     md: string;
@@ -211,18 +203,13 @@ export interface ThemeConfig {
 }
 
 /**
+ * @deprecated Use ThemeContextValue from ThemeContext instead
  * Theme state for theme context
- *
- * Used by the ThemeContext to manage theme state and provide theme switching functionality.
  */
 export interface ThemeState {
-  /** Current theme mode */
   mode: ThemeMode;
-  /** Current theme configuration */
   config: ThemeConfig;
-  /** Function to set theme mode */
   setMode: (mode: ThemeMode) => void;
-  /** Function to toggle between light and dark themes */
   toggleTheme: () => void;
 }
 
@@ -418,16 +405,13 @@ export interface BreadcrumbProps {
 }
 
 /**
- * Props for theme switcher component
- *
- * Used by components that allow users to switch themes.
+ * @deprecated Use ThemeSwitcherProps from frontend/src/components/ThemeSwitcher/ThemeSwitcher.tsx instead
+ * This interface has a different structure and is not used by the actual ThemeSwitcher component.
+ * The actual component only accepts className prop and uses useTheme hook internally.
  */
 export interface ThemeSwitcherProps {
-  /** Current theme mode */
   currentMode: ThemeMode;
-  /** Function to set theme mode */
   onModeChange: (mode: ThemeMode) => void;
-  /** Optional className for styling */
   className?: string;
 }
 

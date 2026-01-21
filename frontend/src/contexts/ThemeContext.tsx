@@ -60,7 +60,7 @@
  * ```
  */
 
-import React, { createContext, useContext, useMemo, useEffect, useLayoutEffect } from 'react';
+import React, { createContext, useContext, useMemo, useLayoutEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useSystemThemePreference } from '../hooks/useSystemThemePreference';
 
@@ -123,7 +123,7 @@ export interface ThemeProviderProps {
 /**
  * Apply theme to document root element
  * @param theme - The theme to apply
- * 
+ *
  * Error handling:
  * - Handles cases where document is not available (SSR)
  * - Always applies a valid theme (light or dark)
@@ -143,84 +143,6 @@ function applyTheme(theme: Theme): void {
       }
     }
   }
-}
-
-/**
- * Get initial theme from localStorage or system preference to prevent FOUC
- * This is called synchronously before render
- * 
- * Error handling:
- * - Falls back to light theme if localStorage fails
- * - Falls back to light theme if system preference detection fails
- * - Always returns a valid theme (light or dark)
- */
-function getInitialTheme(defaultPreference: ThemePreference): Theme {
-  let storedPreference: ThemePreference | null = null;
-
-  // Try to read from localStorage
-  if (typeof window !== 'undefined' && window.localStorage) {
-    try {
-      const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-      if (stored) {
-        try {
-          const preference = JSON.parse(stored) as ThemePreference;
-          if (preference === 'dark') return 'dark';
-          if (preference === 'light') return 'light';
-          if (preference === 'system') {
-            storedPreference = 'system';
-          }
-        } catch (parseError) {
-          // Corrupted data in localStorage
-          if (process.env.NODE_ENV === 'development') {
-            console.warn(
-              `Corrupted theme preference data in localStorage. Falling back to default.`,
-              parseError
-            );
-          }
-          // Try to clean up corrupted data
-          try {
-            window.localStorage.removeItem(THEME_STORAGE_KEY);
-          } catch {
-            // Ignore cleanup errors
-          }
-        }
-      }
-    } catch (storageError) {
-      // localStorage not available (private browsing, disabled, etc.)
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(
-          `localStorage not available for theme preference. Using default preference.`,
-          storageError
-        );
-      }
-      // Fall through to default preference
-    }
-  }
-
-  // Check system preference if stored preference is 'system' OR
-  // (no stored preference AND default is 'system')
-  const shouldUseSystemPreference =
-    storedPreference === 'system' ||
-    (storedPreference === null && defaultPreference === 'system');
-
-  if (shouldUseSystemPreference && typeof window !== 'undefined' && window.matchMedia) {
-    try {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    } catch (mediaError) {
-      // matchMedia failed, fall back to light theme
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(
-          `Failed to detect system theme preference. Falling back to light theme.`,
-          mediaError
-        );
-      }
-      return 'light';
-    }
-  }
-
-  // Return default preference (if not 'system')
-  // Ensure we always return a valid theme
-  return defaultPreference === 'dark' ? 'dark' : 'light';
 }
 
 /**
@@ -270,13 +192,6 @@ export function ThemeProvider({
   useLayoutEffect(() => {
     applyTheme(theme);
   }, [theme]);
-
-  // Also apply on initial mount synchronously
-  // This handles the case where useLayoutEffect might be too late
-  useEffect(() => {
-    const initialTheme = getInitialTheme(defaultPreference);
-    applyTheme(initialTheme);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo<ThemeContextValue>(

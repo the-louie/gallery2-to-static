@@ -154,7 +154,7 @@ export function useLocalStorage<T>(
             window.localStorage.setItem(key, JSON.stringify(valueToStore));
           } catch (storageError) {
             const errorType = getErrorType(storageError);
-            
+
             // Handle quota exceeded error
             if (errorType === 'QuotaExceededError') {
               if (process.env.NODE_ENV === 'development') {
@@ -166,7 +166,7 @@ export function useLocalStorage<T>(
               // This is acceptable - the app continues to work
               return;
             }
-            
+
             // Handle security error (private browsing)
             if (errorType === 'SecurityError') {
               if (process.env.NODE_ENV === 'development') {
@@ -177,7 +177,7 @@ export function useLocalStorage<T>(
               // State is already updated, but persistence failed
               return;
             }
-            
+
             // Other errors
             if (process.env.NODE_ENV === 'development') {
               console.warn(
