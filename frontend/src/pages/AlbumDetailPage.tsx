@@ -12,6 +12,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo } from 'react';
 import { AlbumDetail } from '@/components/AlbumDetail';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { FilterPanel } from '@/components/FilterPanel';
 import { useBreadcrumbPath } from '@/hooks/useBreadcrumbPath';
 import { parseAlbumId } from '@/utils/routeParams';
 import type { RouteParams } from '@/types';
@@ -60,6 +61,7 @@ export function AlbumDetailPage() {
   // Use AlbumDetail component for rendering
   return (
     <div className="album-detail-page">
+      <FilterPanel />
       <AlbumDetail albumId={albumId} breadcrumbs={breadcrumbs} />
     </div>
   );

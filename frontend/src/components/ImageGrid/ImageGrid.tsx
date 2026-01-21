@@ -11,7 +11,9 @@
 import React, { useMemo, useCallback } from 'react';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
-import type { ImageGridProps, Image } from '@/types';
+import { useFilter } from '@/contexts/FilterContext';
+import { applyFilters } from '@/utils/filterUtils';
+import type { ImageGridProps, Image, Child } from '@/types';
 import { isImage } from '@/types';
 import { ImageThumbnail } from '@/components/ImageThumbnail';
 import { ImageGridSkeleton } from './ImageGridSkeleton';
@@ -45,22 +47,33 @@ export function ImageGrid({
     albumId ?? null,
   );
 
+  // Get filter criteria from context
+  const { criteria } = useFilter();
+
   // Combine loading states: show loading if either prop or hook indicates loading
   // If isLoadingProp is explicitly provided, it takes precedence; otherwise use hook's state
   const isLoading = isLoadingProp !== undefined ? isLoadingProp : isLoadingHook;
 
-  // Filter images from data or use provided images prop
+  // Filter images from data or use provided images prop, then apply filters
   const images = useMemo(() => {
+    let allImages: Image[] = [];
+    
     // If imagesProp is explicitly provided (even if empty array), use it
     if (imagesProp !== undefined) {
-      return imagesProp;
+      allImages = imagesProp;
+    } else if (data) {
+      // Otherwise, use data from hook
+      allImages = data.filter(isImage);
     }
-    // Otherwise, use data from hook
-    if (!data) {
-      return [];
+
+    // Apply filters if any are active
+    if (allImages.length > 0) {
+      const filtered = applyFilters(allImages as Child[], criteria);
+      return filtered.filter(isImage) as Image[];
     }
-    return data.filter(isImage);
-  }, [imagesProp, data]);
+
+    return allImages;
+  }, [imagesProp, data, criteria]);
 
   // Scroll position management
   const { scrollTop, saveScrollPosition } = useScrollPosition(albumId ?? null, 'image-grid');

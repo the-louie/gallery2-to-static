@@ -13,8 +13,10 @@ import userEvent from '@testing-library/user-event';
 import { AlbumDetail } from './AlbumDetail';
 import { mockChildren, mockAlbum } from '@/__mocks__/mockData';
 import * as useAlbumDataHook from '@/hooks/useAlbumData';
+import * as useFilterHook from '@/contexts/FilterContext';
+import { FilterProvider } from '@/contexts/FilterContext';
 import { DataLoadError } from '@/utils/dataLoader';
-import type { Album } from '@/types';
+import type { Album, FilterCriteria } from '@/types';
 
 // Mock the useAlbumData hook
 vi.mock('@/hooks/useAlbumData', () => ({
@@ -31,12 +33,31 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
+// Mock the useFilter hook
+vi.mock('@/contexts/FilterContext', () => ({
+  useFilter: vi.fn(() => ({
+    criteria: {},
+    setCriteria: vi.fn(),
+    clearFilters: vi.fn(),
+    hasActiveFilters: vi.fn(() => false),
+  })),
+  FilterProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 describe('AlbumDetail', () => {
   const mockUseAlbumData = vi.mocked(useAlbumDataHook.useAlbumData);
+  const mockUseFilter = vi.mocked(useFilterHook.useFilter);
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockNavigate.mockClear();
+    // Default filter state (no active filters)
+    mockUseFilter.mockReturnValue({
+      criteria: {},
+      setCriteria: vi.fn(),
+      clearFilters: vi.fn(),
+      hasActiveFilters: vi.fn(() => false),
+    });
   });
 
   describe('Component Rendering', () => {
@@ -492,6 +513,81 @@ describe('AlbumDetail', () => {
       render(<AlbumDetail albumId={7} album={albumWithoutDescription} />);
       // Should not crash, description should not render
       expect(screen.getByText('Albums')).toBeInTheDocument();
+    });
+  });
+
+  describe('Filter Integration', () => {
+    it('applies filters to both albums and images', () => {
+      const criteria: FilterCriteria = {
+        albumType: 'GalleryPhotoItem',
+      };
+
+      mockUseFilter.mockReturnValue({
+        criteria,
+        setCriteria: vi.fn(),
+        clearFilters: vi.fn(),
+        hasActiveFilters: vi.fn(() => true),
+      });
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <FilterProvider defaultCriteria={criteria}>
+          <AlbumDetail albumId={7} />
+        </FilterProvider>
+      );
+
+      // Should only show images, not albums
+      expect(screen.getByText('Test Photo')).toBeInTheDocument();
+      expect(screen.queryByText('Test Album')).not.toBeInTheDocument();
+    });
+
+    it('applies date range filter to albums and images', () => {
+      const criteria: FilterCriteria = {
+        dateRange: {
+          start: new Date('2024-01-01').getTime(),
+          end: new Date('2024-12-31').getTime(),
+        },
+      };
+
+      mockUseFilter.mockReturnValue({
+        criteria,
+        setCriteria: vi.fn(),
+        clearFilters: vi.fn(),
+        hasActiveFilters: vi.fn(() => true),
+      });
+
+      const itemsWithDates = [
+        {
+          ...mockChildren[0],
+          timestamp: new Date('2024-06-15').getTime(),
+        },
+        {
+          ...mockChildren[1],
+          timestamp: new Date('2025-06-15').getTime(),
+        },
+      ];
+
+      mockUseAlbumData.mockReturnValue({
+        data: itemsWithDates,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <FilterProvider defaultCriteria={criteria}>
+          <AlbumDetail albumId={7} />
+        </FilterProvider>
+      );
+
+      // Should only show items within date range
+      expect(screen.getByText('Test Album')).toBeInTheDocument();
     });
   });
 });

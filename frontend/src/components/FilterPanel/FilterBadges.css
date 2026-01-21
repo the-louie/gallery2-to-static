@@ -1,0 +1,77 @@
+/**
+ * Filter Badges Component Styles
+ *
+ * Styles for the filter badges component including badges and remove buttons.
+ *
+ * @module frontend/src/components/FilterPanel
+ */
+
+.filter-badges {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+}
+
+.filter-badges-header {
+  display: flex;
+  align-items: center;
+}
+
+.filter-badges-count {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-secondary, #666);
+  font-weight: 500;
+}
+
+.filter-badges-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs, 0.25rem);
+}
+
+.filter-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 0.25rem);
+  padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+  background-color: var(--color-background-secondary, #f5f5f5);
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: var(--border-radius-sm, 0.25rem);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.filter-badge-label {
+  color: var(--color-text, #000);
+}
+
+.filter-badge-remove {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary, #666);
+  font-size: var(--font-size-lg, 1.25rem);
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  border-radius: var(--border-radius-sm, 0.25rem);
+}
+
+.filter-badge-remove:hover {
+  color: var(--color-error, #d32f2f);
+  background-color: var(--color-error-light, #ffebee);
+}
+
+.filter-badge-remove:focus {
+  outline: none;
+  color: var(--color-error, #d32f2f);
+  box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.25);
+}
+
+.filter-badge-remove:active {
+  background-color: var(--color-error-light, #ffebee);
+}

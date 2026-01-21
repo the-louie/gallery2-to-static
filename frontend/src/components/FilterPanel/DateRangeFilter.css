@@ -1,0 +1,86 @@
+/**
+ * Date Range Filter Component Styles
+ *
+ * Styles for the date range filter component including inputs, labels, and clear button.
+ *
+ * @module frontend/src/components/FilterPanel
+ */
+
+.date-range-filter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 1rem);
+}
+
+.date-range-filter-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 0.5rem);
+}
+
+@media (min-width: 768px) {
+  .date-range-filter-inputs {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+}
+
+.date-range-filter-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 0.25rem);
+  flex: 1;
+}
+
+.date-range-filter-label {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--color-text-secondary, #666);
+}
+
+.date-range-filter-input {
+  padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: var(--border-radius-sm, 0.25rem);
+  font-size: var(--font-size-base, 1rem);
+  color: var(--color-text, #000);
+  background-color: var(--color-background, #fff);
+  transition: border-color 0.2s ease;
+}
+
+.date-range-filter-input:focus {
+  outline: none;
+  border-color: var(--color-accent, #007bff);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.date-range-filter-input:hover {
+  border-color: var(--color-hover, #bbb);
+}
+
+.date-range-filter-clear {
+  padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: var(--border-radius-sm, 0.25rem);
+  background-color: var(--color-background-secondary, #f5f5f5);
+  color: var(--color-text, #000);
+  font-size: var(--font-size-sm, 0.875rem);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  align-self: flex-start;
+}
+
+.date-range-filter-clear:hover {
+  background-color: var(--color-hover, #e0e0e0);
+  border-color: var(--color-hover, #bbb);
+}
+
+.date-range-filter-clear:focus {
+  outline: none;
+  border-color: var(--color-accent, #007bff);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.date-range-filter-clear:active {
+  background-color: var(--color-hover, #d0d0d0);
+}

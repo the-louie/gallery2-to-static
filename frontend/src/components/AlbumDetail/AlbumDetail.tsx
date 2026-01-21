@@ -11,10 +11,12 @@
 import React, { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAlbumData } from '@/hooks/useAlbumData';
+import { useFilter } from '@/contexts/FilterContext';
+import { applyFilters } from '@/utils/filterUtils';
 import { AlbumGrid } from '@/components/AlbumGrid';
 import { ImageGrid } from '@/components/ImageGrid';
 import { AlbumDetailEmpty } from './AlbumDetailEmpty';
-import type { Album, Image } from '@/types';
+import type { Album, Image, Child } from '@/types';
 import { isAlbum, isImage } from '@/types';
 import './AlbumDetail.css';
 
@@ -68,23 +70,38 @@ export function AlbumDetail({
   const navigate = useNavigate();
   const { data, isLoading, error, refetch } = useAlbumData(albumId);
 
+  // Get filter criteria from context
+  const { criteria } = useFilter();
+
   // Use album prop if provided, otherwise null (metadata is optional)
   const album = albumProp || null;
 
-  // Separate albums and images from the data
+  // Separate albums and images from the data, then apply filters
   const albums = useMemo<Album[]>(() => {
     if (!data) {
       return [];
     }
-    return data.filter(isAlbum);
-  }, [data]);
+    const allAlbums = data.filter(isAlbum);
+    // Apply filters if any are active
+    if (allAlbums.length > 0) {
+      const filtered = applyFilters(allAlbums as Child[], criteria);
+      return filtered.filter(isAlbum) as Album[];
+    }
+    return allAlbums;
+  }, [data, criteria]);
 
   const images = useMemo<Image[]>(() => {
     if (!data) {
       return [];
     }
-    return data.filter(isImage);
-  }, [data]);
+    const allImages = data.filter(isImage);
+    // Apply filters if any are active
+    if (allImages.length > 0) {
+      const filtered = applyFilters(allImages as Child[], criteria);
+      return filtered.filter(isImage) as Image[];
+    }
+    return allImages;
+  }, [data, criteria]);
 
   // Default navigation handlers
   const handleAlbumClick = useCallback(

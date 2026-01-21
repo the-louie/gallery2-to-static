@@ -11,7 +11,9 @@
 import React, { useMemo, useCallback } from 'react';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
-import type { AlbumGridProps, Album } from '@/types';
+import { useFilter } from '@/contexts/FilterContext';
+import { applyFilters } from '@/utils/filterUtils';
+import type { AlbumGridProps, Album, Child } from '@/types';
 import { isAlbum } from '@/types';
 import { AlbumCard } from './AlbumCard';
 import { AlbumGridSkeleton } from './AlbumGridSkeleton';
@@ -45,22 +47,33 @@ export function AlbumGrid({
     albumId ?? null,
   );
 
+  // Get filter criteria from context
+  const { criteria } = useFilter();
+
   // Combine loading states: show loading if either prop or hook indicates loading
   // If isLoadingProp is explicitly provided, it takes precedence; otherwise use hook's state
   const isLoading = isLoadingProp !== undefined ? isLoadingProp : isLoadingHook;
 
-  // Filter albums from data or use provided albums prop
+  // Filter albums from data or use provided albums prop, then apply filters
   const albums = useMemo(() => {
+    let allAlbums: Album[] = [];
+    
     // If albumsProp is explicitly provided (even if empty array), use it
     if (albumsProp !== undefined) {
-      return albumsProp;
+      allAlbums = albumsProp;
+    } else if (data) {
+      // Otherwise, use data from hook
+      allAlbums = data.filter(isAlbum);
     }
-    // Otherwise, use data from hook
-    if (!data) {
-      return [];
+
+    // Apply filters if any are active
+    if (allAlbums.length > 0) {
+      const filtered = applyFilters(allAlbums as Child[], criteria);
+      return filtered.filter(isAlbum) as Album[];
     }
-    return data.filter(isAlbum);
-  }, [albumsProp, data]);
+
+    return allAlbums;
+  }, [albumsProp, data, criteria]);
 
   // Scroll position management
   const { scrollTop, saveScrollPosition } = useScrollPosition(albumId ?? null, 'album-grid');

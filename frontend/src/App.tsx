@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { PageLoader } from './components/PageLoader';
+import { FilterProvider } from './contexts/FilterContext';
 
 // Lazy load page components for code splitting
 const HomePage = lazy(() => import('./pages/HomePage').then((module) => ({ default: module.HomePage })));
@@ -31,19 +32,21 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((module) => 
  */
 function App() {
   return (
-    <Layout>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/search" element={<SearchResultsPage />} />
-          <Route path="/album/:albumId/image/:imageId" element={<ImageDetailPage />} />
-          <Route path="/album/:id" element={<AlbumDetailPage />} />
-          <Route path="/image/:id" element={<ImageDetailPage />} />
-          <Route path="/not-found" element={<NotFoundPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </Suspense>
-    </Layout>
+    <FilterProvider>
+      <Layout>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
+            <Route path="/album/:albumId/image/:imageId" element={<ImageDetailPage />} />
+            <Route path="/album/:id" element={<AlbumDetailPage />} />
+            <Route path="/image/:id" element={<ImageDetailPage />} />
+            <Route path="/not-found" element={<NotFoundPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+      </Layout>
+    </FilterProvider>
   );
 }
 

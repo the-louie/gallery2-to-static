@@ -62,7 +62,7 @@ describe('searchHighlight', () => {
 
     it('handles query in middle of text', () => {
       const result = highlightText('start middle end', 'middle');
-      expect(result.some(part => 
+      expect(result.some(part =>
         typeof part !== 'string' && part.text === 'middle' && part.highlight
       )).toBe(true);
     });

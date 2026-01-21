@@ -92,7 +92,7 @@ export class SearchIndex {
 
     this.isBuilding = true;
     this.buildPromise = this._buildIndexRecursive(rootAlbumId);
-    
+
     try {
       await this.buildPromise;
     } finally {

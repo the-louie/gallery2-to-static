@@ -92,7 +92,7 @@ export function useSearch(): UseSearchReturn {
    */
   const ensureIndexBuilt = useCallback(async (): Promise<void> => {
     const index = getSearchIndex();
-    
+
     // If already built, return immediately
     if (index.getItemCount() > 0 && !index.isIndexBuilding()) {
       return;

@@ -17,3 +17,15 @@ export type {
   ThemeContextValue,
   ThemeProviderProps,
 } from './ThemeContext';
+
+// Filter context
+export {
+  FilterContext,
+  FilterProvider,
+  useFilter,
+} from './FilterContext';
+
+export type {
+  FilterContextValue,
+  FilterProviderProps,
+} from './FilterContext';
