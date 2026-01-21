@@ -187,4 +187,148 @@ describe('useLocalStorage', () => {
     expect(result1.current[0]).toBe('updated1');
     expect(result2.current[0]).toBe('value2');
   });
+
+  describe('Error Handling', () => {
+    it('handles QUOTA_EXCEEDED_ERR when writing', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const { result } = renderHook(() => useLocalStorage('quotaKey', 'initial'));
+
+      // Mock localStorage to throw QUOTA_EXCEEDED_ERR
+      const originalSetItem = window.localStorage.setItem;
+      const quotaError = new DOMException('Quota exceeded', 'QuotaExceededError');
+      window.localStorage.setItem = vi.fn(() => {
+        throw quotaError;
+      });
+
+      act(() => {
+        result.current[1]('newValue');
+      });
+
+      // State should still update (optimistic update)
+      expect(result.current[0]).toBe('newValue');
+      // But localStorage write should fail
+      expect(window.localStorage.setItem).toHaveBeenCalled();
+
+      // Restore
+      window.localStorage.setItem = originalSetItem;
+      consoleSpy.mockRestore();
+    });
+
+    it('handles SECURITY_ERR (private browsing) when writing', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const { result } = renderHook(() => useLocalStorage('securityKey', 'initial'));
+
+      // Mock localStorage to throw SECURITY_ERR
+      const originalSetItem = window.localStorage.setItem;
+      const securityError = new DOMException('Security error', 'SecurityError');
+      window.localStorage.setItem = vi.fn(() => {
+        throw securityError;
+      });
+
+      act(() => {
+        result.current[1]('newValue');
+      });
+
+      // State should still update (optimistic update)
+      expect(result.current[0]).toBe('newValue');
+      // But localStorage write should fail
+      expect(window.localStorage.setItem).toHaveBeenCalled();
+
+      // Restore
+      window.localStorage.setItem = originalSetItem;
+      consoleSpy.mockRestore();
+    });
+
+    it('handles corrupted data by removing it', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const removeItemSpy = vi.spyOn(localStorage, 'removeItem');
+
+      // Store invalid JSON
+      localStorage.setItem('corruptedKey', 'not valid json{');
+
+      const { result } = renderHook(() => useLocalStorage('corruptedKey', 'fallback'));
+
+      expect(result.current[0]).toBe('fallback');
+      // Should attempt to clean up corrupted data
+      expect(removeItemSpy).toHaveBeenCalledWith('corruptedKey');
+
+      removeItemSpy.mockRestore();
+      consoleSpy.mockRestore();
+    });
+
+    it('handles localStorage completely unavailable', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Mock localStorage to be completely unavailable
+      const originalLocalStorage = window.localStorage;
+      Object.defineProperty(window, 'localStorage', {
+        value: undefined,
+        writable: true,
+      });
+
+      const { result } = renderHook(() => useLocalStorage('unavailableKey', 'fallback'));
+
+      expect(result.current[0]).toBe('fallback');
+
+      act(() => {
+        result.current[1]('newValue');
+      });
+
+      // State should still update
+      expect(result.current[0]).toBe('newValue');
+
+      // Restore
+      Object.defineProperty(window, 'localStorage', {
+        value: originalLocalStorage,
+        writable: true,
+      });
+
+      consoleSpy.mockRestore();
+    });
+
+    it('handles errors in functional updates gracefully', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const { result } = renderHook(() => useLocalStorage('funcKey', 0));
+
+      act(() => {
+        // This should work
+        result.current[1]((prev) => prev + 1);
+      });
+
+      expect(result.current[0]).toBe(1);
+
+      // Try a functional update that throws
+      act(() => {
+        result.current[1](() => {
+          throw new Error('Functional update error');
+        });
+      });
+
+      // State should not change if functional update fails
+      expect(result.current[0]).toBe(1);
+
+      consoleSpy.mockRestore();
+    });
+
+    it('handles storage event with corrupted data', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const { result } = renderHook(() => useLocalStorage('eventKey', 'initial'));
+
+      // Simulate storage event with corrupted data
+      const storageEvent = new StorageEvent('storage', {
+        key: 'eventKey',
+        newValue: 'not valid json{',
+        storageArea: localStorage,
+      });
+
+      act(() => {
+        window.dispatchEvent(storageEvent);
+      });
+
+      // Should not crash, should keep current value
+      expect(result.current[0]).toBe('initial');
+
+      consoleSpy.mockRestore();
+    });
+  });
 });

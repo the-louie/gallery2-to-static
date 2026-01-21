@@ -10,7 +10,10 @@
  * - Detects system preference via prefers-color-scheme media query
  * - Automatically updates when system preference changes
  * - Handles browsers without media query support (defaults to 'light')
+ * - Supports both addEventListener (modern) and addListener (legacy) APIs
+ * - Robust error handling for matchMedia failures
  * - Cleans up event listeners on unmount
+ * - Handles rapid preference changes gracefully
  *
  * ## Browser Support
  *
@@ -87,29 +90,56 @@ export function useSystemThemePreference(): SystemTheme {
       return;
     }
 
-    const mediaQuery = window.matchMedia(DARK_MODE_QUERY);
+    let mediaQuery: MediaQueryList | null = null;
+    let handleChange: ((event: MediaQueryListEvent) => void) | null = null;
 
-    // Handler for media query changes
-    const handleChange = (event: MediaQueryListEvent) => {
-      setSystemTheme(event.matches ? 'dark' : 'light');
-    };
+    try {
+      mediaQuery = window.matchMedia(DARK_MODE_QUERY);
 
-    // Modern browsers use addEventListener
-    // Older browsers use addListener (deprecated but needed for Safari < 14)
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleChange);
-    } else if (mediaQuery.addListener) {
-      // Fallback for older browsers
-      mediaQuery.addListener(handleChange);
+      // Handler for media query changes
+      handleChange = (event: MediaQueryListEvent) => {
+        try {
+          setSystemTheme(event.matches ? 'dark' : 'light');
+        } catch (error) {
+          // Handle errors in state update (shouldn't happen, but be safe)
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Error updating system theme preference:', error);
+          }
+        }
+      };
+
+      // Modern browsers use addEventListener
+      // Older browsers use addListener (deprecated but needed for Safari < 14)
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleChange);
+      } else if (mediaQuery.addListener) {
+        // Fallback for older browsers
+        mediaQuery.addListener(handleChange);
+      }
+    } catch (error) {
+      // Handle matchMedia failures gracefully
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Failed to set up system theme preference listener:', error);
+      }
+      // Keep current theme (defaults to light from initial state)
     }
 
     // Cleanup listener on unmount
     return () => {
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener('change', handleChange);
-      } else if (mediaQuery.removeListener) {
-        // Fallback for older browsers
-        mediaQuery.removeListener(handleChange);
+      if (mediaQuery && handleChange) {
+        try {
+          if (mediaQuery.removeEventListener) {
+            mediaQuery.removeEventListener('change', handleChange);
+          } else if (mediaQuery.removeListener) {
+            // Fallback for older browsers
+            mediaQuery.removeListener(handleChange);
+          }
+        } catch (error) {
+          // Handle cleanup errors gracefully
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Error cleaning up system theme preference listener:', error);
+          }
+        }
       }
     };
   }, []);

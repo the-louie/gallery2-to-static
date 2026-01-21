@@ -6,47 +6,6 @@
 
 
 
-## Add Theme Persistence and System Preference
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 2-3 hours
-
-### Description
-Enhance theme system with robust error handling, system preference change detection, and smooth transitions.
-
-### Requirements
-
-#### Research Tasks
-- Research localStorage error handling (private browsing, quota)
-- Research prefers-color-scheme media query changes
-- Research theme transition animations
-
-#### Implementation Tasks
-- Add error handling for localStorage failures
-- Implement media query listener for system preference changes
-- Add smooth theme transition animations (CSS transitions)
-- Handle edge cases (localStorage disabled, quota exceeded)
-- Add fallback to light theme if localStorage fails
-- Write tests for error handling
-- Write tests for media query listener
-
-### Deliverable
-Robust theme persistence with system preference support
-
-### Testing Requirements
-- Verify graceful degradation when localStorage unavailable
-- Check system preference changes are detected
-- Ensure transitions are smooth and performant
-- Review error handling covers all cases
-
-### Technical Notes
-- localStorage can fail in private browsing mode
-- System preference changes should be detected and applied
-- Smooth transitions improve UX
-- Fallback to light theme if persistence fails
-
 ---
 
 ## Implement Per-Album Theme Configuration

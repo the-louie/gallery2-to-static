@@ -1,7 +1,6 @@
 # TODO Summarized
 
 ## Pending Tasks
-- Add Theme Persistence and System Preference - Low - 2-3 hours - Enhance theme system with error handling and system preference detection
 - Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
 - Implement Lazy Loading for Images - High - 4-5 hours - Implement lazy loading for images to improve initial page load performance
 - Implement Progressive Image Loading - Medium - 4-5 hours - Implement progressive image loading with blur-up technique
@@ -23,10 +22,10 @@
 
 ## Summary
 
-**Total Tasks:** 18
-**Pending:** 18
+**Total Tasks:** 17
+**Pending:** 17
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 74-95 hours
+**Estimated Total Time:** 72-92 hours

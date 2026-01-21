@@ -9,8 +9,11 @@
  * - Light/Dark theme support
  * - System preference detection and following
  * - localStorage persistence of user preference
+ * - Robust error handling with graceful fallbacks
+ * - Smooth theme transitions (CSS)
  * - Memoized context value to prevent unnecessary re-renders
  * - TypeScript type safety
+ * - FOUC (Flash of Unstyled Content) prevention
  *
  * ## Theme Resolution
  *
@@ -18,6 +21,15 @@
  * - 'light': Always use light theme
  * - 'dark': Always use dark theme
  * - 'system': Follow the operating system's preference
+ *
+ * ## Error Handling
+ *
+ * The theme system handles errors gracefully:
+ * - localStorage failures: Falls back to default preference or light theme
+ * - System preference detection failures: Falls back to light theme
+ * - Corrupted data: Automatically cleaned up
+ * - Always returns a valid theme (light or dark)
+ * - Errors are logged in development mode only
  *
  * ## Usage
  *
@@ -84,7 +96,9 @@ const defaultContextValue: ThemeContextValue = {
   theme: 'light',
   preference: 'system',
   setPreference: () => {
-    console.warn('ThemeProvider not found. Make sure your component is wrapped in ThemeProvider.');
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('ThemeProvider not found. Make sure your component is wrapped in ThemeProvider.');
+    }
   },
   isDark: false,
   isLight: true,
@@ -109,13 +123,24 @@ export interface ThemeProviderProps {
 /**
  * Apply theme to document root element
  * @param theme - The theme to apply
+ * 
+ * Error handling:
+ * - Handles cases where document is not available (SSR)
+ * - Always applies a valid theme (light or dark)
  */
 function applyTheme(theme: Theme): void {
-  if (typeof document !== 'undefined') {
-    if (theme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
+  if (typeof document !== 'undefined' && document.documentElement) {
+    try {
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+    } catch (error) {
+      // Handle edge cases where attribute manipulation fails
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Failed to apply theme to document element:', error);
+      }
     }
   }
 }
@@ -123,6 +148,11 @@ function applyTheme(theme: Theme): void {
 /**
  * Get initial theme from localStorage or system preference to prevent FOUC
  * This is called synchronously before render
+ * 
+ * Error handling:
+ * - Falls back to light theme if localStorage fails
+ * - Falls back to light theme if system preference detection fails
+ * - Always returns a valid theme (light or dark)
  */
 function getInitialTheme(defaultPreference: ThemePreference): Theme {
   let storedPreference: ThemePreference | null = null;
@@ -132,15 +162,38 @@ function getInitialTheme(defaultPreference: ThemePreference): Theme {
     try {
       const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
       if (stored) {
-        const preference = JSON.parse(stored) as ThemePreference;
-        if (preference === 'dark') return 'dark';
-        if (preference === 'light') return 'light';
-        if (preference === 'system') {
-          storedPreference = 'system';
+        try {
+          const preference = JSON.parse(stored) as ThemePreference;
+          if (preference === 'dark') return 'dark';
+          if (preference === 'light') return 'light';
+          if (preference === 'system') {
+            storedPreference = 'system';
+          }
+        } catch (parseError) {
+          // Corrupted data in localStorage
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(
+              `Corrupted theme preference data in localStorage. Falling back to default.`,
+              parseError
+            );
+          }
+          // Try to clean up corrupted data
+          try {
+            window.localStorage.removeItem(THEME_STORAGE_KEY);
+          } catch {
+            // Ignore cleanup errors
+          }
         }
       }
-    } catch {
-      // Ignore errors, fall through to default
+    } catch (storageError) {
+      // localStorage not available (private browsing, disabled, etc.)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(
+          `localStorage not available for theme preference. Using default preference.`,
+          storageError
+        );
+      }
+      // Fall through to default preference
     }
   }
 
@@ -151,10 +204,22 @@ function getInitialTheme(defaultPreference: ThemePreference): Theme {
     (storedPreference === null && defaultPreference === 'system');
 
   if (shouldUseSystemPreference && typeof window !== 'undefined' && window.matchMedia) {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    try {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } catch (mediaError) {
+      // matchMedia failed, fall back to light theme
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(
+          `Failed to detect system theme preference. Falling back to light theme.`,
+          mediaError
+        );
+      }
+      return 'light';
+    }
   }
 
   // Return default preference (if not 'system')
+  // Ensure we always return a valid theme
   return defaultPreference === 'dark' ? 'dark' : 'light';
 }
 
@@ -188,11 +253,16 @@ export function ThemeProvider({
   const systemTheme = useSystemThemePreference();
 
   // Resolve the actual theme based on preference
+  // Always ensure we have a valid theme (light or dark)
   const theme: Theme = useMemo(() => {
     if (preference === 'system') {
-      return systemTheme;
+      // systemTheme should always be 'light' or 'dark' from the hook
+      // but we add a safety check just in case
+      return systemTheme === 'dark' ? 'dark' : 'light';
     }
-    return preference;
+    // preference should always be 'light' or 'dark' when not 'system'
+    // but we add a safety check
+    return preference === 'dark' ? 'dark' : 'light';
   }, [preference, systemTheme]);
 
   // Apply theme to DOM immediately (before paint) using useLayoutEffect

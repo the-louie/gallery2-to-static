@@ -437,3 +437,72 @@
   --theme-switcher-border-hover: #525252;
   --theme-switcher-focus: #4da6ff;
 }
+
+/* ============================================================================
+   Theme Transitions
+   ============================================================================ */
+
+/**
+ * Smooth transitions for theme changes
+ * 
+ * Transitions are applied to color and background properties that change
+ * between themes. This provides a smooth visual experience when switching
+ * between light and dark themes.
+ * 
+ * The transitions respect the prefers-reduced-motion media query to ensure
+ * accessibility for users who prefer reduced motion.
+ */
+
+:root,
+[data-theme="dark"] {
+  /* Transition properties for theme changes */
+  transition:
+    background-color 0.3s ease-in-out,
+    color 0.3s ease-in-out,
+    border-color 0.3s ease-in-out,
+    box-shadow 0.3s ease-in-out;
+}
+
+/* Disable transitions for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  [data-theme="dark"] {
+    transition: none;
+  }
+}
+
+/* Apply transitions to elements that commonly use theme variables */
+/* Using a more specific selector to avoid performance issues */
+body,
+button,
+a,
+input,
+select,
+textarea,
+[class*="card"],
+[class*="grid"],
+[class*="header"],
+[class*="footer"] {
+  transition:
+    background-color 0.3s ease-in-out,
+    color 0.3s ease-in-out,
+    border-color 0.3s ease-in-out;
+}
+
+/* Disable transitions for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  [data-theme="dark"],
+  body,
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  [class*="card"],
+  [class*="grid"],
+  [class*="header"],
+  [class*="footer"] {
+    transition: none;
+  }
+}
