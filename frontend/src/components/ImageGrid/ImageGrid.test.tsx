@@ -41,6 +41,14 @@ vi.mock('@/contexts/FilterContext', () => ({
   FilterProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+// Mock the useSort hook
+vi.mock('@/hooks/useSort', () => ({
+  useSort: vi.fn(() => ({
+    option: 'date-desc' as const,
+    setOption: vi.fn(),
+  })),
+}));
+
 // Mock react-virtuoso
 vi.mock('react-virtuoso', () => ({
   Virtuoso: ({ itemContent, totalCount, ...props }: any) => {

@@ -2,7 +2,6 @@
 
 ## Pending Tasks
 - Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
-- Implement Sorting Options - Medium - 3-4 hours - Implement sorting functionality to sort albums and images by date, name, or size
 - Implement View Mode Switching (Grid/List) - Low - 4-5 hours - Implement view mode switching between grid and list views for albums and images
 - Implement Touch Gestures for Mobile - Low - 5-6 hours - Implement touch gesture support for mobile devices including swipe navigation
 - Accessibility Audit and Improvements - High - 5-6 hours - Conduct comprehensive accessibility audit and implement improvements for WCAG 2.1 AA compliance
@@ -15,10 +14,10 @@
 
 ## Summary
 
-**Total Tasks:** 9
-**Pending:** 9
+**Total Tasks:** 8
+**Pending:** 8
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 42-53 hours
+**Estimated Total Time:** 39-49 hours

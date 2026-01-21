@@ -63,51 +63,6 @@ Per-album theme configuration system with JSON file and theme resolution logic
 
 ---
 
-## Implement Sorting Options
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Low
-**Estimated Time:** 3-4 hours
-
-### Description
-Implement sorting functionality to sort albums and images by date, name, or size. Include persistence of sort preference.
-
-### Requirements
-
-#### Research Tasks
-- Research sorting UI patterns (dropdown, buttons)
-- Research sort state persistence
-- Research multi-level sorting
-
-#### Implementation Tasks
-- Create SortDropdown component
-- Implement sort by date (newest/oldest)
-- Implement sort by name (A-Z, Z-A)
-- Implement sort by size (if available)
-- Add sort UI to album/image views
-- Persist sort preference (localStorage)
-- Apply sorting to displayed items
-- Write tests for sorting logic
-- Write tests for sort persistence
-
-### Deliverable
-Sorting functionality with persistence
-
-### Testing Requirements
-- Verify all sort options work correctly
-- Check sort persistence works
-- Ensure sort UI is accessible
-- Review sort performance
-
-### Technical Notes
-- Sort preference should be persisted
-- Multiple sort options should be available
-- Sorting should be performant
-- UI should be accessible
-
----
-
 ## Implement View Mode Switching (Grid/List)
 
 **Status:** Pending

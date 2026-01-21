@@ -44,6 +44,14 @@ vi.mock('@/contexts/FilterContext', () => ({
   FilterProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+// Mock the useSort hook
+vi.mock('@/hooks/useSort', () => ({
+  useSort: vi.fn((context: 'albums' | 'images') => ({
+    option: 'date-desc' as const,
+    setOption: vi.fn(),
+  })),
+}));
+
 describe('AlbumDetail', () => {
   const mockUseAlbumData = vi.mocked(useAlbumDataHook.useAlbumData);
   const mockUseFilter = vi.mocked(useFilterHook.useFilter);

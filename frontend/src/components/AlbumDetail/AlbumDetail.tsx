@@ -11,10 +11,12 @@
 import React, { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAlbumData } from '@/hooks/useAlbumData';
+import { useSort } from '@/hooks/useSort';
 import { useFilter } from '@/contexts/FilterContext';
 import { applyFilters } from '@/utils/filterUtils';
 import { AlbumGrid } from '@/components/AlbumGrid';
 import { ImageGrid } from '@/components/ImageGrid';
+import { SortDropdown } from '@/components/SortDropdown';
 import { AlbumDetailEmpty } from './AlbumDetailEmpty';
 import type { Album, Image, Child } from '@/types';
 import { isAlbum, isImage } from '@/types';
@@ -72,6 +74,10 @@ export function AlbumDetail({
 
   // Get filter criteria from context
   const { criteria } = useFilter();
+
+  // Get sort preferences for albums and images
+  const albumsSort = useSort('albums');
+  const imagesSort = useSort('images');
 
   // Use album prop if provided, otherwise null (metadata is optional)
   const album = albumProp || null;
@@ -275,8 +281,18 @@ export function AlbumDetail({
           className="album-detail-albums"
           aria-label="Child albums"
         >
-          <h2 className="album-detail-section-title">Albums</h2>
-          <AlbumGrid albums={albums} onAlbumClick={handleAlbumClick} />
+          <div className="album-detail-section-header">
+            <h2 className="album-detail-section-title">Albums</h2>
+            <SortDropdown
+              currentOption={albumsSort.option}
+              onOptionChange={albumsSort.setOption}
+            />
+          </div>
+          <AlbumGrid
+            albums={albums}
+            onAlbumClick={handleAlbumClick}
+            sortOption={albumsSort.option}
+          />
         </section>
       )}
 
@@ -286,8 +302,18 @@ export function AlbumDetail({
           className="album-detail-images"
           aria-label="Images"
         >
-          <h2 className="album-detail-section-title">Images</h2>
-          <ImageGrid images={images} onImageClick={handleImageClick} />
+          <div className="album-detail-section-header">
+            <h2 className="album-detail-section-title">Images</h2>
+            <SortDropdown
+              currentOption={imagesSort.option}
+              onOptionChange={imagesSort.setOption}
+            />
+          </div>
+          <ImageGrid
+            images={images}
+            onImageClick={handleImageClick}
+            sortOption={imagesSort.option}
+          />
         </section>
       )}
     </div>

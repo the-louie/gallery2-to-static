@@ -11,9 +11,11 @@
 import React, { useMemo, useCallback } from 'react';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
+import { useSort } from '@/hooks/useSort';
 import { useFilter } from '@/contexts/FilterContext';
 import { applyFilters } from '@/utils/filterUtils';
-import type { AlbumGridProps, Album, Child } from '@/types';
+import { sortItems } from '@/utils/sorting';
+import type { AlbumGridProps, Album, Child, SortOption } from '@/types';
 import { isAlbum } from '@/types';
 import { AlbumCard } from './AlbumCard';
 import { AlbumGridSkeleton } from './AlbumGridSkeleton';
@@ -38,9 +40,11 @@ export function AlbumGrid({
   className,
   viewMode = 'grid',
   albumId,
+  sortOption: sortOptionProp,
 }: Omit<AlbumGridProps, 'albums'> & {
   albums?: AlbumGridProps['albums'];
   albumId?: number | null;
+  sortOption?: SortOption;
 }) {
   // Use hook if albumId is provided, otherwise use props
   const { data, isLoading: isLoadingHook, error, refetch } = useAlbumData(
@@ -50,14 +54,18 @@ export function AlbumGrid({
   // Get filter criteria from context
   const { criteria } = useFilter();
 
+  // Get sort option from hook or use prop if provided
+  const { option: sortOptionFromHook } = useSort('albums');
+  const sortOption = sortOptionProp ?? sortOptionFromHook;
+
   // Combine loading states: show loading if either prop or hook indicates loading
   // If isLoadingProp is explicitly provided, it takes precedence; otherwise use hook's state
   const isLoading = isLoadingProp !== undefined ? isLoadingProp : isLoadingHook;
 
-  // Filter albums from data or use provided albums prop, then apply filters
+  // Filter albums from data or use provided albums prop, then apply filters and sorting
   const albums = useMemo(() => {
     let allAlbums: Album[] = [];
-    
+
     // If albumsProp is explicitly provided (even if empty array), use it
     if (albumsProp !== undefined) {
       allAlbums = albumsProp;
@@ -67,13 +75,20 @@ export function AlbumGrid({
     }
 
     // Apply filters if any are active
-    if (allAlbums.length > 0) {
-      const filtered = applyFilters(allAlbums as Child[], criteria);
-      return filtered.filter(isAlbum) as Album[];
+    // Skip filtering if albumsProp is provided (parent has already filtered)
+    let filtered = allAlbums;
+    if (allAlbums.length > 0 && albumsProp === undefined) {
+      const filteredItems = applyFilters(allAlbums as Child[], criteria);
+      filtered = filteredItems.filter(isAlbum) as Album[];
     }
 
-    return allAlbums;
-  }, [albumsProp, data, criteria]);
+    // Apply sorting
+    if (filtered.length > 0 && sortOption) {
+      return sortItems(filtered, sortOption);
+    }
+
+    return filtered;
+  }, [albumsProp, data, criteria, sortOption]);
 
   // Scroll position management
   const { scrollTop, saveScrollPosition } = useScrollPosition(albumId ?? null, 'album-grid');

@@ -11,9 +11,11 @@
 import React, { useMemo, useCallback } from 'react';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
+import { useSort } from '@/hooks/useSort';
 import { useFilter } from '@/contexts/FilterContext';
 import { applyFilters } from '@/utils/filterUtils';
-import type { ImageGridProps, Image, Child } from '@/types';
+import { sortItems } from '@/utils/sorting';
+import type { ImageGridProps, Image, Child, SortOption } from '@/types';
 import { isImage } from '@/types';
 import { ImageThumbnail } from '@/components/ImageThumbnail';
 import { ImageGridSkeleton } from './ImageGridSkeleton';
@@ -38,9 +40,11 @@ export function ImageGrid({
   className,
   viewMode = 'grid',
   albumId,
+  sortOption: sortOptionProp,
 }: Omit<ImageGridProps, 'images'> & {
   images?: ImageGridProps['images'];
   albumId?: number | null;
+  sortOption?: SortOption;
 }) {
   // Use hook if albumId is provided, otherwise use props
   const { data, isLoading: isLoadingHook, error, refetch } = useAlbumData(
@@ -50,14 +54,18 @@ export function ImageGrid({
   // Get filter criteria from context
   const { criteria } = useFilter();
 
+  // Get sort option from hook or use prop if provided
+  const { option: sortOptionFromHook } = useSort('images');
+  const sortOption = sortOptionProp ?? sortOptionFromHook;
+
   // Combine loading states: show loading if either prop or hook indicates loading
   // If isLoadingProp is explicitly provided, it takes precedence; otherwise use hook's state
   const isLoading = isLoadingProp !== undefined ? isLoadingProp : isLoadingHook;
 
-  // Filter images from data or use provided images prop, then apply filters
+  // Filter images from data or use provided images prop, then apply filters and sorting
   const images = useMemo(() => {
     let allImages: Image[] = [];
-    
+
     // If imagesProp is explicitly provided (even if empty array), use it
     if (imagesProp !== undefined) {
       allImages = imagesProp;
@@ -67,13 +75,20 @@ export function ImageGrid({
     }
 
     // Apply filters if any are active
-    if (allImages.length > 0) {
-      const filtered = applyFilters(allImages as Child[], criteria);
-      return filtered.filter(isImage) as Image[];
+    // Skip filtering if imagesProp is provided (parent has already filtered)
+    let filtered = allImages;
+    if (allImages.length > 0 && imagesProp === undefined) {
+      const filteredItems = applyFilters(allImages as Child[], criteria);
+      filtered = filteredItems.filter(isImage) as Image[];
     }
 
-    return allImages;
-  }, [imagesProp, data, criteria]);
+    // Apply sorting
+    if (filtered.length > 0 && sortOption) {
+      return sortItems(filtered, sortOption);
+    }
+
+    return filtered;
+  }, [imagesProp, data, criteria, sortOption]);
 
   // Scroll position management
   const { scrollTop, saveScrollPosition } = useScrollPosition(albumId ?? null, 'image-grid');

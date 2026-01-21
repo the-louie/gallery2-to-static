@@ -33,3 +33,6 @@ export { useLightbox } from './useLightbox';
 // Search hooks
 export { useSearch } from './useSearch';
 export type { UseSearchReturn } from './useSearch';
+
+// Sort hooks
+export { useSort } from './useSort';
