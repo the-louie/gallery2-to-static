@@ -2,24 +2,29 @@
  * Image URL construction utilities
  *
  * Provides functions to construct URLs for images and thumbnails from the
- * pathComponent field in the Image data structure.
+ * pathComponent field in the Image data structure. Supports format variants
+ * (WebP, AVIF) with automatic extension replacement.
  *
  * ## URL Construction Strategy
  *
  * - Base path: `/images/` (for static hosting)
  * - Full images: `/images/{pathComponent}`
  * - Thumbnails: `/images/__t_{filename}` (prefix-based pattern)
+ * - Format variants: Replace extension with `.webp` or `.avif`
  *
  * The thumbPrefix pattern (`__t_`) is applied to the filename portion
  * of the pathComponent. For example:
  * - Full: `/images/album/photo.jpg`
  * - Thumb: `/images/album/__t_photo.jpg`
+ * - Full WebP: `/images/album/photo.webp`
+ * - Thumb WebP: `/images/album/__t_photo.webp`
  *
  * ## Edge Cases
  *
  * - Empty pathComponent: Returns base path (should not occur in practice)
  * - Special characters: PathComponent is used as-is (assumes proper encoding)
  * - Missing thumbnails: Component should handle gracefully by falling back to full image
+ * - Format variants: Original extension is replaced with format extension
  */
 
 import type { Image } from '../types';
@@ -44,11 +49,13 @@ const IMAGE_BASE_PATH = '/images/';
  *
  * @param pathComponent - Full path component from image data
  * @param thumbPrefix - Thumbnail prefix (defaults to "__t_")
+ * @param format - Optional format variant: 'webp', 'avif', or 'original' (default)
  * @returns Thumbnail URL path
  */
 function constructThumbnailUrl(
   pathComponent: string,
   thumbPrefix: string = DEFAULT_THUMB_PREFIX,
+  format: 'webp' | 'avif' | 'original' = 'original',
 ): string {
   if (!pathComponent) {
     return IMAGE_BASE_PATH;
@@ -57,30 +64,69 @@ function constructThumbnailUrl(
   // Find the last slash to separate directory from filename
   const lastSlashIndex = pathComponent.lastIndexOf('/');
 
+  let directory: string;
+  let filename: string;
+
   if (lastSlashIndex === -1) {
     // No directory, just filename
-    return `${IMAGE_BASE_PATH}${thumbPrefix}${pathComponent}`;
+    directory = '';
+    filename = pathComponent;
+  } else {
+    // Split into directory and filename
+    directory = pathComponent.substring(0, lastSlashIndex + 1);
+    filename = pathComponent.substring(lastSlashIndex + 1);
   }
 
-  // Split into directory and filename
-  const directory = pathComponent.substring(0, lastSlashIndex + 1);
-  const filename = pathComponent.substring(lastSlashIndex + 1);
+  // Apply format extension to filename
+  const filenameWithFormat = replaceExtension(filename, format);
 
-  return `${IMAGE_BASE_PATH}${directory}${thumbPrefix}${filename}`;
+  return `${IMAGE_BASE_PATH}${directory}${thumbPrefix}${filenameWithFormat}`;
+}
+
+/**
+ * Replace file extension with format extension
+ *
+ * @param pathComponent - Path component with original extension
+ * @param format - Format to use: 'webp', 'avif', or 'original'
+ * @returns Path component with format extension
+ */
+function replaceExtension(
+  pathComponent: string,
+  format: 'webp' | 'avif' | 'original',
+): string {
+  if (format === 'original') {
+    return pathComponent;
+  }
+
+  // Find last dot (extension separator)
+  const lastDotIndex = pathComponent.lastIndexOf('.');
+  if (lastDotIndex === -1) {
+    // No extension, append format extension
+    return `${pathComponent}.${format}`;
+  }
+
+  // Replace extension
+  const basePath = pathComponent.substring(0, lastDotIndex);
+  return `${basePath}.${format}`;
 }
 
 /**
  * Construct full image URL from pathComponent
  *
  * @param pathComponent - Full path component from image data
+ * @param format - Optional format variant: 'webp', 'avif', or 'original' (default)
  * @returns Full image URL path
  */
-function constructFullImageUrl(pathComponent: string): string {
+function constructFullImageUrl(
+  pathComponent: string,
+  format: 'webp' | 'avif' | 'original' = 'original',
+): string {
   if (!pathComponent) {
     return IMAGE_BASE_PATH;
   }
 
-  return `${IMAGE_BASE_PATH}${pathComponent}`;
+  const pathWithFormat = replaceExtension(pathComponent, format);
+  return `${IMAGE_BASE_PATH}${pathWithFormat}`;
 }
 
 /**
@@ -122,4 +168,47 @@ export function getImageUrl(
   }
 
   return constructFullImageUrl(pathComponent);
+}
+
+/**
+ * Get image URL with format variant
+ *
+ * Constructs an image URL with a specific format variant (WebP, AVIF, or original).
+ * Supports both thumbnail and full image URLs.
+ *
+ * @param image - Image object with pathComponent field
+ * @param useThumbnail - Whether to return thumbnail URL (default: false)
+ * @param format - Format variant: 'webp', 'avif', or 'original' (default)
+ * @param thumbPrefix - Optional thumbnail prefix override
+ * @returns Image URL path with format extension
+ *
+ * @example
+ * ```typescript
+ * const image: Image = {
+ *   id: 1,
+ *   type: 'GalleryPhotoItem',
+ *   pathComponent: 'album/photo.jpg',
+ *   // ... other fields
+ * };
+ *
+ * const webpUrl = getImageUrlWithFormat(image, false, 'webp');
+ * // Returns: "/images/album/photo.webp"
+ *
+ * const thumbWebpUrl = getImageUrlWithFormat(image, true, 'webp');
+ * // Returns: "/images/album/__t_photo.webp"
+ * ```
+ */
+export function getImageUrlWithFormat(
+  image: Image,
+  useThumbnail: boolean = false,
+  format: 'webp' | 'avif' | 'original' = 'original',
+  thumbPrefix?: string,
+): string {
+  const pathComponent = image.pathComponent;
+
+  if (useThumbnail) {
+    return constructThumbnailUrl(pathComponent, thumbPrefix, format);
+  }
+
+  return constructFullImageUrl(pathComponent, format);
 }

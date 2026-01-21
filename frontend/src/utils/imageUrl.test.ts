@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { getImageUrl } from './imageUrl';
+import { getImageUrl, getImageUrlWithFormat } from './imageUrl';
 import type { Image } from '../types';
 
 describe('imageUrl utilities', () => {
@@ -94,6 +94,65 @@ describe('imageUrl utilities', () => {
 
       expect(getImageUrl(pngImage, true)).toBe('/images/album/__t_image.png');
       expect(getImageUrl(jpegImage, true)).toBe('/images/album/__t_image.jpeg');
+    });
+  });
+
+  describe('getImageUrlWithFormat', () => {
+    it('returns original format URL by default', () => {
+      const url = getImageUrlWithFormat(mockImage, false, 'original');
+      expect(url).toBe('/images/test-album/test-photo.jpg');
+    });
+
+    it('returns WebP format URL for full image', () => {
+      const url = getImageUrlWithFormat(mockImage, false, 'webp');
+      expect(url).toBe('/images/test-album/test-photo.webp');
+    });
+
+    it('returns AVIF format URL for full image', () => {
+      const url = getImageUrlWithFormat(mockImage, false, 'avif');
+      expect(url).toBe('/images/test-album/test-photo.avif');
+    });
+
+    it('returns WebP format URL for thumbnail', () => {
+      const url = getImageUrlWithFormat(mockImage, true, 'webp');
+      expect(url).toBe('/images/test-album/__t_test-photo.webp');
+    });
+
+    it('returns AVIF format URL for thumbnail', () => {
+      const url = getImageUrlWithFormat(mockImage, true, 'avif');
+      expect(url).toBe('/images/test-album/__t_test-photo.avif');
+    });
+
+    it('handles images without extension', () => {
+      const noExtImage: Image = {
+        ...mockImage,
+        pathComponent: 'album/image',
+      };
+      const webpUrl = getImageUrlWithFormat(noExtImage, false, 'webp');
+      expect(webpUrl).toBe('/images/album/image.webp');
+    });
+
+    it('handles images with different extensions', () => {
+      const pngImage: Image = {
+        ...mockImage,
+        pathComponent: 'album/image.png',
+      };
+      const webpUrl = getImageUrlWithFormat(pngImage, false, 'webp');
+      expect(webpUrl).toBe('/images/album/image.webp');
+    });
+
+    it('handles nested directory paths with format', () => {
+      const nestedImage: Image = {
+        ...mockImage,
+        pathComponent: 'album/subalbum/photo.jpg',
+      };
+      const url = getImageUrlWithFormat(nestedImage, true, 'webp');
+      expect(url).toBe('/images/album/subalbum/__t_photo.webp');
+    });
+
+    it('handles custom thumbnail prefix with format', () => {
+      const url = getImageUrlWithFormat(mockImage, true, 'webp', 'thumb_');
+      expect(url).toBe('/images/test-album/thumb_test-photo.webp');
     });
   });
 });

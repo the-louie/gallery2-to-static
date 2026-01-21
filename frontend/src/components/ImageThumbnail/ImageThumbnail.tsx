@@ -1,26 +1,34 @@
 /**
  * ImageThumbnail Component
  *
- * A reusable image thumbnail component with lazy loading, error handling,
- * and proper aspect ratio preservation. Supports both thumbnail and full
- * image URLs, with graceful fallbacks for missing images.
+ * A reusable image thumbnail component with lazy loading, progressive image loading
+ * with blur-up technique, error handling, and proper aspect ratio preservation.
  *
  * ## Features
  *
+ * - Progressive image loading with blur-up technique (thumbnail → full image)
  * - Lazy loading using Intersection Observer API with optimized rootMargin (200px bottom)
  * - Native loading="lazy" attribute as fallback for browsers without Intersection Observer
  * - Aspect ratio preservation to prevent layout shift (CLS optimization)
  * - Error handling with accessible fallback placeholder
  * - Loading placeholder display with skeleton animation
  * - Accessibility support (alt text, keyboard navigation, ARIA attributes)
- * - Support for thumbnail and full image URLs
+ * - Automatic format detection and fallback (AVIF → WebP → Original)
  * - Automatic observer cleanup to prevent memory leaks
+ *
+ * ## Progressive Loading
+ *
+ * The component uses progressive loading with blur-up:
+ * 1. Loads thumbnail image first (with blur filter)
+ * 2. Loads full-resolution image in background
+ * 3. Smoothly transitions from blurred thumbnail to sharp full image
+ * 4. Automatically detects best format (AVIF → WebP → Original)
  *
  * ## Lazy Loading Implementation
  *
  * The component uses Intersection Observer API with the following configuration:
  * - rootMargin: '0px 0px 200px 0px' - preloads images 200px before entering viewport
- * - threshold: 0.01 - triggers when 1% of image is visible
+ * - threshold: 0.01 - triggers when 1% is visible
  * - Observer automatically disconnects after intersection to prevent memory leaks
  * - Falls back to native loading="lazy" if Intersection Observer is unavailable
  *
@@ -42,8 +50,8 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Image } from '@/types';
-import { getImageUrl } from '@/utils/imageUrl';
 import { getAspectRatioWithFallback } from '@/utils/aspectRatio';
+import { useProgressiveImage } from '@/hooks/useProgressiveImage';
 import './ImageThumbnail.css';
 
 /**
@@ -82,12 +90,15 @@ export function ImageThumbnail({
   className,
   alt,
 }: ImageThumbnailProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const [domFullImageLoaded, setDomFullImageLoaded] = useState(false);
+  const thumbnailImgRef = useRef<HTMLImageElement>(null);
+  const fullImgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // Use progressive image loading hook
+  const progressiveImage = useProgressiveImage(image, true);
 
   // Calculate aspect ratio from image dimensions (memoized)
   const aspectRatio = useMemo(
@@ -105,22 +116,15 @@ export function ImageThumbnail({
     [alt, image.title, image.description],
   );
 
-  // Get image URL (memoized)
-  const imageUrl = useMemo(
-    () => getImageUrl(image, useThumbnail),
-    [image.pathComponent, useThumbnail],
-  );
-
-  // Reset state when image or useThumbnail changes
+  // Reset lazy loading state when image changes
   useEffect(() => {
     // Clean up existing observer when image changes
     if (observerRef.current) {
       observerRef.current.disconnect();
       observerRef.current = null;
     }
-    setIsLoading(true);
-    setHasError(false);
     setShouldLoad(false);
+    setDomFullImageLoaded(false);
   }, [image.id, image.pathComponent, useThumbnail]);
 
   // Set up Intersection Observer for lazy loading
@@ -186,16 +190,20 @@ export function ImageThumbnail({
     };
   }, [shouldLoad]);
 
-  // Handle image load
-  const handleLoad = useCallback(() => {
-    setIsLoading(false);
-    setHasError(false);
+  // Handle thumbnail image load
+  const handleThumbnailLoad = useCallback(() => {
+    // Thumbnail loaded - progressive loading hook handles state
   }, []);
 
-  // Handle image error
-  const handleError = useCallback(() => {
-    setIsLoading(false);
-    setHasError(true);
+  // Handle full image load
+  const handleFullImageLoad = useCallback(() => {
+    // DOM image has loaded - update local state for fade-in
+    setDomFullImageLoaded(true);
+  }, []);
+
+  // Handle image error (fallback to error state)
+  const handleImageError = useCallback(() => {
+    // Error handling is managed by progressive loading hook
   }, []);
 
   // Handle click
@@ -216,8 +224,13 @@ export function ImageThumbnail({
     [onClick, handleClick],
   );
 
-  // Determine if image should be rendered
+  // Determine if image should be rendered (lazy loading)
   const shouldRenderImage = shouldLoad || typeof IntersectionObserver === 'undefined';
+
+  // Determine loading state
+  const isLoading = progressiveImage.state === 'thumbnail' || progressiveImage.state === 'thumbnail-loaded';
+  const isFullLoaded = progressiveImage.state === 'full-loaded';
+  const hasError = progressiveImage.hasError;
 
   // Generate container style with aspect ratio
   const containerStyle: React.CSSProperties = {
@@ -249,16 +262,33 @@ export function ImageThumbnail({
               <div className="image-thumbnail-skeleton" />
             </div>
           )}
-          <img
-            ref={imgRef}
-            src={imageUrl}
-            alt={altText}
-            className={`image-thumbnail-image ${isLoading ? 'image-thumbnail-image-loading' : ''}`}
-            onLoad={handleLoad}
-            onError={handleError}
-            loading="lazy"
-            decoding="async"
-          />
+          {/* Thumbnail image (blurred, always visible when loaded) */}
+          {progressiveImage.thumbnailUrl && (
+            <img
+              ref={thumbnailImgRef}
+              src={progressiveImage.thumbnailUrl}
+              alt=""
+              className="image-thumbnail-image image-thumbnail-thumb"
+              onLoad={handleThumbnailLoad}
+              onError={handleImageError}
+              loading="lazy"
+              decoding="async"
+              aria-hidden="true"
+            />
+          )}
+          {/* Full image (fades in when loaded) */}
+          {isFullLoaded && progressiveImage.fullImageUrl && (
+            <img
+              ref={fullImgRef}
+              src={progressiveImage.fullImageUrl}
+              alt={altText}
+              className={`image-thumbnail-image image-thumbnail-full ${!domFullImageLoaded ? 'image-thumbnail-image-loading' : ''}`}
+              onLoad={handleFullImageLoad}
+              onError={handleImageError}
+              loading="lazy"
+              decoding="async"
+            />
+          )}
         </>
       ) : (
         <div className="image-thumbnail-loading" aria-hidden="true">

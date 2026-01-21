@@ -63,51 +63,6 @@ Per-album theme configuration system with JSON file and theme resolution logic
 
 ---
 
-## Implement Progressive Image Loading
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Medium
-**Estimated Time:** 4-5 hours
-
-### Description
-Implement progressive image loading with blur-up technique. Load thumbnails first, then transition to full-resolution images.
-
-### Requirements
-
-#### Research Tasks
-- Research progressive image loading patterns (blur-up, low-res preview)
-- Research thumbnail to full image transition
-- Research image format optimization (WebP, AVIF support)
-
-#### Implementation Tasks
-- Create utility to generate/use thumbnail URLs
-- Implement blur-up technique (load thumbnail first, then full image)
-- Add smooth transition from thumbnail to full image
-- Implement low-resolution placeholder strategy
-- Add image format detection and fallback
-- Update ImageThumbnail to support progressive loading
-- Update Lightbox to use progressive loading
-- Write tests for progressive loading flow
-- Write tests for image format fallbacks
-
-### Deliverable
-Progressive image loading with blur-up effect
-
-### Testing Requirements
-- Verify smooth transition from thumbnail to full
-- Check performance improvement (perceived load time)
-- Ensure fallbacks work for unsupported formats
-- Review image loading strategy consistency
-
-### Technical Notes
-- Blur-up technique improves perceived performance
-- Thumbnail URLs should be available from pathComponent
-- Format detection and fallback is important for browser compatibility
-- Smooth transitions enhance UX
-
----
-
 ## Implement Virtual Scrolling for Large Albums
 
 **Status:** Pending

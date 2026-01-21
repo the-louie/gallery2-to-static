@@ -144,7 +144,7 @@ export interface NavigationState {
  * - Theme: 'light' | 'dark'
  * - ThemePreference: 'light' | 'dark' | 'system'
  * - ThemeContextValue: interface with theme, preference, setPreference, isDark, isLight
- * 
+ *
  * The old types below (ThemeMode, ThemeColors, ThemeConfig, ThemeState) were from
  * an earlier design and are not used in the current implementation. They are kept
  * for reference but should not be imported or used.

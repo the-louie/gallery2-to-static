@@ -304,6 +304,36 @@
   opacity: 0;
 }
 
+/* Progressive loading: Thumbnail (blurred background) */
+.lightbox-image-thumb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.05);
+  filter: blur(15px);
+  z-index: 1;
+  opacity: 1;
+  pointer-events: none;
+  max-width: 100%;
+  max-height: calc(90vh - 200px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Progressive loading: Full image (fades in when loaded) */
+.lightbox-image-full {
+  position: relative;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.lightbox-image-full:not(.lightbox-image-loading) {
+  opacity: 1;
+}
+
 /* Loading State */
 .lightbox-loading {
   position: absolute;

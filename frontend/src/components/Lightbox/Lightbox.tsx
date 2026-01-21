@@ -57,10 +57,10 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Image } from '@/types';
-import { getImageUrl } from '@/utils/imageUrl';
 import { useImageNavigation } from '@/hooks/useImageNavigation';
 import { useImagePreload } from '@/hooks/useImagePreload';
 import { useImageZoom } from '@/hooks/useImageZoom';
+import { useProgressiveImage } from '@/hooks/useProgressiveImage';
 import './Lightbox.css';
 
 /**
@@ -104,13 +104,16 @@ export function Lightbox({
   onNext,
   onPrevious,
 }: LightboxProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveElementRef = useRef<HTMLElement | null>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
+  const thumbnailImgRef = useRef<HTMLImageElement>(null);
+  const fullImgRef = useRef<HTMLImageElement>(null);
+  const [domFullImageLoaded, setDomFullImageLoaded] = useState(false);
+
+  // Use progressive image loading hook
+  const progressiveImage = useProgressiveImage(image, true);
 
   // Drag state for pan
   const dragStateRef = useRef<{
@@ -143,7 +146,7 @@ export function Lightbox({
   // Use image navigation hook for next/previous functionality
   const navigation = useImageNavigation(albumContext, image?.id || null);
 
-  // Preload adjacent images for smooth navigation
+  // Preload adjacent images for smooth navigation (uses full image URLs)
   useImagePreload(image, albumContext);
 
   // Get image dimensions for zoom
@@ -192,14 +195,6 @@ export function Lightbox({
   const canNavigate = useMemo(() => {
     return albumContext.length > 1 && (navigation.hasNext || navigation.hasPrevious);
   }, [albumContext.length, navigation.hasNext, navigation.hasPrevious]);
-
-  // Get full-size image URL
-  const imageUrl = useMemo(() => {
-    if (!image) {
-      return '';
-    }
-    return getImageUrl(image, false);
-  }, [image]);
 
   // Generate alt text from image title or description
   const altText = useMemo(() => {
@@ -253,16 +248,17 @@ export function Lightbox({
     return null;
   }, [albumContext.length, navigation.currentIndex, navigation.totalImages]);
 
-  // Reset state when image changes or modal closes
+  // Determine loading and error states from progressive image hook
+  const isLoading = progressiveImage.state === 'thumbnail' || progressiveImage.state === 'thumbnail-loaded';
+  const isFullLoaded = progressiveImage.state === 'full-loaded';
+  const hasError = progressiveImage.hasError;
+
+  // Reset DOM image load state when image changes
   useEffect(() => {
-    if (isOpen && image) {
-      setIsLoading(true);
-      setHasError(false);
-    } else {
-      setIsLoading(false);
-      setHasError(false);
+    if (image) {
+      setDomFullImageLoaded(false);
     }
-  }, [isOpen, image]);
+  }, [image?.id, image?.pathComponent]);
 
   // Reset zoom when image ID changes (separate effect to avoid dependency issues)
   useEffect(() => {
@@ -635,16 +631,20 @@ export function Lightbox({
     return `scale(${zoom.zoom / 100}) translate(${zoom.pan.x}px, ${zoom.pan.y}px)`;
   }, [zoom.zoom, zoom.pan, zoom.isZoomed]);
 
-  // Handle image load
-  const handleImageLoad = useCallback(() => {
-    setIsLoading(false);
-    setHasError(false);
+  // Handle thumbnail image load
+  const handleThumbnailLoad = useCallback(() => {
+    // Thumbnail loaded - progressive loading hook handles state
   }, []);
 
-  // Handle image error
+  // Handle full image load
+  const handleFullImageLoad = useCallback(() => {
+    // DOM image has loaded - update local state for fade-in
+    setDomFullImageLoaded(true);
+  }, []);
+
+  // Handle image error (fallback to error state)
   const handleImageError = useCallback(() => {
-    setIsLoading(false);
-    setHasError(true);
+    // Error handling is managed by progressive loading hook
   }, []);
 
   // Handle backdrop click (close modal if clicking backdrop, not content)
@@ -803,20 +803,37 @@ export function Lightbox({
                   <div className="lightbox-skeleton" />
                 </div>
               )}
-              <img
-                ref={imageRef}
-                src={imageUrl}
-                alt={altText}
-                className={`lightbox-image ${isLoading ? 'lightbox-image-loading' : ''}`}
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-                loading="eager"
-                decoding="async"
-                style={{
-                  transform: imageTransform,
-                  transformOrigin: 'center center',
-                }}
-              />
+              {/* Thumbnail image (blurred background) */}
+              {progressiveImage.thumbnailUrl && (
+                <img
+                  ref={thumbnailImgRef}
+                  src={progressiveImage.thumbnailUrl}
+                  alt=""
+                  className="lightbox-image lightbox-image-thumb"
+                  onLoad={handleThumbnailLoad}
+                  onError={handleImageError}
+                  loading="eager"
+                  decoding="async"
+                  aria-hidden="true"
+                />
+              )}
+              {/* Full image (fades in when loaded) */}
+              {isFullLoaded && progressiveImage.fullImageUrl && (
+                <img
+                  ref={fullImgRef}
+                  src={progressiveImage.fullImageUrl}
+                  alt={altText}
+                  className={`lightbox-image lightbox-image-full ${!domFullImageLoaded ? 'lightbox-image-loading' : ''}`}
+                  onLoad={handleFullImageLoad}
+                  onError={handleImageError}
+                  loading="eager"
+                  decoding="async"
+                  style={{
+                    transform: imageTransform,
+                    transformOrigin: 'center center',
+                  }}
+                />
+              )}
             </>
           )}
           {/* Image Counter */}
