@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ThemeSwitcher } from '../ThemeSwitcher';
+import { SearchBar } from '../SearchBar';
 import './Layout.css';
 
 /**
@@ -59,6 +60,7 @@ export function Layout({ children, className }: LayoutProps) {
             </Link>
           </nav>
           <div className="layout-header-actions">
+            <SearchBar />
             <ThemeSwitcher />
           </div>
         </div>

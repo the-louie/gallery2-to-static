@@ -7,6 +7,7 @@ import { PageLoader } from './components/PageLoader';
 const HomePage = lazy(() => import('./pages/HomePage').then((module) => ({ default: module.HomePage })));
 const AlbumDetailPage = lazy(() => import('./pages/AlbumDetailPage').then((module) => ({ default: module.AlbumDetailPage })));
 const ImageDetailPage = lazy(() => import('./pages/ImageDetailPage').then((module) => ({ default: module.ImageDetailPage })));
+const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage').then((module) => ({ default: module.SearchResultsPage })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((module) => ({ default: module.NotFoundPage })));
 
 /**
@@ -34,6 +35,7 @@ function App() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/search" element={<SearchResultsPage />} />
           <Route path="/album/:albumId/image/:imageId" element={<ImageDetailPage />} />
           <Route path="/album/:id" element={<AlbumDetailPage />} />
           <Route path="/image/:id" element={<ImageDetailPage />} />

@@ -1,0 +1,27 @@
+/**
+ * SearchHighlight Component Styles
+ *
+ * Styles for highlighted search terms in text.
+ *
+ * CSS Variables:
+ * - Uses CSS custom properties from themes.css for theming
+ * - Highlight color adapts to light/dark theme automatically
+ *
+ * Accessibility:
+ * - Sufficient color contrast for highlighted text
+ * - Highlight is visually distinct but not overwhelming
+ */
+
+.search-highlight-mark {
+  background: var(--search-highlight-bg, #ffeb3b);
+  color: var(--search-highlight-text, inherit);
+  padding: 0.125em 0;
+  border-radius: var(--radius-sm, 4px);
+  font-weight: 500;
+}
+
+/* Dark theme adjustments */
+[data-theme='dark'] .search-highlight-mark {
+  background: var(--search-highlight-bg-dark, #f57f17);
+  color: var(--search-highlight-text-dark, #fff);
+}

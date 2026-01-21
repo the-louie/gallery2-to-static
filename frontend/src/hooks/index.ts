@@ -29,3 +29,7 @@ export type { UseImageCacheReturn } from './useImageCache';
 
 // Lightbox hooks
 export { useLightbox } from './useLightbox';
+
+// Search hooks
+export { useSearch } from './useSearch';
+export type { UseSearchReturn } from './useSearch';
