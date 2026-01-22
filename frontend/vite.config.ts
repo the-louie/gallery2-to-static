@@ -38,6 +38,8 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    minify: 'esbuild', // Use esbuild for faster minification
+    cssMinify: true, // Minify CSS
     rollupOptions: {
       output: {
         manualChunks: (id) => {
@@ -50,6 +52,10 @@ export default defineConfig({
             // React Router
             if (id.includes('react-router')) {
               return 'router-vendor';
+            }
+            // Web Vitals (code-split, loaded dynamically)
+            if (id.includes('web-vitals')) {
+              return 'web-vitals-vendor';
             }
             // Other vendor dependencies
             return 'vendor';

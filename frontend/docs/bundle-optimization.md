@@ -182,8 +182,48 @@ If chunks are not named as expected:
 1. Check Vite configuration for `manualChunks` setup
 2. Verify chunk naming patterns in `rollupOptions.output`
 
+## Performance Optimizations
+
+### React Performance
+
+The application uses React.memo for components that receive stable props:
+- AlbumCard
+- ImageThumbnail (with custom comparison)
+- SortDropdown
+- ViewModeToggle
+- Breadcrumbs (with custom comparison)
+
+All Context providers use memoized values to prevent unnecessary re-renders.
+
+### Image Optimization
+
+Images are optimized with:
+- Progressive loading (blur-up technique)
+- Lazy loading (Intersection Observer)
+- Format detection (AVIF → WebP → Original)
+- Image caching
+- Aspect ratio preservation (prevents CLS)
+
+### Web Vitals Monitoring
+
+Core Web Vitals are monitored using the `useWebVitals` hook:
+- LCP (Largest Contentful Paint)
+- INP (Interaction to Next Paint)
+- CLS (Cumulative Layout Shift)
+- FCP (First Contentful Paint)
+- TTFB (Time to First Byte)
+
+### Performance Budgets
+
+Performance budgets are configured in `package.json`:
+- Initial bundle: < 200KB gzipped
+- Route chunks: < 50KB gzipped each
+- Lightbox chunk: < 30KB gzipped
+- Total bundle: < 500KB gzipped
+
 ## References
 
 - [Vite Code Splitting](https://vitejs.dev/guide/build.html#chunking-strategy)
 - [React.lazy() Documentation](https://react.dev/reference/react/lazy)
 - [Rollup Plugin Visualizer](https://github.com/btd/rollup-plugin-visualizer)
+- [Web Vitals](https://web.dev/vitals/)

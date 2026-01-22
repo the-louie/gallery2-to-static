@@ -132,7 +132,7 @@ function getAriaLabel(
  * <ViewModeToggle contentType="images" />
  * ```
  */
-export function ViewModeToggle({
+function ViewModeToggleComponent({
   contentType,
   className,
 }: ViewModeToggleProps): React.ReactElement {
@@ -192,5 +192,11 @@ export function ViewModeToggle({
     </div>
   );
 }
+
+/**
+ * Memoized ViewModeToggle component to prevent unnecessary re-renders
+ * when props haven't changed.
+ */
+export const ViewModeToggle = React.memo(ViewModeToggleComponent);
 
 export default ViewModeToggle;

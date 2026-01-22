@@ -85,7 +85,7 @@ export interface ImageThumbnailProps {
  * @param props - Component props
  * @returns React component
  */
-export function ImageThumbnail({
+function ImageThumbnailComponent({
   image,
   useThumbnail = false,
   onClick,
@@ -305,5 +305,30 @@ export function ImageThumbnail({
     </div>
   );
 }
+
+/**
+ * Memoized ImageThumbnail component to prevent unnecessary re-renders
+ * when props haven't changed. Uses custom comparison for image object.
+ */
+export const ImageThumbnail = React.memo(ImageThumbnailComponent, (prevProps, nextProps) => {
+  // Custom comparison: only re-render if image or other props actually changed
+  // Handle null/undefined images defensively
+  if (!prevProps.image || !nextProps.image) {
+    return prevProps.image === nextProps.image;
+  }
+  // Compare image properties that affect rendering: id, pathComponent, title, description
+  // Title and description are included because they're used for alt text
+  return (
+    prevProps.image.id === nextProps.image.id &&
+    prevProps.image.pathComponent === nextProps.image.pathComponent &&
+    prevProps.image.title === nextProps.image.title &&
+    prevProps.image.description === nextProps.image.description &&
+    prevProps.useThumbnail === nextProps.useThumbnail &&
+    prevProps.viewMode === nextProps.viewMode &&
+    prevProps.className === nextProps.className &&
+    prevProps.alt === nextProps.alt &&
+    prevProps.onClick === nextProps.onClick
+  );
+});
 
 export default ImageThumbnail;

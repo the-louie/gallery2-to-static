@@ -44,7 +44,7 @@ export interface BreadcrumbProps {
  * <Breadcrumbs path={path} />
  * ```
  */
-export function Breadcrumbs({
+function BreadcrumbsComponent({
   path,
   onItemClick,
   className,
@@ -118,5 +118,24 @@ export function Breadcrumbs({
     </nav>
   );
 }
+
+/**
+ * Memoized Breadcrumbs component to prevent unnecessary re-renders
+ * when props haven't changed. Uses shallow comparison for path array.
+ */
+export const Breadcrumbs = React.memo(BreadcrumbsComponent, (prevProps, nextProps) => {
+  // Custom comparison: only re-render if path actually changed
+  // Handle null/undefined paths
+  if (!prevProps.path || !nextProps.path) {
+    return prevProps.path === nextProps.path;
+  }
+  if (prevProps.path.length !== nextProps.path.length) {
+    return false;
+  }
+  return prevProps.path.every((item, index) => {
+    const nextItem = nextProps.path[index];
+    return item.id === nextItem.id && item.path === nextItem.path && item.title === nextItem.title;
+  }) && prevProps.className === nextProps.className && prevProps.onItemClick === nextProps.onItemClick;
+});
 
 export default Breadcrumbs;

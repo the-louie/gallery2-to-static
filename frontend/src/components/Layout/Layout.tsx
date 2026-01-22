@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ThemeSwitcher } from '../ThemeSwitcher';
 import { SearchBar } from '../SearchBar';
@@ -33,14 +33,14 @@ export interface LayoutProps {
  * ```
  */
 export function Layout({ children, className }: LayoutProps) {
-  const handleSkipClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleSkipClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     const mainContent = document.getElementById('main-content');
     if (mainContent) {
       mainContent.focus();
       mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  };
+  }, []);
 
   return (
     <div className={className ? `layout ${className}` : 'layout'}>

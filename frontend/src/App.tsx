@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import { PageLoader } from './components/PageLoader';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { FilterProvider } from './contexts/FilterContext';
+import { useWebVitals } from './hooks/useWebVitals';
 
 // Lazy load page components for code splitting
 const HomePage = lazy(() => import('./pages/HomePage').then((module) => ({ default: module.HomePage })));
@@ -32,6 +33,9 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((module) => 
  * @returns React component
  */
 function App() {
+  // Monitor Web Vitals for performance tracking
+  useWebVitals();
+
   return (
     <FilterProvider>
       <OfflineIndicator />

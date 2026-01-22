@@ -37,7 +37,7 @@ export interface AlbumCardProps {
  * @param props - Component props
  * @returns React component
  */
-export function AlbumCard({
+function AlbumCardComponent({
   album,
   onClick,
   className,
@@ -101,5 +101,11 @@ export function AlbumCard({
     </article>
   );
 }
+
+/**
+ * Memoized AlbumCard component to prevent unnecessary re-renders
+ * when props haven't changed.
+ */
+export const AlbumCard = React.memo(AlbumCardComponent);
 
 export default AlbumCard;

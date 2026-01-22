@@ -43,3 +43,7 @@ export { useSort } from './useSort';
 export { useLoadingState, type UseLoadingStateReturn, type UseLoadingStateConfig } from './useLoadingState';
 export { useRetry, type UseRetryReturn, type UseRetryConfig } from './useRetry';
 export { useOfflineDetection, type UseOfflineDetectionReturn } from './useOfflineDetection';
+
+// Performance hooks
+export { useWebVitals } from './useWebVitals';
+export type { WebVitalsMetric } from './useWebVitals';

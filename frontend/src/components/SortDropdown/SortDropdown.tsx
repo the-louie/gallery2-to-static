@@ -96,7 +96,7 @@ const SORT_OPTIONS: SortOption[] = [
  * />
  * ```
  */
-export function SortDropdown({
+function SortDropdownComponent({
   currentOption,
   onOptionChange,
   className,
@@ -126,5 +126,11 @@ export function SortDropdown({
     </select>
   );
 }
+
+/**
+ * Memoized SortDropdown component to prevent unnecessary re-renders
+ * when props haven't changed.
+ */
+export const SortDropdown = React.memo(SortDropdownComponent);
 
 export default SortDropdown;
