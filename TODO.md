@@ -64,51 +64,6 @@ Per-album theme configuration system with JSON file and theme resolution logic
 ---
 
 
-## Implement Touch Gestures for Mobile
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** High
-**Estimated Time:** 5-6 hours
-
-### Description
-Implement touch gesture support for mobile devices, including swipe navigation in lightbox and pinch zoom.
-
-### Requirements
-
-#### Research Tasks
-- Research touch event handling in React
-- Research swipe gesture detection
-- Research pinch zoom gesture implementation
-- Research gesture libraries (react-use-gesture, hammer.js)
-
-#### Implementation Tasks
-- Choose gesture handling approach (library or custom)
-- Implement swipe left/right for lightbox navigation
-- Implement swipe up/down to close lightbox
-- Implement pinch zoom for lightbox (if not already done)
-- Add touch event handlers to Lightbox
-- Test on mobile devices
-- Add gesture feedback (visual indicators)
-- Write tests for touch gestures
-- Write tests for gesture edge cases
-
-### Deliverable
-Touch gesture support for mobile navigation
-
-### Testing Requirements
-- Verify gestures work on mobile devices
-- Check gestures don't interfere with scrolling
-- Ensure gestures are responsive and smooth
-- Review gesture feedback is clear
-
-### Technical Notes
-- Touch gestures are important for mobile UX
-- Swipe navigation is expected in lightbox
-- Gesture libraries can simplify implementation
-- Gesture feedback improves UX
-
----
 
 ## Accessibility Audit and Improvements
 

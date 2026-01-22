@@ -22,6 +22,8 @@
  * - Image zoom and pan functionality
  * - Mouse wheel zoom (Ctrl/Cmd + scroll)
  * - Touch pinch zoom for mobile devices
+ * - Touch swipe left/right - Navigate between images
+ * - Touch swipe up/down - Close lightbox
  * - Zoom controls (zoom in, zoom out, reset)
  *
  * ## Usage
@@ -51,6 +53,17 @@
  * - `Mouse Drag` - Pan when zoomed
  * - `Touch Pinch` - Zoom on mobile devices
  * - `Touch Drag` - Pan on mobile devices
+ * - `Touch Swipe Left/Right` - Navigate between images (when not zoomed)
+ * - `Touch Swipe Up/Down` - Close lightbox (when not zoomed)
+ *
+ * ## Touch Gesture Behavior
+ *
+ * Swipe gestures require a minimum distance of 50px and minimum velocity of 0.3px/ms.
+ * Swipe detection has a 30-degree angle tolerance from horizontal/vertical.
+ * Swipe gestures are disabled when the image is zoomed (pan takes priority).
+ * Swipe gestures are disabled during pinch zoom (pinch zoom takes priority).
+ * Visual feedback is provided during swipe: horizontal swipes translate the image,
+ * vertical swipes reduce backdrop opacity.
  *
  * @module frontend/src/components/Lightbox
  */
@@ -61,6 +74,7 @@ import { useImageNavigation } from '@/hooks/useImageNavigation';
 import { useImagePreload } from '@/hooks/useImagePreload';
 import { useImageZoom } from '@/hooks/useImageZoom';
 import { useProgressiveImage } from '@/hooks/useProgressiveImage';
+import { useSwipeGesture } from '@/hooks/useSwipeGesture';
 import './Lightbox.css';
 
 /**
@@ -111,6 +125,17 @@ export function Lightbox({
   const thumbnailImgRef = useRef<HTMLImageElement>(null);
   const fullImgRef = useRef<HTMLImageElement>(null);
   const [domFullImageLoaded, setDomFullImageLoaded] = useState(false);
+
+  // Visual feedback state for swipe gestures
+  const [swipeFeedback, setSwipeFeedback] = useState<{
+    translateX: number;
+    translateY: number;
+    opacity: number;
+  }>({
+    translateX: 0,
+    translateY: 0,
+    opacity: 1,
+  });
 
   // Use progressive image loading hook
   const progressiveImage = useProgressiveImage(image, true);
@@ -195,6 +220,82 @@ export function Lightbox({
   const canNavigate = useMemo(() => {
     return albumContext.length > 1 && (navigation.hasNext || navigation.hasPrevious);
   }, [albumContext.length, navigation.hasNext, navigation.hasPrevious]);
+
+  // Determine if swipe gestures should be enabled
+  // Swipe is disabled when zoomed (pan takes priority)
+  const swipeEnabled = useMemo(() => {
+    return !zoom.isZoomed;
+  }, [zoom.isZoomed]);
+
+  // Swipe gesture handlers for navigation and close
+  const swipeHandlers = useSwipeGesture({
+    onSwipeLeft: useCallback(() => {
+      if (canNavigate && onNext && navigation.hasNext) {
+        onNext();
+      }
+      setSwipeFeedback({ translateX: 0, translateY: 0, opacity: 1 });
+    }, [canNavigate, onNext, navigation.hasNext]),
+    onSwipeRight: useCallback(() => {
+      if (canNavigate && onPrevious && navigation.hasPrevious) {
+        onPrevious();
+      }
+      setSwipeFeedback({ translateX: 0, translateY: 0, opacity: 1 });
+    }, [canNavigate, onPrevious, navigation.hasPrevious]),
+    onSwipeUp: useCallback(() => {
+      onClose();
+      setSwipeFeedback({ translateX: 0, translateY: 0, opacity: 1 });
+    }, [onClose]),
+    onSwipeDown: useCallback(() => {
+      onClose();
+      setSwipeFeedback({ translateX: 0, translateY: 0, opacity: 1 });
+    }, [onClose]),
+    onSwipeStart: useCallback(() => {
+      setSwipeFeedback({ translateX: 0, translateY: 0, opacity: 1 });
+    }, []),
+    onSwipeCancel: useCallback(() => {
+      setSwipeFeedback({ translateX: 0, translateY: 0, opacity: 1 });
+    }, []),
+    onSwipeProgress: useCallback(
+      ({
+        dx,
+        dy,
+        direction,
+      }: {
+        dx: number;
+        dy: number;
+        distance: number;
+        direction: 'left' | 'right' | 'up' | 'down' | null;
+      }) => {
+        // Only update feedback if direction is determined
+        if (!direction) {
+          return;
+        }
+
+        if (direction === 'left' || direction === 'right') {
+          // Horizontal swipe: translate image
+          const maxTranslate = 100;
+          const translateX = Math.max(-maxTranslate, Math.min(maxTranslate, dx * 0.5));
+          setSwipeFeedback((prev: { translateX: number; translateY: number; opacity: number }) => ({
+            ...prev,
+            translateX,
+          }));
+        } else if (direction === 'up' || direction === 'down') {
+          // Vertical swipe: reduce backdrop opacity
+          const maxDistance = 200;
+          const progress = Math.min(1, Math.abs(dy) / maxDistance);
+          const opacity = Math.max(0.5, 1 - progress * 0.5);
+          setSwipeFeedback((prev: { translateX: number; translateY: number; opacity: number }) => ({
+            ...prev,
+            opacity,
+          }));
+        }
+      },
+      [],
+    ),
+    enabled: swipeEnabled && isOpen,
+    enableHorizontal: canNavigate,
+    enableVertical: true,
+  });
 
   // Generate alt text from image title or description
   const altText = useMemo(() => {
@@ -507,14 +608,19 @@ export function Lightbox({
     (event: React.TouchEvent<HTMLDivElement>) => {
       const touches = Array.from(event.touches);
 
+      // Always call swipe handler first (it will check if it should handle it)
+      swipeHandlers.onTouchStart(event);
+
       if (touches.length === 1) {
-        // Single touch - pan
+        // Single touch - pan if zoomed, otherwise swipe handles it
         if (!zoom.isZoomed) {
+          // Swipe will handle this - swipe handler will prevent default when needed
+          // Don't prevent default here to allow swipe handler to decide
           return;
         }
 
         event.preventDefault();
-        const touch = touches[0];
+        const touch = touches[0] as Touch;
         dragStateRef.current = {
           isDragging: true,
           startX: touch.clientX,
@@ -523,19 +629,16 @@ export function Lightbox({
           startPanY: zoom.pan.y,
         };
       } else if (touches.length === 2) {
-        // Two touches - pinch zoom
+        // Two touches - pinch zoom (takes priority over swipe)
         event.preventDefault();
 
-        const touch1 = touches[0];
-        const touch2 = touches[1];
+        const touch1 = touches[0] as Touch;
+        const touch2 = touches[1] as Touch;
 
         const distance = Math.hypot(
           touch2.clientX - touch1.clientX,
           touch2.clientY - touch1.clientY,
         );
-
-        const centerX = (touch1.clientX + touch2.clientX) / 2;
-        const centerY = (touch1.clientY + touch2.clientY) / 2;
 
         const rect = imageContainerRef.current?.getBoundingClientRect();
         if (rect) {
@@ -551,17 +654,20 @@ export function Lightbox({
         }
       }
     },
-    [zoom.isZoomed, zoom.pan, zoom.zoom],
+    [zoom.isZoomed, zoom.pan, zoom.zoom, swipeHandlers],
   );
 
   const handleTouchMove = useCallback(
     (event: React.TouchEvent<HTMLDivElement>) => {
       const touches = Array.from(event.touches);
 
+      // Call swipe handler for visual feedback (handles progress internally)
+      swipeHandlers.onTouchMove(event);
+
       if (touches.length === 1 && dragStateRef.current.isDragging) {
         // Single touch pan
         event.preventDefault();
-        const touch = touches[0];
+        const touch = touches[0] as Touch;
         const deltaX = touch.clientX - dragStateRef.current.startX;
         const deltaY = touch.clientY - dragStateRef.current.startY;
 
@@ -573,8 +679,8 @@ export function Lightbox({
         // Two touch pinch zoom
         event.preventDefault();
 
-        const touch1 = touches[0];
-        const touch2 = touches[1];
+        const touch1 = touches[0] as Touch;
+        const touch2 = touches[1] as Touch;
 
         const distance = Math.hypot(
           touch2.clientX - touch1.clientX,
@@ -600,36 +706,58 @@ export function Lightbox({
         }
       }
     },
-    [zoom.setPan, zoom.setZoom],
+    [zoom.setPan, zoom.setZoom, swipeHandlers],
   );
 
-  const handleTouchEnd = useCallback(() => {
-    dragStateRef.current.isDragging = false;
-    touchStateRef.current = {
-      touches: new Map(),
-      initialDistance: 0,
-      initialZoom: 100,
-      initialPan: { x: 0, y: 0 },
-    };
-  }, []);
+  const handleTouchEnd = useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      swipeHandlers.onTouchEnd(event);
+      dragStateRef.current.isDragging = false;
+      touchStateRef.current = {
+        touches: new Map(),
+        initialDistance: 0,
+        initialZoom: 100,
+        initialPan: { x: 0, y: 0 },
+      };
+      // Reset visual feedback
+      setSwipeFeedback({ translateX: 0, translateY: 0, opacity: 1 });
+    },
+    [swipeHandlers],
+  );
 
-  const handleTouchCancel = useCallback(() => {
-    dragStateRef.current.isDragging = false;
-    touchStateRef.current = {
-      touches: new Map(),
-      initialDistance: 0,
-      initialZoom: 100,
-      initialPan: { x: 0, y: 0 },
-    };
-  }, []);
+  const handleTouchCancel = useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      swipeHandlers.onTouchCancel(event);
+      dragStateRef.current.isDragging = false;
+      touchStateRef.current = {
+        touches: new Map(),
+        initialDistance: 0,
+        initialZoom: 100,
+        initialPan: { x: 0, y: 0 },
+      };
+      // Reset visual feedback
+      setSwipeFeedback({ translateX: 0, translateY: 0, opacity: 1 });
+    },
+    [swipeHandlers],
+  );
 
-  // Calculate image transform style
+  // Calculate image transform style (includes zoom, pan, and swipe feedback)
   const imageTransform = useMemo(() => {
-    if (!zoom.isZoomed) {
-      return undefined;
+    const transforms: string[] = [];
+
+    // Add swipe feedback transform (horizontal swipe)
+    if (swipeFeedback.translateX !== 0) {
+      transforms.push(`translateX(${swipeFeedback.translateX}px)`);
     }
-    return `scale(${zoom.zoom / 100}) translate(${zoom.pan.x}px, ${zoom.pan.y}px)`;
-  }, [zoom.zoom, zoom.pan, zoom.isZoomed]);
+
+    // Add zoom and pan transform
+    if (zoom.isZoomed) {
+      transforms.push(`scale(${zoom.zoom / 100})`);
+      transforms.push(`translate(${zoom.pan.x}px, ${zoom.pan.y}px)`);
+    }
+
+    return transforms.length > 0 ? transforms.join(' ') : undefined;
+  }, [zoom.zoom, zoom.pan, zoom.isZoomed, swipeFeedback.translateX]);
 
   // Handle thumbnail image load
   const handleThumbnailLoad = useCallback(() => {
@@ -694,6 +822,10 @@ export function Lightbox({
       aria-labelledby={image.title ? 'lightbox-title' : undefined}
       aria-describedby={hasMetadata ? 'lightbox-metadata' : undefined}
       aria-label={!image.title ? altText : undefined}
+      style={{
+        opacity: swipeFeedback.opacity,
+        transition: swipeFeedback.opacity !== 1 ? 'opacity 0.2s ease-out' : undefined,
+      }}
     >
       <div className="lightbox-container" ref={modalRef}>
         {/* Close Button */}

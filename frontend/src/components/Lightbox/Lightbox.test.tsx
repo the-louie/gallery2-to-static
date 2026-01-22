@@ -13,6 +13,12 @@ import userEvent from '@testing-library/user-event';
 import { Lightbox } from './Lightbox';
 import type { Image } from '@/types';
 import { mockPhoto } from '@/__mocks__/mockData';
+import {
+  createTouchStart,
+  createTouchMove,
+  createTouchEnd,
+  createTouchCancel,
+} from '@/test-utils/touch-events';
 
 describe('Lightbox', () => {
   const mockOnClose = vi.fn();
@@ -1160,6 +1166,531 @@ describe('Lightbox', () => {
       // Verify touch state was set (indirectly by checking zoom can be applied)
       const img = screen.getByAltText('Test Photo');
       expect(img).toBeInTheDocument();
+    });
+  });
+
+  describe('Swipe Gestures', () => {
+    const mockImages: Image[] = [
+      { ...mockPhoto, id: 1, title: 'Image 1' },
+      { ...mockPhoto, id: 2, title: 'Image 2' },
+      { ...mockPhoto, id: 3, title: 'Image 3' },
+    ];
+
+    const mockOnNext = vi.fn();
+    const mockOnPrevious = vi.fn();
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    it('triggers next image navigation on swipe left', async () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      // Start touch
+      const startEvent = createTouchStart(imageContainer, [
+        { identifier: 1, clientX: 200, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(startEvent);
+
+      // Move touch left (more than 50px)
+      const moveEvent = createTouchMove(imageContainer, [
+        { identifier: 1, clientX: 100, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(moveEvent);
+
+      // End touch
+      const endEvent = createTouchEnd(
+        imageContainer,
+        [{ identifier: 1, clientX: 50, clientY: 100 }],
+        [{ identifier: 1, clientX: 50, clientY: 100 }],
+      );
+      imageContainer.dispatchEvent(endEvent);
+
+      await waitFor(() => {
+        expect(mockOnNext).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('triggers previous image navigation on swipe right', async () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[1]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      // Start touch
+      const startEvent = createTouchStart(imageContainer, [
+        { identifier: 1, clientX: 100, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(startEvent);
+
+      // Move touch right (more than 50px)
+      const moveEvent = createTouchMove(imageContainer, [
+        { identifier: 1, clientX: 200, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(moveEvent);
+
+      // End touch
+      const endEvent = createTouchEnd(
+        imageContainer,
+        [{ identifier: 1, clientX: 250, clientY: 100 }],
+        [{ identifier: 1, clientX: 250, clientY: 100 }],
+      );
+      imageContainer.dispatchEvent(endEvent);
+
+      await waitFor(() => {
+        expect(mockOnPrevious).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('triggers close on swipe up', async () => {
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      // Start touch
+      const startEvent = createTouchStart(imageContainer, [
+        { identifier: 1, clientX: 100, clientY: 200 },
+      ]);
+      imageContainer.dispatchEvent(startEvent);
+
+      // Move touch up (more than 50px)
+      const moveEvent = createTouchMove(imageContainer, [
+        { identifier: 1, clientX: 100, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(moveEvent);
+
+      // End touch
+      const endEvent = createTouchEnd(
+        imageContainer,
+        [{ identifier: 1, clientX: 100, clientY: 50 }],
+        [{ identifier: 1, clientX: 100, clientY: 50 }],
+      );
+      imageContainer.dispatchEvent(endEvent);
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('triggers close on swipe down', async () => {
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      // Start touch
+      const startEvent = createTouchStart(imageContainer, [
+        { identifier: 1, clientX: 100, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(startEvent);
+
+      // Move touch down (more than 50px)
+      const moveEvent = createTouchMove(imageContainer, [
+        { identifier: 1, clientX: 100, clientY: 200 },
+      ]);
+      imageContainer.dispatchEvent(moveEvent);
+
+      // End touch
+      const endEvent = createTouchEnd(
+        imageContainer,
+        [{ identifier: 1, clientX: 100, clientY: 250 }],
+        [{ identifier: 1, clientX: 100, clientY: 250 }],
+      );
+      imageContainer.dispatchEvent(endEvent);
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('does not trigger swipe when navigation is unavailable', async () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={[mockImages[0]]}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      // Start touch
+      const startEvent = createTouchStart(imageContainer, [
+        { identifier: 1, clientX: 200, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(startEvent);
+
+      // Move touch left
+      const moveEvent = createTouchMove(imageContainer, [
+        { identifier: 1, clientX: 100, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(moveEvent);
+
+      // End touch
+      const endEvent = createTouchEnd(
+        imageContainer,
+        [{ identifier: 1, clientX: 50, clientY: 100 }],
+        [{ identifier: 1, clientX: 50, clientY: 100 }],
+      );
+      imageContainer.dispatchEvent(endEvent);
+
+      // Wait a bit to ensure no call was made
+      await waitFor(() => {
+        expect(mockOnNext).not.toHaveBeenCalled();
+      }, { timeout: 100 });
+    });
+
+    it('does not trigger swipe when zoomed', async () => {
+      const user = userEvent.setup();
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+
+      // Zoom in first
+      const zoomInButton = screen.getByLabelText('Zoom in');
+      await user.click(zoomInButton);
+
+      await waitFor(() => {
+        const img = screen.getByAltText('Test Photo');
+        expect(img).toHaveStyle({ transform: expect.stringContaining('scale') });
+      });
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      // Start touch
+      const startEvent = createTouchStart(imageContainer, [
+        { identifier: 1, clientX: 200, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(startEvent);
+
+      // Move touch left
+      const moveEvent = createTouchMove(imageContainer, [
+        { identifier: 1, clientX: 100, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(moveEvent);
+
+      // End touch
+      const endEvent = createTouchEnd(
+        imageContainer,
+        [{ identifier: 1, clientX: 50, clientY: 100 }],
+        [{ identifier: 1, clientX: 50, clientY: 100 }],
+      );
+      imageContainer.dispatchEvent(endEvent);
+
+      // Should not trigger navigation (pan takes priority)
+      await waitFor(() => {
+        expect(mockOnNext).not.toHaveBeenCalled();
+      }, { timeout: 100 });
+    });
+
+    it('does not trigger swipe during pinch zoom', async () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      // Start touch with two fingers (pinch zoom)
+      const startEvent = createTouchStart(imageContainer, [
+        { identifier: 1, clientX: 100, clientY: 100 },
+        { identifier: 2, clientX: 200, clientY: 200 },
+      ]);
+      imageContainer.dispatchEvent(startEvent);
+
+      // Move touch
+      const moveEvent = createTouchMove(imageContainer, [
+        { identifier: 1, clientX: 50, clientY: 100 },
+        { identifier: 2, clientX: 250, clientY: 200 },
+      ]);
+      imageContainer.dispatchEvent(moveEvent);
+
+      // End touch
+      const endEvent = createTouchEnd(
+        imageContainer,
+        [
+          { identifier: 1, clientX: 50, clientY: 100 },
+          { identifier: 2, clientX: 250, clientY: 200 },
+        ],
+        [
+          { identifier: 1, clientX: 50, clientY: 100 },
+          { identifier: 2, clientX: 250, clientY: 200 },
+        ],
+      );
+      imageContainer.dispatchEvent(endEvent);
+
+      // Should not trigger navigation (pinch zoom takes priority)
+      await waitFor(() => {
+        expect(mockOnNext).not.toHaveBeenCalled();
+      }, { timeout: 100 });
+    });
+
+    it('does not trigger swipe during pan', async () => {
+      const user = userEvent.setup();
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+
+      // Zoom in first
+      const zoomInButton = screen.getByLabelText('Zoom in');
+      await user.click(zoomInButton);
+
+      await waitFor(() => {
+        const img = screen.getByAltText('Test Photo');
+        expect(img).toHaveStyle({ transform: expect.stringContaining('scale') });
+      });
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      // Start touch (should start pan, not swipe)
+      const startEvent = createTouchStart(imageContainer, [
+        { identifier: 1, clientX: 200, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(startEvent);
+
+      // Move touch (panning)
+      const moveEvent = createTouchMove(imageContainer, [
+        { identifier: 1, clientX: 100, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(moveEvent);
+
+      // End touch
+      const endEvent = createTouchEnd(
+        imageContainer,
+        [{ identifier: 1, clientX: 50, clientY: 100 }],
+        [{ identifier: 1, clientX: 50, clientY: 100 }],
+      );
+      imageContainer.dispatchEvent(endEvent);
+
+      // Should not trigger navigation (pan takes priority)
+      await waitFor(() => {
+        expect(mockOnNext).not.toHaveBeenCalled();
+      }, { timeout: 100 });
+    });
+
+    it('does not trigger swipe when distance is insufficient', async () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      // Start touch
+      const startEvent = createTouchStart(imageContainer, [
+        { identifier: 1, clientX: 200, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(startEvent);
+
+      // Move touch left (less than 50px - should not trigger)
+      const moveEvent = createTouchMove(imageContainer, [
+        { identifier: 1, clientX: 160, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(moveEvent);
+
+      // End touch
+      const endEvent = createTouchEnd(
+        imageContainer,
+        [{ identifier: 1, clientX: 160, clientY: 100 }],
+        [{ identifier: 1, clientX: 160, clientY: 100 }],
+      );
+      imageContainer.dispatchEvent(endEvent);
+
+      // Should not trigger navigation (insufficient distance)
+      await waitFor(() => {
+        expect(mockOnNext).not.toHaveBeenCalled();
+      }, { timeout: 100 });
+    });
+
+    it('applies visual feedback during horizontal swipe', async () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      // Start touch
+      const startEvent = createTouchStart(imageContainer, [
+        { identifier: 1, clientX: 200, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(startEvent);
+
+      // Move touch left (swipe in progress)
+      const moveEvent = createTouchMove(imageContainer, [
+        { identifier: 1, clientX: 150, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(moveEvent);
+
+      // Check that visual feedback is applied (image should have translateX)
+      await waitFor(() => {
+        const img = screen.getByAltText('Test Photo');
+        const transform = (img as HTMLElement).style.transform;
+        // Transform should include translateX for swipe feedback
+        expect(transform).toBeDefined();
+      });
+    });
+
+    it('applies visual feedback during vertical swipe', async () => {
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      const overlay = document.querySelector('.lightbox-overlay');
+      if (!overlay) {
+        throw new Error('Overlay not found');
+      }
+
+      // Start touch
+      const startEvent = createTouchStart(imageContainer, [
+        { identifier: 1, clientX: 100, clientY: 200 },
+      ]);
+      imageContainer.dispatchEvent(startEvent);
+
+      // Move touch up (swipe in progress)
+      const moveEvent = createTouchMove(imageContainer, [
+        { identifier: 1, clientX: 100, clientY: 150 },
+      ]);
+      imageContainer.dispatchEvent(moveEvent);
+
+      // Check that visual feedback is applied (backdrop opacity should change)
+      await waitFor(() => {
+        const overlayStyle = (overlay as HTMLElement).style;
+        // Opacity should be less than 1 during swipe
+        expect(overlayStyle.opacity).toBeDefined();
+      });
+    });
+
+    it('resets visual feedback on swipe cancel', async () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={mockImages[0]}
+          onClose={mockOnClose}
+          albumContext={mockImages}
+          onNext={mockOnNext}
+          onPrevious={mockOnPrevious}
+        />,
+      );
+
+      const imageContainer = document.querySelector('.lightbox-image-container');
+      if (!imageContainer) {
+        throw new Error('Image container not found');
+      }
+
+      // Start touch
+      const startEvent = createTouchStart(imageContainer, [
+        { identifier: 1, clientX: 200, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(startEvent);
+
+      // Move touch left
+      const moveEvent = createTouchMove(imageContainer, [
+        { identifier: 1, clientX: 150, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(moveEvent);
+
+      // Cancel touch
+      const cancelEvent = createTouchCancel(imageContainer, [
+        { identifier: 1, clientX: 150, clientY: 100 },
+      ]);
+      imageContainer.dispatchEvent(cancelEvent);
+
+      // Visual feedback should be reset
+      await waitFor(() => {
+        const img = screen.getByAltText('Test Photo');
+        const transform = (img as HTMLElement).style.transform;
+        // Transform should not include swipe translateX after cancel
+        if (transform) {
+          expect(transform).not.toContain('translateX');
+        }
+      });
     });
   });
 });

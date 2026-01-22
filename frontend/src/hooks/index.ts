@@ -26,6 +26,8 @@ export { useImagePreload } from './useImagePreload';
 export { useImageZoom } from './useImageZoom';
 export { useImageCache } from './useImageCache';
 export type { UseImageCacheReturn } from './useImageCache';
+export { useSwipeGesture } from './useSwipeGesture';
+export type { SwipeHandlers, SwipeOptions, SwipeDirection } from './useSwipeGesture';
 
 // Lightbox hooks
 export { useLightbox } from './useLightbox';
