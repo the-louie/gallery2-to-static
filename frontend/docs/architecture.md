@@ -206,6 +206,8 @@ interface Child {
     height: number | null;   // Image height (null for albums)
     thumb_width: number | null;   // Thumbnail width (null if no thumbnail)
     thumb_height: number | null;  // Thumbnail height (null if no thumbnail)
+    ownerName?: string | null;    // Owner display name (User); null when user missing
+    summary?: string | null;      // Item summary (distinct from description); optional
 }
 ```
 
@@ -219,6 +221,8 @@ interface Child {
 - `timestamp`: Unix timestamp in seconds (or milliseconds, depending on Gallery 2 configuration)
 - `width`/`height`: Image dimensions, null for albums or items without dimensions
 - `thumb_width`/`thumb_height`: Thumbnail dimensions, null if thumbnail not generated or unavailable
+- `ownerName`: Owner display name from Gallery 2 User (fullName or userName); optional, null when user missing
+- `summary`: Item summary from Gallery 2; optional, distinct from description
 
 ### Data Relationships
 
@@ -430,7 +434,7 @@ Raw JSON data from backend is transformed for frontend use:
 
 1. **Type Safety**: JSON data is validated against `Child` interface from shared types
 2. **Path Construction**: Photo pathComponents are already fully constructed by backend
-3. **URL Generation**: Image URLs constructed from pathComponent and thumbPrefix
+3. **URL Generation**: Image URLs constructed from pathComponent and thumbPrefix using configurable base URL (see Image URL Configuration below)
 4. **Filtering/Sorting**: Data transformation for UI state (filters, sorts applied after loading)
 
 ## Component Architecture
@@ -707,6 +711,36 @@ flowchart TD
 4. **Deploy:**
    - Deploy `frontend/dist/` contents
    - Ensure JSON files are accessible at `/data/*.json`
+
+### Image URL Configuration
+
+The frontend supports configurable image base URLs, allowing images to be served from external domains (CDNs, separate servers) or custom paths.
+
+**Configuration System:**
+- **Module**: `frontend/src/utils/imageConfig.ts`
+- **Configuration Precedence** (highest to lowest):
+  1. Runtime config file: `public/image-config.json` (loaded at runtime)
+  2. Environment variable: `VITE_IMAGE_BASE_URL` (set at build time)
+  3. Default: `/images` (fallback if neither is configured)
+
+**URL Construction:**
+- Image URLs are constructed by combining the configured base URL with the `pathComponent` from image data
+- Base URL is normalized (trailing slashes removed) during configuration loading
+- Supports both absolute URLs (`https://cdn.example.com`) and relative paths (`/gallery-images`)
+- All image URL construction functions (`getImageUrl`, `getImageUrlWithFormat`, `getAlbumThumbnailUrl`) use the configured base URL
+
+**Configuration Loading:**
+- Configuration is loaded asynchronously at application startup
+- Loaded configuration is cached for application lifetime
+- Graceful fallback to default on configuration errors (no thrown errors)
+- Development mode shows console warnings for invalid configuration
+
+**Integration:**
+- All components using image URLs automatically benefit from configuration
+- No component changes needed when switching between default and external domain
+- Backward compatible: default behavior unchanged when no configuration provided
+
+See [Building and Deployment Guide](user-guides/06-building-deployment.md#image-base-url-configuration) for detailed configuration instructions.
 
 ## Future Enhancement Support
 

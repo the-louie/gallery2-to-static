@@ -7,27 +7,38 @@
  *
  * ## URL Construction Strategy
  *
- * - Base path: `/images/` (for static hosting)
- * - Full images: `/images/{pathComponent}`
- * - Thumbnails: `/images/__t_{filename}` (prefix-based pattern)
+ * - Base URL: Configurable via environment variable (`VITE_IMAGE_BASE_URL`) or
+ *   runtime config file (`/image-config.json`). Defaults to `/images` if not configured.
+ * - Full images: `{baseUrl}/{pathComponent}`
+ * - Thumbnails: `{baseUrl}/__t_{filename}` (prefix-based pattern)
  * - Format variants: Replace extension with `.webp` or `.avif`
  *
  * The thumbPrefix pattern (`__t_`) is applied to the filename portion
  * of the pathComponent. For example:
- * - Full: `/images/album/photo.jpg`
- * - Thumb: `/images/album/__t_photo.jpg`
- * - Full WebP: `/images/album/photo.webp`
- * - Thumb WebP: `/images/album/__t_photo.webp`
+ * - Full: `/images/album/photo.jpg` (default) or `https://cdn.example.com/album/photo.jpg` (configured)
+ * - Thumb: `/images/album/__t_photo.jpg` (default) or `https://cdn.example.com/album/__t_photo.jpg` (configured)
+ * - Full WebP: `/images/album/photo.webp` (default) or `https://cdn.example.com/album/photo.webp` (configured)
+ * - Thumb WebP: `/images/album/__t_photo.webp` (default) or `https://cdn.example.com/album/__t_photo.webp` (configured)
+ *
+ * ## Configuration
+ *
+ * The base URL can be configured via:
+ * 1. Runtime config file: `public/image-config.json` with `{"baseUrl": "https://cdn.example.com"}`
+ * 2. Environment variable: `VITE_IMAGE_BASE_URL=https://cdn.example.com`
+ * 3. Default: `/images` (if neither is configured)
+ *
+ * See `imageConfig.ts` for more details on configuration.
  *
  * ## Edge Cases
  *
- * - Empty pathComponent: Returns base path (should not occur in practice)
+ * - Empty pathComponent: Returns base URL (should not occur in practice)
  * - Special characters: PathComponent is used as-is (assumes proper encoding)
  * - Missing thumbnails: Component should handle gracefully by falling back to full image
  * - Format variants: Original extension is replaced with format extension
  */
 
 import type { Image, Album } from '../types';
+import { getImageBaseUrl } from './imageConfig';
 
 /**
  * Default thumbnail prefix pattern
@@ -37,15 +48,13 @@ import type { Image, Album } from '../types';
 const DEFAULT_THUMB_PREFIX = '__t_';
 
 /**
- * Base path for images in static hosting
- */
-const IMAGE_BASE_PATH = '/images/';
-
-/**
  * Construct thumbnail URL from pathComponent
  *
  * Applies the thumbnail prefix to the filename portion of the pathComponent.
- * For example: "album/photo.jpg" -> "/images/album/__t_photo.jpg"
+ * Uses the configured base URL from imageConfig.
+ *
+ * For example: "album/photo.jpg" -> "/images/album/__t_photo.jpg" (default)
+ * or "https://cdn.example.com/album/__t_photo.jpg" (if configured)
  *
  * @param pathComponent - Full path component from image data
  * @param thumbPrefix - Thumbnail prefix (defaults to "__t_")
@@ -53,12 +62,14 @@ const IMAGE_BASE_PATH = '/images/';
  * @returns Thumbnail URL path
  */
 function constructThumbnailUrl(
-  pathComponent: string,
+  pathComponent: string | null,
   thumbPrefix: string = DEFAULT_THUMB_PREFIX,
   format: 'webp' | 'avif' | 'original' = 'original',
 ): string {
+  const baseUrl = getImageBaseUrl();
+
   if (!pathComponent) {
-    return IMAGE_BASE_PATH;
+    return baseUrl;
   }
 
   // Find the last slash to separate directory from filename
@@ -80,7 +91,14 @@ function constructThumbnailUrl(
   // Apply format extension to filename
   const filenameWithFormat = replaceExtension(filename, format);
 
-  return `${IMAGE_BASE_PATH}${directory}${thumbPrefix}${filenameWithFormat}`;
+  // Construct URL: baseUrl + directory + thumbPrefix + filename
+  // baseUrl is normalized (no trailing slash)
+  // directory already includes trailing slash if present, or is empty string
+  // For absolute URLs, we need to ensure proper concatenation
+  const pathPart = directory
+    ? `${directory}${thumbPrefix}${filenameWithFormat}`
+    : `${thumbPrefix}${filenameWithFormat}`;
+  return `${baseUrl}/${pathPart}`;
 }
 
 /**
@@ -113,20 +131,29 @@ function replaceExtension(
 /**
  * Construct full image URL from pathComponent
  *
+ * Uses the configured base URL from imageConfig.
+ *
+ * For example: "album/photo.jpg" -> "/images/album/photo.jpg" (default)
+ * or "https://cdn.example.com/album/photo.jpg" (if configured)
+ *
  * @param pathComponent - Full path component from image data
  * @param format - Optional format variant: 'webp', 'avif', or 'original' (default)
  * @returns Full image URL path
  */
 function constructFullImageUrl(
-  pathComponent: string,
+  pathComponent: string | null,
   format: 'webp' | 'avif' | 'original' = 'original',
 ): string {
+  const baseUrl = getImageBaseUrl();
+
   if (!pathComponent) {
-    return IMAGE_BASE_PATH;
+    return baseUrl;
   }
 
   const pathWithFormat = replaceExtension(pathComponent, format);
-  return `${IMAGE_BASE_PATH}${pathWithFormat}`;
+  // baseUrl is normalized (no trailing slash)
+  // pathComponent is the full path (e.g., "album/photo.jpg")
+  return `${baseUrl}/${pathWithFormat}`;
 }
 
 /**
@@ -150,10 +177,10 @@ function constructFullImageUrl(
  * };
  *
  * const thumbUrl = getImageUrl(image, true);
- * // Returns: "/images/album/__t_photo.jpg"
+ * // Returns: "/images/album/__t_photo.jpg" (default) or configured base URL
  *
  * const fullUrl = getImageUrl(image, false);
- * // Returns: "/images/album/photo.jpg"
+ * // Returns: "/images/album/photo.jpg" (default) or configured base URL
  * ```
  */
 export function getImageUrl(
@@ -192,10 +219,10 @@ export function getImageUrl(
  * };
  *
  * const webpUrl = getImageUrlWithFormat(image, false, 'webp');
- * // Returns: "/images/album/photo.webp"
+ * // Returns: "/images/album/photo.webp" (default) or configured base URL
  *
  * const thumbWebpUrl = getImageUrlWithFormat(image, true, 'webp');
- * // Returns: "/images/album/__t_photo.webp"
+ * // Returns: "/images/album/__t_photo.webp" (default) or configured base URL
  * ```
  */
 export function getImageUrlWithFormat(
@@ -233,7 +260,7 @@ export function getImageUrlWithFormat(
  * };
  *
  * const thumbUrl = getAlbumThumbnailUrl(album);
- * // Returns: "/images/album/__t_photo.jpg"
+ * // Returns: "/images/album/__t_photo.jpg" (default) or configured base URL
  *
  * const albumWithoutThumb: Album = {
  *   id: 2,
