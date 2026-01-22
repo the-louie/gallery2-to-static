@@ -158,6 +158,11 @@ export function useAlbumData(
     enableAutoRetry ? retryConfig : undefined,
   );
 
+  // Destructure retryHook properties for stable dependencies
+  // These functions are stable (wrapped in useCallback), but we destructure to avoid
+  // including the entire retryHook object in dependency arrays
+  const { isRetrying: isRetryingRetry, canRetry: canRetryRetry, retry: retryFn, reset: resetRetry } = retryHook;
+
   // Update ref when id changes
   useEffect(() => {
     currentIdRef.current = id;
@@ -165,15 +170,15 @@ export function useAlbumData(
 
   // Auto-retry on error if enabled
   useEffect(() => {
-    if (enableAutoRetry && error && id !== null && !isLoading && !retryHook.isRetrying) {
+    if (enableAutoRetry && error && id !== null && !isLoading && !isRetryingRetry) {
       // Only auto-retry if we haven't exceeded max retries
-      if (retryHook.canRetry) {
-        retryHook.retry().catch(() => {
+      if (canRetryRetry) {
+        retryFn().catch(() => {
           // Error already handled by loadData
         });
       }
     }
-  }, [error, enableAutoRetry, id, isLoading, retryHook]);
+  }, [error, enableAutoRetry, id, isLoading, isRetryingRetry, canRetryRetry, retryFn]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -184,14 +189,14 @@ export function useAlbumData(
       setIsLoading(false);
       setError(null);
       if (enableAutoRetry) {
-        retryHook.reset();
+        resetRetry();
       }
       return;
     }
 
     // Reset retry state when id changes
     if (enableAutoRetry) {
-      retryHook.reset();
+      resetRetry();
     }
 
     loadData(id).catch(() => {
@@ -202,19 +207,19 @@ export function useAlbumData(
     return () => {
       isMountedRef.current = false;
     };
-  }, [id, loadData, enableAutoRetry, retryHook]);
+  }, [id, loadData, enableAutoRetry, resetRetry]);
 
   const refetch = useCallback(() => {
     if (id !== null) {
       // Reset retry state before refetching
       if (enableAutoRetry) {
-        retryHook.reset();
+        resetRetry();
       }
       loadData(id).catch(() => {
         // Error handled in loadData
       });
     }
-  }, [id, loadData, enableAutoRetry, retryHook]);
+  }, [id, loadData, enableAutoRetry, resetRetry]);
 
   return {
     data,

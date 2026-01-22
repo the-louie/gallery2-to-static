@@ -96,7 +96,7 @@ const defaultContextValue: ThemeContextValue = {
   theme: 'light',
   preference: 'system',
   setPreference: () => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.warn('ThemeProvider not found. Make sure your component is wrapped in ThemeProvider.');
     }
   },
@@ -138,7 +138,7 @@ function applyTheme(theme: Theme): void {
       }
     } catch (error) {
       // Handle edge cases where attribute manipulation fails
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.warn('Failed to apply theme to document element:', error);
       }
     }

@@ -90,12 +90,12 @@ const defaultContextValue: ViewModeContextValue = {
   albumViewMode: 'grid',
   imageViewMode: 'grid',
   setAlbumViewMode: () => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.warn('ViewModeProvider not found. Make sure your component is wrapped in ViewModeProvider.');
     }
   },
   setImageViewMode: () => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.warn('ViewModeProvider not found. Make sure your component is wrapped in ViewModeProvider.');
     }
   },

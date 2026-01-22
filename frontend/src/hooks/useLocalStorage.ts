@@ -104,7 +104,7 @@ export function useLocalStorage<T>(
   const readValue = useCallback((): T => {
     // Return initial value if localStorage is not available
     if (!isLocalStorageAvailable()) {
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.warn(`localStorage is not available. Using initial value for key "${key}".`);
       }
       return initialValue;
@@ -118,7 +118,7 @@ export function useLocalStorage<T>(
       return JSON.parse(item) as T;
     } catch (error) {
       const errorType = getErrorType(error);
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.warn(
           `Error reading localStorage key "${key}" (${errorType}):`,
           error instanceof Error ? error.message : error
@@ -157,7 +157,7 @@ export function useLocalStorage<T>(
 
             // Handle quota exceeded error
             if (errorType === 'QuotaExceededError') {
-              if (process.env.NODE_ENV === 'development') {
+              if (import.meta.env.DEV) {
                 console.warn(
                   `localStorage quota exceeded for key "${key}". Value will not be persisted.`
                 );
@@ -169,7 +169,7 @@ export function useLocalStorage<T>(
 
             // Handle security error (private browsing)
             if (errorType === 'SecurityError') {
-              if (process.env.NODE_ENV === 'development') {
+              if (import.meta.env.DEV) {
                 console.warn(
                   `localStorage access denied for key "${key}" (likely private browsing mode). Value will not be persisted.`
                 );
@@ -179,7 +179,7 @@ export function useLocalStorage<T>(
             }
 
             // Other errors
-            if (process.env.NODE_ENV === 'development') {
+            if (import.meta.env.DEV) {
               console.warn(
                 `Error setting localStorage key "${key}" (${errorType}):`,
                 storageError instanceof Error ? storageError.message : storageError
@@ -189,7 +189,7 @@ export function useLocalStorage<T>(
         }
       } catch (error) {
         // This catch handles errors in the value computation (functional updates)
-        if (process.env.NODE_ENV === 'development') {
+        if (import.meta.env.DEV) {
           console.warn(
             `Error computing value for localStorage key "${key}":`,
             error instanceof Error ? error.message : error
@@ -212,7 +212,7 @@ export function useLocalStorage<T>(
         try {
           setStoredValue(JSON.parse(event.newValue) as T);
         } catch (error) {
-          if (process.env.NODE_ENV === 'development') {
+          if (import.meta.env.DEV) {
             console.warn(`Error parsing storage event for key "${key}":`, error);
           }
         }

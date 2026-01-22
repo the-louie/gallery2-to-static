@@ -102,7 +102,7 @@ export function useSystemThemePreference(): SystemTheme {
           setSystemTheme(event.matches ? 'dark' : 'light');
         } catch (error) {
           // Handle errors in state update (shouldn't happen, but be safe)
-          if (process.env.NODE_ENV === 'development') {
+          if (import.meta.env.DEV) {
             console.warn('Error updating system theme preference:', error);
           }
         }
@@ -118,7 +118,7 @@ export function useSystemThemePreference(): SystemTheme {
       }
     } catch (error) {
       // Handle matchMedia failures gracefully
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.warn('Failed to set up system theme preference listener:', error);
       }
       // Keep current theme (defaults to light from initial state)
@@ -136,7 +136,7 @@ export function useSystemThemePreference(): SystemTheme {
           }
         } catch (error) {
           // Handle cleanup errors gracefully
-          if (process.env.NODE_ENV === 'development') {
+          if (import.meta.env.DEV) {
             console.warn('Error cleaning up system theme preference listener:', error);
           }
         }

@@ -71,7 +71,7 @@ function getRating(name: string, value: number): 'good' | 'needs-improvement' | 
  */
 function reportMetric(metric: WebVitalsMetric): void {
   // In development, log to console
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     const emoji = metric.rating === 'good' ? '✅' : metric.rating === 'needs-improvement' ? '⚠️' : '❌';
     console.log(
       `${emoji} Web Vital: ${metric.name} = ${metric.value.toFixed(2)} (${metric.rating})`,
@@ -157,7 +157,7 @@ export function useWebVitals(): void {
       });
     }).catch((error) => {
       // Handle error gracefully - web-vitals might not be available
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         console.warn('Failed to load web-vitals:', error);
       }
     });

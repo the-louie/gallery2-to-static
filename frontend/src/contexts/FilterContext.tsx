@@ -63,14 +63,14 @@ export interface FilterContextValue extends FilterState {}
 const defaultContextValue: FilterContextValue = {
   criteria: defaultCriteria,
   setCriteria: () => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.warn(
         'FilterProvider not found. Make sure your component is wrapped in FilterProvider.'
       );
     }
   },
   clearFilters: () => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.warn(
         'FilterProvider not found. Make sure your component is wrapped in FilterProvider.'
       );
