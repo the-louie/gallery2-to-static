@@ -65,6 +65,8 @@
   border-radius: var(--radius-sm, 4px);
   cursor: pointer;
   font-size: 0.875rem;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .image-grid-error button:hover {

@@ -52,12 +52,14 @@
   line-height: 1;
   cursor: pointer;
   padding: 0;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease;
   border-radius: var(--border-radius-sm, 0.25rem);
 }
 

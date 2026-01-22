@@ -38,18 +38,20 @@
   color: var(--color-text, #000);
   font-size: var(--font-size-lg, 1.25rem);
   line-height: 1;
-  width: 2rem;
-  height: 2rem;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
   padding: 0;
-  align-items: center;
-  justify-content: center;
 }
 
 @media (max-width: 767px) {
   .filter-panel-toggle {
     display: flex; /* Show on mobile */
+    align-items: center;
+    justify-content: center;
   }
 }
 
