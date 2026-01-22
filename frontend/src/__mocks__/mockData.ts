@@ -20,6 +20,7 @@ export const mockAlbum: Child = {
   height: null,
   thumb_width: null,
   thumb_height: null,
+  order: 1,
 };
 
 /**
@@ -37,6 +38,7 @@ export const mockPhoto: Child = {
   height: 1080,
   thumb_width: 200,
   thumb_height: 150,
+  order: 1,
 };
 
 /**
@@ -54,6 +56,7 @@ export const mockAlbumWithChildren: Child = {
   height: null,
   thumb_width: null,
   thumb_height: null,
+  order: 2,
 };
 
 /**
@@ -71,6 +74,7 @@ export const mockPhotoPortrait: Child = {
   height: 1920,
   thumb_width: 150,
   thumb_height: 200,
+  order: 2,
 };
 
 /**
@@ -88,6 +92,7 @@ export const mockPhotoNoThumb: Child = {
   height: 1440,
   thumb_width: null,
   thumb_height: null,
+  order: 3,
 };
 
 /**

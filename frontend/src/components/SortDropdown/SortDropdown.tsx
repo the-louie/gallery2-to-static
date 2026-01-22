@@ -7,7 +7,7 @@
  *
  * ## Features
  *
- * - All sort options available (date, name, size - ascending/descending)
+ * - All sort options available (Gallery order, date, name, size - ascending/descending)
  * - Human-readable option labels
  * - Full keyboard navigation (native select behavior)
  * - Screen reader support with proper ARIA labels
@@ -51,6 +51,8 @@ import './SortDropdown.css';
  */
 function getSortLabel(option: SortOption): string {
   switch (option) {
+    case 'order-asc':
+      return 'Gallery order';
     case 'date-asc':
       return 'Date (Oldest First)';
     case 'date-desc':
@@ -72,6 +74,7 @@ function getSortLabel(option: SortOption): string {
  * All available sort options
  */
 const SORT_OPTIONS: SortOption[] = [
+  'order-asc',
   'date-desc',
   'date-asc',
   'name-asc',
@@ -91,7 +94,7 @@ const SORT_OPTIONS: SortOption[] = [
  * @example
  * ```tsx
  * <SortDropdown
- *   currentOption="date-desc"
+ *   currentOption="order-asc"
  *   onOptionChange={(option) => console.log(option)}
  * />
  * ```

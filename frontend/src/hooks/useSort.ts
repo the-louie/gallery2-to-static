@@ -34,9 +34,9 @@ import { useLocalStorage } from './useLocalStorage';
 import type { SortOption, SortState } from '@/types';
 
 /**
- * Default sort option (newest first)
+ * Default sort option (Gallery 2 order)
  */
-const DEFAULT_SORT_OPTION: SortOption = 'date-desc';
+const DEFAULT_SORT_OPTION: SortOption = 'order-asc';
 
 /**
  * Get localStorage key for sort preference
@@ -62,7 +62,7 @@ function getStorageKey(context: 'albums' | 'images'): string {
  * setOption('name-asc');
  *
  * // Functional update (not typically needed, but supported)
- * setOption((prev) => prev === 'date-desc' ? 'date-asc' : 'date-desc');
+ * setOption((prev) => prev === 'order-asc' ? 'date-desc' : 'order-asc');
  * ```
  */
 export function useSort(context: 'albums' | 'images'): SortState {

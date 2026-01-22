@@ -34,36 +34,38 @@ describe('SortDropdown', () => {
   it('renders all sort options', () => {
     const handleChange = vi.fn();
     render(
-      <SortDropdown currentOption="date-desc" onOptionChange={handleChange} />
+      <SortDropdown currentOption="order-asc" onOptionChange={handleChange} />
     );
 
     const select = screen.getByRole('combobox') as HTMLSelectElement;
     const options = Array.from(select.options);
 
-    expect(options).toHaveLength(6);
-    expect(options[0].value).toBe('date-desc');
-    expect(options[1].value).toBe('date-asc');
-    expect(options[2].value).toBe('name-asc');
-    expect(options[3].value).toBe('name-desc');
-    expect(options[4].value).toBe('size-asc');
-    expect(options[5].value).toBe('size-desc');
+    expect(options).toHaveLength(7);
+    expect(options[0].value).toBe('order-asc');
+    expect(options[1].value).toBe('date-desc');
+    expect(options[2].value).toBe('date-asc');
+    expect(options[3].value).toBe('name-asc');
+    expect(options[4].value).toBe('name-desc');
+    expect(options[5].value).toBe('size-asc');
+    expect(options[6].value).toBe('size-desc');
   });
 
   it('displays human-readable labels for options', () => {
     const handleChange = vi.fn();
     render(
-      <SortDropdown currentOption="date-desc" onOptionChange={handleChange} />
+      <SortDropdown currentOption="order-asc" onOptionChange={handleChange} />
     );
 
     const select = screen.getByRole('combobox') as HTMLSelectElement;
     const options = Array.from(select.options);
 
-    expect(options[0].textContent).toBe('Date (Newest First)');
-    expect(options[1].textContent).toBe('Date (Oldest First)');
-    expect(options[2].textContent).toBe('Name (A-Z)');
-    expect(options[3].textContent).toBe('Name (Z-A)');
-    expect(options[4].textContent).toBe('Size (Smallest First)');
-    expect(options[5].textContent).toBe('Size (Largest First)');
+    expect(options[0].textContent).toBe('Gallery order');
+    expect(options[1].textContent).toBe('Date (Newest First)');
+    expect(options[2].textContent).toBe('Date (Oldest First)');
+    expect(options[3].textContent).toBe('Name (A-Z)');
+    expect(options[4].textContent).toBe('Name (Z-A)');
+    expect(options[5].textContent).toBe('Size (Smallest First)');
+    expect(options[6].textContent).toBe('Size (Largest First)');
   });
 
   it('calls onOptionChange when option is selected', async () => {
@@ -149,6 +151,7 @@ describe('SortDropdown', () => {
   it('handles all sort options', () => {
     const handleChange = vi.fn();
     const options: SortOption[] = [
+      'order-asc',
       'date-asc',
       'date-desc',
       'name-asc',

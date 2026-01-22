@@ -2,7 +2,7 @@
 
 ## Pending Tasks
 - Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
-- Use Order Value for Default Album/Photo Sorting - Low-Medium - 2-3 hours - Use order field from JSON as default sorting when rendering albums and photos, preserving Gallery 2 ordering
+- Extract Owner Name and Summary into JSON Data - Medium - 2-3 hours - Extract owner name (via ownerId→User) and summary from DB, add to data JSON; optional search/UI follow-ups
 
 ---
 

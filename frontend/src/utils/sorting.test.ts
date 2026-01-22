@@ -1,7 +1,7 @@
 /**
  * Sorting Utilities Tests
  *
- * Tests for sorting utility functions including date, name, and size sorting.
+ * Tests for sorting utility functions including date, name, size, and order sorting.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -272,6 +272,75 @@ describe('sorting', () => {
       });
     });
 
+    describe('order sorting', () => {
+      it('sorts by order ascending (lower values first)', () => {
+        const items: Child[] = [
+          { ...mockPhoto, id: 1, order: 30 },
+          { ...mockAlbum, id: 2, order: 10 },
+          { ...mockPhotoPortrait, id: 3, order: 20 },
+        ];
+
+        const sorted = sortItems(items, 'order-asc');
+
+        expect(sorted[0].order).toBe(10);
+        expect(sorted[1].order).toBe(20);
+        expect(sorted[2].order).toBe(30);
+      });
+
+      it('handles null/undefined order (sorted last)', () => {
+        const items: Child[] = [
+          { ...mockPhoto, id: 1, order: 10 },
+          { ...mockAlbum, id: 2, order: null as any },
+          { ...mockPhotoPortrait, id: 3, order: 20 },
+        ];
+
+        const sorted = sortItems(items, 'order-asc');
+
+        expect(sorted[0].order).toBe(10);
+        expect(sorted[1].order).toBe(20);
+        expect(sorted[2].order).toBeNull();
+      });
+
+      it('handles all null/undefined order', () => {
+        const items: Child[] = [
+          { ...mockPhoto, id: 1, order: null as any },
+          { ...mockAlbum, id: 2, order: undefined as any },
+        ];
+
+        const sorted = sortItems(items, 'order-asc');
+
+        expect(sorted.length).toBe(2);
+        expect(sorted[0].id).toBe(1);
+        expect(sorted[1].id).toBe(2);
+      });
+
+      it('maintains stable sort for equal order values', () => {
+        const items: Child[] = [
+          { ...mockPhoto, id: 1, order: 5 },
+          { ...mockAlbum, id: 2, order: 5 },
+          { ...mockPhotoPortrait, id: 3, order: 5 },
+        ];
+
+        const sorted = sortItems(items, 'order-asc');
+
+        expect(sorted[0].id).toBe(1);
+        expect(sorted[1].id).toBe(2);
+        expect(sorted[2].id).toBe(3);
+      });
+
+      it('does not mutate original array when sorting by order', () => {
+        const items: Child[] = [
+          { ...mockPhoto, id: 1, order: 20 },
+          { ...mockAlbum, id: 2, order: 10 },
+        ];
+        const original = [...items];
+
+        sortItems(items, 'order-asc');
+
+        expect(items).toEqual(original);
+      });
+    });
+
     describe('edge cases', () => {
       it('handles empty array', () => {
         const items: Child[] = [];
@@ -304,17 +373,18 @@ describe('sorting', () => {
 
       it('handles all sort options', () => {
         const items: Child[] = [
-          { ...mockPhoto, timestamp: 1000, title: 'Zebra', width: 1920, height: 1080 },
-          { ...mockAlbum, timestamp: 2000, title: 'Apple', width: null, height: null },
+          { ...mockPhoto, timestamp: 1000, title: 'Zebra', width: 1920, height: 1080, order: 2 },
+          { ...mockAlbum, timestamp: 2000, title: 'Apple', width: null, height: null, order: 1 },
         ];
 
-        const options: Array<'date-asc' | 'date-desc' | 'name-asc' | 'name-desc' | 'size-asc' | 'size-desc'> = [
+        const options: Array<'date-asc' | 'date-desc' | 'name-asc' | 'name-desc' | 'size-asc' | 'size-desc' | 'order-asc'> = [
           'date-asc',
           'date-desc',
           'name-asc',
           'name-desc',
           'size-asc',
           'size-desc',
+          'order-asc',
         ];
 
         options.forEach((option) => {

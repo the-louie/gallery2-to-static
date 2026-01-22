@@ -47,7 +47,7 @@ vi.mock('@/contexts/FilterContext', () => ({
 // Mock the useSort hook
 vi.mock('@/hooks/useSort', () => ({
   useSort: vi.fn((context: 'albums' | 'images') => ({
-    option: 'date-desc' as const,
+    option: 'order-asc' as const,
     setOption: vi.fn(),
   })),
 }));

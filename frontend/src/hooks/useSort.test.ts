@@ -20,7 +20,7 @@ describe('useSort', () => {
     it('returns default sort option when localStorage is empty', () => {
       const { result } = renderHook(() => useSort('albums'));
 
-      expect(result.current.option).toBe('date-desc');
+      expect(result.current.option).toBe('order-asc');
     });
 
     it('reads existing value from localStorage', () => {
@@ -49,15 +49,16 @@ describe('useSort', () => {
 
       act(() => {
         result.current.setOption((prev) =>
-          prev === 'date-desc' ? 'date-asc' : 'date-desc'
+          prev === 'order-asc' ? 'date-desc' : 'order-asc'
         );
       });
 
-      expect(result.current.option).toBe('date-asc');
+      expect(result.current.option).toBe('date-desc');
     });
 
     it('handles all sort options', () => {
       const options: SortOption[] = [
+        'order-asc',
         'date-asc',
         'date-desc',
         'name-asc',
@@ -85,7 +86,7 @@ describe('useSort', () => {
     it('returns default sort option when localStorage is empty', () => {
       const { result } = renderHook(() => useSort('images'));
 
-      expect(result.current.option).toBe('date-desc');
+      expect(result.current.option).toBe('order-asc');
     });
 
     it('reads existing value from localStorage', () => {
@@ -140,7 +141,7 @@ describe('useSort', () => {
       });
 
       // Images should still have default
-      expect(imagesResult.current.option).toBe('date-desc');
+      expect(imagesResult.current.option).toBe('order-asc');
       expect(localStorage.getItem('gallery-sort-images')).toBeNull();
     });
   });
@@ -166,7 +167,7 @@ describe('useSort', () => {
       const { result } = renderHook(() => useSort('albums'));
 
       // Should use default value
-      expect(result.current.option).toBe('date-desc');
+      expect(result.current.option).toBe('order-asc');
 
       // Restore localStorage
       Object.defineProperty(window, 'localStorage', {
@@ -181,7 +182,7 @@ describe('useSort', () => {
       const { result } = renderHook(() => useSort('albums'));
 
       // Should use default value when data is corrupted
-      expect(result.current.option).toBe('date-desc');
+      expect(result.current.option).toBe('order-asc');
     });
   });
 
@@ -209,11 +210,11 @@ describe('useSort', () => {
 
       act(() => {
         result.current.setOption((prev) => {
-          return prev === 'date-desc' ? 'date-asc' : 'date-desc';
+          return prev === 'order-asc' ? 'name-asc' : 'order-asc';
         });
       });
 
-      expect(result.current.option).toBe('date-asc');
+      expect(result.current.option).toBe('name-asc');
     });
   });
 });

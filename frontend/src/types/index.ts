@@ -301,8 +301,8 @@ export interface FilterCriteria {
 /**
  * Sort option - determines how items are sorted
  *
- * Format: '{field}-{direction}' where field is 'date', 'name', or 'size',
- * and direction is 'asc' (ascending) or 'desc' (descending).
+ * Format: '{field}-{direction}' where field is 'date', 'name', 'size', or 'order',
+ * and direction is 'asc' (ascending) or 'desc' (descending). 'order' supports asc only.
  */
 export type SortOption =
   | 'date-asc'
@@ -310,7 +310,8 @@ export type SortOption =
   | 'name-asc'
   | 'name-desc'
   | 'size-asc'
-  | 'size-desc';
+  | 'size-desc'
+  | 'order-asc';
 
 /**
  * Filter state - contains active filter criteria

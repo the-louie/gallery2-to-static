@@ -57,66 +57,54 @@ Per-album theme configuration system with JSON file and theme resolution logic
 
 ---
 
-## Use Order Value for Default Album/Photo Sorting
+## Extract Owner Name and Summary into JSON Data
 
 **Status:** Pending
 **Priority:** Medium
-**Complexity:** Low-Medium
+**Complexity:** Medium
 **Estimated Time:** 2-3 hours
 
 ### Description
-Implement frontend functionality to use the `order` field from JSON data as the default sorting method when rendering albums and photos. When no user-selected sort option is active, items should be displayed in their Gallery 2 order (using the `order` field). User-selected sorting options should still take precedence over the default order.
+Extract owner name (resolved via `ownerId` → User) and `summary` from the Gallery 2 database and add them to the per-album JSON files (`data/{id}.json`). Each child item in the JSON will include `ownerName` (string | null) and `summary` (string | null). Owner name is resolved by joining Item.ownerId to User.id and using User.fullName, falling back to User.userName when fullName is null. Items with missing or invalid ownerId (e.g. deleted user) will have null ownerName.
 
 ### Requirements
 
 #### Research Tasks
-- Research how order field will be structured in JSON (number, nullable, default values)
-- Research integration with existing sorting system (`sortItems` function, `SortOption` type)
-- Research default sort behavior: when to apply order-based sorting vs user-selected sorting
-- Research handling of items without order values (null/undefined) in sorting logic
-- Research whether order sorting should apply to both albums and photos or separately
-- Research how order sorting interacts with filtering (should order be applied before or after filtering)
-- Research user experience: should order be visible as a sort option or only used as default
+- Confirm Item.ownerId references User.id in Gallery 2 schema (g2_Item.g_ownerId → g2_User.g_id)
+- Confirm User table columns: userName (required), fullName (nullable) for name resolution
+- Confirm Item.summary column exists and is nullable (varchar)
+- Research handling of orphaned ownerId: use LEFT JOIN User so ownerName is null when user missing
+- Review existing SQL_GET_CHILDREN joins and column mapping to avoid regressions
+- Check whether summary vs description semantics differ (both exist on Item) for frontend use
 
 #### Implementation Tasks
-- Add `order` field to `Child` interface in `frontend/src/types/index.ts` as optional number field
-- Create `sortByOrder` function in `frontend/src/utils/sorting.ts` to sort by order field
-- Handle null/undefined order values in sorting (items without order should be sorted last or maintain relative position)
-- Add 'order' as a sort option type or use it as default when no sort is selected
-- Update `sortItems` function to support 'order' sort option or create separate default ordering logic
-- Integrate order-based sorting in `AlbumGrid.tsx` component (apply when no user sort is selected)
-- Integrate order-based sorting in `ImageGrid.tsx` component (apply when no user sort is selected)
-- Update `AlbumDetail.tsx` to use order-based sorting for child items when appropriate
-- Ensure order sorting works correctly with filtering (order should be preserved through filter operations)
-- Handle backward compatibility: items without order field should still display (sorted last or by existing fallback)
-- Test with sample data that includes order values
-- Test with sample data that has missing order values (null/undefined)
-- Verify order sorting doesn't break existing user-selected sorting functionality
+- Add `i.${columnPrefix}ownerId` and `i.${columnPrefix}summary` to SQL_GET_CHILDREN SELECT
+- Add `LEFT JOIN ${tablePrefix}User u ON u.${columnPrefix}id = i.${columnPrefix}ownerId` to SQL_GET_CHILDREN
+- Select owner name as `COALESCE(u.${columnPrefix}fullName, u.${columnPrefix}userName) as ownerName`
+- Add `ownerName` and `summary` to Child interface in `backend/types.ts` (optional, string | null)
+- Update sqlUtils row mapping to pass through ownerName and summary into Child objects
+- Ensure backend writes ownerName and summary into `data/{id}.json` (no extra filtering)
+- Update `validateChildArray` in `frontend/src/utils/dataLoader.ts` if strict validation requires new fields (keep optional to avoid breaking existing JSON)
+- Optionally extend search index to include summary and/or ownerName for search; document as follow-up if deferred
+- Optionally display ownerName and summary in UI (AlbumDetail, SearchResults, etc.); document as follow-up if deferred
 
 ### Deliverable
-Frontend functionality that uses the `order` field from JSON data as default sorting for albums and photos, preserving Gallery 2's original item ordering when no user sort is selected.
+Backend extraction of owner name (via ownerId → User) and summary, added to Child type and emitted in all `data/{id}.json` files. Existing JSON without these fields remains loadable (optional fields).
 
 ### Testing Requirements
-- Verify items with order values are sorted correctly by order (ascending)
-- Check items without order values are handled appropriately (sorted last or maintain position)
-- Ensure user-selected sorting options still work and take precedence over order sorting
-- Verify order sorting works correctly with filtering applied
-- Test order sorting in AlbumGrid component
-- Test order sorting in ImageGrid component
-- Test order sorting in AlbumDetail component for child items
-- Verify backward compatibility: existing data without order field still displays correctly
-- Check that order sorting is stable (items with same order value maintain relative position)
-- Verify order sorting doesn't interfere with existing sort dropdown functionality
+- Verify SQL returns ownerName and summary for items with valid ownerId and non-null summary
+- Verify ownerName is null when User missing (LEFT JOIN) or ownerId invalid
+- Verify summary is null when Item.summary is null
+- Verify fullName used when present; userName used as fallback when fullName null
+- Run backend export and inspect generated JSON for new fields
+- Confirm frontend dataLoader still validates and loads both legacy JSON (no ownerName/summary) and new JSON
+- No regression in existing fields (title, description, order, thumbnails, etc.)
 
 ### Technical Notes
-- Order field should be optional (nullable) in TypeScript types to maintain backward compatibility
-- Sorting by order should be ascending (lower order values first, matching Gallery 2 behavior)
-- Items without order values should be sorted last (after items with order values)
-- Order sorting should only apply when no user-selected sort option is active
-- Consider making order sorting the default when sortOption is undefined or null
-- Order sorting should integrate seamlessly with existing `sortItems` utility function
-- May need to add 'order' to `SortOption` type or handle it as a special case
-- Order sorting should work for both albums and photos (same logic, different components)
-- Consider whether order should be visible to users as a sort option or only used internally as default
+- Use config.gallerySettings.tablePrefix and columnPrefix for User table and columns
+- Owner name: prefer fullName, fallback to userName. Both from g2_User.
+- summary is distinct from description; both are Item fields. Include both in JSON.
+- Keep ownerName and summary optional in Child type for backward compatibility with pre-existing JSON
+- Consider adding ownerName/summary to search index and UI in separate tasks if not in scope
 
 ---

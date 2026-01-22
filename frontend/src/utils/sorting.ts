@@ -138,6 +138,42 @@ function sortBySize(a: Child, b: Child, ascending: boolean): number {
 }
 
 /**
+ * Sort items by order (Gallery 2 order field)
+ *
+ * Lower order values first. Items without order (null/undefined/NaN/non-finite)
+ * are sorted last. Stable: equal or both-no-order preserves relative position.
+ *
+ * @param a - First item
+ * @param b - Second item
+ * @returns Comparison result (-1, 0, or 1)
+ */
+function sortByOrder(a: Child, b: Child): number {
+  const aRaw = a.order;
+  const bRaw = b.order;
+  const aOrder =
+    aRaw != null && typeof aRaw === 'number' && Number.isFinite(aRaw)
+      ? aRaw
+      : null;
+  const bOrder =
+    bRaw != null && typeof bRaw === 'number' && Number.isFinite(bRaw)
+      ? bRaw
+      : null;
+
+  if (aOrder === null && bOrder === null) {
+    return 0;
+  }
+  if (aOrder === null) {
+    return 1;
+  }
+  if (bOrder === null) {
+    return -1;
+  }
+
+  const diff = aOrder - bOrder;
+  return diff === 0 ? 0 : diff < 0 ? -1 : 1;
+}
+
+/**
  * Sort an array of items according to the specified sort option
  *
  * This function creates a new sorted array (does not mutate the original).
@@ -149,8 +185,9 @@ function sortBySize(a: Child, b: Child, ascending: boolean): number {
  *
  * @example
  * ```ts
- * const sorted = sortItems(albums, 'date-desc'); // Newest first
- * const sortedByName = sortItems(images, 'name-asc'); // A-Z
+ * const sorted = sortItems(albums, 'order-asc');  // Gallery 2 order
+ * const byDate = sortItems(albums, 'date-desc');  // Newest first
+ * const byName = sortItems(images, 'name-asc');   // A-Z
  * ```
  */
 export function sortItems<T extends Child>(
@@ -167,7 +204,7 @@ export function sortItems<T extends Child>(
 
   // Parse sort option
   const [field, direction] = sortOption.split('-') as [
-    'date' | 'name' | 'size',
+    'date' | 'name' | 'size' | 'order',
     'asc' | 'desc'
   ];
   const ascending = direction === 'asc';
@@ -182,6 +219,9 @@ export function sortItems<T extends Child>(
       break;
     case 'size':
       sorted.sort((a, b) => sortBySize(a, b, ascending));
+      break;
+    case 'order':
+      sorted.sort((a, b) => sortByOrder(a, b));
       break;
     default:
       // Unknown sort option, return unsorted (should not happen with TypeScript)
