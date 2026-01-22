@@ -65,7 +65,8 @@ let connection: mysql.Connection | null = null;
             await fs.mkdir(dataDir, { recursive: true });
         }
         
-        const rootId = config.rootId ?? 7;
+        const rootId = config.rootId ?? await sql.getRootAlbumId();
+        console.log(`Using root album ID: ${rootId}`);
         await main(sql, rootId, [], dataDir);
     } catch (error) {
         console.error('Error in main:', error);

@@ -42,6 +42,18 @@ export default (connection: mysql.Connection, config: Config) => {
         WHERE
             e.${config.gallerySettings.columnPrefix}entityType in ('GalleryAlbumItem', 'GalleryPhotoItem') AND
             ce.${config.gallerySettings.columnPrefix}parentId = ?`
+    
+    const SQL_GET_ROOT_ALBUM = `
+        SELECT
+            ce.${config.gallerySettings.columnPrefix}id as id
+        FROM ${config.gallerySettings.tablePrefix}ChildEntity ce
+        LEFT JOIN ${config.gallerySettings.tablePrefix}Entity e ON e.${config.gallerySettings.columnPrefix}id=ce.${config.gallerySettings.columnPrefix}id
+        WHERE
+            e.${config.gallerySettings.columnPrefix}entityType = 'GalleryAlbumItem'
+            AND ce.${config.gallerySettings.columnPrefix}parentId = 0
+        ORDER BY ce.${config.gallerySettings.columnPrefix}id
+        LIMIT 1`
+
     return {
         getChildren: async (itemId: number): Promise<Array<Child>> => {
             const [results] = await connection.execute(SQL_GET_CHILDREN, [itemId]);
@@ -59,6 +71,17 @@ export default (connection: mysql.Connection, config: Config) => {
                 }
                 return child as Child;
             });
+        },
+        getRootAlbumId: async (): Promise<number> => {
+            const [results] = await connection.execute(SQL_GET_ROOT_ALBUM);
+            if (!Array.isArray(results) || results.length === 0) {
+                throw new Error('No root album found. Please specify rootId in config.json');
+            }
+            const row = results[0] as { id: number };
+            if (typeof row.id !== 'number') {
+                throw new Error('Invalid root album ID format');
+            }
+            return row.id;
         }
     }
 }
