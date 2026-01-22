@@ -59,6 +59,7 @@ export function AlbumDetailEmpty({
         <p>This album contains no albums or images.</p>
         <div className="album-detail-empty-actions">
           <button
+            type="button"
             onClick={handleBackClick}
             aria-label="Go back"
             className="album-detail-empty-button"
@@ -66,6 +67,7 @@ export function AlbumDetailEmpty({
             Go Back
           </button>
           <button
+            type="button"
             onClick={handleHomeClick}
             aria-label="Go to home page"
             className="album-detail-empty-button"

@@ -43,10 +43,10 @@ export function AlbumDetailPage() {
   // Invalid album ID (will redirect, but show message in case redirect fails)
   if (albumId === null) {
     return (
-      <div className="album-detail-page album-detail-page-error">
+      <div className="album-detail-page album-detail-page-error" role="alert" aria-live="assertive">
         <h2>Invalid Album ID</h2>
         <p>The album ID in the URL is invalid.</p>
-        <button onClick={() => navigate('/')} aria-label="Go to home page">
+        <button type="button" onClick={() => navigate('/')} aria-label="Go to home page">
           Go to Home
         </button>
       </div>

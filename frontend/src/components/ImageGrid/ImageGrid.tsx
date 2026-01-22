@@ -139,9 +139,13 @@ export function ImageGrid({
   if (error) {
     return (
       <ErrorBoundary>
-        <div className={className ? `image-grid-error ${className}` : 'image-grid-error'}>
+        <div
+          className={className ? `image-grid-error ${className}` : 'image-grid-error'}
+          role="alert"
+          aria-live="assertive"
+        >
           <p>Error loading images: {error.message}</p>
-          <button onClick={handleRetry} aria-label="Retry loading images">
+          <button type="button" onClick={handleRetry} aria-label="Retry loading images">
             Retry
           </button>
         </div>

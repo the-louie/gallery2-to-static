@@ -133,9 +133,13 @@ export function AlbumGrid({
   if (error) {
     return (
       <ErrorBoundary>
-        <div className={className ? `album-grid-error ${className}` : 'album-grid-error'}>
+        <div
+          className={className ? `album-grid-error ${className}` : 'album-grid-error'}
+          role="alert"
+          aria-live="assertive"
+        >
           <p>Error loading albums: {error.message}</p>
-          <button onClick={handleRetry} aria-label="Retry loading albums">
+          <button type="button" onClick={handleRetry} aria-label="Retry loading albums">
             Retry
           </button>
         </div>

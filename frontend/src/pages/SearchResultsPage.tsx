@@ -65,10 +65,10 @@ export function SearchResultsPage() {
   // Error state
   if (error) {
     return (
-      <div className="search-results-page search-results-page-error">
+      <div className="search-results-page search-results-page-error" role="alert" aria-live="assertive">
         <h1>Search Error</h1>
         <p>{error.message}</p>
-        <button onClick={() => navigate('/')} aria-label="Go to home page">
+        <button type="button" onClick={() => navigate('/')} aria-label="Go to home page">
           Go to Home
         </button>
       </div>
@@ -105,7 +105,7 @@ export function SearchResultsPage() {
           No albums or images found matching &quot;
           <SearchHighlight text={urlQuery} query={urlQuery} />&quot;
         </p>
-        <button onClick={() => navigate('/')} aria-label="Go to home page">
+        <button type="button" onClick={() => navigate('/')} aria-label="Go to home page">
           Go to Home
         </button>
       </div>
@@ -119,7 +119,7 @@ export function SearchResultsPage() {
         Search Results for &quot;
         <SearchHighlight text={urlQuery} query={urlQuery} />&quot;
       </h1>
-      <p className="search-results-count">
+      <p className="search-results-count" role="status" aria-live="polite">
         Found {results.length} result{results.length !== 1 ? 's' : ''}
       </p>
 

@@ -65,7 +65,7 @@ export function Layout({ children, className }: LayoutProps) {
           </div>
         </div>
       </header>
-      <main id="main-content" className="layout-main">
+      <main id="main-content" className="layout-main" tabIndex={-1}>
         {children}
       </main>
       <footer className="layout-footer">

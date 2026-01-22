@@ -163,6 +163,7 @@ export function AlbumDetail({
       >
         {showBackButton && (
           <button
+            type="button"
             className="album-detail-back"
             onClick={handleBackClick}
             aria-label="Go back"
@@ -191,6 +192,7 @@ export function AlbumDetail({
       >
         {showBackButton && (
           <button
+            type="button"
             className="album-detail-back"
             onClick={handleBackClick}
             aria-label="Go back"
@@ -201,14 +203,15 @@ export function AlbumDetail({
         {breadcrumbs && (
           <div className="album-detail-breadcrumbs">{breadcrumbs}</div>
         )}
-        <div className="album-detail-error-content">
+        <div className="album-detail-error-content" role="alert" aria-live="assertive">
           <h2>Error Loading Album</h2>
           <p>{error.message}</p>
-          <button onClick={handleRetry} aria-label="Retry loading album">
+          <button type="button" onClick={handleRetry} aria-label="Retry loading album">
             Retry
           </button>
           {error.code === 'NOT_FOUND' && (
             <button
+              type="button"
               onClick={() => navigate('/')}
               aria-label="Go to home page"
             >
@@ -234,6 +237,7 @@ export function AlbumDetail({
       >
         {showBackButton && (
           <button
+            type="button"
             className="album-detail-back"
             onClick={handleBackClick}
             aria-label="Go back"
@@ -259,6 +263,7 @@ export function AlbumDetail({
       >
       {showBackButton && (
         <button
+          type="button"
           className="album-detail-back"
           onClick={handleBackClick}
           aria-label="Go back"

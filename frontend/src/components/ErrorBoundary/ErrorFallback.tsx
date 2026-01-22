@@ -34,7 +34,7 @@ export function ErrorFallback({
   };
 
   return (
-    <div className="error-fallback" role="alert">
+    <div className="error-fallback" role="alert" aria-live="assertive">
       <div className="error-fallback-content">
         <div className="error-fallback-icon" aria-hidden="true">
           ⚠️

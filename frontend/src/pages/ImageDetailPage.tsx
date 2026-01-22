@@ -86,10 +86,10 @@ export function ImageDetailPage() {
   // Handle error state (album not found or image not found)
   if (routeParams.albumId !== null && error) {
     return (
-      <div className="image-detail-page image-detail-page-error">
+      <div className="image-detail-page image-detail-page-error" role="alert" aria-live="assertive">
         <h2>Error Loading Image</h2>
         <p>{error.message}</p>
-        <button onClick={() => navigate('/')} aria-label="Go to home page">
+        <button type="button" onClick={() => navigate('/')} aria-label="Go to home page">
           Go to Home
         </button>
       </div>
@@ -105,10 +105,11 @@ export function ImageDetailPage() {
     routeParams.albumId !== null
   ) {
     return (
-      <div className="image-detail-page image-detail-page-error">
+      <div className="image-detail-page image-detail-page-error" role="alert" aria-live="assertive">
         <h2>Image Not Found</h2>
         <p>The image was not found in this album.</p>
         <button
+          type="button"
           onClick={() => navigate(`/album/${routeParams.albumId}`)}
           aria-label="Go back to album"
         >
@@ -121,10 +122,10 @@ export function ImageDetailPage() {
   // Handle invalid image ID
   if (routeParams.imageId === null && (params.imageId !== undefined || params.id !== undefined)) {
     return (
-      <div className="image-detail-page image-detail-page-error">
+      <div className="image-detail-page image-detail-page-error" role="alert" aria-live="assertive">
         <h2>Invalid Image ID</h2>
         <p>The image ID in the URL is invalid.</p>
-        <button onClick={() => navigate('/')} aria-label="Go to home page">
+        <button type="button" onClick={() => navigate('/')} aria-label="Go to home page">
           Go to Home
         </button>
       </div>
@@ -143,13 +144,13 @@ export function ImageDetailPage() {
   // Handle legacy route without album context
   if (routeParams.albumId === null && routeParams.imageId !== null) {
     return (
-      <div className="image-detail-page image-detail-page-error">
+      <div className="image-detail-page image-detail-page-error" role="alert" aria-live="assertive">
         <h2>Legacy Route Not Supported</h2>
         <p>
           The legacy image route requires album context. Please use the album image route format:
           /album/:albumId/image/:imageId
         </p>
-        <button onClick={() => navigate('/')} aria-label="Go to home page">
+        <button type="button" onClick={() => navigate('/')} aria-label="Go to home page">
           Go to Home
         </button>
       </div>

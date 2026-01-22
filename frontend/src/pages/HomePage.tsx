@@ -100,7 +100,7 @@ export function HomePage() {
 
   if (error) {
     return (
-      <div className="home-page home-page-error">
+      <div className="home-page home-page-error" role="alert" aria-live="assertive">
         <h2>Error Loading Gallery</h2>
         <p>{error.message}</p>
       </div>
