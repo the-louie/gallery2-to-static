@@ -177,4 +177,43 @@ describe('AlbumCard', () => {
       expect(screen.getByText('Untitled Album')).toBeInTheDocument();
     });
   });
+
+  describe('View Mode', () => {
+    it('renders in grid view by default', () => {
+      const { container } = render(<AlbumCard album={mockAlbum} />);
+      const card = container.querySelector('.album-card');
+      expect(card).toHaveClass('album-card-grid');
+    });
+
+    it('renders in grid view when viewMode is grid', () => {
+      const { container } = render(<AlbumCard album={mockAlbum} viewMode="grid" />);
+      const card = container.querySelector('.album-card');
+      expect(card).toHaveClass('album-card-grid');
+    });
+
+    it('renders in list view when viewMode is list', () => {
+      const { container } = render(<AlbumCard album={mockAlbum} viewMode="list" />);
+      const card = container.querySelector('.album-card');
+      expect(card).toHaveClass('album-card-list');
+    });
+
+    it('maintains accessibility in list view', () => {
+      render(<AlbumCard album={mockAlbum} viewMode="list" onClick={() => {}} />);
+      const card = screen.getByRole('article');
+      expect(card).toHaveAttribute('aria-label', 'Test Album');
+      expect(card).toHaveAttribute('tabIndex', '0');
+    });
+
+    it('maintains interaction in list view', async () => {
+      const user = userEvent.setup();
+      const handleClick = vi.fn();
+      render(<AlbumCard album={mockAlbum} viewMode="list" onClick={handleClick} />);
+
+      const card = screen.getByRole('article');
+      await user.click(card);
+
+      expect(handleClick).toHaveBeenCalledTimes(1);
+      expect(handleClick).toHaveBeenCalledWith(mockAlbum);
+    });
+  });
 });

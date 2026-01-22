@@ -9,7 +9,7 @@
  */
 
 import React, { useCallback } from 'react';
-import type { Album } from '@/types';
+import type { Album, ViewMode } from '@/types';
 import './AlbumCard.css';
 
 /**
@@ -24,6 +24,8 @@ export interface AlbumCardProps {
   className?: string;
   /** Optional aria-label override */
   'aria-label'?: string;
+  /** View mode: 'grid' or 'list' (default: 'grid') */
+  viewMode?: ViewMode;
 }
 
 /**
@@ -40,6 +42,7 @@ export function AlbumCard({
   onClick,
   className,
   'aria-label': ariaLabel,
+  viewMode = 'grid',
 }: AlbumCardProps) {
   const handleClick = useCallback(() => {
     if (onClick) {
@@ -66,9 +69,13 @@ export function AlbumCard({
     ? 'Has children'
     : 'No children';
 
+  const cardClassName = className
+    ? `album-card album-card-${viewMode} ${className}`
+    : `album-card album-card-${viewMode}`;
+
   return (
     <article
-      className={className ? `album-card ${className}` : 'album-card'}
+      className={cardClassName}
       role="article"
       aria-label={cardAriaLabel}
       aria-describedby={`album-card-count-${album.id}`}

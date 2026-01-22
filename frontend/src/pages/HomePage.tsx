@@ -11,6 +11,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlbumGrid } from '@/components/AlbumGrid';
 import { FilterPanel } from '@/components/FilterPanel';
+import { ViewModeToggle } from '@/components/ViewModeToggle';
 import { findRootAlbumId } from '@/utils/dataLoader';
 import type { DataLoadError } from '@/utils/dataLoader';
 import type { Album } from '@/types';
@@ -117,6 +118,9 @@ export function HomePage() {
   return (
     <div className="home-page">
       <FilterPanel />
+      <div className="home-page-controls">
+        <ViewModeToggle contentType="albums" />
+      </div>
       <AlbumGrid albumId={rootAlbumId} onAlbumClick={handleAlbumClick} />
     </div>
   );

@@ -19,6 +19,7 @@
 .virtual-grid-list {
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
 }
 
 .virtual-grid-row {
@@ -27,6 +28,11 @@
 
 /* Ensure items maintain their aspect ratios */
 .virtual-grid-row > div {
+  width: 100%;
+}
+
+/* List view item spacing */
+.virtual-grid-list > div {
   width: 100%;
 }
 

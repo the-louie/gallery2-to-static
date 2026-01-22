@@ -614,4 +614,62 @@ describe('ImageThumbnail', () => {
       });
     });
   });
+
+  describe('View Mode', () => {
+    it('renders in grid view by default', () => {
+      const { container } = render(<ImageThumbnail image={mockPhoto} />);
+      const imageContainer = container.querySelector('.image-thumbnail-container');
+      expect(imageContainer).toHaveClass('image-thumbnail-grid');
+    });
+
+    it('renders in grid view when viewMode is grid', () => {
+      const { container } = render(<ImageThumbnail image={mockPhoto} viewMode="grid" />);
+      const imageContainer = container.querySelector('.image-thumbnail-container');
+      expect(imageContainer).toHaveClass('image-thumbnail-grid');
+    });
+
+    it('renders in list view when viewMode is list', () => {
+      const { container } = render(<ImageThumbnail image={mockPhoto} viewMode="list" />);
+      const imageContainer = container.querySelector('.image-thumbnail-container');
+      expect(imageContainer).toHaveClass('image-thumbnail-list');
+    });
+
+    it('maintains accessibility in list view', () => {
+      render(<ImageThumbnail image={mockPhoto} viewMode="list" onClick={() => {}} />);
+      const container = screen.getByRole('button');
+      expect(container).toHaveAttribute('aria-label');
+    });
+
+    it('maintains interaction in list view', async () => {
+      const user = userEvent.setup();
+      const handleClick = vi.fn();
+      render(<ImageThumbnail image={mockPhoto} viewMode="list" onClick={handleClick} />);
+
+      // Trigger intersection to load image
+      const callback = (mockIntersectionObserver as any).callback;
+      const imageContainer = document.querySelector('.image-thumbnail-container');
+      if (callback && imageContainer) {
+        callback([
+          {
+            isIntersecting: true,
+            target: imageContainer,
+          } as IntersectionObserverEntry,
+        ]);
+      }
+
+      await waitFor(() => {
+        const button = screen.queryByRole('button');
+        if (button) {
+          expect(button).toBeInTheDocument();
+        }
+      });
+
+      const button = screen.queryByRole('button');
+      if (button) {
+        await user.click(button);
+        expect(handleClick).toHaveBeenCalledTimes(1);
+        expect(handleClick).toHaveBeenCalledWith(mockPhoto);
+      }
+    });
+  });
 });

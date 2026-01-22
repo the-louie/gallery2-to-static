@@ -49,7 +49,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import type { Image } from '@/types';
+import type { Image, ViewMode } from '@/types';
 import { getAspectRatioWithFallback } from '@/utils/aspectRatio';
 import { useProgressiveImage } from '@/hooks/useProgressiveImage';
 import './ImageThumbnail.css';
@@ -68,6 +68,8 @@ export interface ImageThumbnailProps {
   className?: string;
   /** Optional alt text override (defaults to image title or description) */
   alt?: string;
+  /** View mode: 'grid' or 'list' (default: 'grid') */
+  viewMode?: ViewMode;
 }
 
 /**
@@ -89,6 +91,7 @@ export function ImageThumbnail({
   onClick,
   className,
   alt,
+  viewMode = 'grid',
 }: ImageThumbnailProps) {
   const [shouldLoad, setShouldLoad] = useState(false);
   const [domFullImageLoaded, setDomFullImageLoaded] = useState(false);
@@ -237,10 +240,14 @@ export function ImageThumbnail({
     aspectRatio: aspectRatio.toString(),
   };
 
+  const containerClassName = className
+    ? `image-thumbnail-container image-thumbnail-${viewMode} ${className}`
+    : `image-thumbnail-container image-thumbnail-${viewMode}`;
+
   return (
     <div
       ref={containerRef}
-      className={className ? `image-thumbnail-container ${className}` : 'image-thumbnail-container'}
+      className={containerClassName}
       style={containerStyle}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}

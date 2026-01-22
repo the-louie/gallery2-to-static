@@ -146,9 +146,27 @@
   opacity: 0.7;
 }
 
+/* List view layout */
+.image-thumbnail-list {
+  width: 120px;
+  min-width: 120px;
+  flex-shrink: 0;
+  aspect-ratio: 1;
+}
+
+.image-thumbnail-list[role='button']:hover {
+  transform: none;
+  box-shadow: var(--shadow-md, 0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
 /* Responsive adjustments */
 @media (min-width: 768px) {
   .image-thumbnail-container[role='button']:hover {
     box-shadow: var(--shadow-lg, 0 6px 12px rgba(0, 0, 0, 0.15));
+  }
+
+  .image-thumbnail-list {
+    width: 150px;
+    min-width: 150px;
   }
 }

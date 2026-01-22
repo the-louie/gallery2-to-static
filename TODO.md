@@ -63,50 +63,6 @@ Per-album theme configuration system with JSON file and theme resolution logic
 
 ---
 
-## Implement View Mode Switching (Grid/List)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Medium
-**Estimated Time:** 4-5 hours
-
-### Description
-Implement view mode switching between grid and list views for albums and images. Include persistence of view preference.
-
-### Requirements
-
-#### Research Tasks
-- Research view mode toggle UI patterns
-- Research list view layout patterns for galleries
-- Research view mode state persistence
-
-#### Implementation Tasks
-- Create ViewModeToggle component (grid/list icons)
-- Implement list view layout for AlbumGrid
-- Implement list view layout for ImageGrid
-- Add view mode state management
-- Persist view mode preference (localStorage)
-- Add view mode toggle to UI
-- Style list view with proper spacing and alignment
-- Write tests for view mode switching
-- Write tests for view mode persistence
-
-### Deliverable
-Grid and list view modes with toggle
-
-### Testing Requirements
-- Verify both view modes display correctly
-- Check view mode persistence works
-- Ensure toggle is accessible
-- Review responsive behavior in both modes
-
-### Technical Notes
-- View mode preference should be persisted
-- Both views should be responsive
-- Toggle UI should be accessible
-- List view should have proper spacing and alignment
-
----
 
 ## Implement Touch Gestures for Mobile
 
