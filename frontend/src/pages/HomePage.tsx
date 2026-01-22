@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlbumGrid } from '@/components/AlbumGrid';
 import { FilterPanel } from '@/components/FilterPanel';
 import { ViewModeToggle } from '@/components/ViewModeToggle';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { findRootAlbumId } from '@/utils/dataLoader';
 import type { DataLoadError } from '@/utils/dataLoader';
 import type { Album } from '@/types';
@@ -91,8 +92,8 @@ export function HomePage() {
 
   if (isLoading) {
     return (
-      <div className="home-page">
-        <AlbumGrid isLoading={true} />
+      <div className="home-page" role="status" aria-label="Loading gallery" aria-live="polite">
+        <LoadingSpinner size="large" label="Loading gallery..." />
       </div>
     );
   }

@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { PageLoader } from './components/PageLoader';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { FilterProvider } from './contexts/FilterContext';
 
 // Lazy load page components for code splitting
@@ -33,6 +34,7 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((module) => 
 function App() {
   return (
     <FilterProvider>
+      <OfflineIndicator />
       <Layout>
         <Suspense fallback={<PageLoader />}>
           <Routes>

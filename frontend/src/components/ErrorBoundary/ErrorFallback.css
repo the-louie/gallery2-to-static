@@ -1,0 +1,162 @@
+/**
+ * ErrorFallback Component Styles
+ *
+ * Styles for the error fallback UI component displayed when an error boundary
+ * catches an error.
+ */
+
+.error-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 2rem;
+  background-color: var(--color-background, #ffffff);
+  color: var(--color-text, #000000);
+}
+
+.error-fallback-content {
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.error-fallback-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  line-height: 1;
+}
+
+.error-fallback-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: var(--color-text, #000000);
+}
+
+.error-fallback-message {
+  font-size: 1rem;
+  margin: 0 0 2rem 0;
+  color: var(--color-text-secondary, #666666);
+  line-height: 1.5;
+}
+
+.error-fallback-details {
+  margin: 2rem 0;
+  text-align: left;
+  background-color: var(--color-background-secondary, #f5f5f5);
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.error-fallback-details-summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.5rem;
+  user-select: none;
+  color: var(--color-text, #000000);
+}
+
+.error-fallback-details-summary:hover {
+  background-color: var(--color-background-hover, #eeeeee);
+}
+
+.error-fallback-details-content {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border, #e0e0e0);
+}
+
+.error-fallback-error-message {
+  margin: 0 0 1rem 0;
+  color: var(--color-error, #d32f2f);
+}
+
+.error-fallback-stack,
+.error-fallback-component-stack pre {
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  background-color: var(--color-background, #ffffff);
+  padding: 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  text-align: left;
+  margin: 0.5rem 0;
+  color: var(--color-text, #000000);
+}
+
+.error-fallback-component-stack {
+  margin-top: 1rem;
+}
+
+.error-fallback-component-stack strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--color-text, #000000);
+}
+
+.error-fallback-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.error-fallback-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  min-width: 120px;
+}
+
+.error-fallback-button:focus {
+  outline: 2px solid var(--color-primary, #1976d2);
+  outline-offset: 2px;
+}
+
+.error-fallback-button:active {
+  transform: scale(0.98);
+}
+
+.error-fallback-button-primary {
+  background-color: var(--color-primary, #1976d2);
+  color: var(--color-on-primary, #ffffff);
+}
+
+.error-fallback-button-primary:hover {
+  background-color: var(--color-primary-hover, #1565c0);
+}
+
+.error-fallback-button-secondary {
+  background-color: var(--color-background-secondary, #f5f5f5);
+  color: var(--color-text, #000000);
+  border: 1px solid var(--color-border, #e0e0e0);
+}
+
+.error-fallback-button-secondary:hover {
+  background-color: var(--color-background-hover, #eeeeee);
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .error-fallback {
+    background-color: var(--color-background, #1e1e1e);
+    color: var(--color-text, #ffffff);
+  }
+
+  .error-fallback-details {
+    background-color: var(--color-background-secondary, #2d2d2d);
+    border-color: var(--color-border, #404040);
+  }
+
+  .error-fallback-stack,
+  .error-fallback-component-stack pre {
+    background-color: var(--color-background, #1e1e1e);
+    color: var(--color-text, #ffffff);
+  }
+}

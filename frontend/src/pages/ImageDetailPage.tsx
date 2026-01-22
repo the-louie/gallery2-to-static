@@ -15,6 +15,7 @@ import { useEffect, useMemo } from 'react';
 import { parseAlbumImageParams, parseImageId } from '@/utils/routeParams';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useLightbox } from '@/hooks/useLightbox';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { isImage } from '@/types';
 import type { RouteParams, Image } from '@/types';
 
@@ -133,8 +134,8 @@ export function ImageDetailPage() {
   // Show loading state while album data is loading
   if (routeParams.albumId !== null && isLoading) {
     return (
-      <div className="image-detail-page image-detail-page-loading">
-        <div>Loading image...</div>
+      <div className="image-detail-page image-detail-page-loading" role="status" aria-label="Loading image" aria-live="polite">
+        <LoadingSpinner size="large" label="Loading image..." />
       </div>
     );
   }
@@ -160,7 +161,7 @@ export function ImageDetailPage() {
   return (
     <div className="image-detail-page">
       {currentImage !== null ? (
-        <Suspense fallback={<div>Loading lightbox...</div>}>
+        <Suspense fallback={<LoadingSpinner size="large" label="Loading lightbox..." />}>
           <Lightbox
             isOpen={true}
             image={currentImage}

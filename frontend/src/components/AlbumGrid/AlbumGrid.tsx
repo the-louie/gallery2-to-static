@@ -9,6 +9,7 @@
  */
 
 import React, { useMemo, useCallback } from 'react';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { useSort } from '@/hooks/useSort';
@@ -121,38 +122,50 @@ export function AlbumGrid({
 
   // Loading state
   if (isLoading) {
-    return <AlbumGridSkeleton className={className} />;
+    return (
+      <ErrorBoundary>
+        <AlbumGridSkeleton className={className} />
+      </ErrorBoundary>
+    );
   }
 
   // Error state
   if (error) {
     return (
-      <div className={className ? `album-grid-error ${className}` : 'album-grid-error'}>
-        <p>Error loading albums: {error.message}</p>
-        <button onClick={handleRetry} aria-label="Retry loading albums">
-          Retry
-        </button>
-      </div>
+      <ErrorBoundary>
+        <div className={className ? `album-grid-error ${className}` : 'album-grid-error'}>
+          <p>Error loading albums: {error.message}</p>
+          <button onClick={handleRetry} aria-label="Retry loading albums">
+            Retry
+          </button>
+        </div>
+      </ErrorBoundary>
     );
   }
 
   // Empty state
   if (albums.length === 0) {
-    return <AlbumGridEmpty className={className} />;
+    return (
+      <ErrorBoundary>
+        <AlbumGridEmpty className={className} />
+      </ErrorBoundary>
+    );
   }
 
   // Grid with albums using virtual scrolling
   return (
-    <VirtualGrid
-      items={albums}
-      renderItem={renderAlbum}
-      viewMode={finalViewMode}
-      className={className ? `album-grid ${className}` : 'album-grid'}
-      role="region"
-      aria-label="Album grid"
-      onScroll={saveScrollPosition}
-      initialScrollTop={scrollTop}
-    />
+    <ErrorBoundary>
+      <VirtualGrid
+        items={albums}
+        renderItem={renderAlbum}
+        viewMode={finalViewMode}
+        className={className ? `album-grid ${className}` : 'album-grid'}
+        role="region"
+        aria-label="Album grid"
+        onScroll={saveScrollPosition}
+        initialScrollTop={scrollTop}
+      />
+    </ErrorBoundary>
   );
 }
 

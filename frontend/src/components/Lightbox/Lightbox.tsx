@@ -70,6 +70,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Image } from '@/types';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useImageNavigation } from '@/hooks/useImageNavigation';
 import { useImagePreload } from '@/hooks/useImagePreload';
 import { useImageZoom } from '@/hooks/useImageZoom';
@@ -814,20 +815,21 @@ export function Lightbox({
     formattedDate;
 
   return (
-    <div
-      className={className ? `lightbox-overlay ${className}` : 'lightbox-overlay'}
-      onClick={handleBackdropClick}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={image.title ? 'lightbox-title' : undefined}
-      aria-describedby={hasMetadata ? 'lightbox-metadata' : undefined}
-      aria-label={!image.title ? altText : undefined}
-      style={{
-        opacity: swipeFeedback.opacity,
-        transition: swipeFeedback.opacity !== 1 ? 'opacity 0.2s ease-out' : undefined,
-      }}
-    >
-      <div className="lightbox-container" ref={modalRef}>
+    <ErrorBoundary>
+      <div
+        className={className ? `lightbox-overlay ${className}` : 'lightbox-overlay'}
+        onClick={handleBackdropClick}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={image.title ? 'lightbox-title' : undefined}
+        aria-describedby={hasMetadata ? 'lightbox-metadata' : undefined}
+        aria-label={!image.title ? altText : undefined}
+        style={{
+          opacity: swipeFeedback.opacity,
+          transition: swipeFeedback.opacity !== 1 ? 'opacity 0.2s ease-out' : undefined,
+        }}
+      >
+        <div className="lightbox-container" ref={modalRef}>
         {/* Close Button */}
         <button
           ref={closeButtonRef}
@@ -1000,8 +1002,9 @@ export function Lightbox({
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }
 

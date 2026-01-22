@@ -1,0 +1,23 @@
+/**
+ * PageLoader Component Styles
+ *
+ * Styles for the page loader component used in Suspense boundaries.
+ */
+
+.page-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 2rem;
+  background-color: var(--color-background, #ffffff);
+  color: var(--color-text, #000000);
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .page-loader {
+    background-color: var(--color-background, #1e1e1e);
+    color: var(--color-text, #ffffff);
+  }
+}

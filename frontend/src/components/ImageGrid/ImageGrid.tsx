@@ -9,6 +9,7 @@
  */
 
 import React, { useMemo, useCallback } from 'react';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { useSort } from '@/hooks/useSort';
@@ -127,38 +128,50 @@ export function ImageGrid({
 
   // Loading state
   if (isLoading) {
-    return <ImageGridSkeleton className={className} />;
+    return (
+      <ErrorBoundary>
+        <ImageGridSkeleton className={className} />
+      </ErrorBoundary>
+    );
   }
 
   // Error state
   if (error) {
     return (
-      <div className={className ? `image-grid-error ${className}` : 'image-grid-error'}>
-        <p>Error loading images: {error.message}</p>
-        <button onClick={handleRetry} aria-label="Retry loading images">
-          Retry
-        </button>
-      </div>
+      <ErrorBoundary>
+        <div className={className ? `image-grid-error ${className}` : 'image-grid-error'}>
+          <p>Error loading images: {error.message}</p>
+          <button onClick={handleRetry} aria-label="Retry loading images">
+            Retry
+          </button>
+        </div>
+      </ErrorBoundary>
     );
   }
 
   // Empty state
   if (images.length === 0) {
-    return <ImageGridEmpty className={className} />;
+    return (
+      <ErrorBoundary>
+        <ImageGridEmpty className={className} />
+      </ErrorBoundary>
+    );
   }
 
   // Grid with images using virtual scrolling
   return (
-    <VirtualGrid
-      items={images}
-      renderItem={renderImage}
-      viewMode={finalViewMode}
-      className={className ? `image-grid ${className}` : 'image-grid'}
-      role="region"
-      aria-label="Image grid"
-      onScroll={saveScrollPosition}
-      initialScrollTop={scrollTop}
-    />
+    <ErrorBoundary>
+      <VirtualGrid
+        items={images}
+        renderItem={renderImage}
+        viewMode={finalViewMode}
+        className={className ? `image-grid ${className}` : 'image-grid'}
+        role="region"
+        aria-label="Image grid"
+        onScroll={saveScrollPosition}
+        initialScrollTop={scrollTop}
+      />
+    </ErrorBoundary>
   );
 }
 

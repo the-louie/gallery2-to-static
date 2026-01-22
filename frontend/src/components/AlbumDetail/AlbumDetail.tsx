@@ -10,6 +10,7 @@
 
 import React, { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useSort } from '@/hooks/useSort';
 import { useFilter } from '@/contexts/FilterContext';
@@ -250,11 +251,12 @@ export function AlbumDetail({
 
   // Main content
   return (
-    <div
-      className={
-        className ? `album-detail ${className}` : 'album-detail'
-      }
-    >
+    <ErrorBoundary>
+      <div
+        className={
+          className ? `album-detail ${className}` : 'album-detail'
+        }
+      >
       {showBackButton && (
         <button
           className="album-detail-back"
@@ -329,7 +331,8 @@ export function AlbumDetail({
           />
         </section>
       )}
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
 

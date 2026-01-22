@@ -38,3 +38,8 @@ export type { UseSearchReturn } from './useSearch';
 
 // Sort hooks
 export { useSort } from './useSort';
+
+// Loading and error handling hooks
+export { useLoadingState, type UseLoadingStateReturn, type UseLoadingStateConfig } from './useLoadingState';
+export { useRetry, type UseRetryReturn, type UseRetryConfig } from './useRetry';
+export { useOfflineDetection, type UseOfflineDetectionReturn } from './useOfflineDetection';

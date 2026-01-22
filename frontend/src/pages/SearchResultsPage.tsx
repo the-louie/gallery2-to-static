@@ -11,6 +11,7 @@ import { useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useSearch } from '@/hooks/useSearch';
 import { SearchHighlight } from '@/components/SearchHighlight';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import './SearchResultsPage.css';
 
 /**
@@ -53,7 +54,8 @@ export function SearchResultsPage() {
   // Loading state (index building)
   if (isIndexBuilding) {
     return (
-      <div className="search-results-page search-results-page-loading">
+      <div className="search-results-page search-results-page-loading" role="status" aria-label="Building search index" aria-live="polite">
+        <LoadingSpinner size="large" label="Building search index..." />
         <h1>Building Search Index</h1>
         <p>Please wait while we index all albums and images...</p>
       </div>
@@ -86,7 +88,8 @@ export function SearchResultsPage() {
   // Loading state (searching)
   if (isLoading) {
     return (
-      <div className="search-results-page search-results-page-loading">
+      <div className="search-results-page search-results-page-loading" role="status" aria-label="Searching" aria-live="polite">
+        <LoadingSpinner size="large" label={`Searching for "${urlQuery}"...`} />
         <h1>Searching...</h1>
         <p>Searching for &quot;{urlQuery}&quot;</p>
       </div>

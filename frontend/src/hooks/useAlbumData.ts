@@ -41,7 +41,18 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { loadAlbum, type DataLoadError } from '../utils/dataLoader';
+import { useRetry, type UseRetryConfig } from './useRetry';
 import type { Child } from '../../../types';
+
+/**
+ * Configuration for useAlbumData hook
+ */
+export interface UseAlbumDataConfig {
+  /** Enable automatic retry on failure */
+  enableAutoRetry?: boolean;
+  /** Retry configuration (only used if enableAutoRetry is true) */
+  retryConfig?: UseRetryConfig;
+}
 
 /**
  * Return type for useAlbumData hook
@@ -55,13 +66,21 @@ export interface UseAlbumDataReturn {
   error: DataLoadError | null;
   /** Function to manually reload the data */
   refetch: () => void;
+  /** Retry state (if retry is enabled) */
+  retryState?: {
+    retryCount: number;
+    isRetrying: boolean;
+    canRetry: boolean;
+    retry: () => Promise<void>;
+  };
 }
 
 /**
  * Hook to load album data by ID
  *
  * @param id - Album ID to load, or null to skip loading
- * @returns Object with data, isLoading, error, and refetch function
+ * @param config - Optional configuration for retry behavior
+ * @returns Object with data, isLoading, error, refetch function, and optional retry state
  *
  * @example
  * ```tsx
@@ -71,12 +90,27 @@ export interface UseAlbumDataReturn {
  * if (error) return <div>Error: {error.message}</div>;
  * if (data) return <div>Loaded {data.length} items</div>;
  * ```
+ *
+ * @example
+ * ```tsx
+ * // With automatic retry
+ * const { data, isLoading, error, retryState } = useAlbumData(7, {
+ *   enableAutoRetry: true,
+ *   retryConfig: { maxRetries: 3, initialDelay: 1000 }
+ * });
+ * ```
  */
-export function useAlbumData(id: number | null): UseAlbumDataReturn {
+export function useAlbumData(
+  id: number | null,
+  config: UseAlbumDataConfig = {},
+): UseAlbumDataReturn {
+  const { enableAutoRetry = false, retryConfig } = config;
   const [data, setData] = useState<Child[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<DataLoadError | null>(null);
   const isMountedRef = useRef(true);
+
+  const currentIdRef = useRef<number | null>(id);
 
   const loadData = useCallback(async (albumId: number) => {
     if (!isMountedRef.current) {
@@ -105,8 +139,41 @@ export function useAlbumData(id: number | null): UseAlbumDataReturn {
         setError(loadError);
         setIsLoading(false);
       }
+      throw err; // Re-throw for useRetry if enabled
     }
   }, []);
+
+  // Create stable load function for retry hook using ref
+  const loadDataForRetry = useCallback(async () => {
+    const currentId = currentIdRef.current;
+    if (currentId === null) {
+      return;
+    }
+    await loadData(currentId);
+  }, [loadData]);
+
+  // Set up retry mechanism if enabled
+  const retryHook = useRetry(
+    loadDataForRetry,
+    enableAutoRetry ? retryConfig : undefined,
+  );
+
+  // Update ref when id changes
+  useEffect(() => {
+    currentIdRef.current = id;
+  }, [id]);
+
+  // Auto-retry on error if enabled
+  useEffect(() => {
+    if (enableAutoRetry && error && id !== null && !isLoading && !retryHook.isRetrying) {
+      // Only auto-retry if we haven't exceeded max retries
+      if (retryHook.canRetry) {
+        retryHook.retry().catch(() => {
+          // Error already handled by loadData
+        });
+      }
+    }
+  }, [error, enableAutoRetry, id, isLoading, retryHook]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -116,27 +183,53 @@ export function useAlbumData(id: number | null): UseAlbumDataReturn {
       setData(null);
       setIsLoading(false);
       setError(null);
+      if (enableAutoRetry) {
+        retryHook.reset();
+      }
       return;
     }
 
-    loadData(id);
+    // Reset retry state when id changes
+    if (enableAutoRetry) {
+      retryHook.reset();
+    }
+
+    loadData(id).catch(() => {
+      // Error handled in loadData
+    });
 
     // Cleanup function
     return () => {
       isMountedRef.current = false;
     };
-  }, [id, loadData]);
+  }, [id, loadData, enableAutoRetry, retryHook]);
 
   const refetch = useCallback(() => {
     if (id !== null) {
-      loadData(id);
+      // Reset retry state before refetching
+      if (enableAutoRetry) {
+        retryHook.reset();
+      }
+      loadData(id).catch(() => {
+        // Error handled in loadData
+      });
     }
-  }, [id, loadData]);
+  }, [id, loadData, enableAutoRetry, retryHook]);
 
   return {
     data,
-    isLoading,
+    isLoading: isLoading || (enableAutoRetry ? retryHook.isRetrying : false),
     error,
     refetch,
+    ...(enableAutoRetry
+      ? {
+          retryState: {
+            retryCount: retryHook.retryCount,
+            isRetrying: retryHook.isRetrying,
+            canRetry: retryHook.canRetry,
+            retry: retryHook.retry,
+          },
+        }
+      : {}),
   };
 }
