@@ -1,7 +1,5 @@
-import type mysql from 'mysql2'
+import type mysql from 'mysql2/promise'
 import type { Child, Config } from './types'
-
-
 
 export default (connection: mysql.Connection, config: Config) => {
     const SQL_GET_CHILDREN = `
@@ -45,11 +43,22 @@ export default (connection: mysql.Connection, config: Config) => {
             e.${config.gallerySettings.columnPrefix}entityType in ('GalleryAlbumItem', 'GalleryPhotoItem') AND
             ce.${config.gallerySettings.columnPrefix}parentId = ?`
     return {
-        getChildren: (itemId: number): Promise<Array<Child>> => new Promise((resolve, reject) => {
-            connection.query(SQL_GET_CHILDREN, [itemId], (error, results) => {
-                if (error) return reject(error);
-                resolve(results as Array<Child>)
-            })
-        })
+        getChildren: async (itemId: number): Promise<Array<Child>> => {
+            const [results] = await connection.execute(SQL_GET_CHILDREN, [itemId]);
+            if (!Array.isArray(results)) {
+                throw new Error('Unexpected query result format');
+            }
+            const children = results as Array<unknown>;
+            return children.map((row: unknown) => {
+                if (typeof row !== 'object' || row === null) {
+                    throw new Error('Invalid row format in query results');
+                }
+                const child = row as Record<string, unknown>;
+                if (typeof child.id !== 'number' || typeof child.type !== 'string' || typeof child.hasChildren !== 'boolean') {
+                    throw new Error('Missing required fields in query result row');
+                }
+                return child as Child;
+            });
+        }
     }
 }

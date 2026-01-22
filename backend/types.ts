@@ -2,10 +2,10 @@ export interface Child {
     id: number;
     type: string;
     hasChildren: boolean;
-    title: string;
-    description: string;
-    pathComponent: string;
-    timestamp: number;
+    title: string | null;
+    description: string | null;
+    pathComponent: string | null;
+    timestamp: number | null;
     width: number | null;
     height: number | null;
     thumb_width: number | null;
@@ -28,6 +28,7 @@ export interface Config {
     mysqlSettings: MysqlSettings;
     gallerySettings: GallerySettings;
     thumbPrefix: string;
+    rootId?: number;
     ignoreAlbums?: Array<string>;
     onlyAlbums?: Array<string>;
 }
