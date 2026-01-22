@@ -2,12 +2,6 @@
 
 ---
 
-
-
-
-
----
-
 ## Implement Per-Album Theme Configuration
 
 **Status:** Pending
@@ -62,6 +56,3 @@ Per-album theme configuration system with JSON file and theme resolution logic
 - Theme resolution should integrate seamlessly with existing ThemeContext
 
 ---
-
-
-

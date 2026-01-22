@@ -13,6 +13,20 @@ static dump of the current state. This does the latter.
 ## How
 Copy `config_example.json` to `config.json` and edit it to your liking, then just run `index.ts`.
 
+## Documentation
+
+Comprehensive user documentation is available in the [frontend/docs/user-guides/](frontend/docs/user-guides/) directory:
+
+- **[Getting Started](frontend/docs/user-guides/01-getting-started.md)** - Installation and first steps
+- **[Configuration](frontend/docs/user-guides/02-configuration.md)** - Complete configuration reference
+- **[Backend Usage](frontend/docs/user-guides/03-backend-usage.md)** - Running the conversion script
+- **[Frontend Usage](frontend/docs/user-guides/04-frontend-usage.md)** - Using the gallery application
+- **[Features](frontend/docs/user-guides/05-features.md)** - Detailed feature documentation
+- **[Building & Deployment](frontend/docs/user-guides/06-building-deployment.md)** - Production build and deployment
+- **[Troubleshooting](frontend/docs/user-guides/07-troubleshooting.md)** - Common issues and solutions
+
+See [frontend/docs/user-guides/README.md](frontend/docs/user-guides/README.md) for the complete documentation index.
+
 ## Browser Support
 
 The frontend application supports modern browsers with ES2020 support:
