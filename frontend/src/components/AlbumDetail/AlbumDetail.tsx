@@ -2,8 +2,8 @@
  * AlbumDetail Component
  *
  * A reusable component that displays album details, including album metadata
- * (title, description), child albums, and child images. Handles navigation,
- * empty states, and integrates with React Router.
+ * (title, description, summary, owner name when present), child albums, and
+ * child images. Handles navigation, empty states, and integrates with React Router.
  *
  * @module frontend/src/components/AlbumDetail
  */
@@ -283,6 +283,14 @@ export function AlbumDetail({
           )}
           {showDescription && album.description && (
             <p className="album-detail-description">{album.description}</p>
+          )}
+          {typeof album.summary === 'string' && album.summary.trim() && (
+            <p className="album-detail-summary">{album.summary.trim()}</p>
+          )}
+          {typeof album.ownerName === 'string' && album.ownerName.trim() && (
+            <p className="album-detail-owner">
+              Owner: {album.ownerName.trim()}
+            </p>
           )}
         </div>
       )}

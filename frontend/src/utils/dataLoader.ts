@@ -157,20 +157,30 @@ function validateChildArray(data: unknown): data is Child[] {
       return false;
     }
 
-    // Validate field types
+    // Validate field types (title, description, pathComponent nullable per Child / backend)
     const child = item as Record<string, unknown>;
+    const ownerNameOk =
+      !('ownerName' in child) ||
+      child.ownerName === null ||
+      typeof child.ownerName === 'string';
+    const summaryOk =
+      !('summary' in child) ||
+      child.summary === null ||
+      typeof child.summary === 'string';
     return (
       typeof child.id === 'number' &&
       typeof child.type === 'string' &&
       typeof child.hasChildren === 'boolean' &&
-      typeof child.title === 'string' &&
-      typeof child.description === 'string' &&
-      typeof child.pathComponent === 'string' &&
+      (child.title === null || typeof child.title === 'string') &&
+      (child.description === null || typeof child.description === 'string') &&
+      (child.pathComponent === null || typeof child.pathComponent === 'string') &&
       typeof child.timestamp === 'number' &&
       (child.width === null || typeof child.width === 'number') &&
       (child.height === null || typeof child.height === 'number') &&
       (child.thumb_width === null || typeof child.thumb_width === 'number') &&
-      (child.thumb_height === null || typeof child.thumb_height === 'number')
+      (child.thumb_height === null || typeof child.thumb_height === 'number') &&
+      ownerNameOk &&
+      summaryOk
     );
   });
 }

@@ -11,7 +11,7 @@
  * - Focus trap for accessibility (focus stays within modal)
  * - Keyboard support (Escape to close, Tab to navigate, Arrow keys for navigation)
  * - ARIA attributes for screen readers (role="dialog", aria-modal)
- * - Image metadata display (title, description, dimensions, date)
+ * - Image metadata display (title, description, summary, owner, dimensions, date)
  * - Image navigation (Previous/Next buttons and keyboard)
  * - Image counter display (e.g., "3 of 15")
  * - Automatic preloading of adjacent images for smooth navigation
@@ -811,6 +811,8 @@ export function Lightbox({
   const hasMetadata =
     image.title ||
     image.description ||
+    (typeof image.summary === 'string' && image.summary.trim()) ||
+    (typeof image.ownerName === 'string' && image.ownerName.trim()) ||
     dimensions ||
     formattedDate;
 
@@ -981,6 +983,8 @@ export function Lightbox({
         {/* Metadata Section */}
         {(image.title ||
           image.description ||
+          (typeof image.summary === 'string' && image.summary.trim()) ||
+          (typeof image.ownerName === 'string' && image.ownerName.trim()) ||
           dimensions ||
           formattedDate) && (
           <div className="lightbox-metadata" id="lightbox-metadata">
@@ -991,6 +995,14 @@ export function Lightbox({
             )}
             {image.description && (
               <p className="lightbox-description">{image.description}</p>
+            )}
+            {typeof image.summary === 'string' && image.summary.trim() && (
+              <p className="lightbox-summary">{image.summary.trim()}</p>
+            )}
+            {typeof image.ownerName === 'string' && image.ownerName.trim() && (
+              <p className="lightbox-owner">
+                Owner: {image.ownerName.trim()}
+              </p>
             )}
             <div className="lightbox-details">
               {dimensions && (

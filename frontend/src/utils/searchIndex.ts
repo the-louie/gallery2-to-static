@@ -116,10 +116,10 @@ export class SearchIndex {
         const indexItem: SearchIndexItem = {
           id: child.id,
           type: child.type as 'GalleryAlbumItem' | 'GalleryPhotoItem',
-          title: child.title || '',
-          description: child.description || '',
+          title: child.title ?? '',
+          description: child.description ?? '',
           parentId,
-          pathComponent: child.pathComponent,
+          pathComponent: child.pathComponent ?? '',
         };
 
         this.index.set(child.id, indexItem);

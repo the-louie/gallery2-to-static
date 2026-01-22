@@ -21,6 +21,8 @@ export const mockAlbum: Child = {
   thumb_width: null,
   thumb_height: null,
   order: 1,
+  ownerName: 'Test Owner',
+  summary: 'Short album summary for tests',
 };
 
 /**
@@ -39,6 +41,8 @@ export const mockPhoto: Child = {
   thumb_width: 200,
   thumb_height: 150,
   order: 1,
+  ownerName: 'Photo Owner',
+  summary: 'Photo summary for lightbox tests',
 };
 
 /**
@@ -57,6 +61,8 @@ export const mockAlbumWithChildren: Child = {
   thumb_width: null,
   thumb_height: null,
   order: 2,
+  ownerName: 'Parent Owner',
+  summary: 'Parent album summary',
 };
 
 /**

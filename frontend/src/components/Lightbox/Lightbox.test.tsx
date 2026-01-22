@@ -156,6 +156,8 @@ describe('Lightbox', () => {
         width: null,
         height: null,
         timestamp: 0,
+        summary: null,
+        ownerName: null,
       };
       render(
         <Lightbox
@@ -166,6 +168,56 @@ describe('Lightbox', () => {
       );
       const metadata = document.querySelector('.lightbox-metadata');
       expect(metadata).not.toBeInTheDocument();
+    });
+
+    it('displays summary and ownerName when available', () => {
+      render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
+      expect(screen.getByText('Photo summary for lightbox tests')).toBeInTheDocument();
+      expect(screen.getByText(/Owner: Photo Owner/)).toBeInTheDocument();
+    });
+
+    it('does not render summary or owner when absent', () => {
+      const imageWithoutSummaryOwner: Image = {
+        ...mockPhoto,
+        summary: null,
+        ownerName: null,
+      };
+      render(
+        <Lightbox
+          isOpen={true}
+          image={imageWithoutSummaryOwner}
+          onClose={mockOnClose}
+        />,
+      );
+      expect(screen.getByText('Test Photo')).toBeInTheDocument();
+      expect(screen.queryByText('Photo summary for lightbox tests')).not.toBeInTheDocument();
+      expect(screen.queryByText(/Owner: Photo Owner/)).not.toBeInTheDocument();
+    });
+
+    it('displays metadata section when only summary or ownerName present', () => {
+      const imageOnlySummaryOwner: Image = {
+        ...mockPhoto,
+        title: '',
+        description: '',
+        width: null,
+        height: null,
+        timestamp: 0,
+        summary: 'Only summary',
+        ownerName: 'Only Owner',
+      };
+      render(
+        <Lightbox
+          isOpen={true}
+          image={imageOnlySummaryOwner}
+          onClose={mockOnClose}
+        />,
+      );
+      const metadata = document.querySelector('.lightbox-metadata');
+      expect(metadata).toBeInTheDocument();
+      expect(screen.getByText('Only summary')).toBeInTheDocument();
+      expect(screen.getByText(/Owner: Only Owner/)).toBeInTheDocument();
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toHaveAttribute('aria-describedby', 'lightbox-metadata');
     });
 
     it('handles missing dimensions gracefully', () => {

@@ -105,6 +105,20 @@
   line-height: 1.5;
 }
 
+.search-results-item-summary {
+  font-size: 0.875rem;
+  margin: 0;
+  color: var(--text-secondary, #666);
+  line-height: 1.5;
+}
+
+.search-results-item-owner {
+  font-size: 0.8125rem;
+  margin: 0;
+  color: var(--text-secondary, #666);
+  line-height: 1.4;
+}
+
 /* Loading and empty states */
 .search-results-page-loading,
 .search-results-page-empty,

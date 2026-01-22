@@ -10,6 +10,9 @@ export default (connection: mysql.Connection, config: Config) => {
 
             i.${config.gallerySettings.columnPrefix}title as title,
             i.${config.gallerySettings.columnPrefix}description as description,
+            i.${config.gallerySettings.columnPrefix}ownerId as ownerId,
+            i.${config.gallerySettings.columnPrefix}summary as summary,
+            COALESCE(u.${config.gallerySettings.columnPrefix}fullName, u.${config.gallerySettings.columnPrefix}userName) as ownerName,
 
             fse.${config.gallerySettings.columnPrefix}pathComponent as pathComponent,
             i.${config.gallerySettings.columnPrefix}originationTimestamp as timestamp,
@@ -30,6 +33,7 @@ export default (connection: mysql.Connection, config: Config) => {
 
         -- item information
         LEFT JOIN ${config.gallerySettings.tablePrefix}Item i ON i.${config.gallerySettings.columnPrefix}id=ce.${config.gallerySettings.columnPrefix}id
+        LEFT JOIN ${config.gallerySettings.tablePrefix}User u ON u.${config.gallerySettings.columnPrefix}id = i.${config.gallerySettings.columnPrefix}ownerId
 
         -- file system information
         LEFT JOIN ${config.gallerySettings.tablePrefix}FileSystemEntity fse ON fse.${config.gallerySettings.columnPrefix}id = ce.${config.gallerySettings.columnPrefix}id
@@ -91,7 +95,11 @@ export default (connection: mysql.Connection, config: Config) => {
                     throw new Error('Invalid hasChildren field type in query result row');
                 }
                 const hasChildren = typeof child.hasChildren === 'number' ? child.hasChildren !== 0 : child.hasChildren;
-                return { ...child, hasChildren } as unknown as Child;
+                const ownerName = child.ownerName == null ? null : (typeof child.ownerName === 'string' ? child.ownerName : null);
+                const summary = child.summary == null ? null : (typeof child.summary === 'string' ? child.summary : null);
+                const { ownerId: _omit, ...rest } = child;
+                if ('ownerid' in rest) delete rest['ownerid'];
+                return { ...rest, hasChildren, ownerName, summary } as unknown as Child;
             });
         },
         getRootAlbumId: async (): Promise<number> => {

@@ -78,6 +78,20 @@
   color: var(--album-detail-text-muted, var(--color-text-muted));
 }
 
+.album-detail-summary {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--album-detail-text-muted, var(--color-text-muted));
+}
+
+.album-detail-owner {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: var(--album-detail-text-muted, var(--color-text-muted));
+}
+
 /* Sections */
 .album-detail-albums,
 .album-detail-images {

@@ -111,6 +111,8 @@ describe('SearchResultsPage', () => {
             title: 'Test Album',
             description: 'Test description',
             pathComponent: 'test',
+            summary: 'Album summary',
+            ownerName: 'Album Owner',
           },
           score: 10,
           matchedInTitle: true,
@@ -123,6 +125,8 @@ describe('SearchResultsPage', () => {
             title: 'Test Photo',
             description: 'Photo description',
             pathComponent: 'photo.jpg',
+            summary: 'Photo summary',
+            ownerName: 'Photo Owner',
           },
           score: 8,
           matchedInTitle: true,
@@ -137,6 +141,36 @@ describe('SearchResultsPage', () => {
     expect(screen.getByText(/found 2 results/i)).toBeInTheDocument();
     expect(screen.getByText('Test Album')).toBeInTheDocument();
     expect(screen.getByText('Test Photo')).toBeInTheDocument();
+    expect(screen.getByText('Album summary')).toBeInTheDocument();
+    expect(screen.getByText('Photo summary')).toBeInTheDocument();
+    expect(screen.getByText(/Owner: Album Owner/)).toBeInTheDocument();
+    expect(screen.getByText(/Owner: Photo Owner/)).toBeInTheDocument();
+  });
+
+  it('does not render summary or owner when absent', () => {
+    vi.mocked(useSearch).mockReturnValue({
+      ...mockUseSearch,
+      query: 'test',
+      results: [
+        {
+          item: {
+            id: 1,
+            type: 'GalleryAlbumItem' as const,
+            title: 'Album 1',
+            description: '',
+            pathComponent: 'album1',
+          },
+          score: 10,
+          matchedInTitle: true,
+          matchedInDescription: false,
+        },
+      ],
+    } as any);
+
+    render(<SearchResultsPage />);
+
+    expect(screen.getByText('Album 1')).toBeInTheDocument();
+    expect(screen.queryByText(/Owner:/)).not.toBeInTheDocument();
   });
 
   it('groups results by type', () => {

@@ -34,6 +34,14 @@ export interface Child {
      * Only present for albums (GalleryAlbumItem) that contain photos.
      */
     thumbnailHeight?: number | null;
+    /**
+     * Owner display name resolved from Item.ownerId → User (fullName or userName). Null when user missing or ownerId invalid.
+     */
+    ownerName?: string | null;
+    /**
+     * Item summary from Gallery 2 (distinct from description). Null when not set.
+     */
+    summary?: string | null;
 }
 
 interface MysqlSettings {

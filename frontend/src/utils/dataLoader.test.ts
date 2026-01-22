@@ -208,6 +208,112 @@ describe('dataLoader', () => {
       const result = await loadAlbum(1);
       expect(result).toEqual([]);
     });
+
+    it('accepts JSON with ownerName and summary', async () => {
+      const mockData: Child[] = [
+        {
+          id: 1,
+          type: 'GalleryAlbumItem',
+          hasChildren: true,
+          title: 'Album',
+          description: 'Desc',
+          pathComponent: 'album',
+          timestamp: 1234567890,
+          width: null,
+          height: null,
+          thumb_width: null,
+          thumb_height: null,
+          ownerName: 'Jane Doe',
+          summary: 'Album summary',
+        },
+        {
+          id: 2,
+          type: 'GalleryPhotoItem',
+          hasChildren: false,
+          title: 'Photo',
+          description: 'Photo desc',
+          pathComponent: 'photo.jpg',
+          timestamp: 1234567891,
+          width: 800,
+          height: 600,
+          thumb_width: 200,
+          thumb_height: 150,
+          ownerName: null,
+          summary: null,
+        },
+      ];
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => mockData,
+      });
+
+      const result = await loadAlbum(1);
+      expect(result).toEqual(mockData);
+      expect(result[0].ownerName).toBe('Jane Doe');
+      expect(result[0].summary).toBe('Album summary');
+      expect(result[1].ownerName).toBeNull();
+      expect(result[1].summary).toBeNull();
+    });
+
+    it('accepts legacy JSON without ownerName or summary', async () => {
+      const legacyData = [
+        {
+          id: 5,
+          type: 'GalleryAlbumItem',
+          hasChildren: true,
+          title: 'Legacy',
+          description: 'Legacy desc',
+          pathComponent: 'legacy',
+          timestamp: 1234567890,
+          width: null,
+          height: null,
+          thumb_width: null,
+          thumb_height: null,
+        },
+      ];
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => legacyData,
+      });
+
+      const result = await loadAlbum(5);
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe(5);
+      expect(result[0].title).toBe('Legacy');
+      expect('ownerName' in result[0]).toBe(false);
+      expect('summary' in result[0]).toBe(false);
+    });
+
+    it('accepts JSON with null title, description, or pathComponent', async () => {
+      const dataWithNulls = [
+        {
+          id: 6,
+          type: 'GalleryPhotoItem',
+          hasChildren: false,
+          title: null,
+          description: null,
+          pathComponent: 'photo.jpg',
+          timestamp: 1234567890,
+          width: 100,
+          height: 100,
+          thumb_width: 50,
+          thumb_height: 50,
+        },
+      ];
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => dataWithNulls,
+      });
+
+      const result = await loadAlbum(6);
+      expect(result).toHaveLength(1);
+      expect(result[0].title).toBeNull();
+      expect(result[0].description).toBeNull();
+      expect(result[0].pathComponent).toBe('photo.jpg');
+    });
   });
 
   describe('findRootAlbumId', () => {

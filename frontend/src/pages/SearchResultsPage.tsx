@@ -148,6 +148,21 @@ export function SearchResultsPage() {
                         />
                       </p>
                     )}
+                    {typeof album.summary === 'string' &&
+                      album.summary.trim() && (
+                        <p className="search-results-item-summary">
+                          <SearchHighlight
+                            text={album.summary.trim()}
+                            query={urlQuery}
+                          />
+                        </p>
+                      )}
+                    {typeof album.ownerName === 'string' &&
+                      album.ownerName.trim() && (
+                        <p className="search-results-item-owner">
+                          Owner: {album.ownerName.trim()}
+                        </p>
+                      )}
                   </div>
                 </Link>
               </li>
@@ -181,6 +196,21 @@ export function SearchResultsPage() {
                         />
                       </p>
                     )}
+                    {typeof image.summary === 'string' &&
+                      image.summary.trim() && (
+                        <p className="search-results-item-summary">
+                          <SearchHighlight
+                            text={image.summary.trim()}
+                            query={urlQuery}
+                          />
+                        </p>
+                      )}
+                    {typeof image.ownerName === 'string' &&
+                      image.ownerName.trim() && (
+                        <p className="search-results-item-owner">
+                          Owner: {image.ownerName.trim()}
+                        </p>
+                      )}
                   </div>
                 </Link>
               </li>

@@ -422,6 +422,22 @@
   opacity: 0.9;
 }
 
+.lightbox-summary {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0 0 1rem 0;
+  color: var(--lightbox-description-color, rgba(255, 255, 255, 0.9));
+  opacity: 0.9;
+}
+
+.lightbox-owner {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  margin: 0 0 1rem 0;
+  color: var(--lightbox-details-color, rgba(255, 255, 255, 0.7));
+  opacity: 0.8;
+}
+
 .lightbox-details {
   display: flex;
   flex-wrap: wrap;

@@ -100,6 +100,8 @@ describe('AlbumDetail', () => {
       expect(
         screen.getByText('Test album for JSON import verification'),
       ).toBeInTheDocument();
+      expect(screen.getByText('Short album summary for tests')).toBeInTheDocument();
+      expect(screen.getByText(/Owner: Test Owner/)).toBeInTheDocument();
     });
 
     it('renders back button by default', () => {
@@ -521,6 +523,27 @@ describe('AlbumDetail', () => {
       render(<AlbumDetail albumId={7} album={albumWithoutDescription} />);
       // Should not crash, description should not render
       expect(screen.getByText('Albums')).toBeInTheDocument();
+    });
+
+    it('does not render summary or owner when null or empty', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      const albumWithoutSummaryOwner: Album = {
+        ...mockAlbum,
+        type: 'GalleryAlbumItem',
+        summary: null,
+        ownerName: null,
+      } as Album;
+
+      render(<AlbumDetail albumId={7} album={albumWithoutSummaryOwner} />);
+      expect(screen.getByText('Test Album')).toBeInTheDocument();
+      expect(screen.queryByText('Short album summary for tests')).not.toBeInTheDocument();
+      expect(screen.queryByText(/Owner: Test Owner/)).not.toBeInTheDocument();
     });
   });
 
