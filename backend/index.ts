@@ -68,6 +68,25 @@ let connection: mysql.Connection | null = null;
         const rootId = config.rootId ?? await sql.getRootAlbumId();
         console.log(`Using root album ID: ${rootId}`);
         await main(sql, rootId, [], dataDir);
+        
+        // Generate index.json with root album metadata
+        const rootAlbumInfo = await sql.getRootAlbumInfo(rootId);
+        const indexData = {
+            rootAlbumId: rootId,
+            rootAlbumFile: `${rootId}.json`,
+            siteName: rootAlbumInfo.title,
+            siteDescription: rootAlbumInfo.description,
+            generatedAt: new Date().toISOString(),
+            metadata: {
+                rootAlbumId: rootAlbumInfo.id,
+                rootAlbumTitle: rootAlbumInfo.title,
+                rootAlbumDescription: rootAlbumInfo.description,
+                rootAlbumTimestamp: rootAlbumInfo.timestamp
+            }
+        };
+        const indexPath = path.join(dataDir, 'index.json');
+        await fs.writeFile(indexPath, JSON.stringify(indexData, null, 2));
+        console.log(`Generated index.json with root album reference`);
     } catch (error) {
         console.error('Error in main:', error);
         process.exit(1);

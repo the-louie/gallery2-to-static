@@ -36,6 +36,7 @@
  */
 
 import type { Child } from '../../../backend/types';
+import type { IndexMetadata } from '../types';
 
 /**
  * Base error class for data loading errors
@@ -275,11 +276,88 @@ export async function loadAlbum(id: number): Promise<Child[]> {
 }
 
 /**
+ * Load index.json metadata
+ *
+ * Loads the index.json file which contains root album information and site metadata.
+ * This is the preferred method to discover the root album.
+ *
+ * @returns Promise resolving to IndexMetadata or null if index.json not found
+ * @throws {NetworkError} When network request fails
+ * @throws {ParseError} When JSON parsing fails
+ *
+ * @example
+ * ```typescript
+ * const index = await loadIndex();
+ * if (index !== null) {
+ *   const rootId = index.rootAlbumId;
+ *   const siteName = index.siteName;
+ * }
+ * ```
+ */
+export async function loadIndex(): Promise<IndexMetadata | null> {
+  const url = '/data/index.json';
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new NetworkError(
+        `Failed to load index.json: ${response.status} ${response.statusText}`,
+        new Error(`HTTP ${response.status}: ${response.statusText}`),
+      );
+    }
+
+    let jsonData: unknown;
+    try {
+      jsonData = await response.json();
+    } catch (error) {
+      throw new ParseError('Failed to parse index.json', error);
+    }
+
+    // Basic validation
+    if (
+      typeof jsonData !== 'object' ||
+      jsonData === null ||
+      !('rootAlbumId' in jsonData) ||
+      !('rootAlbumFile' in jsonData)
+    ) {
+      throw new ParseError('Invalid index.json structure');
+    }
+
+    return jsonData as IndexMetadata;
+  } catch (error) {
+    // Re-throw known errors
+    if (error instanceof NetworkError || error instanceof ParseError) {
+      throw error;
+    }
+
+    // Handle network errors (offline, timeout, etc.)
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new NetworkError(
+        `Network error loading index.json: ${error.message}`,
+        error,
+      );
+    }
+
+    // Unknown error, wrap it
+    throw new DataLoadError(
+      'Unexpected error loading index.json',
+      'UNKNOWN_ERROR',
+      error,
+    );
+  }
+}
+
+/**
  * Find root album ID
  *
- * Discovers the root album ID by checking common locations.
- * First checks for 7.json (hardcoded root from backend).
- * If not found, tries common root IDs (1, 0) in order.
+ * Discovers the root album ID by first checking index.json (preferred method).
+ * If index.json doesn't exist, falls back to checking common locations:
+ * - First checks for 7.json (hardcoded root from backend)
+ * - If not found, tries common root IDs (1, 0) in order
  *
  * Returns null if no valid root album is found.
  *
@@ -294,7 +372,21 @@ export async function loadAlbum(id: number): Promise<Child[]> {
  * ```
  */
 export async function findRootAlbumId(): Promise<number | null> {
-  // First try hardcoded root (7)
+  // First try loading index.json (preferred method)
+  try {
+    const index = await loadIndex();
+    if (index !== null) {
+      return index.rootAlbumId;
+    }
+  } catch (error) {
+    // If index.json doesn't exist (404), fall back to discovery
+    // If it's a different error (network, parse), log but continue with fallback
+    if (!(error instanceof NotFoundError)) {
+      console.warn('Error loading index.json, falling back to discovery:', error);
+    }
+  }
+
+  // Fallback: Try hardcoded root (7)
   try {
     await loadAlbum(7);
     return 7;
