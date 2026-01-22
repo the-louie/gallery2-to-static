@@ -11,6 +11,10 @@ export interface Child {
     thumb_width: number | null;
     thumb_height: number | null;
     /**
+     * Order weight for sorting items within their parent album. Lower values appear first. Only present when item has explicit ordering configured in Gallery 2.
+     */
+    order?: number | null;
+    /**
      * Thumbnail path component extracted from the first photo in the album.
      * Only present for albums (GalleryAlbumItem) that contain photos.
      */

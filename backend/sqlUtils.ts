@@ -18,8 +18,9 @@ export default (connection: mysql.Connection, config: Config) => {
             pi.${config.gallerySettings.columnPrefix}height as height,
 
             di.${config.gallerySettings.columnPrefix}width as thumb_width,
-            di.${config.gallerySettings.columnPrefix}height as thumb_height
+            di.${config.gallerySettings.columnPrefix}height as thumb_height,
 
+            iam.${config.gallerySettings.columnPrefix}orderWeight as order
 
         -- relations table
         FROM ${config.gallerySettings.tablePrefix}ChildEntity ce
@@ -39,9 +40,13 @@ export default (connection: mysql.Connection, config: Config) => {
         -- thumbinfo
         LEFT JOIN ${config.gallerySettings.tablePrefix}DerivativeImage di on di.${config.gallerySettings.columnPrefix}id = ce.${config.gallerySettings.columnPrefix}id
 
+        -- item attributes (order weight)
+        LEFT JOIN ${config.gallerySettings.tablePrefix}ItemAttributesMap iam ON iam.${config.gallerySettings.columnPrefix}itemId = ce.${config.gallerySettings.columnPrefix}id
+
         WHERE
             e.${config.gallerySettings.columnPrefix}entityType in ('GalleryAlbumItem', 'GalleryPhotoItem') AND
-            ce.${config.gallerySettings.columnPrefix}parentId = ?`
+            ce.${config.gallerySettings.columnPrefix}parentId = ?
+        ORDER BY COALESCE(iam.${config.gallerySettings.columnPrefix}orderWeight, 999999) ASC, ce.${config.gallerySettings.columnPrefix}id ASC`
     
     const SQL_GET_ROOT_ALBUM = `
         SELECT
