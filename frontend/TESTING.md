@@ -146,7 +146,7 @@ Mock data is located in `src/__mocks__/mockData.ts`. This file contains:
 - `mockPhotos` - Array of photos only
 - `mockEmptyChildren` - Empty array for testing empty states
 
-All mock data matches the `Child` interface structure from the root `types.ts`.
+All mock data matches the `Child` interface structure from `backend/types.ts`.
 
 Example usage:
 

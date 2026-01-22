@@ -35,7 +35,7 @@
  * - `clearCache()`: Clear all cached data
  */
 
-import type { Child } from '../../../types';
+import type { Child } from '../../../backend/types';
 
 /**
  * Base error class for data loading errors

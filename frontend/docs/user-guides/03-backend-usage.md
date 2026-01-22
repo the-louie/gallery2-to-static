@@ -4,45 +4,47 @@ This guide explains how to run the backend conversion script that reads data fro
 
 ## Overview
 
-The backend conversion script (`index.ts`) performs the following tasks:
+The backend conversion script (`backend/index.ts`) performs the following tasks:
 
-1. Connects to your MySQL database using settings from `config.json`
+1. Connects to your MySQL database using settings from `backend/config.json`
 2. Recursively reads album and photo data from the Gallery 2 database
-3. Generates JSON files in the `./data/` directory
+3. Generates JSON files in the `../data/` directory (project root)
 4. Creates one JSON file per album, named `{albumId}.json`
 
 ## Running the Conversion
 
 ### Basic Usage
 
-From the project root directory, run:
+Navigate to the backend directory and run:
 
 ```bash
+cd backend
 npx ts-node index.ts
 ```
 
 Or if you have TypeScript installed globally:
 
 ```bash
+cd backend
 ts-node index.ts
 ```
 
 ### What Happens During Conversion
 
-1. **Database Connection**: The script connects to MySQL using your `config.json` settings
-2. **Root Album Discovery**: The script starts from album ID 7 (hardcoded in `index.ts`)
+1. **Database Connection**: The script connects to MySQL using your `backend/config.json` settings
+2. **Root Album Discovery**: The script starts from album ID 7 (hardcoded in `backend/index.ts`)
 3. **Recursive Processing**: For each album:
    - Reads all children (sub-albums and photos)
    - Recursively processes sub-albums
    - Generates a JSON file with all children
-4. **File Generation**: JSON files are written to `./data/{albumId}.json`
+4. **File Generation**: JSON files are written to `../data/{albumId}.json` (project root)
 5. **Completion**: The script exits when all albums are processed
 
 ### Expected Output
 
 During conversion, you may see:
 - Console output (if the script includes logging)
-- JSON files appearing in the `./data/` directory
+- JSON files appearing in the `../data/` directory (project root)
 - Processing time depends on gallery size
 
 The script runs silently by default. If errors occur, they will be displayed in the console.
@@ -53,9 +55,9 @@ The script is hardcoded to start from album ID 7. This is the default root album
 
 ### Changing the Root Album ID
 
-If your root album has a different ID, you need to modify `index.ts`:
+If your root album has a different ID, you need to modify `backend/index.ts`:
 
-1. Open `index.ts` in a text editor
+1. Open `backend/index.ts` in a text editor
 2. Find the line: `await main(7);`
 3. Change `7` to your root album ID: `await main(10);`
 4. Save the file
@@ -66,7 +68,7 @@ If your root album has a different ID, you need to modify `index.ts`:
 
 ### Directory Location
 
-JSON files are generated in the `./data/` directory (relative to the project root).
+JSON files are generated in the `../data/` directory (project root, relative to backend directory).
 
 ### File Naming
 
@@ -213,7 +215,7 @@ Ensure files are valid JSON (they should parse without errors). You can use onli
 - Configuration errors
 
 **Solutions**:
-- Check database connection in `config.json`
+- Check database connection in `backend/config.json`
 - Verify root album ID matches your Gallery 2 installation
 - Check console for error messages
 
@@ -253,7 +255,7 @@ See [07-troubleshooting.md](07-troubleshooting.md) for database connection troub
 For galleries with many albums and photos:
 - Conversion time increases with gallery size
 - JSON files may be large (several MB for albums with thousands of photos)
-- Ensure sufficient disk space in `./data/` directory
+- Ensure sufficient disk space in `../data/` directory (project root)
 
 ### Optimization Tips
 
@@ -274,7 +276,7 @@ After successful conversion:
 You can re-run the conversion at any time:
 
 - **Update Data**: If your Gallery 2 database changes, re-run to update JSON files
-- **Configuration Changes**: After changing `config.json`, re-run to apply new settings
+- **Configuration Changes**: After changing `backend/config.json`, re-run to apply new settings
 - **Incremental Updates**: The script will overwrite existing JSON files
 
 **Note**: Always back up your `data/` directory before re-running if you've made manual changes.

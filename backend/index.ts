@@ -19,7 +19,7 @@ const main = async (root: number, pathComponent: Array<string> = [], depth: numb
             }
         });
         await Promise.all(recursivePromises);
-        fs.writeFileSync(`./data/${root}.json`, JSON.stringify(children))
+        fs.writeFileSync(`../data/${root}.json`, JSON.stringify(children))
     }
 }
 

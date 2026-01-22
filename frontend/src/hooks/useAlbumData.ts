@@ -42,7 +42,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { loadAlbum, type DataLoadError } from '../utils/dataLoader';
 import { useRetry, type UseRetryConfig } from './useRetry';
-import type { Child } from '../../../types';
+import type { Child } from '../../../backend/types';
 
 /**
  * Configuration for useAlbumData hook

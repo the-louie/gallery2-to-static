@@ -9,7 +9,7 @@ This guide helps you resolve common issues when using Gallery 2 to Static.
 **Error**: Connection refused, access denied, or timeout
 
 **Possible Causes**:
-- Incorrect host, username, or password in `config.json`
+- Incorrect host, username, or password in `backend/config.json`
 - MySQL server not running
 - Firewall blocking connection
 - Database doesn't exist
@@ -17,7 +17,7 @@ This guide helps you resolve common issues when using Gallery 2 to Static.
 **Solutions**:
 1. Verify MySQL server is running: `systemctl status mysql` (Linux) or check services (Windows)
 2. Test connection manually: `mysql -h host -u user -p database`
-3. Check `config.json` settings match your MySQL configuration
+3. Check `backend/config.json` settings match your MySQL configuration
 4. Verify database name is correct
 5. Check firewall rules allow MySQL connections
 6. Verify user has proper permissions
@@ -32,8 +32,8 @@ This guide helps you resolve common issues when using Gallery 2 to Static.
 - File in wrong location
 
 **Solutions**:
-1. Ensure `config.json` exists in project root (same directory as `index.ts`)
-2. Copy from `config_example.json` if missing
+1. Ensure `config.json` exists in `backend` directory (same directory as `index.ts`)
+2. Copy from `backend/config_example.json` if missing
 3. Validate JSON syntax (use online JSON validator)
 4. Check for trailing commas or syntax errors
 5. Verify file encoding is UTF-8
@@ -49,7 +49,7 @@ This guide helps you resolve common issues when using Gallery 2 to Static.
 **Solutions**:
 1. Create `data/` directory manually: `mkdir data`
 2. Check write permissions on directory
-3. Run script from project root directory
+3. Run script from backend directory
 
 ### Permission Errors
 
@@ -75,22 +75,22 @@ This guide helps you resolve common issues when using Gallery 2 to Static.
 
 **Solutions**:
 1. Verify root album ID in your Gallery 2 database
-2. Check `index.ts` has correct root album ID
+2. Check `backend/index.ts` has correct root album ID
 3. Query database to find root album: `SELECT * FROM g2_Entity WHERE g_entityType = 'GalleryAlbumItem' AND g_parentId IS NULL`
-4. Verify table/column prefixes in `config.json` match your installation
+4. Verify table/column prefixes in `backend/config.json` match your installation
 
 ### Table/Column Not Found Errors
 
 **Error**: Table 'g2_Entity' doesn't exist or Unknown column 'g_id'
 
 **Possible Causes**:
-- Incorrect `tablePrefix` or `columnPrefix` in `config.json`
+- Incorrect `tablePrefix` or `columnPrefix` in `backend/config.json`
 - Database schema doesn't match expected structure
 
 **Solutions**:
 1. Check actual table names in database: `SHOW TABLES;`
 2. Check actual column names: `DESCRIBE g2_Item;`
-3. Update `tablePrefix` and `columnPrefix` in `config.json` to match
+3. Update `tablePrefix` and `columnPrefix` in `backend/config.json` to match
 4. Verify you're connecting to the correct Gallery 2 database
 
 ## Frontend Issues
@@ -381,7 +381,7 @@ If you can't resolve an issue:
 ### "Cannot find module './config.json'"
 
 - **Cause**: Config file missing or wrong location
-- **Solution**: Create `config.json` from `config_example.json` in project root
+- **Solution**: Create `backend/config.json` from `backend/config_example.json`
 
 ### "ECONNREFUSED" or "Access denied"
 
@@ -409,7 +409,7 @@ To avoid common issues:
 
 1. **Backup Data**: Always backup your `data/` directory before changes
 2. **Test Locally**: Test thoroughly before deploying
-3. **Verify Configuration**: Double-check `config.json` settings
+3. **Verify Configuration**: Double-check `backend/config.json` settings
 4. **Check Dependencies**: Keep dependencies up to date
 5. **Monitor Console**: Regularly check browser console for warnings
 6. **Validate JSON**: Validate JSON files after conversion

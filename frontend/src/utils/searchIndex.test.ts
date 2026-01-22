@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SearchIndex } from './searchIndex';
 import { loadAlbum } from './dataLoader';
-import type { Child } from '../../../types';
+import type { Child } from '../../../backend/types';
 
 // Mock dataLoader
 vi.mock('./dataLoader', () => ({

@@ -4,7 +4,7 @@ import {
   clearBreadcrumbCache,
 } from './breadcrumbPath';
 import { loadAlbum, findRootAlbumId } from './dataLoader';
-import type { Child } from '../../../types';
+import type { Child } from '../../../backend/types';
 
 // Mock the dataLoader module
 vi.mock('./dataLoader', () => ({

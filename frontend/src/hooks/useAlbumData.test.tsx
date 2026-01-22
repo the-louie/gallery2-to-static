@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useAlbumData } from './useAlbumData';
 import { loadAlbum, NotFoundError, NetworkError } from '../utils/dataLoader';
-import type { Child } from '../../../types';
+import type { Child } from '../../../backend/types';
 
 // Mock the dataLoader module
 vi.mock('../utils/dataLoader', () => ({

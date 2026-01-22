@@ -8,7 +8,7 @@
  * @module frontend/src/utils/albumMetadata
  */
 
-import type { Child } from '../../../types';
+import type { Child } from '../../../backend/types';
 import type { Album } from '@/types';
 import { isAlbum } from '@/types';
 

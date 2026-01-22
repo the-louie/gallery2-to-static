@@ -35,7 +35,7 @@ This documentation is organized into the following guides:
 ## Quick Start
 
 1. **Install dependencies**: Install Node.js dependencies for both backend and frontend
-2. **Configure**: Create `config.json` from `config_example.json` and configure your database connection
+2. **Configure**: Create `backend/config.json` from `backend/config_example.json` and configure your database connection
 3. **Convert**: Run the backend script to generate JSON files from your Gallery 2 database
 4. **View**: Start the frontend development server to view your gallery
 5. **Deploy**: Build the frontend and deploy to a static hosting service

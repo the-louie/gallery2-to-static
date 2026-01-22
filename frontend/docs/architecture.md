@@ -53,7 +53,7 @@ The frontend architecture is designed around the following principles:
 
 - **Clear boundaries**: Frontend and backend have distinct purposes and can evolve independently
 - **Independent builds**: Frontend build process doesn't interfere with backend execution
-- **Shared types**: Type definitions can be shared from root `types.ts` without complex monorepo tooling
+- **Shared types**: Type definitions can be shared from `backend/types.ts` without complex monorepo tooling
 - **Simple deployment**: Frontend builds to static assets that can be deployed separately
 - **Maintainability**: Easier to understand and navigate the codebase
 
@@ -162,13 +162,13 @@ Components are organized by feature/domain rather than by technical role:
 - Static asset handling for JSON files in `public/data/`
 
 **TypeScript Configuration:**
-- Extends root `tsconfig.json` where appropriate
+- Frontend and backend have independent TypeScript configurations
 - React-specific compiler options (JSX: react-jsx)
 - Path aliases for clean imports (`@/components`, `@/utils`, etc.)
 - Strict type checking enabled
 
 **Development Workflow:**
-1. Backend generates JSON files to `./data/` directory
+1. Backend generates JSON files to `../data/` directory (project root, relative to backend directory)
 2. Frontend serves JSON from `public/data/` (via symlink, copy, or build script)
 3. Development server watches for changes with HMR
 4. Production build optimizes and bundles for static hosting
@@ -180,7 +180,7 @@ Components are organized by feature/domain rather than by technical role:
 **File Naming Convention:**
 - JSON files are named using the album ID (e.g., `7.json`, `12.json`)
 - Each file corresponds to a single album and contains all children of that album
-- Files are stored in the `./data/` directory (backend output) or `public/data/` directory (frontend serving)
+- Files are stored in the `data/` directory at project root (backend output) or `public/data/` directory (frontend serving)
 
 **File Structure:**
 - Each JSON file contains an array of `Child` objects
@@ -191,7 +191,7 @@ Components are organized by feature/domain rather than by technical role:
 
 **Child Interface Structure:**
 
-The `Child` interface (from [types.ts](../types.ts)) defines the structure of each item in the JSON array:
+The `Child` interface (from [backend/types.ts](../../backend/types.ts)) defines the structure of each item in the JSON array:
 
 ```typescript
 interface Child {
@@ -312,7 +312,7 @@ interface Child {
 ### Backend Data Generation Logic
 
 **Root Album Identification:**
-- Default root album ID is `7` (hardcoded in `index.ts` line 28)
+- Default root album ID is `7` (hardcoded in `backend/index.ts` line 28)
 - Root album is the entry point for the entire gallery hierarchy
 - Frontend should load `7.json` for the home/root view
 - Root album discovery: Check for `7.json`, or implement discovery logic if needed
@@ -323,7 +323,7 @@ interface Child {
 3. Processes children:
    - Albums: Recursively processes children (depth-first)
    - Photos: Constructs full pathComponent by concatenating parent paths
-4. Writes JSON file: `./data/{albumId}.json` containing array of Child objects
+4. Writes JSON file: `../data/{albumId}.json` (project root) containing array of Child objects
 5. Process completes when all albums are processed
 
 **PathComponent Construction:**
@@ -336,7 +336,7 @@ interface Child {
 
 **File Organization Pattern:**
 - One JSON file per album (named by album ID)
-- Files are flat in `./data/` directory (not nested)
+- Files are flat in `data/` directory at project root (not nested)
 - File naming: `{albumId}.json` (e.g., `7.json`, `12.json`, `45.json`)
 - Frontend determines file to load based on album ID from route parameter
 
@@ -661,13 +661,13 @@ flowchart TD
 ### Backend Integration
 
 **JSON File Consumption:**
-- Backend generates JSON files to `./data/` directory (see [backend architecture](../__docs/architecture.md))
+- Backend generates JSON files to `../data/` directory (project root, relative to backend directory) (see [backend architecture](../__docs/architecture.md))
 - Frontend serves JSON from `public/data/` directory
 - JSON files named by album ID (e.g., `7.json`, `12.json`)
 - Frontend fetches JSON files at runtime using album ID
 
 **Shared Type Definitions:**
-- Frontend imports `Child` interface from root `types.ts`
+- Frontend imports `Child` interface from `backend/types.ts`
 - Type compatibility ensured through shared type definitions
 - Frontend may extend types for UI-specific needs
 
@@ -686,7 +686,7 @@ flowchart TD
 1. **Backend generates data:**
    ```bash
    # Run backend to generate JSON files
-   npm run generate  # or ts-node index.ts
+   cd backend && npm run start  # or ts-node index.ts
    ```
 
 2. **Frontend development:**

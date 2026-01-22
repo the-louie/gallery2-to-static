@@ -11,7 +11,7 @@ gallery. So the options are to convert to another gallery like Flikr or Piwig, o
 static dump of the current state. This does the latter.
 
 ## How
-Copy `config_example.json` to `config.json` and edit it to your liking, then just run `index.ts`.
+Copy `backend/config_example.json` to `backend/config.json` and edit it to your liking, then run the backend script from the backend directory: `cd backend && npx ts-node index.ts`.
 
 ## Documentation
 

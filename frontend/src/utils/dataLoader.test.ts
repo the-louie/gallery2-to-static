@@ -10,7 +10,7 @@ import {
   NotFoundError,
   DataLoadError,
 } from './dataLoader';
-import type { Child } from '../../../types';
+import type { Child } from '../../../backend/types';
 
 describe('dataLoader', () => {
   beforeEach(() => {

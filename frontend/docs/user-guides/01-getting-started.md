@@ -31,9 +31,10 @@ Download or clone the gallery2-to-static project to your computer.
 
 ### Step 2: Install Backend Dependencies
 
-Navigate to the project root directory and install dependencies:
+Navigate to the `backend` directory and install dependencies:
 
 ```bash
+cd backend
 npm install
 ```
 
@@ -56,10 +57,10 @@ Copy the example configuration file to create your own:
 
 ```bash
 # From project root
-cp config_example.json config.json
+cp backend/config_example.json backend/config.json
 ```
 
-Then edit `config.json` with your database connection details. See [02-configuration.md](02-configuration.md) for detailed configuration instructions.
+Then edit `backend/config.json` with your database connection details. See [02-configuration.md](02-configuration.md) for detailed configuration instructions.
 
 ## Directory Structure
 
@@ -67,12 +68,13 @@ After installation, your project structure should look like this:
 
 ```
 gallery2-to-static/
-├── config.json              # Your configuration (create this)
-├── config_example.json      # Example configuration
-├── index.ts                 # Backend conversion script
-├── package.json            # Backend dependencies
-├── types.ts                 # Type definitions
-├── sqlUtils.ts              # Database utilities
+├── backend/
+│   ├── config.json          # Your configuration (create this)
+│   ├── config_example.json  # Example configuration
+│   ├── index.ts             # Backend conversion script
+│   ├── package.json         # Backend dependencies
+│   ├── types.ts             # Type definitions
+│   └── sqlUtils.ts          # Database utilities
 ├── data/                    # Generated JSON files (created after conversion)
 └── frontend/
     ├── package.json        # Frontend dependencies
@@ -85,7 +87,7 @@ gallery2-to-static/
 
 ### 1. Configure Database Connection
 
-Edit `config.json` and set your MySQL connection details:
+Edit `backend/config.json` and set your MySQL connection details:
 
 ```json
 {
@@ -103,25 +105,27 @@ See [02-configuration.md](02-configuration.md) for complete configuration option
 
 ### 2. Run the Conversion
 
-From the project root directory, run the conversion script:
+Navigate to the backend directory and run the conversion script:
 
 ```bash
+cd backend
 npx ts-node index.ts
 ```
 
 Or if you have TypeScript installed globally:
 
 ```bash
+cd backend
 ts-node index.ts
 ```
 
 The script will:
 - Connect to your MySQL database
 - Read album and photo data
-- Generate JSON files in the `./data/` directory
+- Generate JSON files in the `../data/` directory (project root)
 - Create one JSON file per album (named `{albumId}.json`)
 
-**Note**: The script starts from album ID 7 by default. If your root album has a different ID, you'll need to modify `index.ts`.
+**Note**: The script starts from album ID 7 by default. If your root album has a different ID, you'll need to modify `backend/index.ts`.
 
 ### 3. Verify Generated Data
 
@@ -176,7 +180,7 @@ Now that you have the basic setup working:
 
 If you encounter problems:
 
-- **Database connection errors**: Verify your MySQL credentials in `config.json`
+- **Database connection errors**: Verify your MySQL credentials in `backend/config.json`
 - **No JSON files generated**: Check that the root album ID is correct (default is 7)
 - **Frontend won't start**: Make sure you installed frontend dependencies (`cd frontend && npm install`)
 - **Gallery shows "Root album not found"**: Verify that `7.json` exists in the `data/` directory, or check if your root album has a different ID

@@ -1,5 +1,6 @@
 config.json
 node_modules
+backend/node_modules
 data
 __docs
 .cursor

@@ -6,7 +6,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { getAlbumMetadata } from './albumMetadata';
-import type { Child } from '../../../types';
+import type { Child } from '../../../backend/types';
 import type { Album, Image } from '@/types';
 
 describe('getAlbumMetadata', () => {

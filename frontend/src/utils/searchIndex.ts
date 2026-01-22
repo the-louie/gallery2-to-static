@@ -30,7 +30,7 @@
  */
 
 import { loadAlbum } from './dataLoader';
-import type { Child } from '../../../types';
+import type { Child } from '../../../backend/types';
 import { isAlbum, isImage } from '@/types';
 
 /**

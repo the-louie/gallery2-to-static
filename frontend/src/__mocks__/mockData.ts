@@ -1,4 +1,4 @@
-import type { Child } from '../../../types';
+import type { Child } from '../../../backend/types';
 
 /**
  * Mock data for testing

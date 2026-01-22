@@ -4,12 +4,12 @@ This guide explains all configuration options available in the `config.json` fil
 
 ## Configuration File Location
 
-The configuration file is named `config.json` and should be placed in the project root directory (same directory as `index.ts`).
+The configuration file is named `config.json` and should be placed in the `backend` directory (same directory as `index.ts`).
 
 ## Creating Your Configuration
 
-1. Copy the example file: `cp config_example.json config.json`
-2. Edit `config.json` with your settings
+1. Copy the example file: `cp backend/config_example.json backend/config.json`
+2. Edit `backend/config.json` with your settings
 3. Save the file
 
 **Important**: Never commit `config.json` to version control as it contains sensitive database credentials. The file is already listed in `.gitignore`.
