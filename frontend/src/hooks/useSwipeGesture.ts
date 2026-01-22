@@ -41,7 +41,7 @@
  * @module frontend/src/hooks/useSwipeGesture
  */
 
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 
 /**
  * Swipe detection thresholds
@@ -213,6 +213,7 @@ export function useSwipeGesture(options: SwipeOptions = {}): SwipeHandlers {
     touchCount: 0,
   });
 
+  const [isDetecting, setIsDetecting] = useState<boolean>(false);
   const timeoutRef = useRef<number | null>(null);
 
   /**
@@ -228,6 +229,7 @@ export function useSwipeGesture(options: SwipeOptions = {}): SwipeHandlers {
       isDetecting: false,
       touchCount: 0,
     };
+    setIsDetecting(false);
     if (timeoutRef.current !== null) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
@@ -263,6 +265,7 @@ export function useSwipeGesture(options: SwipeOptions = {}): SwipeHandlers {
         isDetecting: true,
         touchCount: 1,
       };
+      setIsDetecting(true);
 
       // Set timeout for swipe detection
       timeoutRef.current = window.setTimeout(() => {
@@ -408,6 +411,6 @@ export function useSwipeGesture(options: SwipeOptions = {}): SwipeHandlers {
     onTouchMove: handleTouchMove,
     onTouchEnd: handleTouchEnd,
     onTouchCancel: handleTouchCancel,
-    isDetecting: swipeStateRef.current.isDetecting,
+    isDetecting,
   };
 }

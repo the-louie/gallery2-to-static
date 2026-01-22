@@ -214,12 +214,15 @@ export function SearchBar({
     if (location.pathname === '/search') {
       const urlParams = new URLSearchParams(location.search);
       const urlQuery = urlParams.get('q') || '';
-      if (urlQuery !== localQuery) {
-        setLocalQuery(urlQuery);
-        setQuery(urlQuery);
-      }
+      setLocalQuery((prevLocalQuery) => {
+        if (urlQuery !== prevLocalQuery) {
+          setQuery(urlQuery);
+          return urlQuery;
+        }
+        return prevLocalQuery;
+      });
     }
-  }, [location.pathname, location.search, localQuery]);
+  }, [location.pathname, location.search]);
 
   const containerClassName = className
     ? `search-bar ${className}`
