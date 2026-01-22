@@ -27,7 +27,7 @@
  * - Format variants: Original extension is replaced with format extension
  */
 
-import type { Image } from '../types';
+import type { Image, Album } from '../types';
 
 /**
  * Default thumbnail prefix pattern
@@ -211,4 +211,49 @@ export function getImageUrlWithFormat(
   }
 
   return constructFullImageUrl(pathComponent, format);
+}
+
+/**
+ * Get album thumbnail URL for an Album object
+ *
+ * Constructs a thumbnail URL from the album's thumbnailPathComponent field.
+ * Returns null if the album doesn't have a thumbnail path component.
+ *
+ * @param album - Album object with optional thumbnailPathComponent field
+ * @param thumbPrefix - Optional thumbnail prefix override (defaults to "__t_")
+ * @returns Thumbnail URL path, or null if thumbnailPathComponent is missing
+ *
+ * @example
+ * ```typescript
+ * const album: Album = {
+ *   id: 1,
+ *   type: 'GalleryAlbumItem',
+ *   thumbnailPathComponent: 'album/photo.jpg',
+ *   // ... other fields
+ * };
+ *
+ * const thumbUrl = getAlbumThumbnailUrl(album);
+ * // Returns: "/images/album/__t_photo.jpg"
+ *
+ * const albumWithoutThumb: Album = {
+ *   id: 2,
+ *   type: 'GalleryAlbumItem',
+ *   // ... no thumbnailPathComponent
+ * };
+ *
+ * const noThumbUrl = getAlbumThumbnailUrl(albumWithoutThumb);
+ * // Returns: null
+ * ```
+ */
+export function getAlbumThumbnailUrl(
+  album: Album,
+  thumbPrefix?: string,
+): string | null {
+  const pathComponent = album.thumbnailPathComponent;
+
+  if (!pathComponent) {
+    return null;
+  }
+
+  return constructThumbnailUrl(pathComponent, thumbPrefix);
 }

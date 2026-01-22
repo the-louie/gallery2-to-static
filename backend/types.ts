@@ -10,6 +10,26 @@ export interface Child {
     height: number | null;
     thumb_width: number | null;
     thumb_height: number | null;
+    /**
+     * Thumbnail path component extracted from the first photo in the album.
+     * Only present for albums (GalleryAlbumItem) that contain photos.
+     */
+    thumbnailPathComponent?: string | null;
+    /**
+     * ID of the photo used as the album thumbnail.
+     * Only present for albums (GalleryAlbumItem) that contain photos.
+     */
+    thumbnailPhotoId?: number | null;
+    /**
+     * Thumbnail width extracted from the first photo in the album.
+     * Only present for albums (GalleryAlbumItem) that contain photos.
+     */
+    thumbnailWidth?: number | null;
+    /**
+     * Thumbnail height extracted from the first photo in the album.
+     * Only present for albums (GalleryAlbumItem) that contain photos.
+     */
+    thumbnailHeight?: number | null;
 }
 
 interface MysqlSettings {

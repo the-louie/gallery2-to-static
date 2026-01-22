@@ -50,6 +50,10 @@ export interface IndexMetadata {
  * Albums are discriminated from images by the `type` field being 'GalleryAlbumItem'.
  * Albums have null values for width, height, thumb_width, and thumb_height since
  * they are containers, not images.
+ *
+ * Albums may have thumbnail fields (thumbnailPathComponent, thumbnailPhotoId,
+ * thumbnailWidth, thumbnailHeight) when they contain photos. These fields are
+ * extracted from the first photo in the album during backend processing.
  */
 export type Album = Child & {
   type: 'GalleryAlbumItem';

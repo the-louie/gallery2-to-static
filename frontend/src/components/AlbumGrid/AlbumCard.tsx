@@ -8,8 +8,9 @@
  * @module frontend/src/components/AlbumGrid
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import type { Album, ViewMode } from '@/types';
+import { getAlbumThumbnailUrl } from '@/utils/imageUrl';
 import './AlbumCard.css';
 
 /**
@@ -44,6 +45,15 @@ function AlbumCardComponent({
   'aria-label': ariaLabel,
   viewMode = 'grid',
 }: AlbumCardProps) {
+  const [imageError, setImageError] = useState(false);
+  const thumbnailUrl = getAlbumThumbnailUrl(album);
+  const shouldShowThumbnail = thumbnailUrl !== null && !imageError;
+
+  // Reset error state when thumbnail URL changes
+  useEffect(() => {
+    setImageError(false);
+  }, [thumbnailUrl]);
+
   const handleClick = useCallback(() => {
     if (onClick) {
       onClick(album);
@@ -60,11 +70,13 @@ function AlbumCardComponent({
     [onClick, handleClick],
   );
 
+  const handleImageError = useCallback(() => {
+    setImageError(true);
+  }, []);
+
   const defaultAriaLabel = album.title || 'Album';
   const cardAriaLabel = ariaLabel || defaultAriaLabel;
 
-  // Albums are containers, not images, so always show placeholder
-  // In the future, if album thumbnails are supported, check thumb_width/thumb_height here
   const childCountText = album.hasChildren
     ? 'Has children'
     : 'No children';
@@ -84,9 +96,18 @@ function AlbumCardComponent({
       onKeyDown={onClick ? handleKeyDown : undefined}
     >
       <div className="album-card-thumbnail">
-        <div className="album-card-thumbnail-placeholder" aria-hidden="true">
-          <span className="album-card-thumbnail-icon">📁</span>
-        </div>
+        {shouldShowThumbnail && thumbnailUrl ? (
+          <img
+            src={thumbnailUrl}
+            alt={album.title || 'Album thumbnail'}
+            className="album-card-thumbnail-image"
+            onError={handleImageError}
+          />
+        ) : (
+          <div className="album-card-thumbnail-placeholder" aria-hidden="true">
+            <span className="album-card-thumbnail-icon">📁</span>
+          </div>
+        )}
       </div>
       <div className="album-card-content">
         <h3 className="album-card-title">{album.title || 'Untitled Album'}</h3>

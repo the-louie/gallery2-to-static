@@ -2,7 +2,35 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 import mysql from 'mysql2/promise'
 import sqlUtils from './sqlUtils'
-import { Config } from './types'
+import { Config, Child } from './types'
+
+/**
+ * Finds the first photo (GalleryPhotoItem) in a children array.
+ * @param children Array of child items (albums and photos)
+ * @returns The first photo found, or null if no photos exist
+ */
+const findFirstPhoto = (children: Child[]): Child | null => {
+    return children.find(child => child.type === 'GalleryPhotoItem') || null;
+}
+
+/**
+ * Extracts thumbnail information from a photo.
+ * @param photo The photo to extract thumbnail info from
+ * @returns Object containing thumbnail fields extracted from the photo
+ */
+const extractThumbnailInfo = (photo: Child): {
+    thumbnailPathComponent: string | null;
+    thumbnailPhotoId: number;
+    thumbnailWidth: number | null;
+    thumbnailHeight: number | null;
+} => {
+    return {
+        thumbnailPathComponent: photo.pathComponent ?? null,
+        thumbnailPhotoId: photo.id,
+        thumbnailWidth: photo.thumb_width ?? null,
+        thumbnailHeight: photo.thumb_height ?? null
+    };
+}
 
 const main = async (sql: ReturnType<typeof sqlUtils>, root: number, pathComponent: Array<string> = [], dataDir: string) => {
     const children = await sql.getChildren(root);
@@ -22,9 +50,27 @@ const main = async (sql: ReturnType<typeof sqlUtils>, root: number, pathComponen
         });
         await Promise.all(recursivePromises);
         
+        // Extract thumbnail info for albums from their first photo
+        const processedChildrenWithThumbnails = await Promise.all(processedChildren.map(async (child) => {
+            if (child.type === 'GalleryAlbumItem') {
+                const albumChildren = await sql.getChildren(child.id);
+                const firstPhoto = findFirstPhoto(albumChildren);
+                if (firstPhoto) {
+                    // Build full path for photo: current path + album path + photo filename
+                    const photoPathComponent = firstPhoto.pathComponent && child.pathComponent
+                        ? pathComponent.concat([child.pathComponent, firstPhoto.pathComponent]).join('/')
+                        : firstPhoto.pathComponent;
+                    const processedFirstPhoto = { ...firstPhoto, pathComponent: photoPathComponent };
+                    const thumbnailInfo = extractThumbnailInfo(processedFirstPhoto);
+                    return { ...child, ...thumbnailInfo };
+                }
+            }
+            return child;
+        }));
+        
         const filePath = path.join(dataDir, `${root}.json`);
         try {
-            await fs.writeFile(filePath, JSON.stringify(processedChildren, null, 2));
+            await fs.writeFile(filePath, JSON.stringify(processedChildrenWithThumbnails, null, 2));
         } catch (error) {
             console.error(`Error writing file ${filePath}:`, error);
             throw error;
