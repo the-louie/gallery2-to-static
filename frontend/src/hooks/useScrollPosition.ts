@@ -1,27 +1,26 @@
 /**
- * React hook for managing scroll position restoration
+ * React hook for managing scroll position saving
  *
- * Provides scroll position save and restore functionality for virtual scrolling grids.
- * Uses sessionStorage to persist scroll positions across navigation while maintaining
- * browser history integration.
+ * Provides scroll position save functionality for virtual scrolling grids.
+ * Uses sessionStorage to persist scroll positions across navigation.
+ * Note: Scroll restoration is handled by React Router and browser's native
+ * scroll restoration, not by this hook.
  *
  * ## Features
  *
  * - Automatic scroll position save on scroll events
- * - Scroll position restoration on component mount
- * - Key generation based on albumId and component type for uniqueness
+ * - Scroll positions stored per album and component type
  * - Debounced scroll saving to prevent performance issues
  * - Automatic cleanup of old scroll positions
- * - Works with browser back/forward navigation
+ * - Note: Scroll restoration is handled by React Router/browser, not this hook
  *
  * ## Usage
  *
  * ```tsx
- * const { scrollTop, setScrollTop, saveScrollPosition } = useScrollPosition(albumId, 'album-grid');
+ * const { saveScrollPosition } = useScrollPosition(albumId, 'album-grid');
  *
  * // In VirtualGrid:
  * <VirtualGrid
- *   initialScrollTop={scrollTop}
  *   onScroll={saveScrollPosition}
  * />
  * ```
@@ -176,21 +175,22 @@ export interface UseScrollPositionReturn {
 }
 
 /**
- * Hook to manage scroll position for virtual scrolling grids
+ * Hook to manage scroll position saving for virtual scrolling grids
  *
- * Automatically saves and restores scroll position using sessionStorage.
+ * Automatically saves scroll position using sessionStorage.
  * Scroll positions are keyed by albumId and component type for uniqueness.
+ * Note: This hook only saves scroll positions. Restoration is handled by
+ * React Router and the browser's native scroll restoration.
  *
  * @param albumId - Album ID (null for root/home)
  * @param componentType - Component type identifier ('album-grid' or 'image-grid')
- * @returns Object with scrollTop, setScrollTop, saveScrollPosition, and clearScrollPosition
+ * @returns Object with scrollTop (for reference), setScrollTop, saveScrollPosition, and clearScrollPosition
  *
  * @example
  * ```tsx
- * const { scrollTop, saveScrollPosition } = useScrollPosition(albumId, 'album-grid');
+ * const { saveScrollPosition } = useScrollPosition(albumId, 'album-grid');
  *
  * <VirtualGrid
- *   initialScrollTop={scrollTop}
  *   onScroll={saveScrollPosition}
  * />
  * ```

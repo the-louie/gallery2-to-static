@@ -35,6 +35,7 @@
   flex-direction: column;
   min-height: 100vh;
   position: relative;
+  background: var(--color-background-primary, #ffffff);
 }
 
 /* Skip to Content Link */

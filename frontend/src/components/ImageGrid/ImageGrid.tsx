@@ -96,8 +96,8 @@ export function ImageGrid({
     return filtered;
   }, [imagesProp, data, criteria, sortOption]);
 
-  // Scroll position management
-  const { scrollTop, saveScrollPosition } = useScrollPosition(albumId ?? null, 'image-grid');
+  // Scroll position management (save only, no restoration)
+  const { saveScrollPosition } = useScrollPosition(albumId ?? null, 'image-grid');
 
   const handleImageClick = useCallback(
     (image: Image) => {
@@ -173,7 +173,6 @@ export function ImageGrid({
         role="region"
         aria-label="Image grid"
         onScroll={saveScrollPosition}
-        initialScrollTop={scrollTop}
       />
     </ErrorBoundary>
   );

@@ -4,6 +4,8 @@
  * @module frontend/src/components/SortDropdown
  */
 
+import SortDropdownDefault from './SortDropdown';
+
 export { SortDropdown } from './SortDropdown';
 export type { SortDropdownProps } from '@/types';
-export default SortDropdown;
+export default SortDropdownDefault;

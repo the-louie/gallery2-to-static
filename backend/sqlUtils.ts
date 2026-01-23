@@ -23,7 +23,7 @@ export default (connection: mysql.Connection, config: Config) => {
             di.${config.gallerySettings.columnPrefix}width as thumb_width,
             di.${config.gallerySettings.columnPrefix}height as thumb_height,
 
-            iam.${config.gallerySettings.columnPrefix}orderWeight as order
+            iam.${config.gallerySettings.columnPrefix}orderWeight as \`order\`
 
         -- relations table
         FROM ${config.gallerySettings.tablePrefix}ChildEntity ce
@@ -51,7 +51,7 @@ export default (connection: mysql.Connection, config: Config) => {
             e.${config.gallerySettings.columnPrefix}entityType in ('GalleryAlbumItem', 'GalleryPhotoItem') AND
             ce.${config.gallerySettings.columnPrefix}parentId = ?
         ORDER BY COALESCE(iam.${config.gallerySettings.columnPrefix}orderWeight, 999999) ASC, ce.${config.gallerySettings.columnPrefix}id ASC`
-    
+
     const SQL_GET_ROOT_ALBUM = `
         SELECT
             ce.${config.gallerySettings.columnPrefix}id as id
@@ -62,7 +62,7 @@ export default (connection: mysql.Connection, config: Config) => {
             AND ce.${config.gallerySettings.columnPrefix}parentId = 0
         ORDER BY ce.${config.gallerySettings.columnPrefix}id
         LIMIT 1`
-    
+
     const SQL_GET_ROOT_ALBUM_INFO = `
         SELECT
             ce.${config.gallerySettings.columnPrefix}id as id,

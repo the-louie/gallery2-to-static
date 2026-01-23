@@ -96,8 +96,8 @@ export function AlbumGrid({
     return filtered;
   }, [albumsProp, data, criteria, sortOption]);
 
-  // Scroll position management
-  const { scrollTop, saveScrollPosition } = useScrollPosition(albumId ?? null, 'album-grid');
+  // Scroll position management (save only, no restoration)
+  const { saveScrollPosition } = useScrollPosition(albumId ?? null, 'album-grid');
 
   const handleAlbumClick = useCallback(
     (album: Album) => {
@@ -167,7 +167,6 @@ export function AlbumGrid({
         role="region"
         aria-label="Album grid"
         onScroll={saveScrollPosition}
-        initialScrollTop={scrollTop}
       />
     </ErrorBoundary>
   );

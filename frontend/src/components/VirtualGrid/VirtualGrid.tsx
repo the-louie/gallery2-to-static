@@ -1,15 +1,17 @@
 /**
  * VirtualGrid Component
  *
- * A virtual scrolling grid wrapper component that efficiently renders only visible items
- * for large datasets. Uses react-virtuoso for virtualization with support for both grid
- * and list view modes, responsive column calculation, and dynamic height calculation.
+ * A responsive grid wrapper component that renders all items in a grid or list layout.
+ * Supports both grid and list view modes with responsive column calculation.
+ * The container grows to fit all children and scrolls with the page.
+ * 
+ * Scroll position tracking is supported via the onScroll callback, but scroll
+ * restoration is handled by React Router and the browser's native scroll restoration.
  *
  * @module frontend/src/components/VirtualGrid
  */
 
-import React, { useMemo, useCallback, useEffect, useRef, useState } from 'react';
-import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
 import './VirtualGrid.css';
 
 /**
@@ -30,8 +32,6 @@ export interface VirtualGridProps<T> {
   'aria-label'?: string;
   /** Optional callback when scroll position changes */
   onScroll?: (scrollTop: number) => void;
-  /** Optional initial scroll position */
-  initialScrollTop?: number;
   /** Optional item height (for fixed height items) */
   itemHeight?: number;
   /** Optional gap between items */
@@ -57,8 +57,8 @@ function calculateColumns(width: number): number {
 /**
  * VirtualGrid component
  *
- * Provides virtual scrolling for grid layouts with responsive column calculation.
- * Only renders visible items to improve performance with large datasets.
+ * Provides responsive grid layouts that grow to fit all children.
+ * Renders all items directly, allowing the container to expand and scroll with the page.
  *
  * @param props - Component props
  * @returns React component
@@ -71,16 +71,13 @@ export function VirtualGrid<T>({
   role = 'region',
   'aria-label': ariaLabel,
   onScroll,
-  initialScrollTop,
   itemHeight,
   gap = 16,
 }: VirtualGridProps<T>) {
-  const virtuosoRef = useRef<VirtuosoHandle>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== 'undefined' ? window.innerWidth : 1024,
   );
-  const [measuredItemHeight, setMeasuredItemHeight] = useState<number | null>(itemHeight || null);
 
   // Calculate columns based on window width
   const columns = useMemo(() => {
@@ -120,98 +117,20 @@ export function VirtualGrid<T>({
     };
   }, [viewMode]);
 
-  // Measure item height from first rendered item if not provided
+  // Handle page scroll for scroll position tracking
   useEffect(() => {
-    if (itemHeight || measuredItemHeight || items.length === 0) return;
+    if (!onScroll) return;
 
-    // Try to measure from first item after render
-    const timer = setTimeout(() => {
-      if (containerRef.current) {
-        const firstItem = containerRef.current.querySelector('[data-item-index="0"]');
-        if (firstItem) {
-          const height = firstItem.getBoundingClientRect().height;
-          if (height > 0) {
-            setMeasuredItemHeight(height);
-          }
-        }
-      }
-    }, 100);
+    const handlePageScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      onScroll(scrollTop);
+    };
 
-    return () => clearTimeout(timer);
-  }, [itemHeight, measuredItemHeight, items.length]);
-
-  // Use measured or provided height, with fallback
-  const finalItemHeight = itemHeight || measuredItemHeight || 200;
-
-  // Restore scroll position on mount
-  useEffect(() => {
-    if (initialScrollTop !== undefined && initialScrollTop > 0 && virtuosoRef.current) {
-      // Use requestAnimationFrame to ensure DOM is ready
-      requestAnimationFrame(() => {
-        // Use scrollTo for precise scroll position restoration
-        try {
-          virtuosoRef.current?.scrollTo({ top: initialScrollTop, behavior: 'auto' });
-        } catch (error) {
-          // Fallback if scrollTo fails
-          // Ignore errors
-        }
-      });
-    }
-  }, [initialScrollTop]);
-
-  // Handle scroll events
-  // react-virtuoso's onScroll passes a ListScrollLocation object
-  const handleScroll = useCallback(
-    (location: { listOffset: number }) => {
-      if (onScroll) {
-        // Convert listOffset to scrollTop (listOffset is negative when scrolled down)
-        const scrollTop = Math.max(0, -location.listOffset);
-        onScroll(scrollTop);
-      }
-    },
-    [onScroll],
-  );
-
-  // Render row for grid mode
-  const renderRow = useCallback(
-    (index: number) => {
-      if (viewMode === 'list') {
-        const item = items[index];
-        if (!item) return null;
-        return (
-          <div key={index} data-item-index={index}>
-            {renderItem(item, index)}
-          </div>
-        );
-      }
-
-      // Grid mode: render a row with multiple items
-      const startIndex = index * columns;
-      const rowItems = items.slice(startIndex, startIndex + columns);
-
-      return (
-        <div
-          className="virtual-grid-row"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${columns}, 1fr)`,
-            gap: `${gap}px`,
-          }}
-          data-item-index={index}
-        >
-          {rowItems.map((item, colIndex) => {
-            const itemIndex = startIndex + colIndex;
-            return (
-              <div key={itemIndex} data-item-index={itemIndex}>
-                {renderItem(item, itemIndex)}
-              </div>
-            );
-          })}
-        </div>
-      );
-    },
-    [items, columns, viewMode, renderItem, gap],
-  );
+    window.addEventListener('scroll', handlePageScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handlePageScroll);
+    };
+  }, [onScroll]);
 
   // Empty state
   if (items.length === 0) {
@@ -225,7 +144,7 @@ export function VirtualGrid<T>({
     );
   }
 
-  // List mode: use simple list
+  // List mode: render all items directly
   if (viewMode === 'list') {
     return (
       <div
@@ -234,20 +153,16 @@ export function VirtualGrid<T>({
         aria-label={ariaLabel}
         ref={containerRef}
       >
-        <Virtuoso
-          ref={virtuosoRef}
-          totalCount={items.length}
-          itemContent={renderRow}
-          style={{ height: '100%', width: '100%' }}
-          overscan={5}
-          defaultItemHeight={finalItemHeight}
-          onScroll={handleScroll}
-        />
+        {items.map((item, index) => (
+          <div key={index} data-item-index={index}>
+            {renderItem(item, index)}
+          </div>
+        ))}
       </div>
     );
   }
 
-  // Grid mode: use grid layout
+  // Grid mode: render all rows directly
   return (
     <div
       className={className ? `virtual-grid virtual-grid-grid ${className}` : 'virtual-grid virtual-grid-grid'}
@@ -255,15 +170,32 @@ export function VirtualGrid<T>({
       aria-label={ariaLabel}
       ref={containerRef}
     >
-      <Virtuoso
-        ref={virtuosoRef}
-        totalCount={totalRows}
-        itemContent={renderRow}
-        style={{ height: '100%', width: '100%' }}
-        overscan={2}
-        defaultItemHeight={finalItemHeight}
-        onScroll={handleScroll}
-      />
+      {Array.from({ length: totalRows }, (_, rowIndex) => {
+        const startIndex = rowIndex * columns;
+        const rowItems = items.slice(startIndex, startIndex + columns);
+
+        return (
+          <div
+            key={rowIndex}
+            className="virtual-grid-row"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${columns}, 1fr)`,
+              gap: `${gap}px`,
+            }}
+            data-item-index={rowIndex}
+          >
+            {rowItems.map((item, colIndex) => {
+              const itemIndex = startIndex + colIndex;
+              return (
+                <div key={itemIndex} data-item-index={itemIndex}>
+                  {renderItem(item, itemIndex)}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
     </div>
   );
 }

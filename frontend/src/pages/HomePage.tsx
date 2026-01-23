@@ -13,8 +13,7 @@ import { AlbumGrid } from '@/components/AlbumGrid';
 import { FilterPanel } from '@/components/FilterPanel';
 import { ViewModeToggle } from '@/components/ViewModeToggle';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { findRootAlbumId } from '@/utils/dataLoader';
-import type { DataLoadError } from '@/utils/dataLoader';
+import { findRootAlbumId, DataLoadError } from '@/utils/dataLoader';
 import type { Album } from '@/types';
 
 /**

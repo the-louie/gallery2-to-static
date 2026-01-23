@@ -8,7 +8,6 @@
  */
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { ErrorFallbackProps } from './ErrorBoundary';
 import './ErrorFallback.css';
 
@@ -26,11 +25,12 @@ export function ErrorFallback({
   resetError,
   errorInfo,
 }: ErrorFallbackProps): JSX.Element {
-  const navigate = useNavigate();
   const isDevelopment = import.meta.env.MODE === 'development';
 
   const handleGoHome = (): void => {
-    navigate('/');
+    // Use window.location.hash for navigation since ErrorBoundary may be outside Router context
+    // This works with HashRouter and doesn't require Router context
+    window.location.hash = '#/';
   };
 
   return (

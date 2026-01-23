@@ -7,7 +7,7 @@
 
 .virtual-grid {
   width: 100%;
-  height: 100%;
+  /* Remove fixed height to allow container to grow to fit all children */
   min-height: 400px;
 }
 
@@ -34,6 +34,11 @@
 /* List view item spacing */
 .virtual-grid-list > div {
   width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.virtual-grid-list > div:last-child {
+  margin-bottom: 0;
 }
 
 /* Loading states */

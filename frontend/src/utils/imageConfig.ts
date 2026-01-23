@@ -11,12 +11,12 @@
  * 1. Runtime config file: `/image-config.json` (highest priority)
  * 2. Environment variable: `VITE_IMAGE_BASE_URL`
  * 3. Default: `/images` (fallback)
- * 
+ *
  * ## Usage
- * 
+ *
  * ```typescript
  * import { getImageBaseUrl } from './utils/imageConfig';
- * 
+ *
  * // Get the configured base URL (cached after first call)
  * const baseUrl = getImageBaseUrl();
  * // Returns: "/images" (default) or configured value
@@ -143,9 +143,9 @@ function isValidImageConfig(data: unknown): data is ImageConfig {
  * 1. Runtime config file: `/image-config.json`
  * 2. Environment variable: `VITE_IMAGE_BASE_URL`
  * 3. Default: `/images`
- * 
+ *
  * @returns Promise resolving to normalized base URL
- * 
+ *
  * @example
  * ```typescript
  * const baseUrl = await loadImageConfig();
