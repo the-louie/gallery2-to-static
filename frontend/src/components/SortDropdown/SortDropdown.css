@@ -27,16 +27,21 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, background-image 0.15s ease;
   min-height: 44px;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
 }
 
+/* Update arrow color for dark theme */
+[data-theme="dark"] .sort-dropdown {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23e5e5e5' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+}
+
 .sort-dropdown:hover {
   background-color: var(--sort-dropdown-bg-hover, #f0f0f0);
-  border-color: var(--sort-dropdown-border-hover, #ccc);
+  border-color: var(--sort-dropdown-border-hover, #cccccc);
 }
 
 .sort-dropdown:focus {
@@ -64,24 +69,6 @@
   color: var(--sort-dropdown-option-color, #333);
 }
 
-/* Dark theme support */
-@media (prefers-color-scheme: dark) {
-  .sort-dropdown {
-    --sort-dropdown-border: #444;
-    --sort-dropdown-bg: #2a2a2a;
-    --sort-dropdown-color: #e0e0e0;
-    --sort-dropdown-bg-hover: #333;
-    --sort-dropdown-border-hover: #555;
-    --sort-dropdown-focus: #4a9eff;
-    --sort-dropdown-bg-active: #3a3a3a;
-    --sort-dropdown-option-bg: #2a2a2a;
-    --sort-dropdown-option-color: #e0e0e0;
-  }
-
-  .sort-dropdown {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23e0e0e0' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  }
-}
 
 /* Mobile styles */
 @media (max-width: 767px) {
