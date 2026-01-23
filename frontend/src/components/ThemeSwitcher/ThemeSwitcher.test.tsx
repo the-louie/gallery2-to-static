@@ -46,7 +46,7 @@ describe('ThemeSwitcher', () => {
   });
 
   it('displays sun icon for light theme', () => {
-    render(<ThemeSwitcher />, { defaultThemePreference: 'light' });
+    render(<ThemeSwitcher />, { defaultTheme: 'light' });
 
     const button = screen.getByRole('button');
     expect(button).toHaveTextContent('light');
@@ -57,7 +57,7 @@ describe('ThemeSwitcher', () => {
   });
 
   it('displays moon icon for dark theme', () => {
-    render(<ThemeSwitcher />, { defaultThemePreference: 'dark' });
+    render(<ThemeSwitcher />, { defaultTheme: 'dark' });
 
     const button = screen.getByRole('button');
     expect(button).toHaveTextContent('dark');
@@ -67,21 +67,10 @@ describe('ThemeSwitcher', () => {
     expect(svg).toBeInTheDocument();
   });
 
-  it('displays auto icon for system preference', () => {
-    render(<ThemeSwitcher />, { defaultThemePreference: 'system' });
-
-    const button = screen.getByRole('button');
-    expect(button).toHaveTextContent('system');
-
-    // Check for SVG icon (computer/monitor icon)
-    const svg = button.querySelector('svg');
-    expect(svg).toBeInTheDocument();
-  });
-
-  it('cycles through preferences on click', async () => {
+  it('cycles through themes on click', async () => {
     const user = userEvent.setup();
 
-    render(<ThemeSwitcher />, { defaultThemePreference: 'light' });
+    render(<ThemeSwitcher />, { defaultTheme: 'light' });
 
     const button = screen.getByRole('button');
 
@@ -90,11 +79,7 @@ describe('ThemeSwitcher', () => {
     await user.click(button);
     expect(button).toHaveTextContent('dark');
 
-    // Dark -> System
-    await user.click(button);
-    expect(button).toHaveTextContent('system');
-
-    // System -> Light
+    // Dark -> Light
     await user.click(button);
     expect(button).toHaveTextContent('light');
   });
@@ -102,7 +87,7 @@ describe('ThemeSwitcher', () => {
   it('responds to keyboard Enter', async () => {
     const user = userEvent.setup();
 
-    render(<ThemeSwitcher />, { defaultThemePreference: 'light' });
+    render(<ThemeSwitcher />, { defaultTheme: 'light' });
 
     const button = screen.getByRole('button');
     button.focus();
@@ -115,7 +100,7 @@ describe('ThemeSwitcher', () => {
   it('responds to keyboard Space', async () => {
     const user = userEvent.setup();
 
-    render(<ThemeSwitcher />, { defaultThemePreference: 'light' });
+    render(<ThemeSwitcher />, { defaultTheme: 'light' });
 
     const button = screen.getByRole('button');
     button.focus();
@@ -126,7 +111,7 @@ describe('ThemeSwitcher', () => {
   });
 
   it('has correct aria-label for light mode', () => {
-    render(<ThemeSwitcher />, { defaultThemePreference: 'light' });
+    render(<ThemeSwitcher />, { defaultTheme: 'light' });
 
     const button = screen.getByRole('button');
     expect(button).toHaveAttribute(
@@ -136,22 +121,12 @@ describe('ThemeSwitcher', () => {
   });
 
   it('has correct aria-label for dark mode', () => {
-    render(<ThemeSwitcher />, { defaultThemePreference: 'dark' });
+    render(<ThemeSwitcher />, { defaultTheme: 'dark' });
 
     const button = screen.getByRole('button');
     expect(button).toHaveAttribute(
       'aria-label',
-      'Theme: Dark mode. Click to switch to system mode.'
-    );
-  });
-
-  it('has correct aria-label for system mode', () => {
-    render(<ThemeSwitcher />, { defaultThemePreference: 'system' });
-
-    const button = screen.getByRole('button');
-    expect(button).toHaveAttribute(
-      'aria-label',
-      'Theme: System mode. Click to switch to light mode.'
+      'Theme: Dark mode. Click to switch to light mode.'
     );
   });
 
@@ -164,7 +139,7 @@ describe('ThemeSwitcher', () => {
   });
 
   it('has title attribute', () => {
-    render(<ThemeSwitcher />, { defaultThemePreference: 'light' });
+    render(<ThemeSwitcher />, { defaultTheme: 'light' });
 
     const button = screen.getByRole('button');
     expect(button).toHaveAttribute('title', 'Theme: light');

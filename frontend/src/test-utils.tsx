@@ -3,7 +3,7 @@ import { render, RenderOptions } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import { ThemeProvider, ViewModeProvider, type ThemePreference } from './contexts';
+import { ThemeProvider, ViewModeProvider, type Theme } from './contexts';
 
 // Re-export everything from @testing-library/react
 export * from '@testing-library/react';
@@ -20,8 +20,8 @@ export { userEvent };
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   /** Initial route entries for MemoryRouter (default: ['/']) */
   initialEntries?: string[];
-  /** Default theme preference for testing (default: 'light') */
-  defaultThemePreference?: ThemePreference;
+  /** Default theme for testing (default: 'light') */
+  defaultTheme?: Theme;
 }
 
 /**
@@ -33,20 +33,20 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
  * @param ui - The React element to render
  * @param options - Render options including custom options
  * @param options.initialEntries - Initial route entries for MemoryRouter (default: ['/'])
- * @param options.defaultThemePreference - Default theme preference (default: 'light')
+ * @param options.defaultTheme - Default theme (default: 'light')
  * @returns Render result with all testing utilities
  */
 function customRender(ui: ReactElement, options?: CustomRenderOptions) {
   const {
     initialEntries = ['/'],
-    defaultThemePreference = 'light',
+    defaultTheme = 'light',
     ...renderOptions
   } = options || {};
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => {
     return (
       <MemoryRouter initialEntries={initialEntries}>
-        <ThemeProvider defaultPreference={defaultThemePreference}>
+        <ThemeProvider defaultTheme={defaultTheme}>
           <ViewModeProvider>
             {children}
           </ViewModeProvider>

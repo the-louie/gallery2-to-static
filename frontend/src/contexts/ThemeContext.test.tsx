@@ -10,7 +10,6 @@
  * 1. **Basic Theme Switching**
  *    - [ ] Switch from light to dark theme - verify smooth transition
  *    - [ ] Switch from dark to light theme - verify smooth transition
- *    - [ ] Switch to system preference - verify theme follows system
  *    - [ ] Verify no flash of unstyled content (FOUC) on page load
  *
  * 2. **Transition Smoothness**
@@ -26,25 +25,19 @@
  *    - [ ] Verify theme still switches correctly (just without animation)
  *    - [ ] Verify no visual glitches when transitions are disabled
  *
- * 4. **System Preference Following**
- *    - [ ] Set theme preference to "system"
- *    - [ ] Change system theme preference (OS settings)
- *    - [ ] Verify application theme updates automatically
- *    - [ ] Verify transition occurs when system preference changes
- *
- * 5. **Error Scenarios**
+ * 4. **Error Scenarios**
  *    - [ ] Test in private browsing mode (localStorage unavailable)
  *    - [ ] Verify theme still works (falls back gracefully)
  *    - [ ] Verify no errors in console (production mode)
  *    - [ ] Verify theme persists correctly when localStorage becomes available
  *
- * 6. **Performance**
+ * 5. **Performance**
  *    - [ ] Verify transitions don't cause layout shifts
  *    - [ ] Verify transitions don't impact scroll performance
  *    - [ ] Verify transitions don't cause jank or stuttering
  *    - [ ] Test on lower-end devices if available
  *
- * 7. **Browser Compatibility**
+ * 6. **Browser Compatibility**
  *    - [ ] Test in Chrome/Edge
  *    - [ ] Test in Firefox
  *    - [ ] Test in Safari
@@ -55,13 +48,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
-import { ThemeProvider, useTheme, type ThemePreference } from './ThemeContext';
+import { ThemeProvider, useTheme, type Theme } from './ThemeContext';
+import type { ThemeName } from '../config/themes';
 
 // Helper to create wrapper with ThemeProvider
-function createWrapper(defaultPreference?: ThemePreference) {
+function createWrapper(defaultTheme?: ThemeName) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return (
-      <ThemeProvider defaultPreference={defaultPreference}>
+      <ThemeProvider defaultTheme={defaultTheme}>
         {children}
       </ThemeProvider>
     );
@@ -69,28 +63,11 @@ function createWrapper(defaultPreference?: ThemePreference) {
 }
 
 describe('ThemeContext', () => {
-  let mockMatchMedia: ReturnType<typeof vi.fn>;
-
   beforeEach(() => {
     // Clear localStorage
     localStorage.clear();
-
-    // Mock matchMedia
-    mockMatchMedia = vi.fn((query: string) => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
-
-    Object.defineProperty(window, 'matchMedia', {
-      writable: true,
-      value: mockMatchMedia,
-    });
+    // Clear migration flag
+    localStorage.removeItem('gallery-theme-migrated');
 
     // Reset document attribute
     document.documentElement.removeAttribute('data-theme');
@@ -99,6 +76,8 @@ describe('ThemeContext', () => {
   afterEach(() => {
     vi.clearAllMocks();
     document.documentElement.removeAttribute('data-theme');
+    localStorage.clear();
+    localStorage.removeItem('gallery-theme-migrated');
   });
 
   describe('ThemeProvider', () => {
@@ -108,26 +87,25 @@ describe('ThemeContext', () => {
       });
 
       expect(result.current).toHaveProperty('theme');
-      expect(result.current).toHaveProperty('preference');
-      expect(result.current).toHaveProperty('setPreference');
+      expect(result.current).toHaveProperty('setTheme');
+      expect(result.current).toHaveProperty('availableThemes');
       expect(result.current).toHaveProperty('isDark');
       expect(result.current).toHaveProperty('isLight');
     });
 
-    it('defaults to system preference', () => {
+    it('defaults to light theme', () => {
       const { result } = renderHook(() => useTheme(), {
         wrapper: createWrapper(),
       });
 
-      expect(result.current.preference).toBe('system');
+      expect(result.current.theme).toBe('light');
     });
 
-    it('uses provided default preference', () => {
+    it('uses provided default theme', () => {
       const { result } = renderHook(() => useTheme(), {
         wrapper: createWrapper('dark'),
       });
 
-      expect(result.current.preference).toBe('dark');
       expect(result.current.theme).toBe('dark');
     });
 
@@ -136,8 +114,7 @@ describe('ThemeContext', () => {
         wrapper: createWrapper('light'),
       });
 
-      // Light theme removes the data-theme attribute
-      expect(document.documentElement.getAttribute('data-theme')).toBeNull();
+      expect(document.documentElement.getAttribute('data-theme')).toBe('light');
     });
 
     it('applies dark theme to root element', () => {
@@ -148,47 +125,30 @@ describe('ThemeContext', () => {
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
     });
 
-    it('persists preference to localStorage', () => {
+    it('persists theme to localStorage', () => {
       const { result } = renderHook(() => useTheme(), {
         wrapper: createWrapper(),
       });
 
       act(() => {
-        result.current.setPreference('dark');
+        result.current.setTheme('dark');
       });
 
-      expect(JSON.parse(localStorage.getItem('gallery-theme-preference')!)).toBe('dark');
+      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('dark');
     });
 
-    it('reads preference from localStorage on mount', () => {
-      localStorage.setItem('gallery-theme-preference', JSON.stringify('dark'));
+    it('reads theme from localStorage on mount', () => {
+      localStorage.setItem('gallery-theme', JSON.stringify('dark'));
+      localStorage.setItem('gallery-theme-migrated', 'true');
 
       const { result } = renderHook(() => useTheme(), {
         wrapper: createWrapper(),
       });
 
-      expect(result.current.preference).toBe('dark');
       expect(result.current.theme).toBe('dark');
     });
 
-    it('uses system preference when preference is system', () => {
-      // Mock system preference as dark
-      mockMatchMedia.mockReturnValue({
-        matches: true,
-        media: '(prefers-color-scheme: dark)',
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      });
-
-      const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('system'),
-      });
-
-      expect(result.current.preference).toBe('system');
-      expect(result.current.theme).toBe('dark');
-    });
-
-    it('setPreference updates theme', () => {
+    it('setTheme updates theme', () => {
       const { result } = renderHook(() => useTheme(), {
         wrapper: createWrapper('light'),
       });
@@ -196,11 +156,22 @@ describe('ThemeContext', () => {
       expect(result.current.theme).toBe('light');
 
       act(() => {
-        result.current.setPreference('dark');
+        result.current.setTheme('dark');
       });
 
       expect(result.current.theme).toBe('dark');
-      expect(result.current.preference).toBe('dark');
+    });
+
+    it('provides available themes', () => {
+      const { result } = renderHook(() => useTheme(), {
+        wrapper: createWrapper(),
+      });
+
+      expect(result.current.availableThemes).toBeDefined();
+      expect(Array.isArray(result.current.availableThemes)).toBe(true);
+      expect(result.current.availableThemes.length).toBeGreaterThan(0);
+      expect(result.current.availableThemes.some((t) => t.name === 'light')).toBe(true);
+      expect(result.current.availableThemes.some((t) => t.name === 'dark')).toBe(true);
     });
   });
 
@@ -235,94 +206,120 @@ describe('ThemeContext', () => {
     });
   });
 
-  describe('Theme Resolution', () => {
-    it('resolves light preference to light theme', () => {
+  describe('Theme Validation', () => {
+    it('validates theme name and falls back to default for invalid theme', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Store invalid theme
+      localStorage.setItem('gallery-theme', JSON.stringify('invalid-theme'));
+      localStorage.setItem('gallery-theme-migrated', 'true');
+
+      const { result } = renderHook(() => useTheme(), {
+        wrapper: createWrapper(),
+      });
+
+      // Should fall back to default (light)
+      expect(result.current.theme).toBe('light');
+
+      consoleSpy.mockRestore();
+    });
+
+    it('ignores invalid theme name in setTheme', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
       const { result } = renderHook(() => useTheme(), {
         wrapper: createWrapper('light'),
       });
 
-      expect(result.current.theme).toBe('light');
-    });
+      const initialTheme = result.current.theme;
 
-    it('resolves dark preference to dark theme', () => {
-      const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('dark'),
+      act(() => {
+        // @ts-expect-error - Testing invalid theme name
+        result.current.setTheme('invalid-theme');
       });
 
-      expect(result.current.theme).toBe('dark');
-    });
+      // Theme should not change
+      expect(result.current.theme).toBe(initialTheme);
 
-    it('resolves system preference to light when system prefers light', () => {
-      mockMatchMedia.mockReturnValue({
-        matches: false,
-        media: '(prefers-color-scheme: dark)',
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      });
-
-      const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('system'),
-      });
-
-      expect(result.current.theme).toBe('light');
-    });
-
-    it('resolves system preference to dark when system prefers dark', () => {
-      mockMatchMedia.mockReturnValue({
-        matches: true,
-        media: '(prefers-color-scheme: dark)',
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      });
-
-      const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('system'),
-      });
-
-      expect(result.current.theme).toBe('dark');
+      consoleSpy.mockRestore();
     });
   });
 
-  describe('Preference Cycling', () => {
-    it('cycles from light to dark', () => {
+  describe('Migration', () => {
+    it('migrates from old preference system - light', () => {
+      localStorage.setItem('gallery-theme-preference', JSON.stringify('light'));
+
       const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('light'),
+        wrapper: createWrapper(),
       });
 
-      act(() => {
-        result.current.setPreference('dark');
-      });
-
-      expect(result.current.preference).toBe('dark');
+      expect(result.current.theme).toBe('light');
+      expect(localStorage.getItem('gallery-theme-preference')).toBeNull();
+      expect(localStorage.getItem('gallery-theme-migrated')).toBe('true');
+      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('light');
     });
 
-    it('cycles from dark to system', () => {
+    it('migrates from old preference system - dark', () => {
+      localStorage.setItem('gallery-theme-preference', JSON.stringify('dark'));
+
       const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('dark'),
+        wrapper: createWrapper(),
       });
 
-      act(() => {
-        result.current.setPreference('system');
-      });
-
-      expect(result.current.preference).toBe('system');
+      expect(result.current.theme).toBe('dark');
+      expect(localStorage.getItem('gallery-theme-preference')).toBeNull();
+      expect(localStorage.getItem('gallery-theme-migrated')).toBe('true');
+      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('dark');
     });
 
-    it('cycles from system to light', () => {
+    it('migrates from old preference system - system defaults to light', () => {
+      localStorage.setItem('gallery-theme-preference', JSON.stringify('system'));
+
       const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('system'),
+        wrapper: createWrapper(),
       });
 
-      act(() => {
-        result.current.setPreference('light');
+      expect(result.current.theme).toBe('light');
+      expect(localStorage.getItem('gallery-theme-preference')).toBeNull();
+      expect(localStorage.getItem('gallery-theme-migrated')).toBe('true');
+      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('light');
+    });
+
+    it('does not migrate if already migrated', () => {
+      localStorage.setItem('gallery-theme', JSON.stringify('dark'));
+      localStorage.setItem('gallery-theme-migrated', 'true');
+      localStorage.setItem('gallery-theme-preference', JSON.stringify('light'));
+
+      const { result } = renderHook(() => useTheme(), {
+        wrapper: createWrapper(),
       });
 
-      expect(result.current.preference).toBe('light');
+      // Should use existing theme, not migrate
+      expect(result.current.theme).toBe('dark');
+      // Old preference should still exist (not migrated again)
+      expect(localStorage.getItem('gallery-theme-preference')).toBeTruthy();
+    });
+
+    it('handles corrupted old preference data gracefully', () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      localStorage.setItem('gallery-theme-preference', 'invalid json{');
+
+      const { result } = renderHook(() => useTheme(), {
+        wrapper: createWrapper(),
+      });
+
+      // Should fall back to default
+      expect(result.current.theme).toBe('light');
+      expect(localStorage.getItem('gallery-theme-preference')).toBeNull();
+      expect(localStorage.getItem('gallery-theme-migrated')).toBe('true');
+
+      consoleSpy.mockRestore();
     });
   });
 
   describe('Error Handling', () => {
-    it('uses defaultPreference when localStorage is unavailable', () => {
+    it('uses default theme when localStorage is unavailable', () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       // Mock localStorage to be unavailable
@@ -336,8 +333,8 @@ describe('ThemeContext', () => {
         wrapper: createWrapper('dark'),
       });
 
-      // Should use defaultPreference when localStorage fails
-      expect(result.current.theme).toBe('dark'); // Uses defaultPreference
+      // Should use defaultTheme when localStorage fails
+      expect(result.current.theme).toBe('dark');
 
       // Restore
       Object.defineProperty(window, 'localStorage', {
@@ -352,43 +349,15 @@ describe('ThemeContext', () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       // Store corrupted data
-      localStorage.setItem('gallery-theme-preference', 'invalid json{');
+      localStorage.setItem('gallery-theme', 'invalid json{');
+      localStorage.setItem('gallery-theme-migrated', 'true');
 
       const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('system'),
+        wrapper: createWrapper(),
       });
 
-      // Should fall back to system preference (which resolves to light or dark)
-      expect(result.current.preference).toBe('system');
-      expect(['light', 'dark']).toContain(result.current.theme);
-
-      consoleSpy.mockRestore();
-    });
-
-    it('handles matchMedia failures gracefully', () => {
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-      // Mock matchMedia to throw
-      const originalMatchMedia = window.matchMedia;
-      Object.defineProperty(window, 'matchMedia', {
-        writable: true,
-        value: () => {
-          throw new Error('matchMedia failed');
-        },
-      });
-
-      const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('system'),
-      });
-
-      // Should fall back to light theme
+      // Should fall back to default theme
       expect(result.current.theme).toBe('light');
-
-      // Restore
-      Object.defineProperty(window, 'matchMedia', {
-        writable: true,
-        value: originalMatchMedia,
-      });
 
       consoleSpy.mockRestore();
     });
@@ -396,24 +365,15 @@ describe('ThemeContext', () => {
     it('always returns a valid theme even on errors', () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-      // Mock both localStorage and matchMedia to fail
+      // Mock localStorage to fail
       const originalLocalStorage = window.localStorage;
-      const originalMatchMedia = window.matchMedia;
-
       Object.defineProperty(window, 'localStorage', {
         value: undefined,
         writable: true,
       });
 
-      Object.defineProperty(window, 'matchMedia', {
-        writable: true,
-        value: () => {
-          throw new Error('matchMedia failed');
-        },
-      });
-
       const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('system'),
+        wrapper: createWrapper(),
       });
 
       // Should always return a valid theme (light or dark)
@@ -423,11 +383,6 @@ describe('ThemeContext', () => {
       Object.defineProperty(window, 'localStorage', {
         value: originalLocalStorage,
         writable: true,
-      });
-
-      Object.defineProperty(window, 'matchMedia', {
-        writable: true,
-        value: originalMatchMedia,
       });
 
       consoleSpy.mockRestore();
@@ -459,18 +414,18 @@ describe('ThemeContext', () => {
       expect(result.current.theme).toBe('light');
 
       act(() => {
-        result.current.setPreference('dark');
+        result.current.setTheme('dark');
       });
 
       expect(result.current.theme).toBe('dark');
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
 
       act(() => {
-        result.current.setPreference('light');
+        result.current.setTheme('light');
       });
 
       expect(result.current.theme).toBe('light');
-      expect(document.documentElement.getAttribute('data-theme')).toBeNull();
+      expect(document.documentElement.getAttribute('data-theme')).toBe('light');
     });
 
     it('applies theme synchronously to prevent FOUC', () => {
@@ -485,73 +440,30 @@ describe('ThemeContext', () => {
   });
 
   describe('Integration Tests', () => {
-    it('complete theme switching flow: light -> dark -> system -> light', () => {
+    it('complete theme switching flow: light -> dark -> light', () => {
       const { result } = renderHook(() => useTheme(), {
         wrapper: createWrapper('light'),
       });
 
       // Start with light
       expect(result.current.theme).toBe('light');
-      expect(result.current.preference).toBe('light');
-      expect(document.documentElement.getAttribute('data-theme')).toBeNull();
+      expect(document.documentElement.getAttribute('data-theme')).toBe('light');
 
       // Switch to dark
       act(() => {
-        result.current.setPreference('dark');
+        result.current.setTheme('dark');
       });
       expect(result.current.theme).toBe('dark');
-      expect(result.current.preference).toBe('dark');
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
-      expect(JSON.parse(localStorage.getItem('gallery-theme-preference')!)).toBe('dark');
-
-      // Switch to system
-      act(() => {
-        result.current.setPreference('system');
-      });
-      expect(result.current.preference).toBe('system');
-      expect(['light', 'dark']).toContain(result.current.theme);
-      expect(JSON.parse(localStorage.getItem('gallery-theme-preference')!)).toBe('system');
+      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('dark');
 
       // Switch back to light
       act(() => {
-        result.current.setPreference('light');
+        result.current.setTheme('light');
       });
       expect(result.current.theme).toBe('light');
-      expect(result.current.preference).toBe('light');
-      expect(document.documentElement.getAttribute('data-theme')).toBeNull();
-      expect(JSON.parse(localStorage.getItem('gallery-theme-preference')!)).toBe('light');
-    });
-
-    it('system preference following: updates when system preference changes', () => {
-      const mockMatchMedia = vi.fn((query: string) => ({
-        matches: false,
-        media: query,
-        addEventListener: vi.fn((event: string, handler: (event: MediaQueryListEvent) => void) => {
-          if (event === 'change') {
-            // Simulate system preference change after a delay
-            setTimeout(() => {
-              handler({ matches: true } as MediaQueryListEvent);
-            }, 100);
-          }
-        }),
-        removeEventListener: vi.fn(),
-      }));
-
-      Object.defineProperty(window, 'matchMedia', {
-        writable: true,
-        value: mockMatchMedia,
-      });
-
-      const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('system'),
-      });
-
-      // Initially should be light (system prefers light)
-      expect(result.current.preference).toBe('system');
-      expect(result.current.theme).toBe('light');
-
-      // Note: Actual system preference change testing requires more complex setup
-      // This test verifies the integration is set up correctly
+      expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('light');
     });
 
     it('error recovery scenario: localStorage fails then recovers', () => {
@@ -568,7 +480,7 @@ describe('ThemeContext', () => {
         wrapper: createWrapper('dark'),
       });
 
-      // Should work with defaultPreference when localStorage unavailable
+      // Should work with defaultTheme when localStorage unavailable
       expect(result.current.theme).toBe('dark');
 
       // Restore localStorage
@@ -580,13 +492,13 @@ describe('ThemeContext', () => {
       // Rerender to trigger localStorage read
       rerender();
 
-      // Should now be able to persist preferences
+      // Should now be able to persist themes
       act(() => {
-        result.current.setPreference('light');
+        result.current.setTheme('light');
       });
 
-      expect(result.current.preference).toBe('light');
-      expect(JSON.parse(localStorage.getItem('gallery-theme-preference')!)).toBe('light');
+      expect(result.current.theme).toBe('light');
+      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('light');
 
       consoleSpy.mockRestore();
     });
@@ -595,26 +507,23 @@ describe('ThemeContext', () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       // Set corrupted data
-      localStorage.setItem('gallery-theme-preference', 'invalid json{');
+      localStorage.setItem('gallery-theme', 'invalid json{');
+      localStorage.setItem('gallery-theme-migrated', 'true');
 
       const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('system'),
+        wrapper: createWrapper(),
       });
 
       // Should handle corrupted data gracefully
-      expect(result.current.preference).toBe('system');
-      expect(['light', 'dark']).toContain(result.current.theme);
-
-      // Corrupted data should be cleaned up
-      expect(localStorage.getItem('gallery-theme-preference')).toBeNull();
+      expect(result.current.theme).toBe('light');
 
       // Now set valid data
       act(() => {
-        result.current.setPreference('dark');
+        result.current.setTheme('dark');
       });
 
-      expect(result.current.preference).toBe('dark');
-      expect(JSON.parse(localStorage.getItem('gallery-theme-preference')!)).toBe('dark');
+      expect(result.current.theme).toBe('dark');
+      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('dark');
 
       consoleSpy.mockRestore();
     });

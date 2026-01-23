@@ -170,13 +170,15 @@ export interface NavigationState {
 }
 
 /**
- * Note: Theme-related types are defined in frontend/src/contexts/ThemeContext.tsx
- * - Theme: 'light' | 'dark'
- * - ThemePreference: 'light' | 'dark' | 'system'
- * - ThemeContextValue: interface with theme, preference, setPreference, isDark, isLight
+ * Note: Theme-related types are defined in:
+ * - frontend/src/contexts/ThemeContext.tsx: Theme, ThemeContextValue
+ * - frontend/src/config/themes.ts: ThemeName, ThemeDefinition
  *
- * The old types below (ThemeMode, ThemeColors, ThemeConfig, ThemeState) were from
- * an earlier design and are not used in the current implementation. They are kept
+ * The current theme system uses theme names (e.g., 'light', 'dark') instead of preferences.
+ * ThemeContextValue provides: theme, setTheme, availableThemes, isDark, isLight
+ *
+ * The old types below (ThemeMode, ThemeColors, ThemeConfig, ThemeState, ThemeSwitcherProps) were from
+ * earlier designs and are not used in the current implementation. They are kept
  * for reference but should not be imported or used.
  */
 
@@ -436,9 +438,9 @@ export interface BreadcrumbProps {
 }
 
 /**
- * @deprecated Use ThemeSwitcherProps from frontend/src/components/ThemeSwitcher/ThemeSwitcher.tsx instead
- * This interface has a different structure and is not used by the actual ThemeSwitcher component.
- * The actual component only accepts className prop and uses useTheme hook internally.
+ * @deprecated ThemeSwitcher has been replaced by ThemeDropdown.
+ * Use ThemeDropdownProps from frontend/src/components/ThemeDropdown/ThemeDropdown.tsx instead.
+ * ThemeDropdown only accepts className prop and uses useTheme hook internally.
  */
 export interface ThemeSwitcherProps {
   currentMode: ThemeMode;

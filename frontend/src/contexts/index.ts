@@ -13,7 +13,6 @@ export {
 
 export type {
   Theme,
-  ThemePreference,
   ThemeContextValue,
   ThemeProviderProps,
 } from './ThemeContext';

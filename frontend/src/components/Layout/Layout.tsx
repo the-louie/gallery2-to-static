@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ThemeSwitcher } from '../ThemeSwitcher';
+import { ThemeDropdown } from '../ThemeDropdown';
 import { SearchBar } from '../SearchBar';
 import { useSiteMetadata } from '@/hooks/useSiteMetadata';
 import './Layout.css';
@@ -70,7 +70,7 @@ export function Layout({ children, className }: LayoutProps) {
           </nav>
           <div className="layout-header-actions">
             <SearchBar />
-            <ThemeSwitcher />
+            <ThemeDropdown />
           </div>
         </div>
       </header>

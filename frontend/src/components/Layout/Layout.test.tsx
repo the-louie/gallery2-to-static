@@ -285,19 +285,19 @@ describe('Layout Responsive Design', () => {
   });
 });
 
-describe('Layout Theme Switcher', () => {
-  it('renders theme switcher in header', () => {
+describe('Layout Theme Dropdown', () => {
+  it('renders theme dropdown in header', () => {
     render(
       <Layout>
         <div>Content</div>
       </Layout>,
     );
 
-    const themeSwitcher = screen.getByRole('button', { name: /theme/i });
-    expect(themeSwitcher).toBeInTheDocument();
+    const themeDropdown = screen.getByRole('button', { name: /theme/i });
+    expect(themeDropdown).toBeInTheDocument();
   });
 
-  it('theme switcher is in header actions area', () => {
+  it('theme dropdown is in header actions area', () => {
     const { container } = render(
       <Layout>
         <div>Content</div>
@@ -307,11 +307,11 @@ describe('Layout Theme Switcher', () => {
     const headerActions = container.querySelector('.layout-header-actions');
     expect(headerActions).toBeInTheDocument();
 
-    const themeSwitcher = headerActions?.querySelector('.theme-switcher');
-    expect(themeSwitcher).toBeInTheDocument();
+    const themeDropdown = headerActions?.querySelector('.theme-dropdown');
+    expect(themeDropdown).toBeInTheDocument();
   });
 
-  it('theme switcher is keyboard accessible', async () => {
+  it('theme dropdown is keyboard accessible', async () => {
     const user = userEvent.setup();
 
     render(
@@ -320,41 +320,41 @@ describe('Layout Theme Switcher', () => {
       </Layout>,
     );
 
-    const themeSwitcher = screen.getByRole('button', { name: /theme/i });
-    themeSwitcher.focus();
-    expect(themeSwitcher).toHaveFocus();
+    const themeDropdown = screen.getByRole('button', { name: /theme/i });
+    themeDropdown.focus();
+    expect(themeDropdown).toHaveFocus();
 
     // Should be able to activate with keyboard
     await user.keyboard('{Enter}');
-    // The button should still be accessible after activation
-    expect(themeSwitcher).toBeInTheDocument();
+    // The dropdown menu should open
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
   });
 
-  it('theme switcher cycles through themes on click', async () => {
+  it('theme dropdown allows selecting themes', async () => {
     const user = userEvent.setup();
 
     render(
       <Layout>
         <div>Content</div>
       </Layout>,
-      { defaultThemePreference: 'light' },
+      { defaultTheme: 'light' },
     );
 
-    const themeSwitcher = screen.getByRole('button', { name: /theme/i });
+    const themeDropdown = screen.getByRole('button', { name: /theme/i });
 
     // Initial state: light
-    expect(themeSwitcher).toHaveTextContent('light');
+    expect(themeDropdown).toHaveTextContent('Light');
 
-    // Click to change to dark
-    await user.click(themeSwitcher);
-    expect(themeSwitcher).toHaveTextContent('dark');
+    // Open dropdown
+    await user.click(themeDropdown);
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
 
-    // Click to change to system
-    await user.click(themeSwitcher);
-    expect(themeSwitcher).toHaveTextContent('system');
+    // Select dark theme
+    const darkOption = screen.getByRole('option', { name: /dark/i });
+    await user.click(darkOption);
 
-    // Click to change back to light
-    await user.click(themeSwitcher);
-    expect(themeSwitcher).toHaveTextContent('light');
+    // Theme should be dark now
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(themeDropdown).toHaveTextContent('Dark');
   });
 });

@@ -1,12 +1,12 @@
 /**
  * Theme Switcher Component
  *
- * An accessible button that allows users to cycle through theme preferences:
- * light → dark → system → light
+ * @deprecated This component is deprecated. Use ThemeDropdown instead.
+ * An accessible button that allows users to cycle through themes: light → dark → light
  *
  * ## Features
  *
- * - Three theme modes: light, dark, and system (follows OS preference)
+ * - Two theme modes: light and dark
  * - Accessible with proper ARIA attributes
  * - Keyboard navigable (Enter, Space)
  * - Visual icons for each mode
@@ -35,7 +35,7 @@
  */
 
 import React from 'react';
-import { useTheme, type ThemePreference } from '../../contexts/ThemeContext';
+import { useTheme, type Theme } from '../../contexts/ThemeContext';
 import './ThemeSwitcher.css';
 
 /**
@@ -47,36 +47,25 @@ export interface ThemeSwitcherProps {
 }
 
 /**
- * Get the next preference in the cycle
- * @param current - Current preference
- * @returns Next preference in cycle
+ * Get the next theme in the cycle
+ * @param current - Current theme
+ * @returns Next theme in cycle
  */
-function getNextPreference(current: ThemePreference): ThemePreference {
-  switch (current) {
-    case 'light':
-      return 'dark';
-    case 'dark':
-      return 'system';
-    case 'system':
-      return 'light';
-    default:
-      return 'system';
-  }
+function getNextTheme(current: Theme): Theme {
+  return current === 'light' ? 'dark' : 'light';
 }
 
 /**
- * Get aria-label for the button based on current preference
- * @param preference - Current preference
+ * Get aria-label for the button based on current theme
+ * @param theme - Current theme
  * @returns Descriptive label for screen readers
  */
-function getAriaLabel(preference: ThemePreference): string {
-  switch (preference) {
+function getAriaLabel(theme: Theme): string {
+  switch (theme) {
     case 'light':
       return 'Theme: Light mode. Click to switch to dark mode.';
     case 'dark':
-      return 'Theme: Dark mode. Click to switch to system mode.';
-    case 'system':
-      return 'Theme: System mode. Click to switch to light mode.';
+      return 'Theme: Dark mode. Click to switch to light mode.';
     default:
       return 'Toggle theme';
   }
@@ -155,7 +144,8 @@ function SystemIcon(): React.ReactElement {
 /**
  * Theme Switcher Component
  *
- * Button that cycles through theme preferences: light → dark → system → light
+ * @deprecated Use ThemeDropdown instead. This component is kept for backward compatibility.
+ * Button that cycles through themes: light → dark → light
  *
  * @param props - Component props
  * @returns Theme switcher button
@@ -167,22 +157,20 @@ function SystemIcon(): React.ReactElement {
  * ```
  */
 export function ThemeSwitcher({ className }: ThemeSwitcherProps): React.ReactElement {
-  const { preference, setPreference } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   const handleClick = () => {
-    setPreference(getNextPreference(preference));
+    setTheme(getNextTheme(theme));
   };
 
   const renderIcon = () => {
-    switch (preference) {
+    switch (theme) {
       case 'light':
         return <SunIcon />;
       case 'dark':
         return <MoonIcon />;
-      case 'system':
-        return <SystemIcon />;
       default:
-        return <SystemIcon />;
+        return <SunIcon />;
     }
   };
 
@@ -195,11 +183,11 @@ export function ThemeSwitcher({ className }: ThemeSwitcherProps): React.ReactEle
       type="button"
       className={buttonClassName}
       onClick={handleClick}
-      aria-label={getAriaLabel(preference)}
-      title={`Theme: ${preference}`}
+      aria-label={getAriaLabel(theme)}
+      title={`Theme: ${theme}`}
     >
       {renderIcon()}
-      <span className="theme-switcher-label">{preference}</span>
+      <span className="theme-switcher-label">{theme}</span>
     </button>
   );
 }

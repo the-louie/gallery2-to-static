@@ -1,35 +1,42 @@
 /**
  * Theme Context
  *
- * Provides theme state management for the application. Supports light, dark,
- * and system-following themes with localStorage persistence.
+ * Provides theme state management for the application. Supports multiple themes
+ * with localStorage persistence and automatic migration from the old preference-based system.
  *
  * ## Features
  *
- * - Light/Dark theme support
- * - System preference detection and following
- * - localStorage persistence of user preference
+ * - Multiple theme support (light, dark, and extensible for future themes)
+ * - localStorage persistence of user theme selection
+ * - Automatic migration from old preference-based system
  * - Robust error handling with graceful fallbacks
  * - Smooth theme transitions (CSS)
  * - Memoized context value to prevent unnecessary re-renders
  * - TypeScript type safety
  * - FOUC (Flash of Unstyled Content) prevention
+ * - Theme validation (ensures selected theme exists in registry)
  *
- * ## Theme Resolution
+ * ## Theme Selection
  *
- * The theme is resolved based on user preference:
- * - 'light': Always use light theme
- * - 'dark': Always use dark theme
- * - 'system': Follow the operating system's preference
+ * Users can select from available themes defined in the theme registry.
+ * The default theme is 'light'. Themes are applied via the data-theme attribute
+ * on the document element.
  *
  * ## Error Handling
  *
  * The theme system handles errors gracefully:
- * - localStorage failures: Falls back to default preference or light theme
- * - System preference detection failures: Falls back to light theme
- * - Corrupted data: Automatically cleaned up
- * - Always returns a valid theme (light or dark)
+ * - localStorage failures: Falls back to default theme
+ * - Invalid theme names: Falls back to default theme
+ * - Corrupted data: Automatically cleaned up and migrated
+ * - Always returns a valid theme from the registry
  * - Errors are logged in development mode only
+ *
+ * ## Migration
+ *
+ * The system automatically migrates from the old preference-based system:
+ * - 'light' preference → 'light' theme
+ * - 'dark' preference → 'dark' theme
+ * - 'system' preference → 'light' theme (default)
  *
  * ## Usage
  *
@@ -49,12 +56,17 @@
  * import { useTheme } from './contexts/ThemeContext';
  *
  * function ThemeButton() {
- *   const { theme, preference, setPreference, isDark } = useTheme();
+ *   const { theme, setTheme, availableThemes } = useTheme();
  *
  *   return (
- *     <button onClick={() => setPreference(isDark ? 'light' : 'dark')}>
- *       Switch to {isDark ? 'light' : 'dark'} mode
- *     </button>
+ *     <div>
+ *       <p>Current theme: {theme}</p>
+ *       {availableThemes.map((t) => (
+ *         <button key={t.name} onClick={() => setTheme(t.name)}>
+ *           {t.displayName}
+ *         </button>
+ *       ))}
+ *     </div>
  *   );
  * }
  * ```
@@ -62,27 +74,36 @@
 
 import React, { createContext, useContext, useMemo, useLayoutEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { useSystemThemePreference } from '../hooks/useSystemThemePreference';
+import {
+  type ThemeName,
+  DEFAULT_THEME,
+  getAllThemes,
+  isValidTheme,
+  getTheme,
+} from '../config/themes';
 
-/** Resolved theme value (what's actually displayed) */
-export type Theme = 'light' | 'dark';
+/** Theme type (exported for convenience) */
+export type Theme = ThemeName;
 
-/** User's theme preference including 'system' option */
-export type ThemePreference = 'light' | 'dark' | 'system';
+/** localStorage key for theme */
+const THEME_STORAGE_KEY = 'gallery-theme';
 
-/** localStorage key for theme preference */
-const THEME_STORAGE_KEY = 'gallery-theme-preference';
+/** Old localStorage key for migration */
+const OLD_THEME_STORAGE_KEY = 'gallery-theme-preference';
+
+/** Migration flag key */
+const MIGRATION_FLAG_KEY = 'gallery-theme-migrated';
 
 /**
  * Theme context value interface
  */
 export interface ThemeContextValue {
-  /** The resolved theme currently being displayed */
+  /** The current theme name */
   theme: Theme;
-  /** The user's theme preference */
-  preference: ThemePreference;
-  /** Function to update the theme preference */
-  setPreference: (preference: ThemePreference) => void;
+  /** Function to update the theme */
+  setTheme: (theme: ThemeName) => void;
+  /** Array of all available themes */
+  availableThemes: readonly ReturnType<typeof getAllThemes>;
   /** Convenience property: true if current theme is dark */
   isDark: boolean;
   /** Convenience property: true if current theme is light */
@@ -93,13 +114,13 @@ export interface ThemeContextValue {
  * Default context value (used when outside provider)
  */
 const defaultContextValue: ThemeContextValue = {
-  theme: 'light',
-  preference: 'system',
-  setPreference: () => {
+  theme: DEFAULT_THEME,
+  setTheme: () => {
     if (import.meta.env.DEV) {
       console.warn('ThemeProvider not found. Make sure your component is wrapped in ThemeProvider.');
     }
   },
+  availableThemes: getAllThemes(),
   isDark: false,
   isLight: true,
 };
@@ -116,26 +137,24 @@ ThemeContext.displayName = 'ThemeContext';
 export interface ThemeProviderProps {
   /** Child components */
   children: React.ReactNode;
-  /** Default preference when no stored preference exists */
-  defaultPreference?: ThemePreference;
+  /** Default theme when no stored theme exists */
+  defaultTheme?: ThemeName;
 }
 
 /**
  * Apply theme to document root element
- * @param theme - The theme to apply
+ * @param theme - The theme name to apply
  *
  * Error handling:
  * - Handles cases where document is not available (SSR)
- * - Always applies a valid theme (light or dark)
+ * - Always applies a valid theme from registry
  */
-function applyTheme(theme: Theme): void {
+function applyTheme(theme: ThemeName): void {
   if (typeof document !== 'undefined' && document.documentElement) {
     try {
-      if (theme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-      } else {
-        document.documentElement.removeAttribute('data-theme');
-      }
+      // Apply theme via data-theme attribute
+      // Light theme uses [data-theme="light"], dark uses [data-theme="dark"]
+      document.documentElement.setAttribute('data-theme', theme);
     } catch (error) {
       // Handle edge cases where attribute manipulation fails
       if (import.meta.env.DEV) {
@@ -146,63 +165,203 @@ function applyTheme(theme: Theme): void {
 }
 
 /**
+ * Migrate from old preference-based system to new theme-based system
+ *
+ * Migration rules:
+ * - 'light' preference → 'light' theme
+ * - 'dark' preference → 'dark' theme
+ * - 'system' preference → 'light' theme (default)
+ * - Invalid/corrupted data → 'light' theme (default)
+ *
+ * This function performs the migration synchronously and stores the result
+ * in the new localStorage key, so useLocalStorage can read it immediately.
+ *
+ * @returns true if migration was performed, false otherwise
+ */
+function migrateThemePreference(): boolean {
+  // Check if migration has already been done
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return false;
+  }
+
+  try {
+    const migrationFlag = localStorage.getItem(MIGRATION_FLAG_KEY);
+    if (migrationFlag === 'true') {
+      // Migration already completed
+      return false;
+    }
+
+    // Check for old preference key
+    const oldPreference = localStorage.getItem(OLD_THEME_STORAGE_KEY);
+    if (!oldPreference) {
+      // No old data to migrate
+      localStorage.setItem(MIGRATION_FLAG_KEY, 'true');
+      return false;
+    }
+
+    let migratedTheme: ThemeName = DEFAULT_THEME;
+
+    try {
+      const preference = JSON.parse(oldPreference) as string;
+      if (preference === 'light' || preference === 'dark') {
+        // Validate theme exists in registry
+        if (isValidTheme(preference)) {
+          migratedTheme = preference;
+        }
+      }
+      // 'system' and any other values default to DEFAULT_THEME
+    } catch (error) {
+      // Corrupted data, use default
+      if (import.meta.env.DEV) {
+        console.warn('Error parsing old theme preference during migration:', error);
+      }
+    }
+
+    // Store migrated theme in new key
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(migratedTheme));
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Error storing migrated theme:', error);
+      }
+    }
+
+    // Remove old preference
+    try {
+      localStorage.removeItem(OLD_THEME_STORAGE_KEY);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Error removing old theme preference:', error);
+      }
+    }
+
+    // Set migration flag
+    localStorage.setItem(MIGRATION_FLAG_KEY, 'true');
+
+    return true;
+  } catch (error) {
+    // Migration failed, but don't block app startup
+    if (import.meta.env.DEV) {
+      console.warn('Error during theme migration:', error);
+    }
+    return false;
+  }
+}
+
+/**
  * Theme Provider Component
  *
- * Wraps your application to provide theme context. Handles theme persistence
- * and system preference detection.
+ * Wraps your application to provide theme context. Handles theme persistence,
+ * migration from old system, and theme validation.
  *
  * @param props - Component props
  * @returns Provider component
  *
  * @example
  * ```tsx
- * <ThemeProvider defaultPreference="system">
+ * <ThemeProvider defaultTheme="light">
  *   <App />
  * </ThemeProvider>
  * ```
  */
 export function ThemeProvider({
   children,
-  defaultPreference = 'system',
+  defaultTheme = DEFAULT_THEME,
 }: ThemeProviderProps): React.ReactElement {
-  // User's stored preference
-  const [preference, setPreference] = useLocalStorage<ThemePreference>(
+  // Perform migration synchronously before reading from localStorage
+  // This ensures migration happens before useLocalStorage reads the value
+  React.useMemo(() => {
+    migrateThemePreference();
+  }, []);
+
+  // Determine initial theme: stored theme or default
+  // Migration has already stored the theme in the new key if needed
+  const getInitialTheme = React.useCallback((): ThemeName => {
+    // Try to read from localStorage (migration may have just stored a value)
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const stored = localStorage.getItem(THEME_STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored) as string;
+          if (isValidTheme(parsed)) {
+            return parsed;
+          }
+        }
+      } catch (error) {
+        // Invalid stored theme, use default
+        if (import.meta.env.DEV) {
+          console.warn('Error reading stored theme, using default:', error);
+        }
+      }
+    }
+
+    // Validate default theme
+    if (isValidTheme(defaultTheme)) {
+      return defaultTheme;
+    }
+
+    // Fallback to DEFAULT_THEME
+    return DEFAULT_THEME;
+  }, [defaultTheme]);
+
+  // User's stored theme
+  const [theme, setThemeState] = useLocalStorage<ThemeName>(
     THEME_STORAGE_KEY,
-    defaultPreference
+    getInitialTheme()
   );
 
-  // System's current preference
-  const systemTheme = useSystemThemePreference();
-
-  // Resolve the actual theme based on preference
-  // Always ensure we have a valid theme (light or dark)
-  const theme: Theme = useMemo(() => {
-    if (preference === 'system') {
-      // systemTheme should always be 'light' or 'dark' from the hook
-      // but we add a safety check just in case
-      return systemTheme === 'dark' ? 'dark' : 'light';
+  // Validate and normalize theme
+  const validatedTheme: ThemeName = useMemo(() => {
+    if (isValidTheme(theme)) {
+      return theme;
     }
-    // preference should always be 'light' or 'dark' when not 'system'
-    // but we add a safety check
-    return preference === 'dark' ? 'dark' : 'light';
-  }, [preference, systemTheme]);
+    // Invalid theme, fallback to default
+    if (import.meta.env.DEV) {
+      console.warn(`Invalid theme "${theme}", falling back to "${DEFAULT_THEME}"`);
+    }
+    return DEFAULT_THEME;
+  }, [theme]);
+
+  // Update stored theme if it was invalid
+  useLayoutEffect(() => {
+    if (theme !== validatedTheme) {
+      setThemeState(validatedTheme);
+    }
+  }, [theme, validatedTheme, setThemeState]);
 
   // Apply theme to DOM immediately (before paint) using useLayoutEffect
   // This helps prevent FOUC
   useLayoutEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+    applyTheme(validatedTheme);
+  }, [validatedTheme]);
+
+  // Wrapper for setTheme that validates theme name
+  const setTheme = React.useCallback(
+    (newTheme: ThemeName) => {
+      if (isValidTheme(newTheme)) {
+        setThemeState(newTheme);
+      } else {
+        if (import.meta.env.DEV) {
+          console.warn(`Invalid theme name "${newTheme}", ignoring.`);
+        }
+      }
+    },
+    [setThemeState]
+  );
+
+  // Get all available themes
+  const availableThemes = useMemo(() => getAllThemes(), []);
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo<ThemeContextValue>(
     () => ({
-      theme,
-      preference,
-      setPreference,
-      isDark: theme === 'dark',
-      isLight: theme === 'light',
+      theme: validatedTheme,
+      setTheme,
+      availableThemes,
+      isDark: validatedTheme === 'dark',
+      isLight: validatedTheme === 'light',
     }),
-    [theme, preference, setPreference]
+    [validatedTheme, setTheme, availableThemes]
   );
 
   return (
@@ -223,14 +382,16 @@ export function ThemeProvider({
  * @example
  * ```tsx
  * function MyComponent() {
- *   const { theme, setPreference, isDark } = useTheme();
+ *   const { theme, setTheme, availableThemes, isDark } = useTheme();
  *
  *   return (
  *     <div className={isDark ? 'dark-mode' : 'light-mode'}>
  *       Current theme: {theme}
- *       <button onClick={() => setPreference('dark')}>Dark</button>
- *       <button onClick={() => setPreference('light')}>Light</button>
- *       <button onClick={() => setPreference('system')}>System</button>
+ *       {availableThemes.map((t) => (
+ *         <button key={t.name} onClick={() => setTheme(t.name)}>
+ *           {t.displayName}
+ *         </button>
+ *       ))}
  *     </div>
  *   );
  * }
@@ -240,8 +401,8 @@ export function useTheme(): ThemeContextValue {
   const context = useContext(ThemeContext);
 
   // The context will always have a value (either from provider or default)
-  // but we can check if setPreference is the warning function
-  if (context.setPreference === defaultContextValue.setPreference) {
+  // but we can check if setTheme is the warning function
+  if (context.setTheme === defaultContextValue.setTheme) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
 

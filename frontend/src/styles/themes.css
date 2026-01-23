@@ -1,13 +1,19 @@
 /**
  * Theme Variables
  *
- * This file defines CSS custom properties (variables) for light and dark themes.
+ * This file defines CSS custom properties (variables) for available themes.
  * All color values are defined here to ensure consistency and maintainability.
  *
+ * Theme Registry Pattern:
+ * - Each theme is defined using [data-theme="{theme-name}"] selector
+ * - :root provides base/fallback variables (defaults to light theme)
+ * - [data-theme="light"] explicitly defines light theme variables
+ * - [data-theme="dark"] defines dark theme variables
+ * - To add new themes, add a new [data-theme="{name}"] block with theme variables
+ *
  * Usage:
- * - Light theme variables are defined in :root
- * - Dark theme variables are defined in [data-theme="dark"]
  * - Components should use these variables instead of hardcoded colors
+ * - Theme switching is done by setting data-theme attribute on documentElement
  *
  * Naming Convention:
  * - Semantic naming: --color-{category}-{element}-{state}
@@ -21,10 +27,243 @@
  */
 
 /* ============================================================================
-   Light Theme (Default)
+   Base/Fallback Theme (Light - Default)
    ============================================================================ */
 
 :root {
+  /* Base Colors */
+  --color-primary: #0066cc;
+  --color-primary-hover: #0052a3;
+  --color-primary-active: #004085;
+  --color-primary-light: #e6f2ff;
+  --color-primary-dark: #003d7a;
+
+  --color-secondary: #6c757d;
+  --color-secondary-hover: #5a6268;
+  --color-secondary-active: #495057;
+
+  --color-accent: #0066cc;
+  --color-accent-hover: #0052a3;
+
+  /* Semantic Colors - Backgrounds */
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f5f5f5;
+  --color-background-tertiary: #e0e0e0;
+
+  /* Semantic Colors - Text */
+  --color-text-primary: #333333;
+  --color-text-secondary: #666666;
+  --color-text-tertiary: #999999;
+  --color-text-inverse: #ffffff;
+  --color-text-muted: rgba(0, 0, 0, 0.7);
+
+  /* Semantic Colors - Borders */
+  --color-border: #e0e0e0;
+  --color-border-light: #f0f0f0;
+  --color-border-dark: #cccccc;
+
+  /* Semantic Colors - Focus */
+  --color-focus: #0066cc;
+  --color-focus-ring: #0066cc;
+
+  /* Error Colors */
+  --color-error: #d32f2f;
+  --color-error-bg: #ffebee;
+  --color-error-text: #d32f2f;
+  --color-error-hover: #b71c1c;
+  --color-error-light: #ffebee;
+
+  /* Success Colors */
+  --color-success: #2e7d32;
+  --color-success-bg: #e8f5e9;
+  --color-success-text: #2e7d32;
+
+  /* Warning Colors */
+  --color-warning: #ed6c02;
+  --color-warning-bg: #fff3e0;
+  --color-warning-text: #ed6c02;
+
+  /* Info Colors */
+  --color-info: #0288d1;
+  --color-info-bg: #e1f5fe;
+  --color-info-text: #0288d1;
+
+  /* Neutral Colors */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f5f5f5;
+  --color-gray-200: #e0e0e0;
+  --color-gray-300: #cccccc;
+  --color-gray-400: #999999;
+  --color-gray-500: #666666;
+  --color-gray-600: #333333;
+  --color-gray-700: #1a1a1a;
+  --color-gray-800: #0d0d0d;
+  --color-gray-900: #000000;
+
+  /* Layout Component */
+  --skip-link-bg: #000000;
+  --skip-link-color: #ffffff;
+  --skip-link-focus: #ffffff;
+  --header-bg: #f5f5f5;
+  --header-border: #e0e0e0;
+  --header-text: #333333;
+  --footer-bg: #f5f5f5;
+  --footer-border: #e0e0e0;
+  --footer-text: #666666;
+
+  /* AlbumCard Component */
+  --album-card-bg: #ffffff;
+  --album-card-border: #e0e0e0;
+  --album-card-border-radius: 8px;
+  --album-card-focus: #0066cc;
+  --album-card-thumbnail-bg: #f5f5f5;
+  --album-card-placeholder-bg: #e0e0e0;
+  --album-card-placeholder-text: #666666;
+  --album-card-title-color: #333333;
+
+  /* AlbumGrid Component */
+  --album-grid-gap: 1rem;
+  --album-grid-gap-tablet: 1.5rem;
+  --album-grid-gap-desktop: 2rem;
+  --album-grid-error-color: #d32f2f;
+  --album-grid-error-bg: #ffebee;
+  --album-grid-error-button-bg: #d32f2f;
+  --album-grid-error-button-hover: #b71c1c;
+  --album-grid-error-button-focus: #0066cc;
+  --album-grid-border-radius: 8px;
+  --album-grid-empty-color: #666666;
+
+  /* ImageGrid Component */
+  --image-grid-gap: 1rem;
+  --image-grid-gap-tablet: 1.5rem;
+  --image-grid-gap-desktop: 2rem;
+  --image-grid-error-color: #d32f2f;
+  --image-grid-error-bg: #ffebee;
+  --image-grid-error-button-bg: #d32f2f;
+  --image-grid-error-button-hover: #b71c1c;
+  --image-grid-error-button-focus: #0066cc;
+  --image-grid-border-radius: 8px;
+  --image-grid-empty-color: #666666;
+
+  /* ImageThumbnail Component */
+  --image-bg: #f5f5f5;
+  --image-border: #e0e0e0;
+  --image-border-radius: 4px;
+  --image-focus: #0066cc;
+  --image-error-bg: #f5f5f5;
+  --image-error-text: #666666;
+
+  /* Lightbox Component */
+  --lightbox-backdrop: rgba(0, 0, 0, 0.9);
+  --lightbox-z-index: 9999;
+  --lightbox-close-bg: rgba(255, 255, 255, 0.1);
+  --lightbox-close-border: rgba(255, 255, 255, 0.3);
+  --lightbox-close-color: #ffffff;
+  --lightbox-close-bg-hover: rgba(255, 255, 255, 0.2);
+  --lightbox-close-border-hover: rgba(255, 255, 255, 0.5);
+  --lightbox-focus: #0066cc;
+  --lightbox-nav-bg: rgba(255, 255, 255, 0.1);
+  --lightbox-nav-border: rgba(255, 255, 255, 0.3);
+  --lightbox-nav-color: #ffffff;
+  --lightbox-nav-bg-hover: rgba(255, 255, 255, 0.2);
+  --lightbox-nav-border-hover: rgba(255, 255, 255, 0.5);
+  --lightbox-counter-bg: rgba(0, 0, 0, 0.7);
+  --lightbox-counter-color: #ffffff;
+  --lightbox-zoom-bg: rgba(255, 255, 255, 0.1);
+  --lightbox-zoom-border: rgba(255, 255, 255, 0.3);
+  --lightbox-zoom-color: #ffffff;
+  --lightbox-zoom-bg-hover: rgba(255, 255, 255, 0.2);
+  --lightbox-zoom-border-hover: rgba(255, 255, 255, 0.5);
+  --lightbox-loading-bg: rgba(0, 0, 0, 0.5);
+  --lightbox-error-bg: rgba(0, 0, 0, 0.5);
+  --lightbox-error-text: #ffffff;
+  --lightbox-metadata-bg: rgba(0, 0, 0, 0.8);
+  --lightbox-metadata-text: #ffffff;
+  --lightbox-title-color: #ffffff;
+  --lightbox-description-color: rgba(255, 255, 255, 0.9);
+  --lightbox-details-color: rgba(255, 255, 255, 0.7);
+  --lightbox-border-radius: 4px;
+  --lightbox-image-bg: transparent;
+
+  /* Breadcrumbs Component */
+  --breadcrumb-link-color: #0066cc;
+  --breadcrumb-link-hover-bg: #f0f0f0;
+  --breadcrumb-link-hover-color: #0052a3;
+  --breadcrumb-link-focus: #0066cc;
+  --breadcrumb-link-focus-bg: #e6f2ff;
+  --breadcrumb-link-active-bg: #d9e9ff;
+  --breadcrumb-current-color: #333333;
+  --breadcrumb-separator-color: #999999;
+  --breadcrumb-scrollbar-color: #cccccc;
+
+  /* AlbumDetail Component */
+  --album-detail-back-button-bg: transparent;
+  --album-detail-back-button-border: currentColor;
+  --album-detail-back-button-color: #333333;
+  --album-detail-back-button-hover-bg: rgba(0, 0, 0, 0.05);
+  --album-detail-back-button-active-bg: rgba(0, 0, 0, 0.1);
+  --album-detail-title-color: #333333;
+  --album-detail-text-muted: rgba(0, 0, 0, 0.7);
+  --album-detail-error-button-bg: #0066cc;
+  --album-detail-error-button-hover: #0056b3;
+  --album-detail-error-button-focus: #0066cc;
+  --album-detail-error-button-active: #004085;
+
+  /* Skeleton Loading */
+  --skeleton-bg-1: #e0e0e0;
+  --skeleton-bg-2: #f0f0f0;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 6px 12px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 10px 20px rgba(0, 0, 0, 0.2);
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* ThemeSwitcher Component */
+  --theme-switcher-bg: transparent;
+  --theme-switcher-border: #e0e0e0;
+  --theme-switcher-color: #333333;
+  --theme-switcher-bg-hover: #f0f0f0;
+  --theme-switcher-border-hover: #cccccc;
+  --theme-switcher-focus: #0066cc;
+
+  /* ViewModeToggle Component */
+  --view-mode-toggle-bg: transparent;
+  --view-mode-toggle-border: #e0e0e0;
+  --view-mode-toggle-color: #666666;
+  --view-mode-toggle-color-hover: #333333;
+  --view-mode-toggle-bg-hover: #f0f0f0;
+  --view-mode-toggle-bg-active: #e0e0e0;
+  --view-mode-toggle-color-active: #333333;
+  --view-mode-toggle-bg-active-hover: #d0d0d0;
+  --view-mode-toggle-focus: #0066cc;
+
+  /* SortDropdown Component */
+  --sort-dropdown-bg: #ffffff;
+  --sort-dropdown-border: #e0e0e0;
+  --sort-dropdown-color: #333333;
+  --sort-dropdown-bg-hover: #f0f0f0;
+  --sort-dropdown-border-hover: #cccccc;
+  --sort-dropdown-bg-active: #e8e8e8;
+  --sort-dropdown-option-bg: #ffffff;
+  --sort-dropdown-option-color: #333333;
+  --sort-dropdown-focus: #0066cc;
+  --sort-dropdown-arrow-color: #333333;
+}
+
+/* ============================================================================
+   Light Theme (Explicit)
+   ============================================================================ */
+
+[data-theme="light"] {
   /* Base Colors */
   --color-primary: #0066cc;
   --color-primary-hover: #0052a3;
@@ -502,6 +741,7 @@
  */
 
 :root,
+[data-theme="light"],
 [data-theme="dark"] {
   /* Transition properties for theme changes */
   transition:
@@ -514,6 +754,7 @@
 /* Disable transitions for users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
   :root,
+  [data-theme="light"],
   [data-theme="dark"] {
     transition: none;
   }
@@ -540,6 +781,7 @@ textarea,
 /* Disable transitions for reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   :root,
+  [data-theme="light"],
   [data-theme="dark"],
   body,
   button,
