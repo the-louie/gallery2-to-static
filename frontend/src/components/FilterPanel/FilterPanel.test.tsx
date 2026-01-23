@@ -31,27 +31,36 @@ describe('FilterPanel', () => {
       expect(screen.getByText('Filters')).toBeInTheDocument();
     });
 
-    it('renders all filter components', () => {
+    it('renders all filter components when expanded', async () => {
+      const user = userEvent.setup();
+
       render(
         <FilterProvider>
           <FilterPanel />
         </FilterProvider>
       );
+
+      // Expand the panel first
+      const toggleButton = screen.getByLabelText('Expand filters');
+      await user.click(toggleButton);
 
       expect(screen.getByLabelText('Date range filter')).toBeInTheDocument();
       expect(screen.getByRole('radiogroup', { name: 'Type filter' })).toBeInTheDocument();
       expect(screen.getByRole('group', { name: 'Active filters' })).toBeInTheDocument();
     });
 
-    it('renders expanded by default', () => {
+    it('renders collapsed by default', () => {
       render(
         <FilterProvider>
           <FilterPanel />
         </FilterProvider>
       );
 
-      expect(screen.getByLabelText('Date range filter')).toBeInTheDocument();
-      expect(screen.getByRole('radiogroup', { name: 'Type filter' })).toBeInTheDocument();
+      expect(screen.queryByLabelText('Date range filter')).not.toBeInTheDocument();
+      expect(screen.queryByRole('radiogroup', { name: 'Type filter' })).not.toBeInTheDocument();
+      const toggleButton = screen.getByLabelText('Expand filters');
+      expect(toggleButton).toBeInTheDocument();
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
     });
 
     it('does not render clear button when no filters are active', () => {
@@ -75,10 +84,18 @@ describe('FilterPanel', () => {
         </FilterProvider>
       );
 
-      const toggleButton = screen.getByLabelText('Collapse filters');
-      expect(screen.getByLabelText('Date range filter')).toBeInTheDocument();
+      // Panel starts collapsed
+      expect(screen.queryByLabelText('Date range filter')).not.toBeInTheDocument();
+      const toggleButton = screen.getByLabelText('Expand filters');
 
+      // Expand the panel
       await user.click(toggleButton);
+      expect(screen.getByLabelText('Date range filter')).toBeInTheDocument();
+      expect(screen.getByLabelText('Collapse filters')).toBeInTheDocument();
+
+      // Collapse the panel
+      const collapseButton = screen.getByLabelText('Collapse filters');
+      await user.click(collapseButton);
 
       expect(screen.queryByLabelText('Date range filter')).not.toBeInTheDocument();
       expect(screen.getByLabelText('Expand filters')).toBeInTheDocument();
@@ -93,11 +110,16 @@ describe('FilterPanel', () => {
         </FilterProvider>
       );
 
-      const toggleButton = screen.getByLabelText('Collapse filters');
+      // Panel starts collapsed
+      const toggleButton = screen.getByLabelText('Expand filters');
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+
+      // Expand the panel
+      await user.click(toggleButton);
       expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
 
+      // Collapse the panel
       await user.click(toggleButton);
-
       expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
     });
   });
@@ -126,7 +148,7 @@ describe('FilterPanel', () => {
       );
 
       expect(screen.getByRole('region', { name: 'Filter panel' })).toBeInTheDocument();
-      expect(screen.getByLabelText('Collapse filters')).toBeInTheDocument();
+      expect(screen.getByLabelText('Expand filters')).toBeInTheDocument();
     });
 
     it('has proper heading structure', () => {
@@ -149,7 +171,7 @@ describe('FilterPanel', () => {
         </FilterProvider>
       );
 
-      const toggleButton = screen.getByLabelText('Collapse filters');
+      const toggleButton = screen.getByLabelText('Expand filters');
       await user.tab();
       // Toggle button should be focusable
       expect(toggleButton).toBeInTheDocument();

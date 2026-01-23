@@ -60,7 +60,7 @@ export function FilterPanel({
   className,
 }: FilterPanelProps): React.ReactElement {
   const { criteria, setCriteria, clearFilters, hasActiveFilters } = useFilter();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Handle toggle panel (for mobile)
   const handleToggle = useCallback(() => {
