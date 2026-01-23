@@ -29,8 +29,9 @@
   align-self: flex-start;
   padding: 0.5rem 1rem;
   background-color: transparent;
-  border: 1px solid currentColor;
+  border: 1px solid var(--album-detail-back-button-border, currentColor);
   border-radius: var(--radius-sm, 4px);
+  color: var(--album-detail-back-button-color, #333333);
   cursor: pointer;
   font-size: 1rem;
   transition: background-color 0.2s, color 0.2s;
@@ -69,6 +70,7 @@
   font-size: 2rem;
   font-weight: 600;
   line-height: 1.2;
+  color: var(--album-detail-title-color, #333333);
 }
 
 .album-detail-description {
