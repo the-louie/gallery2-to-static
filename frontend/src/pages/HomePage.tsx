@@ -15,6 +15,7 @@ import { ViewModeToggle } from '@/components/ViewModeToggle';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { findRootAlbumId, DataLoadError } from '@/utils/dataLoader';
 import type { Album } from '@/types';
+import './HomePage.css';
 
 /**
  * HomePage component

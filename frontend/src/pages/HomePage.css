@@ -1,0 +1,36 @@
+/**
+ * HomePage Component Styles
+ *
+ * Styles for the home page displaying the root album.
+ *
+ * CSS Variables:
+ * - Uses CSS custom properties from themes.css for theming
+ * - All colors adapt to light/dark theme automatically
+ */
+
+.home-page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.home-page-controls {
+  margin-bottom: 1.5rem;
+}
+
+.home-page-error {
+  padding: 2rem;
+  text-align: center;
+}
+
+.home-page-error h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #333333);
+}
+
+.home-page-error p {
+  margin: 0;
+  color: var(--color-text-secondary, #666666);
+}
