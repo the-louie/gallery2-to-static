@@ -5,6 +5,9 @@
  * (title, description, summary, owner name when present), child albums, and
  * child images. Handles navigation, empty states, and integrates with React Router.
  *
+ * The album title supports BBCode formatting (e.g., [b]bold[/b], [i]italic[/i]).
+ * Only the title field supports BBCode; description and summary are rendered as plain text.
+ *
  * @module frontend/src/components/AlbumDetail
  */
 
@@ -16,6 +19,7 @@ import { useSort } from '@/hooks/useSort';
 import { useFilter } from '@/contexts/FilterContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { applyFilters } from '@/utils/filterUtils';
+import { parseBBCode } from '@/utils/bbcode';
 import { AlbumGrid } from '@/components/AlbumGrid';
 import { ImageGrid } from '@/components/ImageGrid';
 import { SortDropdown } from '@/components/SortDropdown';
@@ -87,6 +91,14 @@ export function AlbumDetail({
 
   // Use album prop if provided, otherwise null (metadata is optional)
   const album = albumProp || null;
+
+  // Parse BBCode in album title for display
+  const parsedTitle = useMemo(() => {
+    if (!album || !album.title) {
+      return null;
+    }
+    return parseBBCode(album.title);
+  }, [album?.title]);
 
   // Separate albums and images from the data, then apply filters
   const albums = useMemo<Album[]>(() => {
@@ -278,8 +290,8 @@ export function AlbumDetail({
       {/* Album metadata */}
       {(showTitle || showDescription) && album && (
         <div className="album-detail-header">
-          {showTitle && album.title && (
-            <h1 className="album-detail-title">{album.title}</h1>
+          {showTitle && parsedTitle && (
+            <h1 className="album-detail-title">{parsedTitle}</h1>
           )}
           {showDescription && album.description && (
             <p className="album-detail-description">{album.description}</p>

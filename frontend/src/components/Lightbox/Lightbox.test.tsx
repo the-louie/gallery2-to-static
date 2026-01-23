@@ -1745,4 +1745,84 @@ describe('Lightbox', () => {
       });
     });
   });
+
+  describe('BBCode Support', () => {
+    it('renders BBCode in image title', () => {
+      const imageWithBBCode: Image = {
+        ...mockPhoto,
+        title: '[b]Bold Image Title[/b]',
+      };
+
+      render(
+        <Lightbox isOpen={true} image={imageWithBBCode} onClose={mockOnClose} />,
+      );
+
+      const strong = screen.getByRole('heading', { level: 2 }).querySelector('strong');
+      expect(strong).toBeInTheDocument();
+      expect(strong?.textContent).toBe('Bold Image Title');
+    });
+
+    it('renders nested BBCode in image title', () => {
+      const imageWithBBCode: Image = {
+        ...mockPhoto,
+        title: '[b][i]Bold Italic Title[/i][/b]',
+      };
+
+      const { container } = render(
+        <Lightbox isOpen={true} image={imageWithBBCode} onClose={mockOnClose} />,
+      );
+
+      const strong = container.querySelector('h2 strong');
+      expect(strong).toBeInTheDocument();
+      const em = strong?.querySelector('em');
+      expect(em).toBeInTheDocument();
+      expect(em?.textContent).toBe('Bold Italic Title');
+    });
+
+    it('maintains backward compatibility with titles without BBCode', () => {
+      render(
+        <Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />,
+      );
+
+      expect(screen.getByText('Test Photo')).toBeInTheDocument();
+    });
+
+    it('does not parse BBCode in description or summary', () => {
+      const imageWithBBCode: Image = {
+        ...mockPhoto,
+        title: '[b]Title[/b]',
+        description: '[b]Description[/b]',
+        summary: '[b]Summary[/b]',
+      };
+
+      const { container } = render(
+        <Lightbox isOpen={true} image={imageWithBBCode} onClose={mockOnClose} />,
+      );
+
+      // Title should have parsed BBCode
+      const titleStrong = container.querySelector('h2 strong');
+      expect(titleStrong).toBeInTheDocument();
+
+      // Description and summary should have literal [b] tags
+      expect(screen.getByText('[b]Description[/b]')).toBeInTheDocument();
+      expect(screen.getByText('[b]Summary[/b]')).toBeInTheDocument();
+    });
+
+    it('preserves aria-labelledby when title has BBCode', () => {
+      const imageWithBBCode: Image = {
+        ...mockPhoto,
+        title: '[b]Bold Title[/b]',
+      };
+
+      const { container } = render(
+        <Lightbox isOpen={true} image={imageWithBBCode} onClose={mockOnClose} />,
+      );
+
+      const overlay = container.querySelector('.lightbox-overlay');
+      expect(overlay).toHaveAttribute('aria-labelledby', 'lightbox-title');
+
+      const title = container.querySelector('#lightbox-title');
+      expect(title).toBeInTheDocument();
+    });
+  });
 });

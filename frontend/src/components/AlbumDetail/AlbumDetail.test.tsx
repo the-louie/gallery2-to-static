@@ -621,4 +621,103 @@ describe('AlbumDetail', () => {
       expect(screen.getByText('Test Album')).toBeInTheDocument();
     });
   });
+
+  describe('BBCode Support', () => {
+    it('renders BBCode in album title', async () => {
+      const albumWithBBCode: Album = {
+        ...mockAlbum,
+        title: '[b]Bold Album Title[/b]',
+      };
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      const { container } = render(
+        <AlbumDetail albumId={1} album={albumWithBBCode} />,
+      );
+
+      await waitFor(() => {
+        const strong = container.querySelector('strong');
+        expect(strong).toBeInTheDocument();
+        expect(strong?.textContent).toBe('Bold Album Title');
+      });
+    });
+
+    it('renders nested BBCode in album title', async () => {
+      const albumWithBBCode: Album = {
+        ...mockAlbum,
+        title: '[b][i]Bold Italic Title[/i][/b]',
+      };
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      const { container } = render(
+        <AlbumDetail albumId={1} album={albumWithBBCode} />,
+      );
+
+      await waitFor(() => {
+        const strong = container.querySelector('strong');
+        expect(strong).toBeInTheDocument();
+        const em = strong?.querySelector('em');
+        expect(em).toBeInTheDocument();
+        expect(em?.textContent).toBe('Bold Italic Title');
+      });
+    });
+
+    it('maintains backward compatibility with titles without BBCode', async () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={1} album={mockAlbum} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Album')).toBeInTheDocument();
+      });
+    });
+
+    it('does not parse BBCode in description or summary', async () => {
+      const albumWithBBCode: Album = {
+        ...mockAlbum,
+        title: '[b]Title[/b]',
+        description: '[b]Description[/b]',
+        summary: '[b]Summary[/b]',
+      };
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      const { container } = render(
+        <AlbumDetail albumId={1} album={albumWithBBCode} />,
+      );
+
+      await waitFor(() => {
+        // Title should have parsed BBCode
+        const titleStrong = container.querySelector('h1 strong');
+        expect(titleStrong).toBeInTheDocument();
+
+        // Description and summary should have literal [b] tags
+        const description = screen.getByText('[b]Description[/b]');
+        expect(description).toBeInTheDocument();
+        const summary = screen.getByText('[b]Summary[/b]');
+        expect(summary).toBeInTheDocument();
+      });
+    });
+  });
 });

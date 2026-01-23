@@ -5,12 +5,16 @@
  * Displays album thumbnail (if available), title, and child count.
  * Supports keyboard navigation and accessibility features.
  *
+ * The album title supports BBCode formatting (e.g., [b]bold[/b], [i]italic[/i]).
+ * Only the title field supports BBCode; other fields are rendered as plain text.
+ *
  * @module frontend/src/components/AlbumGrid
  */
 
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import type { Album, ViewMode } from '@/types';
 import { getAlbumThumbnailUrl } from '@/utils/imageUrl';
+import { parseBBCode } from '@/utils/bbcode';
 import './AlbumCard.css';
 
 /**
@@ -77,6 +81,14 @@ function AlbumCardComponent({
   const defaultAriaLabel = album.title || 'Album';
   const cardAriaLabel = ariaLabel || defaultAriaLabel;
 
+  // Parse BBCode in title for display
+  const parsedTitle = useMemo(() => {
+    if (!album.title) {
+      return 'Untitled Album';
+    }
+    return parseBBCode(album.title);
+  }, [album.title]);
+
   const childCountText = album.hasChildren
     ? 'Has children'
     : 'No children';
@@ -110,7 +122,7 @@ function AlbumCardComponent({
         )}
       </div>
       <div className="album-card-content">
-        <h3 className="album-card-title">{album.title || 'Untitled Album'}</h3>
+        <h3 className="album-card-title">{parsedTitle}</h3>
         <div
           id={`album-card-count-${album.id}`}
           className="album-card-count"

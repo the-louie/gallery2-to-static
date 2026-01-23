@@ -12,6 +12,7 @@
  * - Keyboard support (Escape to close, Tab to navigate, Arrow keys for navigation)
  * - ARIA attributes for screen readers (role="dialog", aria-modal)
  * - Image metadata display (title, description, summary, owner, dimensions, date)
+ * - BBCode formatting support in image titles (e.g., [b]bold[/b], [i]italic[/i])
  * - Image navigation (Previous/Next buttons and keyboard)
  * - Image counter display (e.g., "3 of 15")
  * - Automatic preloading of adjacent images for smooth navigation
@@ -71,6 +72,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Image } from '@/types';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { parseBBCode } from '@/utils/bbcode';
 import { useImageNavigation } from '@/hooks/useImageNavigation';
 import { useImagePreload } from '@/hooks/useImagePreload';
 import { useImageZoom } from '@/hooks/useImageZoom';
@@ -298,13 +300,21 @@ export function Lightbox({
     enableVertical: true,
   });
 
-  // Generate alt text from image title or description
+  // Generate alt text from image title or description (plain text, no BBCode)
   const altText = useMemo(() => {
     if (!image) {
       return 'Image';
     }
     return image.title || image.description || 'Image';
   }, [image]);
+
+  // Parse BBCode in image title for display
+  const parsedTitle = useMemo(() => {
+    if (!image || !image.title) {
+      return null;
+    }
+    return parseBBCode(image.title);
+  }, [image?.title]);
 
   // Format date from timestamp
   const formattedDate = useMemo(() => {
@@ -823,7 +833,7 @@ export function Lightbox({
         onClick={handleBackdropClick}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={image.title ? 'lightbox-title' : undefined}
+        aria-labelledby={parsedTitle ? 'lightbox-title' : undefined}
         aria-describedby={hasMetadata ? 'lightbox-metadata' : undefined}
         aria-label={!image.title ? altText : undefined}
         style={{
@@ -988,9 +998,9 @@ export function Lightbox({
           dimensions ||
           formattedDate) && (
           <div className="lightbox-metadata" id="lightbox-metadata">
-            {image.title && (
+            {parsedTitle && (
               <h2 className="lightbox-title" id="lightbox-title">
-                {image.title}
+                {parsedTitle}
               </h2>
             )}
             {image.description && (

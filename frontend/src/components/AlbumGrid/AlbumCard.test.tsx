@@ -216,4 +216,89 @@ describe('AlbumCard', () => {
       expect(handleClick).toHaveBeenCalledWith(mockAlbum);
     });
   });
+
+  describe('BBCode Support', () => {
+    it('renders BBCode bold in title', () => {
+      const albumWithBBCode: Album = {
+        ...mockAlbum,
+        title: '[b]Bold Title[/b]',
+      };
+      const { container } = render(<AlbumCard album={albumWithBBCode} />);
+      const strong = container.querySelector('strong');
+      expect(strong).toBeInTheDocument();
+      expect(strong?.textContent).toBe('Bold Title');
+    });
+
+    it('renders BBCode italic in title', () => {
+      const albumWithBBCode: Album = {
+        ...mockAlbum,
+        title: '[i]Italic Title[/i]',
+      };
+      const { container } = render(<AlbumCard album={albumWithBBCode} />);
+      const em = container.querySelector('em');
+      expect(em).toBeInTheDocument();
+      expect(em?.textContent).toBe('Italic Title');
+    });
+
+    it('renders BBCode underline in title', () => {
+      const albumWithBBCode: Album = {
+        ...mockAlbum,
+        title: '[u]Underline Title[/u]',
+      };
+      const { container } = render(<AlbumCard album={albumWithBBCode} />);
+      const u = container.querySelector('u');
+      expect(u).toBeInTheDocument();
+      expect(u?.textContent).toBe('Underline Title');
+    });
+
+    it('renders nested BBCode in title', () => {
+      const albumWithBBCode: Album = {
+        ...mockAlbum,
+        title: '[b][i]Bold Italic[/i][/b]',
+      };
+      const { container } = render(<AlbumCard album={albumWithBBCode} />);
+      const strong = container.querySelector('strong');
+      expect(strong).toBeInTheDocument();
+      const em = strong?.querySelector('em');
+      expect(em).toBeInTheDocument();
+      expect(em?.textContent).toBe('Bold Italic');
+    });
+
+    it('renders mixed BBCode and plain text in title', () => {
+      const albumWithBBCode: Album = {
+        ...mockAlbum,
+        title: 'Plain [b]Bold[/b] Text',
+      };
+      const { container } = render(<AlbumCard album={albumWithBBCode} />);
+      expect(container.textContent).toContain('Plain Bold Text');
+      const strong = container.querySelector('strong');
+      expect(strong).toBeInTheDocument();
+      expect(strong?.textContent).toBe('Bold');
+    });
+
+    it('maintains backward compatibility with titles without BBCode', () => {
+      render(<AlbumCard album={mockAlbum} />);
+      expect(screen.getByText('Test Album')).toBeInTheDocument();
+    });
+
+    it('handles empty title with BBCode gracefully', () => {
+      const albumEmptyTitle: Album = {
+        ...mockAlbum,
+        title: '',
+      };
+      render(<AlbumCard album={albumEmptyTitle} />);
+      expect(screen.getByText('Untitled Album')).toBeInTheDocument();
+    });
+
+    it('preserves plain text in aria-label (no BBCode parsing)', () => {
+      const albumWithBBCode: Album = {
+        ...mockAlbum,
+        title: '[b]Bold Title[/b]',
+      };
+      render(<AlbumCard album={albumWithBBCode} />);
+      const card = screen.getByRole('article');
+      // aria-label should use plain text title, not parsed
+      expect(card).toHaveAttribute('aria-label', '[b]Bold Title[/b]');
+    });
+  });
 });
