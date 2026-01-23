@@ -39,7 +39,7 @@ export interface UseSearchReturn {
   search: (query: string) => void;
   /** Current search results */
   results: SearchResult[];
-  /** True while building index */
+  /** Always false - index is pre-built and only loaded (kept for API compatibility) */
   isIndexBuilding: boolean;
   /** True while executing search */
   isLoading: boolean;
