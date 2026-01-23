@@ -208,7 +208,7 @@ export function AlbumDetail({
             aria-label="Go up"
             disabled={isNavigatingUp}
           >
-            ← Up
+            ↑ Up
           </button>
         )}
         {breadcrumbs && (
@@ -238,7 +238,7 @@ export function AlbumDetail({
             aria-label="Go up"
             disabled={isNavigatingUp}
           >
-            ← Up
+            ↑ Up
           </button>
         )}
         {breadcrumbs && (
@@ -284,7 +284,7 @@ export function AlbumDetail({
             aria-label="Go up"
             disabled={isNavigatingUp}
           >
-            ← Up
+            ↑ Up
           </button>
         )}
         {breadcrumbs && (
