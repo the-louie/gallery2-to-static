@@ -2,7 +2,7 @@
  * AlbumCard Component
  *
  * Individual album display component for use within AlbumGrid.
- * Displays album thumbnail (if available), title, and child count.
+ * Displays album thumbnail (if available) and title.
  * Supports keyboard navigation and accessibility features.
  *
  * The album title supports BBCode formatting (e.g., [b]bold[/b], [i]italic[/i]).
@@ -36,7 +36,7 @@ export interface AlbumCardProps {
 /**
  * AlbumCard component
  *
- * Displays a single album with thumbnail, title, and child count.
+ * Displays a single album with thumbnail and title.
  * Supports keyboard navigation and click handling.
  *
  * @param props - Component props
@@ -89,10 +89,6 @@ function AlbumCardComponent({
     return parseBBCode(album.title);
   }, [album.title]);
 
-  const childCountText = album.hasChildren
-    ? 'Has children'
-    : 'No children';
-
   const cardClassName = className
     ? `album-card album-card-${viewMode} ${className}`
     : `album-card album-card-${viewMode}`;
@@ -102,7 +98,6 @@ function AlbumCardComponent({
       className={cardClassName}
       role="article"
       aria-label={cardAriaLabel}
-      aria-describedby={`album-card-count-${album.id}`}
       tabIndex={onClick ? 0 : undefined}
       onClick={onClick ? handleClick : undefined}
       onKeyDown={onClick ? handleKeyDown : undefined}
@@ -123,13 +118,6 @@ function AlbumCardComponent({
       </div>
       <div className="album-card-content">
         <h3 className="album-card-title">{parsedTitle}</h3>
-        <div
-          id={`album-card-count-${album.id}`}
-          className="album-card-count"
-          aria-label={childCountText}
-        >
-          {childCountText}
-        </div>
       </div>
     </article>
   );

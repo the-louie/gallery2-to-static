@@ -116,7 +116,6 @@
   --album-card-placeholder-bg: #e0e0e0;
   --album-card-placeholder-text: #666666;
   --album-card-title-color: #333333;
-  --album-card-count-color: #666666;
 
   /* AlbumGrid Component */
   --album-grid-gap: 1rem;
@@ -325,7 +324,6 @@
   --album-card-placeholder-bg: #404040;
   --album-card-placeholder-text: #b3b3b3;
   --album-card-title-color: #e5e5e5;
-  --album-card-count-color: #b3b3b3;
 
   /* AlbumGrid Component */
   --album-grid-gap: 1rem;

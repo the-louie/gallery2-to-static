@@ -10,7 +10,7 @@ import { render, screen } from '@/test-utils';
 import userEvent from '@testing-library/user-event';
 import { AlbumCard } from './AlbumCard';
 import type { Album } from '@/types';
-import { mockAlbum, mockAlbumWithChildren } from '@/__mocks__/mockData';
+import { mockAlbum } from '@/__mocks__/mockData';
 
 describe('AlbumCard', () => {
   describe('Component Rendering', () => {
@@ -26,20 +26,6 @@ describe('AlbumCard', () => {
       };
       render(<AlbumCard album={albumWithoutTitle} />);
       expect(screen.getByText('Untitled Album')).toBeInTheDocument();
-    });
-
-    it('displays "Has children" when album has children', () => {
-      render(<AlbumCard album={mockAlbumWithChildren} />);
-      expect(screen.getByText('Has children')).toBeInTheDocument();
-    });
-
-    it('displays "No children" when album has no children', () => {
-      const albumNoChildren: Album = {
-        ...mockAlbum,
-        hasChildren: false,
-      };
-      render(<AlbumCard album={albumNoChildren} />);
-      expect(screen.getByText('No children')).toBeInTheDocument();
     });
 
     it('applies custom className', () => {
@@ -116,7 +102,6 @@ describe('AlbumCard', () => {
       render(<AlbumCard album={mockAlbum} />);
       const card = screen.getByRole('article');
       expect(card).toHaveAttribute('aria-label', 'Test Album');
-      expect(card).toHaveAttribute('aria-describedby', `album-card-count-${mockAlbum.id}`);
     });
 
     it('uses custom aria-label when provided', () => {
@@ -135,13 +120,6 @@ describe('AlbumCard', () => {
       render(<AlbumCard album={mockAlbum} />);
       const card = screen.getByRole('article');
       expect(card).not.toHaveAttribute('tabIndex');
-    });
-
-    it('has accessible child count', () => {
-      render(<AlbumCard album={mockAlbum} />);
-      const count = screen.getByText('Has children');
-      expect(count).toHaveAttribute('aria-label', 'Has children');
-      expect(count).toHaveAttribute('id', `album-card-count-${mockAlbum.id}`);
     });
   });
 

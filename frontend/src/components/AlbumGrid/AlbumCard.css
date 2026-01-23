@@ -89,12 +89,6 @@
   -webkit-box-orient: vertical;
 }
 
-.album-card-count {
-  font-size: var(--album-card-count-size, 0.875rem);
-  color: var(--album-card-count-color, #666);
-  margin: 0;
-}
-
 /* List view layout */
 .album-card-list {
   flex-direction: row;
