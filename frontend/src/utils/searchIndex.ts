@@ -1,5 +1,5 @@
 /**
- * Search index utility for albums and images
+ * Search index utility for albums
  *
  * Provides functionality to load a pre-built search index and perform searches
  * on titles and descriptions. The search index is generated during extraction
@@ -20,8 +20,9 @@
  * ## Index Loading
  *
  * The index is loaded from a pre-built file at `/data/search/index.json` that
- * was generated during extraction. Each album and image is indexed with its
- * title and description for searching.
+ * was generated during extraction. Only albums are indexed (not individual photos)
+ * to keep the file size manageable. Each album is indexed with its title and
+ * description for searching.
  *
  * ## Search Algorithm
  *
@@ -33,21 +34,25 @@
 import { loadSearchIndex } from './searchIndexLoader';
 
 /**
- * Search index item representing an album or image in the search index
+ * Search index item representing an album in the search index
+ * Note: Only albums are indexed, not individual photos, to reduce file size.
+ * Empty fields like description are omitted to further reduce file size.
  */
 export interface SearchIndexItem {
   /** Unique identifier */
   id: number;
-  /** Item type: 'GalleryAlbumItem' or 'GalleryPhotoItem' */
+  /** Item type: 'GalleryAlbumItem' or 'GalleryPhotoItem' (currently only 'GalleryAlbumItem' is used) */
   type: 'GalleryAlbumItem' | 'GalleryPhotoItem';
   /** Item title */
   title: string;
-  /** Item description */
-  description: string;
+  /** Item description (optional, only included if non-empty) */
+  description?: string;
   /** Parent album ID (if applicable) */
   parentId?: number;
   /** Path component for navigation */
   pathComponent: string;
+  /** Ancestor albums path (root omitted), e.g. "dreamhack/dreamhack 08/crew" */
+  ancestors?: string;
 }
 
 /**
@@ -136,10 +141,10 @@ export class SearchIndex {
 
     for (const item of this.index.values()) {
       const titleLower = item.title.toLowerCase();
-      const descriptionLower = item.description.toLowerCase();
+      const descriptionLower = item.description?.toLowerCase() ?? '';
 
       const matchedInTitle = titleLower.includes(normalizedQuery);
-      const matchedInDescription = descriptionLower.includes(normalizedQuery);
+      const matchedInDescription = descriptionLower.length > 0 && descriptionLower.includes(normalizedQuery);
 
       if (matchedInTitle || matchedInDescription) {
         // Calculate relevance score

@@ -34,14 +34,17 @@ const extractThumbnailInfo = (photo: Child): {
 
 /**
  * Search index item structure matching frontend SearchIndexItem interface
+ * Note: Only albums (GalleryAlbumItem) are included in the search index to reduce file size.
+ * Empty fields like description are omitted to further reduce file size.
  */
 interface SearchIndexItem {
     id: number;
     type: 'GalleryAlbumItem' | 'GalleryPhotoItem';
     title: string;
-    description: string;
+    description?: string; // Optional, only included if non-empty
     parentId?: number;
     pathComponent: string;
+    ancestors?: string; // Optional, path of ancestor albums (root omitted), e.g. "dreamhack/dreamhack 08/crew"
 }
 
 const main = async (sql: ReturnType<typeof sqlUtils>, root: number, pathComponent: Array<string> = [], dataDir: string, searchIndex: Map<number, SearchIndexItem>) => {
@@ -80,18 +83,35 @@ const main = async (sql: ReturnType<typeof sqlUtils>, root: number, pathComponen
             return child;
         }));
         
-        // Add items to search index
+        // Add albums to search index (only albums, not photos)
         // Children of the current album have the current album as their parent
         for (const child of processedChildrenWithThumbnails) {
-            const searchItem: SearchIndexItem = {
-                id: child.id,
-                type: child.type as 'GalleryAlbumItem' | 'GalleryPhotoItem',
-                title: child.title ?? '',
-                description: child.description ?? '',
-                parentId: root, // Current album is the parent of these children
-                pathComponent: child.pathComponent ?? '',
-            };
-            searchIndex.set(child.id, searchItem);
+            // Only include albums in search index to reduce file size
+            if (child.type === 'GalleryAlbumItem') {
+                // Build search item with only non-empty fields to reduce file size
+                const searchItem: SearchIndexItem = {
+                    id: child.id,
+                    type: 'GalleryAlbumItem',
+                    title: child.title ?? '',
+                    pathComponent: child.pathComponent ?? '',
+                };
+                
+                // Only include description if it has a non-empty value
+                if (child.description && child.description.trim().length > 0) {
+                    searchItem.description = child.description;
+                }
+                
+                // Always include parentId for navigation
+                searchItem.parentId = root;
+                
+                // Include ancestors path (pathComponent array contains ancestor path components)
+                // Root album is omitted (empty pathComponent array)
+                if (pathComponent.length > 0) {
+                    searchItem.ancestors = pathComponent.join('/');
+                }
+                
+                searchIndex.set(child.id, searchItem);
+            }
         }
         
         const filePath = path.join(dataDir, `${root}.json`);

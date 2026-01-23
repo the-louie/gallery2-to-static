@@ -1,8 +1,9 @@
 /**
  * SearchResultsPage Component
  *
- * Displays search results for albums and images. Reads search query from URL
+ * Displays search results for albums. Reads search query from URL
  * parameters and uses the useSearch hook to perform the search.
+ * Note: Only albums are indexed in the search index, not individual photos.
  *
  * @module frontend/src/pages
  */
@@ -18,6 +19,7 @@ import './SearchResultsPage.css';
  * SearchResultsPage component
  *
  * Page that displays search results grouped by type (Albums, Images).
+ * Note: Only albums are indexed, so the Images section will typically be empty.
  * Shows loading state during search and empty state when no results.
  *
  * @returns React component
