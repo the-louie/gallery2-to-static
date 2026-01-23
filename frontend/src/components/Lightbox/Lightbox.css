@@ -184,8 +184,10 @@
 /* Image Counter */
 .lightbox-counter {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.5rem;
   background-color: var(--lightbox-counter-bg, rgba(0, 0, 0, 0.7));
   color: var(--lightbox-counter-color, #fff);
   padding: 0.5rem 0.75rem;
@@ -196,6 +198,7 @@
   pointer-events: none;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  white-space: nowrap;
 }
 
 /* Zoom Controls */
@@ -516,8 +519,10 @@
   }
 
   .lightbox-counter {
-    top: 0.75rem;
-    right: 0.75rem;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 0.5rem;
     padding: 0.375rem 0.625rem;
     font-size: 0.8125rem;
   }
