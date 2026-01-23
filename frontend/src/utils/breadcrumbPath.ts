@@ -268,6 +268,36 @@ export async function buildBreadcrumbPath(
 }
 
 /**
+ * Get parent album ID for a given album
+ *
+ * Wrapper function that handles root album detection internally.
+ * Returns null if the album is the root album or if the parent cannot be found.
+ *
+ * @param albumId - The album ID to find the parent for
+ * @returns Promise resolving to parent album ID, or null if root album or parent not found
+ *
+ * @example
+ * ```typescript
+ * const parentId = await getParentAlbumId(42);
+ * if (parentId !== null) {
+ *   navigate(`/album/${parentId}`);
+ * } else {
+ *   navigate('/'); // Root album or orphaned
+ * }
+ * ```
+ */
+export async function getParentAlbumId(
+  albumId: number,
+): Promise<number | null> {
+  const rootId = await getRootAlbumId();
+  if (rootId === null) {
+    // Can't determine parent without root
+    return null;
+  }
+  return findParentAlbumId(albumId, rootId);
+}
+
+/**
  * Clear breadcrumb path caches
  *
  * Useful for testing or when data changes.

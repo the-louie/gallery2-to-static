@@ -11,7 +11,7 @@
  * @module frontend/src/components/AlbumDetail
  */
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAlbumData } from '@/hooks/useAlbumData';
@@ -20,6 +20,7 @@ import { useFilter } from '@/contexts/FilterContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
 import { applyFilters } from '@/utils/filterUtils';
 import { parseBBCode } from '@/utils/bbcode';
+import { getParentAlbumId } from '@/utils/breadcrumbPath';
 import { AlbumGrid } from '@/components/AlbumGrid';
 import { ImageGrid } from '@/components/ImageGrid';
 import { SortDropdown } from '@/components/SortDropdown';
@@ -78,6 +79,8 @@ export function AlbumDetail({
 }: AlbumDetailProps) {
   const navigate = useNavigate();
   const { data, isLoading, error, refetch } = useAlbumData(albumId);
+  const [isNavigatingUp, setIsNavigatingUp] = useState(false);
+  const isNavigatingRef = useRef(false);
 
   // Get filter criteria from context
   const { criteria } = useFilter();
@@ -151,13 +154,37 @@ export function AlbumDetail({
     [onImageClick, navigate, albumId],
   );
 
-  const handleBackClick = useCallback(() => {
+  const handleBackClick = useCallback(async () => {
     if (onBackClick) {
       onBackClick();
-    } else {
-      navigate(-1);
+      return;
     }
-  }, [onBackClick, navigate]);
+
+    // Prevent multiple clicks while navigating
+    if (isNavigatingRef.current) {
+      return;
+    }
+
+    isNavigatingRef.current = true;
+    setIsNavigatingUp(true);
+    try {
+      const parentId = await getParentAlbumId(albumId);
+      if (parentId !== null) {
+        // Navigate to parent album
+        navigate(`/album/${parentId}`);
+      } else {
+        // Root album or orphaned album - navigate to home
+        navigate('/');
+      }
+    } catch (error) {
+      // Error during parent lookup - fallback to home
+      console.warn('Error finding parent album, navigating to home:', error);
+      navigate('/');
+    } finally {
+      isNavigatingRef.current = false;
+      setIsNavigatingUp(false);
+    }
+  }, [onBackClick, navigate, albumId]);
 
   const handleRetry = useCallback(() => {
     refetch();
@@ -178,9 +205,10 @@ export function AlbumDetail({
             type="button"
             className="album-detail-back"
             onClick={handleBackClick}
-            aria-label="Go back"
+            aria-label="Go up"
+            disabled={isNavigatingUp}
           >
-            ← Back
+            ← Up
           </button>
         )}
         {breadcrumbs && (
@@ -207,9 +235,10 @@ export function AlbumDetail({
             type="button"
             className="album-detail-back"
             onClick={handleBackClick}
-            aria-label="Go back"
+            aria-label="Go up"
+            disabled={isNavigatingUp}
           >
-            ← Back
+            ← Up
           </button>
         )}
         {breadcrumbs && (
@@ -252,9 +281,10 @@ export function AlbumDetail({
             type="button"
             className="album-detail-back"
             onClick={handleBackClick}
-            aria-label="Go back"
+            aria-label="Go up"
+            disabled={isNavigatingUp}
           >
-            ← Back
+            ← Up
           </button>
         )}
         {breadcrumbs && (
@@ -278,9 +308,10 @@ export function AlbumDetail({
           type="button"
           className="album-detail-back"
           onClick={handleBackClick}
-          aria-label="Go back"
+          aria-label="Go up"
+          disabled={isNavigatingUp}
         >
-          ← Back
+          ← Up
         </button>
       )}
       {breadcrumbs && (

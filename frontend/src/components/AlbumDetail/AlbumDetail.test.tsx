@@ -52,6 +52,14 @@ vi.mock('@/hooks/useSort', () => ({
   })),
 }));
 
+// Mock breadcrumbPath utilities
+const mockGetParentAlbumId = vi.fn();
+vi.mock('@/utils/breadcrumbPath', () => ({
+  getParentAlbumId: (...args: unknown[]) => mockGetParentAlbumId(...args),
+  buildBreadcrumbPath: vi.fn(),
+  clearBreadcrumbCache: vi.fn(),
+}));
+
 describe('AlbumDetail', () => {
   const mockUseAlbumData = vi.mocked(useAlbumDataHook.useAlbumData);
   const mockUseFilter = vi.mocked(useFilterHook.useFilter);
@@ -59,6 +67,9 @@ describe('AlbumDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockNavigate.mockClear();
+    mockGetParentAlbumId.mockClear();
+    // Default: assume parent exists (return parent ID 5 for album 7)
+    mockGetParentAlbumId.mockResolvedValue(5);
     // Default filter state (no active filters)
     mockUseFilter.mockReturnValue({
       criteria: {},
@@ -113,7 +124,7 @@ describe('AlbumDetail', () => {
       });
 
       render(<AlbumDetail albumId={7} />);
-      expect(screen.getByLabelText('Go back')).toBeInTheDocument();
+      expect(screen.getByLabelText('Go up')).toBeInTheDocument();
     });
 
     it('hides back button when showBackButton is false', () => {
@@ -125,7 +136,7 @@ describe('AlbumDetail', () => {
       });
 
       render(<AlbumDetail albumId={7} showBackButton={false} />);
-      expect(screen.queryByLabelText('Go back')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Go up')).not.toBeInTheDocument();
     });
 
     it('hides title when showTitle is false', () => {
@@ -282,6 +293,118 @@ describe('AlbumDetail', () => {
   });
 
   describe('Navigation', () => {
+    it('navigates to home when back button is clicked on root album', async () => {
+      const user = userEvent.setup();
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      // Root album has no parent
+      mockGetParentAlbumId.mockResolvedValue(null);
+
+      render(<AlbumDetail albumId={7} />);
+
+      const backButton = screen.getByLabelText('Go up');
+      await user.click(backButton);
+
+      await waitFor(() => {
+        expect(mockGetParentAlbumId).toHaveBeenCalledWith(7);
+        expect(mockNavigate).toHaveBeenCalledWith('/');
+      });
+    });
+
+    it('navigates to home when parent is not found (orphaned album)', async () => {
+      const user = userEvent.setup();
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      // Orphaned album - parent not found
+      mockGetParentAlbumId.mockResolvedValue(null);
+
+      render(<AlbumDetail albumId={99} />);
+
+      const backButton = screen.getByLabelText('Go up');
+      await user.click(backButton);
+
+      await waitFor(() => {
+        expect(mockGetParentAlbumId).toHaveBeenCalledWith(99);
+        expect(mockNavigate).toHaveBeenCalledWith('/');
+      });
+    });
+
+    it('navigates to home when parent lookup fails with error', async () => {
+      const user = userEvent.setup();
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      // Parent lookup throws error
+      mockGetParentAlbumId.mockRejectedValue(new Error('Network error'));
+
+      render(<AlbumDetail albumId={7} />);
+
+      const backButton = screen.getByLabelText('Go up');
+      await user.click(backButton);
+
+      await waitFor(() => {
+        expect(mockGetParentAlbumId).toHaveBeenCalledWith(7);
+        expect(mockNavigate).toHaveBeenCalledWith('/');
+      });
+    });
+
+    it('disables button while navigating up', async () => {
+      const user = userEvent.setup();
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      // Delay parent lookup to test loading state
+      let resolveParent: (value: number | null) => void;
+      const parentPromise = new Promise<number | null>((resolve) => {
+        resolveParent = resolve;
+      });
+      mockGetParentAlbumId.mockReturnValue(parentPromise);
+
+      render(<AlbumDetail albumId={7} />);
+
+      const backButton = screen.getByLabelText('Go up');
+      expect(backButton).not.toBeDisabled();
+
+      // Click button
+      const clickPromise = user.click(backButton);
+
+      // Button should be disabled during lookup
+      await waitFor(() => {
+        expect(backButton).toBeDisabled();
+      });
+
+      // Resolve parent lookup
+      resolveParent!(5);
+      await clickPromise;
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/album/5');
+        expect(backButton).not.toBeDisabled();
+      });
+    });
+
     it('navigates to album when album is clicked', async () => {
       const user = userEvent.setup();
 
@@ -332,7 +455,7 @@ describe('AlbumDetail', () => {
       }
     });
 
-    it('navigates back when back button is clicked', async () => {
+    it('navigates to parent album when back button is clicked', async () => {
       const user = userEvent.setup();
 
       mockUseAlbumData.mockReturnValue({
@@ -342,12 +465,17 @@ describe('AlbumDetail', () => {
         refetch: vi.fn(),
       });
 
+      mockGetParentAlbumId.mockResolvedValue(5);
+
       render(<AlbumDetail albumId={7} />);
 
-      const backButton = screen.getByLabelText('Go back');
+      const backButton = screen.getByLabelText('Go up');
       await user.click(backButton);
 
-      expect(mockNavigate).toHaveBeenCalledWith(-1);
+      await waitFor(() => {
+        expect(mockGetParentAlbumId).toHaveBeenCalledWith(7);
+        expect(mockNavigate).toHaveBeenCalledWith('/album/5');
+      });
     });
 
     it('calls custom onBackClick handler when provided', async () => {
@@ -363,10 +491,11 @@ describe('AlbumDetail', () => {
 
       render(<AlbumDetail albumId={7} onBackClick={handleBackClick} />);
 
-      const backButton = screen.getByLabelText('Go back');
+      const backButton = screen.getByLabelText('Go up');
       await user.click(backButton);
 
       expect(handleBackClick).toHaveBeenCalled();
+      expect(mockGetParentAlbumId).not.toHaveBeenCalled();
       expect(mockNavigate).not.toHaveBeenCalled();
     });
   });
@@ -467,7 +596,7 @@ describe('AlbumDetail', () => {
       });
 
       render(<AlbumDetail albumId={7} />);
-      const backButton = screen.getByLabelText('Go back');
+      const backButton = screen.getByLabelText('Go up');
       expect(backButton).toBeInTheDocument();
       expect(backButton.tagName).toBe('BUTTON');
     });

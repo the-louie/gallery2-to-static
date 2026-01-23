@@ -38,7 +38,8 @@ export function AlbumDetailEmpty({
     if (onBackClick) {
       onBackClick();
     } else {
-      navigate(-1);
+      // Fallback: navigate to home if no handler provided
+      navigate('/');
     }
   };
 
@@ -61,10 +62,10 @@ export function AlbumDetailEmpty({
           <button
             type="button"
             onClick={handleBackClick}
-            aria-label="Go back"
+            aria-label="Go up"
             className="album-detail-empty-button"
           >
-            Go Back
+            Go Up
           </button>
           <button
             type="button"
