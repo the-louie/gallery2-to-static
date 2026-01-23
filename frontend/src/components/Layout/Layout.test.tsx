@@ -144,7 +144,7 @@ describe('Layout', () => {
       </Layout>,
     );
 
-    expect(screen.getByText(/© 2025 the_louie/)).toBeInTheDocument();
+    expect(screen.getByText(/© 2026 the_louie/)).toBeInTheDocument();
   });
 });
 

@@ -70,7 +70,7 @@ export function Layout({ children, className }: LayoutProps) {
       </main>
       <footer className="layout-footer">
         <div className="layout-footer-content">
-          <p>&copy; 2025 the_louie</p>
+          <p>&copy; 2026 the_louie</p>
         </div>
       </footer>
     </div>
