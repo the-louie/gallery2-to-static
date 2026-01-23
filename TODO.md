@@ -2,6 +2,67 @@
 
 ---
 
+## Expand Theme System to Support Multiple Themes
+
+**Status:** Pending
+**Priority:** Medium
+**Complexity:** Medium
+**Estimated Time:** 3-4 hours
+
+### Description
+Expand the current dark/light theme toggle system to support multiple themes. Replace the toggle button with a dropdown menu that allows users to select from available themes. The system should default to light mode, include dark mode as an option, and be designed to easily accommodate additional themes in the future.
+
+### Requirements
+
+#### Research Tasks
+- Research dropdown component patterns for theme selection (accessibility, styling, UX)
+- Research theme storage and persistence patterns (localStorage, sessionStorage, cookies)
+- Research theme system architecture patterns (theme registry, theme definitions, theme switching)
+- Research CSS variable management for multiple themes (naming conventions, organization)
+- Research dropdown accessibility requirements (keyboard navigation, ARIA attributes, focus management)
+
+#### Implementation Tasks
+- Create theme registry/configuration system to define available themes
+- Refactor ThemeContext to support multiple themes instead of just dark/light toggle
+- Create ThemeDropdown component to replace ThemeSwitcher toggle button
+- Implement dropdown UI with proper styling and theming
+- Add theme selection state management (default to light mode)
+- Implement theme persistence in localStorage
+- Update themes.css to support theme registry pattern
+- Ensure dark mode remains available as an option
+- Add keyboard navigation support for dropdown (arrow keys, Enter, Escape)
+- Add ARIA attributes for accessibility (aria-label, aria-expanded, aria-haspopup)
+- Update theme switching logic to work with theme names instead of boolean
+- Test theme switching across all components
+- Ensure dropdown works correctly in both light and dark themes
+- Add smooth transitions when switching themes
+
+### Deliverable
+Theme dropdown component replacing toggle button, with support for multiple themes (light and dark initially, extensible for future themes)
+
+### Testing Requirements
+- Verify dropdown defaults to light mode on first visit
+- Check dark mode is available and works correctly
+- Ensure theme selection persists across page reloads
+- Verify dropdown is accessible via keyboard navigation
+- Check dropdown works correctly in all current themes
+- Verify theme switching applies correctly to all components
+- Test dropdown positioning and visibility (doesn't overflow viewport)
+- Ensure ARIA attributes are correct for screen readers
+- Verify theme persistence works when localStorage is disabled (graceful fallback)
+
+### Technical Notes
+- Dropdown should be styled to match current design system
+- Theme registry should be easily extensible (adding new themes should be straightforward)
+- Theme names should be descriptive and user-friendly
+- Consider theme preview/icon in dropdown for better UX
+- localStorage key should be consistent with existing patterns
+- Theme switching should not cause layout shifts or flicker
+- Dropdown should close when clicking outside or selecting an option
+- Consider adding theme transition animations for better UX
+
+---
+
 ## Implement Per-Album Theme Configuration
 
 **Status:** Pending
