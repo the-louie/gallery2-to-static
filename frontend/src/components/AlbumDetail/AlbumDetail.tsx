@@ -18,6 +18,8 @@ import { useAlbumData } from '@/hooks/useAlbumData';
 import { useSort } from '@/hooks/useSort';
 import { useFilter } from '@/contexts/FilterContext';
 import { useViewMode } from '@/contexts/ViewModeContext';
+import { useSiteMetadata } from '@/hooks/useSiteMetadata';
+import { useAlbumMetadata } from '@/hooks/useAlbumMetadata';
 import { applyFilters } from '@/utils/filterUtils';
 import { parseBBCode } from '@/utils/bbcode';
 import { getParentAlbumId } from '@/utils/breadcrumbPath';
@@ -81,6 +83,7 @@ export function AlbumDetail({
   const { data, isLoading, error, refetch } = useAlbumData(albumId);
   const [isNavigatingUp, setIsNavigatingUp] = useState(false);
   const isNavigatingRef = useRef(false);
+  const { rootAlbumId } = useSiteMetadata();
 
   // Get filter criteria from context
   const { criteria } = useFilter();
@@ -92,8 +95,11 @@ export function AlbumDetail({
   // Get view mode preferences from context
   const { albumViewMode, imageViewMode } = useViewMode();
 
-  // Use album prop if provided, otherwise null (metadata is optional)
-  const album = albumProp || null;
+  // Load album metadata if not provided as prop
+  const album = useAlbumMetadata(albumId, albumProp, rootAlbumId);
+
+  // Check if this is the root album
+  const isRootAlbum = rootAlbumId !== null && albumId === rootAlbumId;
 
   // Parse BBCode in album title for display
   const parsedTitle = useMemo(() => {
@@ -319,12 +325,12 @@ export function AlbumDetail({
       )}
 
       {/* Album metadata */}
-      {(showTitle || showDescription) && album && (
+      {album && (
         <div className="album-detail-header">
-          {showTitle && parsedTitle && (
-            <h1 className="album-detail-title">{parsedTitle}</h1>
+          {!isRootAlbum && showTitle && parsedTitle && (
+            <h2 className="album-detail-title">{parsedTitle}</h2>
           )}
-          {showDescription && album.description && (
+          {!isRootAlbum && showTitle && parsedTitle && album.description && (
             <p className="album-detail-description">{album.description}</p>
           )}
           {typeof album.summary === 'string' && album.summary.trim() && (

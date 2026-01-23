@@ -18,14 +18,14 @@ import './SearchResultsPage.css';
  * SearchResultsPage component
  *
  * Page that displays search results grouped by type (Albums, Images).
- * Shows loading state during index building and empty state when no results.
+ * Shows loading state during search and empty state when no results.
  *
  * @returns React component
  */
 export function SearchResultsPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { search, results, isIndexBuilding, isLoading, query, error } =
+  const { search, results, isLoading, query, error } =
     useSearch();
 
   // Get query from URL params
@@ -50,17 +50,6 @@ export function SearchResultsPage() {
       .filter(result => result.item.type === 'GalleryPhotoItem')
       .map(result => result.item);
   }, [results]);
-
-  // Loading state (index building)
-  if (isIndexBuilding) {
-    return (
-      <div className="search-results-page search-results-page-loading" role="status" aria-label="Building search index" aria-live="polite">
-        <LoadingSpinner size="large" label="Building search index..." />
-        <h1>Building Search Index</h1>
-        <p>Please wait while we index all albums and images...</p>
-      </div>
-    );
-  }
 
   // Error state
   if (error) {

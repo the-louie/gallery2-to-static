@@ -1,8 +1,9 @@
 /**
  * Search index utility for albums and images
  *
- * Provides functionality to build a search index from all album/image data
- * and perform searches on titles and descriptions.
+ * Provides functionality to load a pre-built search index and perform searches
+ * on titles and descriptions. The search index is generated during extraction
+ * time and loaded at runtime.
  *
  * ## Usage
  *
@@ -16,11 +17,11 @@
  * const results = index.search('vacation');
  * ```
  *
- * ## Index Building
+ * ## Index Loading
  *
- * The index is built by recursively loading all album JSON files starting
- * from the root album. Each album and image is indexed with its title and
- * description for searching.
+ * The index is loaded from a pre-built file at `/data/search/index.json` that
+ * was generated during extraction. Each album and image is indexed with its
+ * title and description for searching.
  *
  * ## Search Algorithm
  *
@@ -29,9 +30,7 @@
  * - Limited to 100 results to prevent performance issues
  */
 
-import { loadAlbum } from './dataLoader';
-import type { Child } from '../../../backend/types';
-import { isAlbum, isImage } from '@/types';
+import { loadSearchIndex } from './searchIndexLoader';
 
 /**
  * Search index item representing an album or image in the search index
@@ -66,72 +65,58 @@ export interface SearchResult {
 }
 
 /**
- * Search index class for building and querying search indexes
+ * Search index class for loading and querying search indexes
  */
 export class SearchIndex {
   private index: Map<number, SearchIndexItem> = new Map();
-  private isBuilding: boolean = false;
-  private buildPromise: Promise<void> | null = null;
+  private loadPromise: Promise<void> | null = null;
 
   /**
-   * Build search index by recursively loading all albums and images
+   * Load search index from pre-built file
    *
-   * @param rootAlbumId - Root album ID to start building from
-   * @returns Promise that resolves when index is built
+   * @param rootAlbumId - Root album ID (kept for API compatibility, not used)
+   * @returns Promise that resolves when index is loaded
    */
   async buildIndex(rootAlbumId: number): Promise<void> {
-    // If already building, return the existing promise
-    if (this.isBuilding && this.buildPromise) {
-      return this.buildPromise;
+    // If already loading, return the existing promise
+    if (this.loadPromise) {
+      return this.loadPromise;
     }
 
-    // If already built, return immediately
-    if (this.index.size > 0 && !this.isBuilding) {
+    // If already loaded, return immediately
+    if (this.index.size > 0) {
       return Promise.resolve();
     }
 
-    this.isBuilding = true;
-    this.buildPromise = this._buildIndexRecursive(rootAlbumId);
+    this.loadPromise = this._loadIndex();
 
     try {
-      await this.buildPromise;
+      await this.loadPromise;
     } finally {
-      this.isBuilding = false;
-      this.buildPromise = null;
+      this.loadPromise = null;
     }
   }
 
   /**
-   * Recursively build index from album tree
+   * Load index from pre-built file
    */
-  private async _buildIndexRecursive(
-    albumId: number,
-    parentId?: number,
-  ): Promise<void> {
+  private async _loadIndex(): Promise<void> {
     try {
-      const children = await loadAlbum(albumId);
+      const indexData = await loadSearchIndex();
 
-      for (const child of children) {
-        // Add item to index
-        const indexItem: SearchIndexItem = {
-          id: child.id,
-          type: child.type as 'GalleryAlbumItem' | 'GalleryPhotoItem',
-          title: child.title ?? '',
-          description: child.description ?? '',
-          parentId,
-          pathComponent: child.pathComponent ?? '',
-        };
+      if (!indexData) {
+        // Index file not found - log warning but don't throw
+        console.warn('Search index file not found. Search functionality will be unavailable.');
+        return;
+      }
 
-        this.index.set(child.id, indexItem);
-
-        // If it's an album with children, recursively load it
-        if (isAlbum(child) && child.hasChildren) {
-          await this._buildIndexRecursive(child.id, child.id);
-        }
+      // Populate index map from loaded data
+      for (const item of indexData.items) {
+        this.index.set(item.id, item);
       }
     } catch (error) {
-      // Log error but continue building index with available data
-      console.warn(`Failed to load album ${albumId} for search index:`, error);
+      // Log error but don't throw - allow search to work with empty index
+      console.error('Failed to load search index:', error);
     }
   }
 
@@ -221,16 +206,15 @@ export class SearchIndex {
    */
   clear(): void {
     this.index.clear();
-    this.isBuilding = false;
-    this.buildPromise = null;
+    this.loadPromise = null;
   }
 
   /**
    * Check if index is currently being built
    *
-   * @returns True if index is being built
+   * @returns Always returns false since index is pre-built and only loaded
    */
   isIndexBuilding(): boolean {
-    return this.isBuilding;
+    return false;
   }
 }

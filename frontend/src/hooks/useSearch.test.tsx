@@ -106,9 +106,9 @@ describe('useSearch', () => {
     });
   });
 
-  it('handles index building errors', async () => {
+  it('handles index loading errors', async () => {
     vi.mocked(mockSearchIndex.buildIndex).mockRejectedValue(
-      new Error('Build failed'),
+      new Error('Load failed'),
     );
 
     const { result } = renderHook(() => useSearch());
@@ -117,7 +117,7 @@ describe('useSearch', () => {
 
     await waitFor(() => {
       expect(result.current.error).toBeDefined();
-      expect(result.current.error?.message).toBe('Build failed');
+      expect(result.current.error?.message).toBe('Load failed');
     });
   });
 

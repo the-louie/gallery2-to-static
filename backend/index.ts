@@ -32,13 +32,25 @@ const extractThumbnailInfo = (photo: Child): {
     };
 }
 
-const main = async (sql: ReturnType<typeof sqlUtils>, root: number, pathComponent: Array<string> = [], dataDir: string) => {
+/**
+ * Search index item structure matching frontend SearchIndexItem interface
+ */
+interface SearchIndexItem {
+    id: number;
+    type: 'GalleryAlbumItem' | 'GalleryPhotoItem';
+    title: string;
+    description: string;
+    parentId?: number;
+    pathComponent: string;
+}
+
+const main = async (sql: ReturnType<typeof sqlUtils>, root: number, pathComponent: Array<string> = [], dataDir: string, searchIndex: Map<number, SearchIndexItem>) => {
     const children = await sql.getChildren(root);
     if (children.length > 0) {
         const recursivePromises: Promise<void>[] = [];
         children.forEach((child) => {
             if (child.hasChildren && child.pathComponent) {
-                recursivePromises.push(main(sql, child.id, pathComponent.concat([child.pathComponent]), dataDir));
+                recursivePromises.push(main(sql, child.id, pathComponent.concat([child.pathComponent]), dataDir, searchIndex));
             }
         });
         const processedChildren = children.map((child) => {
@@ -67,6 +79,20 @@ const main = async (sql: ReturnType<typeof sqlUtils>, root: number, pathComponen
             }
             return child;
         }));
+        
+        // Add items to search index
+        // Children of the current album have the current album as their parent
+        for (const child of processedChildrenWithThumbnails) {
+            const searchItem: SearchIndexItem = {
+                id: child.id,
+                type: child.type as 'GalleryAlbumItem' | 'GalleryPhotoItem',
+                title: child.title ?? '',
+                description: child.description ?? '',
+                parentId: root, // Current album is the parent of these children
+                pathComponent: child.pathComponent ?? '',
+            };
+            searchIndex.set(child.id, searchItem);
+        }
         
         const filePath = path.join(dataDir, `${root}.json`);
         try {
@@ -111,9 +137,39 @@ let connection: mysql.Connection | null = null;
             await fs.mkdir(dataDir, { recursive: true });
         }
         
+        // Create search subdirectory
+        const searchDir = path.join(dataDir, 'search');
+        try {
+            await fs.access(searchDir);
+        } catch {
+            await fs.mkdir(searchDir, { recursive: true });
+            console.log('Created search directory');
+        }
+        
         const rootId = config.rootId ?? await sql.getRootAlbumId();
         console.log(`Using root album ID: ${rootId}`);
-        await main(sql, rootId, [], dataDir);
+        
+        // Initialize search index accumulator
+        const searchIndex = new Map<number, SearchIndexItem>();
+        
+        await main(sql, rootId, [], dataDir, searchIndex);
+        
+        // Generate search index file
+        try {
+            const searchIndexArray = Array.from(searchIndex.values());
+            const searchIndexData = {
+                version: 1,
+                generatedAt: new Date().toISOString(),
+                itemCount: searchIndexArray.length,
+                items: searchIndexArray
+            };
+            const searchIndexPath = path.join(searchDir, 'index.json');
+            await fs.writeFile(searchIndexPath, JSON.stringify(searchIndexData, null, 2));
+            console.log(`Generated search index with ${searchIndexArray.length} items`);
+        } catch (error) {
+            console.error('Error generating search index:', error);
+            // Don't fail extraction if search index generation fails
+        }
         
         // Generate index.json with root album metadata
         const rootAlbumInfo = await sql.getRootAlbumInfo(rootId);

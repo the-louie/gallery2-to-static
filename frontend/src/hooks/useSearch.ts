@@ -1,8 +1,8 @@
 /**
  * React hook for search functionality
  *
- * Provides search state management, index building, and search execution.
- * The search index is built lazily on first use to avoid blocking initial page load.
+ * Provides search state management and search execution.
+ * The search index is loaded from a pre-built file on first use.
  *
  * ## Usage
  *
@@ -14,7 +14,6 @@
  *     search('vacation');
  *   }, []);
  *
- *   if (isIndexBuilding) return <div>Building search index...</div>;
  *   if (isLoading) return <div>Searching...</div>;
  *
  *   return (
@@ -72,12 +71,14 @@ function getSearchIndex(): SearchIndex {
  */
 export function useSearch(): UseSearchReturn {
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [isIndexBuilding, setIsIndexBuilding] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [query, setQuery] = useState<string>('');
   const [error, setError] = useState<Error | null>(null);
   const isMountedRef = useRef(true);
   const resultsCacheRef = useRef<Map<string, SearchResult[]>>(new Map());
+  
+  // isIndexBuilding is always false since index is pre-built
+  const isIndexBuilding = false;
 
   // Ensure component is marked as mounted
   useEffect(() => {
@@ -88,21 +89,17 @@ export function useSearch(): UseSearchReturn {
   }, []);
 
   /**
-   * Build search index if not already built
+   * Load search index if not already loaded
    */
   const ensureIndexBuilt = useCallback(async (): Promise<void> => {
     const index = getSearchIndex();
 
-    // If already built, return immediately
-    if (index.getItemCount() > 0 && !index.isIndexBuilding()) {
+    // If already loaded, return immediately
+    if (index.getItemCount() > 0) {
       return;
     }
 
     try {
-      // Only set loading state if we're starting a new build
-      if (!index.isIndexBuilding()) {
-        setIsIndexBuilding(true);
-      }
       setError(null);
 
       const rootAlbumId = await findRootAlbumId();
@@ -110,20 +107,15 @@ export function useSearch(): UseSearchReturn {
         throw new Error('Root album not found');
       }
 
-      // buildIndex handles concurrent calls by returning existing promise
+      // buildIndex loads the pre-built index file
       await index.buildIndex(rootAlbumId);
-
-      if (isMountedRef.current) {
-        setIsIndexBuilding(false);
-      }
     } catch (err) {
       if (isMountedRef.current) {
         const searchError =
           err instanceof Error
             ? err
-            : new Error('Failed to build search index');
+            : new Error('Failed to load search index');
         setError(searchError);
-        setIsIndexBuilding(false);
       }
     }
   }, []);

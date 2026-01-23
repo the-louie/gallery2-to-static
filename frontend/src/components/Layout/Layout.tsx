@@ -1,7 +1,8 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ThemeSwitcher } from '../ThemeSwitcher';
 import { SearchBar } from '../SearchBar';
+import { useSiteMetadata } from '@/hooks/useSiteMetadata';
 import './Layout.css';
 
 /**
@@ -33,6 +34,7 @@ export interface LayoutProps {
  * ```
  */
 export function Layout({ children, className }: LayoutProps) {
+  const { siteName } = useSiteMetadata();
   const handleSkipClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     const mainContent = document.getElementById('main-content');
@@ -41,6 +43,13 @@ export function Layout({ children, className }: LayoutProps) {
       mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, []);
+
+  // Update document title
+  useEffect(() => {
+    if (siteName) {
+      document.title = siteName;
+    }
+  }, [siteName]);
 
   return (
     <div className={className ? `layout ${className}` : 'layout'}>
@@ -56,7 +65,7 @@ export function Layout({ children, className }: LayoutProps) {
         <div className="layout-header-content">
           <nav aria-label="Main navigation">
             <Link to="/" className="layout-title-link" aria-label="Go to home page">
-              <h1 className="layout-title">Gallery 2 to Static</h1>
+              <h1 className="layout-title">{siteName || 'Gallery 2 to Static'}</h1>
             </Link>
           </nav>
           <div className="layout-header-actions">

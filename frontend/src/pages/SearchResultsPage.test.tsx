@@ -26,7 +26,6 @@ describe('SearchResultsPage', () => {
   const mockUseSearch = {
     search: mockSearch,
     results: [],
-    isIndexBuilding: false,
     isLoading: false,
     query: '',
     error: null,
@@ -40,17 +39,6 @@ describe('SearchResultsPage', () => {
       new URLSearchParams('?q=test'),
       vi.fn(),
     ]);
-  });
-
-  it('displays loading state when building index', () => {
-    vi.mocked(useSearch).mockReturnValue({
-      ...mockUseSearch,
-      isIndexBuilding: true,
-    } as any);
-
-    render(<SearchResultsPage />);
-
-    expect(screen.getByText(/building search index/i)).toBeInTheDocument();
   });
 
   it('displays error state', () => {
