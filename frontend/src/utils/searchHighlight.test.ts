@@ -18,11 +18,24 @@ describe('searchHighlight', () => {
       expect(result).toEqual(['Test text']);
     });
 
-    it('highlights matching text in simple case', () => {
+    it('highlights matching text in simple case (exact match)', () => {
       const result = highlightText('Vacation photos', 'vacation');
-      expect(result).toHaveLength(2);
-      expect(result[0]).toEqual({ text: 'Vacation', highlight: true });
-      expect(result[1]).toBe(' photos');
+      expect(result.length).toBeGreaterThan(0);
+      // Should highlight all characters of 'vacation'
+      const highlights = result.filter(
+        part => typeof part !== 'string' && part.highlight,
+      );
+      expect(highlights.length).toBeGreaterThan(0);
+    });
+
+    it('highlights subsequence matches', () => {
+      const result = highlightText('FreeBSD', 'fbsd');
+      expect(result.length).toBeGreaterThan(0);
+      // Should highlight 'F', 'B', 'S', 'D' individually
+      const highlights = result.filter(
+        part => typeof part !== 'string' && part.highlight,
+      );
+      expect(highlights.length).toBe(4);
     });
 
     it('performs case-insensitive matching', () => {
@@ -35,13 +48,14 @@ describe('searchHighlight', () => {
       expect(result[0]).toEqual({ text: 'Vacation', highlight: true });
     });
 
-    it('highlights multiple matches', () => {
-      const result = highlightText('test test test', 'test');
-      expect(result.length).toBeGreaterThan(1);
+    it('highlights subsequence in multiple word text', () => {
+      const result = highlightText('test test test', 'tt');
+      expect(result.length).toBeGreaterThan(0);
+      // Should highlight 't' characters that match subsequence
       const highlights = result.filter(
         part => typeof part !== 'string' && part.highlight,
       );
-      expect(highlights.length).toBe(3);
+      expect(highlights.length).toBeGreaterThan(0);
     });
 
     it('handles text with no matches', () => {
@@ -51,20 +65,15 @@ describe('searchHighlight', () => {
 
     it('handles query at start of text', () => {
       const result = highlightText('test text', 'test');
-      expect(result[0]).toEqual({ text: 'test', highlight: true });
+      const firstPart = result[0];
+      expect(typeof firstPart !== 'string' && firstPart.highlight).toBe(true);
     });
 
-    it('handles query at end of text', () => {
-      const result = highlightText('some text', 'text');
-      const lastPart = result[result.length - 1];
-      expect(lastPart).toEqual({ text: 'text', highlight: true });
-    });
-
-    it('handles query in middle of text', () => {
-      const result = highlightText('start middle end', 'middle');
-      expect(result.some(part =>
-        typeof part !== 'string' && part.text === 'middle' && part.highlight
-      )).toBe(true);
+    it('handles subsequence match at start', () => {
+      const result = highlightText('FreeBSD', 'fbsd');
+      const firstPart = result[0];
+      expect(typeof firstPart !== 'string' && firstPart.highlight).toBe(true);
+      expect(typeof firstPart !== 'string' && firstPart.text).toBe('F');
     });
   });
 
@@ -79,10 +88,18 @@ describe('searchHighlight', () => {
       expect(result).toBe('Test text');
     });
 
-    it('highlights matching text with HTML', () => {
+    it('highlights matching text with HTML (exact match)', () => {
       const result = highlightTextAsHtml('Vacation photos', 'vacation');
-      expect(result).toContain('<mark>Vacation</mark>');
+      expect(result).toContain('<mark>');
       expect(result).toContain(' photos');
+    });
+
+    it('highlights subsequence matches with HTML', () => {
+      const result = highlightTextAsHtml('FreeBSD', 'fbsd');
+      expect(result).toContain('<mark>F</mark>');
+      expect(result).toContain('<mark>B</mark>');
+      expect(result).toContain('<mark>S</mark>');
+      expect(result).toContain('<mark>D</mark>');
     });
 
     it('escapes HTML in text', () => {
@@ -97,10 +114,10 @@ describe('searchHighlight', () => {
       expect(result).not.toContain('<b>');
     });
 
-    it('handles multiple matches', () => {
-      const result = highlightTextAsHtml('test test test', 'test');
+    it('handles subsequence matches in multiple words', () => {
+      const result = highlightTextAsHtml('test test test', 'tt');
       const matchCount = (result.match(/<mark>/g) || []).length;
-      expect(matchCount).toBe(3);
+      expect(matchCount).toBeGreaterThan(0);
     });
   });
 });

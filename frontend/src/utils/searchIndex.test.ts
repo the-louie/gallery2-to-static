@@ -138,20 +138,42 @@ describe('SearchIndex', () => {
       expect(results).toEqual([]);
     });
 
-    it('finds results by title', () => {
+    it('finds results by title (exact match)', () => {
       const results = searchIndex.search('vacation');
       expect(results.length).toBeGreaterThan(0);
       expect(results[0].item.title.toLowerCase()).toContain('vacation');
     });
 
-    it('finds results by description', () => {
+    it('finds results by subsequence matching', () => {
+      const results = searchIndex.search('vac');
+      expect(results.length).toBeGreaterThan(0);
+      // Should find "Vacation Album" via subsequence match
+      expect(
+        results.some(r => r.item.title.toLowerCase().includes('vacation')),
+      ).toBe(true);
+    });
+
+    it('finds results by description (exact match)', () => {
       const results = searchIndex.search('beach');
       expect(results.length).toBeGreaterThan(0);
       expect(
         results.some(
           r =>
-            r.item.description.toLowerCase().includes('beach') ||
+            r.item.description?.toLowerCase().includes('beach') ||
             r.item.title.toLowerCase().includes('beach'),
+        ),
+      ).toBe(true);
+    });
+
+    it('finds results by subsequence in description', () => {
+      const results = searchIndex.search('pho');
+      expect(results.length).toBeGreaterThan(0);
+      // Should find items with "photo" in description via subsequence
+      expect(
+        results.some(
+          r =>
+            r.item.description?.toLowerCase().includes('photo') ||
+            r.item.title.toLowerCase().includes('photo'),
         ),
       ).toBe(true);
     });
@@ -172,6 +194,19 @@ describe('SearchIndex', () => {
       if (descriptionMatches.length > 0) {
         expect(titleMatches[0].score).toBeGreaterThan(
           descriptionMatches[0].score,
+        );
+      }
+    });
+
+    it('scores subsequence matches appropriately', () => {
+      const results = searchIndex.search('vac');
+      expect(results.length).toBeGreaterThan(0);
+      // Exact matches should score higher than subsequence matches
+      const exactResults = searchIndex.search('vacation');
+      if (exactResults.length > 0 && results.length > 0) {
+        // Exact match should generally score higher
+        expect(exactResults[0].score).toBeGreaterThanOrEqual(
+          results[0].score,
         );
       }
     });

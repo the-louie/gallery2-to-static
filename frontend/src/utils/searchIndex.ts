@@ -26,12 +26,17 @@
  *
  * ## Search Algorithm
  *
- * - Case-insensitive substring matching in title and description
+ * - Case-insensitive subsequence matching in title and description
+ * - Characters in query must appear in order but not necessarily adjacent
  * - Results sorted by relevance (title matches first, then description matches)
  * - Limited to 100 results to prevent performance issues
  */
 
 import { loadSearchIndex } from './searchIndexLoader';
+import {
+  matchSubsequence,
+  calculateSubsequenceScore,
+} from './searchUtils';
 
 /**
  * Search index item representing an album in the search index
@@ -126,7 +131,10 @@ export class SearchIndex {
   }
 
   /**
-   * Search the index for items matching the query
+   * Search the index for items matching the query using subsequence matching
+   *
+   * Subsequence matching allows characters in the query to appear in order
+   * but not necessarily adjacent (e.g., "fbsd" matches "FreeBSD").
    *
    * @param query - Search query string
    * @returns Array of search results sorted by relevance
@@ -136,33 +144,38 @@ export class SearchIndex {
       return [];
     }
 
-    const normalizedQuery = query.trim().toLowerCase();
     const results: SearchResult[] = [];
 
     for (const item of this.index.values()) {
-      const titleLower = item.title.toLowerCase();
-      const descriptionLower = item.description?.toLowerCase() ?? '';
+      const titleMatch = matchSubsequence(item.title, query);
+      const descriptionMatch = item.description
+        ? matchSubsequence(item.description, query)
+        : { matched: false, matchIndices: [] };
 
-      const matchedInTitle = titleLower.includes(normalizedQuery);
-      const matchedInDescription = descriptionLower.length > 0 && descriptionLower.includes(normalizedQuery);
+      const matchedInTitle = titleMatch.matched;
+      const matchedInDescription = descriptionMatch.matched;
 
       if (matchedInTitle || matchedInDescription) {
         // Calculate relevance score
         // Title matches are worth more than description matches
         let score = 0;
         if (matchedInTitle) {
-          score += 10;
-          // Bonus for exact title match
-          if (titleLower === normalizedQuery) {
-            score += 5;
-          }
-          // Bonus for title starting with query
-          if (titleLower.startsWith(normalizedQuery)) {
-            score += 3;
-          }
+          const titleScore = calculateSubsequenceScore(
+            item.title,
+            query,
+            titleMatch.matchIndices,
+          );
+          score += titleScore;
+          // Additional bonus for title matches
+          score += 5;
         }
         if (matchedInDescription) {
-          score += 1;
+          const descScore = calculateSubsequenceScore(
+            item.description!,
+            query,
+            descriptionMatch.matchIndices,
+          );
+          score += descScore;
         }
 
         results.push({

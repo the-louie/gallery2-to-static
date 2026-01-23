@@ -1,11 +1,13 @@
 /**
  * SearchHighlight Component
  *
- * Component to highlight search terms in text. Wraps matching text in
- * highlight spans for visual emphasis.
+ * Component to highlight search terms in text using subsequence matching.
+ * Characters in the query must appear in order but not necessarily adjacent.
+ * Wraps matching characters in highlight spans for visual emphasis.
  *
  * ## Features
  *
+ * - Subsequence matching (e.g., "fbsd" matches "FreeBSD")
  * - Case-insensitive matching
  * - Preserves original text case
  * - Handles empty/null text gracefully
