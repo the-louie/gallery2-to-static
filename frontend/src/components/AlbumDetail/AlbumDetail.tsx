@@ -8,6 +8,10 @@
  * The album title supports BBCode formatting (e.g., [b]bold[/b], [i]italic[/i]).
  * Only the title field supports BBCode; description and summary are rendered as plain text.
  *
+ * Section headers (Albums / Images) use metadata.albumTitle (with BBCode) and
+ * optional metadata.albumDescription (plain text) when present; otherwise fall
+ * back to "Albums" and "Images".
+ *
  * @module frontend/src/components/AlbumDetail
  */
 
@@ -108,6 +112,22 @@ export function AlbumDetail({
     }
     return parseBBCode(album.title);
   }, [album]);
+
+  // Section headers: use metadata.albumTitle / metadata.albumDescription when present
+  const sectionTitleAlbums = useMemo(() => {
+    const t = metadata?.albumTitle?.trim();
+    return t ? parseBBCode(t) : 'Albums';
+  }, [metadata]);
+
+  const sectionTitleImages = useMemo(() => {
+    const t = metadata?.albumTitle?.trim();
+    return t ? parseBBCode(t) : 'Images';
+  }, [metadata]);
+
+  const sectionDescription = useMemo(() => {
+    const d = metadata?.albumDescription?.trim();
+    return d || null;
+  }, [metadata]);
 
   // Separate albums and images from the data, then apply filters
   const albums = useMemo<Album[]>(() => {
@@ -351,7 +371,12 @@ export function AlbumDetail({
           aria-label="Child albums"
         >
           <div className="album-detail-section-header">
-            <h2 className="album-detail-section-title">Albums</h2>
+            <div className="album-detail-section-title-block">
+              <h2 className="album-detail-section-title">{sectionTitleAlbums}</h2>
+              {sectionDescription && (
+                <p className="album-detail-section-description">{sectionDescription}</p>
+              )}
+            </div>
             <div className="album-detail-section-controls">
               <SortDropdown
                 currentOption={albumsSort.option}
@@ -374,7 +399,12 @@ export function AlbumDetail({
           aria-label="Images"
         >
           <div className="album-detail-section-header">
-            <h2 className="album-detail-section-title">Images</h2>
+            <div className="album-detail-section-title-block">
+              <h2 className="album-detail-section-title">{sectionTitleImages}</h2>
+              {sectionDescription && (
+                <p className="album-detail-section-description">{sectionDescription}</p>
+              )}
+            </div>
             <div className="album-detail-section-controls">
               <SortDropdown
                 currentOption={imagesSort.option}

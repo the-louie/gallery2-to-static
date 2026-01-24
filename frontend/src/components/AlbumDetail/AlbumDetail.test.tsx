@@ -66,6 +66,13 @@ vi.mock('@/hooks/useSiteMetadata', () => ({
   useSiteMetadata: () => mockUseSiteMetadata(),
 }));
 
+// Mock useAlbumMetadata to avoid loadAlbum(parent) calls when metadata/album prop absent
+vi.mock('@/hooks/useAlbumMetadata', () => ({
+  useAlbumMetadata: vi.fn(
+    (_id: number, albumProp: unknown) => (albumProp !== undefined ? albumProp : null),
+  ),
+}));
+
 describe('AlbumDetail', () => {
   const mockUseAlbumData = vi.mocked(useAlbumDataHook.useAlbumData);
   const mockUseFilter = vi.mocked(useFilterHook.useFilter);
@@ -669,8 +676,9 @@ describe('AlbumDetail', () => {
       });
 
       render(<AlbumDetail albumId={7} />);
-      // Should still render children even without metadata
+      // Should still render children; section titles fall back to Albums/Images
       expect(screen.getByText('Albums')).toBeInTheDocument();
+      expect(screen.getByText('Images')).toBeInTheDocument();
     });
 
     it('handles empty title gracefully', () => {
@@ -689,8 +697,9 @@ describe('AlbumDetail', () => {
       } as Album;
 
       render(<AlbumDetail albumId={7} album={albumWithoutTitle} />);
-      // Should not crash, title section should not render
+      // Should not crash, title section should not render; section titles fall back
       expect(screen.getByText('Albums')).toBeInTheDocument();
+      expect(screen.getByText('Images')).toBeInTheDocument();
     });
 
     it('handles empty description gracefully', () => {
@@ -709,8 +718,9 @@ describe('AlbumDetail', () => {
       } as Album;
 
       render(<AlbumDetail albumId={7} album={albumWithoutDescription} />);
-      // Should not crash, description should not render
+      // Should not crash, description should not render; section titles fall back
       expect(screen.getByText('Albums')).toBeInTheDocument();
+      expect(screen.getByText('Images')).toBeInTheDocument();
     });
 
     it('does not render summary or owner when null or empty', () => {
@@ -733,6 +743,190 @@ describe('AlbumDetail', () => {
       expect(screen.getByText('Test Album')).toBeInTheDocument();
       expect(screen.queryByText('Short album summary for tests')).not.toBeInTheDocument();
       expect(screen.queryByText(/Owner: Test Owner/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Section Headers and Metadata', () => {
+    it('shows custom section title from metadata.albumTitle only', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: 'My Sections',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+        },
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={7} />);
+      // Main header + both sections use metadata.albumTitle
+      expect(screen.getAllByText('My Sections').length).toBeGreaterThanOrEqual(2);
+      expect(document.querySelectorAll('.album-detail-section-description')).toHaveLength(0);
+    });
+
+    it('shows section description from metadata.albumDescription with fallback titles', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: null,
+          albumDescription: 'Section subtitle',
+          albumTimestamp: null,
+          ownerName: null,
+        },
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={7} />);
+      expect(screen.getByText('Albums')).toBeInTheDocument();
+      expect(screen.getByText('Images')).toBeInTheDocument();
+      expect(screen.getAllByText('Section subtitle')).toHaveLength(2);
+    });
+
+    it('shows custom title and description in both sections when both present', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: 'Custom Sections',
+          albumDescription: 'Custom description',
+          albumTimestamp: null,
+          ownerName: null,
+        },
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={7} />);
+      // Main header + both sections use metadata; description in main + both sections
+      expect(screen.getAllByText('Custom Sections').length).toBeGreaterThanOrEqual(2);
+      expect(screen.getAllByText('Custom description').length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('renders no section description when albumDescription is null or empty', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: 'Titled',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+        },
+        refetch: vi.fn(),
+      });
+
+      const { unmount } = render(<AlbumDetail albumId={7} />);
+      expect(document.querySelectorAll('.album-detail-section-description')).toHaveLength(0);
+      unmount();
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: 'Titled',
+          albumDescription: '',
+          albumTimestamp: null,
+          ownerName: null,
+        },
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={7} />);
+      expect(document.querySelectorAll('.album-detail-section-description')).toHaveLength(0);
+    });
+
+    it('falls back to Albums/Images when albumTitle is null or empty', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: null,
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+        },
+        refetch: vi.fn(),
+      });
+
+      const { unmount } = render(<AlbumDetail albumId={7} />);
+      expect(screen.getByText('Albums')).toBeInTheDocument();
+      expect(screen.getByText('Images')).toBeInTheDocument();
+      unmount();
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: '',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+        },
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={7} />);
+      expect(screen.getByText('Albums')).toBeInTheDocument();
+      expect(screen.getByText('Images')).toBeInTheDocument();
+    });
+
+    it('falls back to Albums/Images when albumTitle is whitespace-only', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: '   \t  ',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+        },
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={7} />);
+      expect(screen.getByText('Albums')).toBeInTheDocument();
+      expect(screen.getByText('Images')).toBeInTheDocument();
+    });
+
+    it('parses BBCode in section title from metadata.albumTitle', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: '[b]Bold Sections[/b]',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+        },
+        refetch: vi.fn(),
+      });
+
+      const { container } = render(<AlbumDetail albumId={7} />);
+      const strongs = container.querySelectorAll('.album-detail-section-title strong');
+      expect(strongs).toHaveLength(2);
+      strongs.forEach((el) => {
+        expect(el).toHaveTextContent('Bold Sections');
+      });
     });
   });
 
@@ -902,12 +1096,12 @@ describe('AlbumDetail', () => {
       });
 
       const { container } = render(
-        <AlbumDetail albumId={1} album={albumWithBBCode} />,
+        <AlbumDetail albumId={7} album={albumWithBBCode} />,
       );
 
       await waitFor(() => {
-        // Title should have parsed BBCode
-        const titleStrong = container.querySelector('h1 strong');
+        // Title should have parsed BBCode (main header uses h2.album-detail-title; use non-root albumId)
+        const titleStrong = container.querySelector('h2.album-detail-title strong');
         expect(titleStrong).toBeInTheDocument();
 
         // Description and summary should have literal [b] tags
