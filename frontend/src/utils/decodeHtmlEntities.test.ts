@@ -80,4 +80,34 @@ describe('decodeHtmlEntities', () => {
   it('handles incomplete &#x (no hex) as no-op', () => {
     expect(decodeHtmlEntities('&#x')).toBe('&#x');
   });
+
+  it('decodes triple-encoded &amp;amp;amp; to &', () => {
+    expect(decodeHtmlEntities('&amp;amp;amp;')).toBe('&');
+    expect(decodeHtmlEntities('&amp;amp;amp;lt;')).toBe('<');
+  });
+
+  it('decodes mixed entity types in one string', () => {
+    expect(decodeHtmlEntities('&amp; &lt; &gt; &quot; &#39;')).toBe('& < > " \'');
+    expect(decodeHtmlEntities('&#65; &amp; &#x42;')).toBe('A & B');
+  });
+
+  it('handles malformed entities correctly', () => {
+    expect(decodeHtmlEntities('&invalid;')).toBe('&invalid;');
+    expect(decodeHtmlEntities('&ampinvalid')).toBe('&ampinvalid');
+    expect(decodeHtmlEntities('&#abc;')).toBe('&#abc;');
+    expect(decodeHtmlEntities('&#xgh;')).toBe('&#xgh;');
+  });
+
+  it('handles very long strings with many entities', () => {
+    const longString = '&amp; '.repeat(1000);
+    const result = decodeHtmlEntities(longString);
+    expect(result).toBe('& '.repeat(1000));
+    expect(result.length).toBe(2000);
+  });
+
+  it('handles entities at string boundaries', () => {
+    expect(decodeHtmlEntities('&amp;test')).toBe('&test');
+    expect(decodeHtmlEntities('test&amp;')).toBe('test&');
+    expect(decodeHtmlEntities('&amp;test&amp;')).toBe('&test&');
+  });
 });

@@ -1036,4 +1036,194 @@ describe('AlbumDetail', () => {
       });
     });
   });
+
+  describe('HTML Entity Decoding', () => {
+    it('decodes HTML entities in album title', async () => {
+      const albumWithEntities: Album = {
+        ...mockAlbum,
+        type: 'GalleryAlbumItem',
+        title: 'Album &amp; Photos',
+      } as Album;
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: null,
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={7} album={albumWithEntities} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Album & Photos')).toBeInTheDocument();
+      });
+    });
+
+    it('decodes double-encoded HTML entities in title', async () => {
+      const albumWithEntities: Album = {
+        ...mockAlbum,
+        type: 'GalleryAlbumItem',
+        title: 'Album &amp;amp; More',
+      } as Album;
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: null,
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={7} album={albumWithEntities} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Album & More')).toBeInTheDocument();
+      });
+    });
+
+    it('decodes HTML entities with BBCode formatting', async () => {
+      const albumWithBoth: Album = {
+        ...mockAlbum,
+        type: 'GalleryAlbumItem',
+        title: '[b]Album &amp; Photos[/b]',
+      } as Album;
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: null,
+        refetch: vi.fn(),
+      });
+
+      const { container } = render(<AlbumDetail albumId={7} album={albumWithBoth} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Album & Photos')).toBeInTheDocument();
+        const strong = container.querySelector('h2.album-detail-title strong');
+        expect(strong).toBeInTheDocument();
+        expect(strong?.textContent).toBe('Album & Photos');
+      });
+    });
+
+    it('decodes HTML entities in description', async () => {
+      const albumWithEntities: Album = {
+        ...mockAlbum,
+        type: 'GalleryAlbumItem',
+        description: 'Description &amp; More',
+      } as Album;
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: null,
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={7} album={albumWithEntities} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Description & More')).toBeInTheDocument();
+      });
+    });
+
+    it('decodes HTML entities in summary', async () => {
+      const albumWithEntities: Album = {
+        ...mockAlbum,
+        type: 'GalleryAlbumItem',
+        summary: 'Summary &amp; More',
+      } as Album;
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: null,
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={7} album={albumWithEntities} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Summary & More')).toBeInTheDocument();
+      });
+    });
+
+    it('decodes HTML entities in owner name', async () => {
+      const albumWithEntities: Album = {
+        ...mockAlbum,
+        type: 'GalleryAlbumItem',
+        ownerName: 'Owner &amp; Co',
+      } as Album;
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: null,
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={7} album={albumWithEntities} />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Owner: Owner & Co/)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Security - HTML Injection Prevention', () => {
+    it('escapes HTML entities in titles (React default escaping)', async () => {
+      const albumWithScript: Album = {
+        ...mockAlbum,
+        type: 'GalleryAlbumItem',
+        title: '&lt;script&gt;alert("XSS")&lt;/script&gt;',
+      } as Album;
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: null,
+        refetch: vi.fn(),
+      });
+
+      const { container } = render(<AlbumDetail albumId={7} album={albumWithScript} />);
+
+      await waitFor(() => {
+        // React should escape the decoded <script> tags
+        expect(screen.getByText('<script>alert("XSS")</script>')).toBeInTheDocument();
+        // Verify no actual script tag exists in DOM
+        expect(container.querySelector('script')).not.toBeInTheDocument();
+      });
+    });
+
+    it('does not use dangerouslySetInnerHTML', async () => {
+      const albumWithHTML: Album = {
+        ...mockAlbum,
+        type: 'GalleryAlbumItem',
+        title: '[b]Bold[/b]',
+      } as Album;
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: null,
+        refetch: vi.fn(),
+      });
+
+      const { container } = render(<AlbumDetail albumId={7} album={albumWithHTML} />);
+
+      await waitFor(() => {
+        // Verify BBCode is parsed to React elements, not raw HTML
+        const strong = container.querySelector('h2.album-detail-title strong');
+        expect(strong).toBeInTheDocument();
+        // Verify no dangerouslySetInnerHTML was used (no raw HTML strings)
+        expect(container.innerHTML).not.toContain('[b]');
+      });
+    });
+  });
 });

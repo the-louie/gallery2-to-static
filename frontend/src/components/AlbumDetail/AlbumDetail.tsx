@@ -13,7 +13,7 @@
  * @module frontend/src/components/AlbumDetail
  */
 
-import React, { useMemo, useCallback, useState, useRef } from 'react';
+import { useMemo, useCallback, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAlbumData } from '@/hooks/useAlbumData';
@@ -106,11 +106,8 @@ export function AlbumDetail({
     if (!metadata?.breadcrumbPath || metadata.breadcrumbPath.length === 0) {
       return null;
     }
-    // Decode HTML entities in titles
-    return metadata.breadcrumbPath.map((item) => ({
-      ...item,
-      title: decodeHtmlEntities(item.title),
-    }));
+    // Breadcrumbs component handles HTML entity decoding and BBCode parsing
+    return metadata.breadcrumbPath;
   }, [metadata]);
 
   // Parse BBCode in album title for display

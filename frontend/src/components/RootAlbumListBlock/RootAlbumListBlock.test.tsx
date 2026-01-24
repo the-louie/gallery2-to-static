@@ -175,4 +175,84 @@ describe('RootAlbumListBlock', () => {
     expect(thumbnailLink).toBeInTheDocument();
     expect(thumbnailLink).toHaveAttribute('href', '/album/1');
   });
+
+  describe('HTML Entity Decoding', () => {
+    it('decodes HTML entities in main album title', () => {
+      const albumWithEntities: Album = {
+        ...baseAlbum,
+        title: 'Album &amp; Photos',
+      };
+      render(<RootAlbumListBlock album={albumWithEntities} subalbums={[]} />);
+      expect(screen.getByText('Album & Photos')).toBeInTheDocument();
+    });
+
+    it('decodes double-encoded HTML entities in title', () => {
+      const albumWithEntities: Album = {
+        ...baseAlbum,
+        title: 'Album &amp;amp; More',
+      };
+      render(<RootAlbumListBlock album={albumWithEntities} subalbums={[]} />);
+      expect(screen.getByText('Album & More')).toBeInTheDocument();
+    });
+
+    it('decodes HTML entities in aria-label', () => {
+      const albumWithEntities: Album = {
+        ...baseAlbum,
+        title: 'Album &amp; Photos',
+      };
+      render(<RootAlbumListBlock album={albumWithEntities} subalbums={[]} />);
+      const links = screen.getAllByRole('link', { name: /open album: album & photos/i });
+      expect(links.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('decodes HTML entities in subalbum titles', () => {
+      const sub: Album = {
+        ...mockAlbumWithChildren,
+        type: 'GalleryAlbumItem',
+        id: 42,
+        title: 'Subalbum &amp; More',
+      } as Album;
+      render(<RootAlbumListBlock album={baseAlbum} subalbums={[sub]} />);
+      expect(screen.getByText('Subalbum & More')).toBeInTheDocument();
+    });
+
+    it('decodes HTML entities with BBCode formatting', () => {
+      const albumWithBoth: Album = {
+        ...baseAlbum,
+        title: '[b]Album &amp; Photos[/b]',
+      };
+      const { container } = render(<RootAlbumListBlock album={albumWithBoth} subalbums={[]} />);
+      expect(screen.getByText('Album & Photos')).toBeInTheDocument();
+      const strong = container.querySelector('strong');
+      expect(strong).toBeInTheDocument();
+      expect(strong?.textContent).toBe('Album & Photos');
+    });
+  });
+
+  describe('Security - HTML Injection Prevention', () => {
+    it('escapes HTML entities in titles (React default escaping)', () => {
+      const albumWithScript: Album = {
+        ...baseAlbum,
+        title: '&lt;script&gt;alert("XSS")&lt;/script&gt;',
+      };
+      const { container } = render(<RootAlbumListBlock album={albumWithScript} subalbums={[]} />);
+      // React should escape the decoded <script> tags
+      expect(screen.getByText('<script>alert("XSS")</script>')).toBeInTheDocument();
+      // Verify no actual script tag exists in DOM
+      expect(container.querySelector('script')).not.toBeInTheDocument();
+    });
+
+    it('does not use dangerouslySetInnerHTML', () => {
+      const albumWithHTML: Album = {
+        ...baseAlbum,
+        title: '[b]Bold[/b]',
+      };
+      const { container } = render(<RootAlbumListBlock album={albumWithHTML} subalbums={[]} />);
+      // Verify BBCode is parsed to React elements, not raw HTML
+      const strong = container.querySelector('strong');
+      expect(strong).toBeInTheDocument();
+      // Verify no dangerouslySetInnerHTML was used (no raw HTML strings)
+      expect(container.innerHTML).not.toContain('[b]');
+    });
+  });
 });

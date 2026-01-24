@@ -10,7 +10,8 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { parseBBCode } from '@/utils/bbcode';
+import { parseBBCodeDecoded } from '@/utils/bbcode';
+import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import type { BreadcrumbPath, BreadcrumbItem } from '@/types';
 import './Breadcrumbs.css';
 
@@ -84,9 +85,9 @@ function BreadcrumbsComponent({
                 <span
                   className="breadcrumbs-current"
                   aria-current="page"
-                  aria-label={`Current page: ${item.title}`}
+                  aria-label={`Current page: ${decodeHtmlEntities(item.title)}`}
                 >
-                  {isHome ? 'Home' : parseBBCode(item.title)}
+                  {isHome ? 'Home' : parseBBCodeDecoded(item.title)}
                 </span>
               ) : (
                 // Parent page - link
@@ -97,10 +98,10 @@ function BreadcrumbsComponent({
                   aria-label={
                     isHome
                       ? `Go to home page`
-                      : `Go to ${item.title} album`
+                      : `Go to ${decodeHtmlEntities(item.title)} album`
                   }
                 >
-                  {isHome ? 'Home' : parseBBCode(item.title)}
+                  {isHome ? 'Home' : parseBBCodeDecoded(item.title)}
                 </Link>
               )}
               {!isLast && (

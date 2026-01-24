@@ -327,4 +327,109 @@ describe('Breadcrumbs', () => {
       expect(screen.getByRole('link', { name: 'Go to home page' })).toBeInTheDocument();
     });
   });
+
+  describe('HTML Entity Decoding', () => {
+    it('decodes HTML entities in breadcrumb titles', () => {
+      const path: BreadcrumbPath = [
+        { id: 7, title: 'Home', path: '/' },
+        { id: 10, title: 'Album &amp; Photos', path: '/album/10' },
+      ];
+
+      render(<Breadcrumbs path={path} />);
+
+      expect(screen.getByText('Album & Photos')).toBeInTheDocument();
+    });
+
+    it('decodes double-encoded HTML entities', () => {
+      const path: BreadcrumbPath = [
+        { id: 7, title: 'Home', path: '/' },
+        { id: 10, title: 'Album &amp;amp; More', path: '/album/10' },
+      ];
+
+      render(<Breadcrumbs path={path} />);
+
+      expect(screen.getByText('Album & More')).toBeInTheDocument();
+    });
+
+    it('decodes HTML entities with BBCode formatting', () => {
+      const path: BreadcrumbPath = [
+        { id: 7, title: 'Home', path: '/' },
+        { id: 10, title: '[b]Album &amp; Photos[/b]', path: '/album/10' },
+      ];
+
+      render(<Breadcrumbs path={path} />);
+
+      expect(screen.getByText('Album & Photos')).toBeInTheDocument();
+      const nav = screen.getByRole('navigation', { name: 'Breadcrumb' });
+      expect(nav.querySelector('strong')).toBeInTheDocument();
+      expect(nav.querySelector('strong')?.textContent).toBe('Album & Photos');
+    });
+
+    it('handles triple-encoded entities', () => {
+      const path: BreadcrumbPath = [
+        { id: 7, title: 'Home', path: '/' },
+        { id: 10, title: 'Album &amp;amp;amp; More', path: '/album/10' },
+      ];
+
+      render(<Breadcrumbs path={path} />);
+
+      expect(screen.getByText('Album & More')).toBeInTheDocument();
+    });
+
+    it('decodes HTML entities in aria-label attributes', () => {
+      const path: BreadcrumbPath = [
+        { id: 7, title: 'Home', path: '/' },
+        { id: 10, title: 'Album &amp; Photos', path: '/album/10' },
+      ];
+
+      render(<Breadcrumbs path={path} />);
+
+      const currentItem = screen.getByText('Album & Photos');
+      expect(currentItem).toHaveAttribute('aria-label', 'Current page: Album & Photos');
+    });
+
+    it('decodes HTML entities in link aria-label attributes', () => {
+      const path: BreadcrumbPath = [
+        { id: 7, title: 'Home', path: '/' },
+        { id: 10, title: 'Album &amp; Photos', path: '/album/10' },
+        { id: 20, title: 'Current', path: '/album/20' },
+      ];
+
+      render(<Breadcrumbs path={path} />);
+
+      const link = screen.getByRole('link', { name: 'Go to Album & Photos album' });
+      expect(link).toBeInTheDocument();
+    });
+  });
+
+  describe('Security - HTML Injection Prevention', () => {
+    it('escapes HTML entities in titles (React default escaping)', () => {
+      const path: BreadcrumbPath = [
+        { id: 7, title: 'Home', path: '/' },
+        { id: 10, title: '&lt;script&gt;alert("XSS")&lt;/script&gt;', path: '/album/10' },
+      ];
+
+      const { container } = render(<Breadcrumbs path={path} />);
+
+      // React should escape the decoded <script> tags
+      expect(screen.getByText('<script>alert("XSS")</script>')).toBeInTheDocument();
+      // Verify no actual script tag exists in DOM
+      expect(container.querySelector('script')).not.toBeInTheDocument();
+    });
+
+    it('does not use dangerouslySetInnerHTML', () => {
+      const path: BreadcrumbPath = [
+        { id: 7, title: 'Home', path: '/' },
+        { id: 10, title: '[b]Bold[/b]', path: '/album/10' },
+      ];
+
+      const { container } = render(<Breadcrumbs path={path} />);
+
+      // Verify BBCode is parsed to React elements, not raw HTML
+      const strong = container.querySelector('strong');
+      expect(strong).toBeInTheDocument();
+      // Verify no dangerouslySetInnerHTML was used (no raw HTML strings)
+      expect(container.innerHTML).not.toContain('[b]');
+    });
+  });
 });

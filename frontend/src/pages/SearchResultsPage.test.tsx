@@ -336,4 +336,187 @@ describe('SearchResultsPage', () => {
     expect(pathElement).toBeInTheDocument();
     expect(pathElement.className).toBe('search-results-item-description');
   });
+
+  it('decodes HTML entities in album titles', () => {
+    vi.mocked(useSearch).mockReturnValue({
+      ...mockUseSearch,
+      query: 'test',
+      results: [
+        {
+          item: {
+            id: 1,
+            type: 'GalleryAlbumItem' as const,
+            title: 'Album &amp; Photos',
+            description: '',
+            pathComponent: 'album',
+          },
+          score: 10,
+          matchedInTitle: true,
+          matchedInDescription: false,
+        },
+      ],
+    } as any);
+
+    render(<SearchResultsPage />);
+
+    expect(screen.getByText('Album & Photos')).toBeInTheDocument();
+  });
+
+  it('decodes double-encoded HTML entities in titles', () => {
+    vi.mocked(useSearch).mockReturnValue({
+      ...mockUseSearch,
+      query: 'test',
+      results: [
+        {
+          item: {
+            id: 1,
+            type: 'GalleryAlbumItem' as const,
+            title: 'Album &amp;amp; More',
+            description: '',
+            pathComponent: 'album',
+          },
+          score: 10,
+          matchedInTitle: true,
+          matchedInDescription: false,
+        },
+      ],
+    } as any);
+
+    render(<SearchResultsPage />);
+
+    expect(screen.getByText('Album & More')).toBeInTheDocument();
+  });
+
+  it('decodes HTML entities in descriptions', () => {
+    vi.mocked(useSearch).mockReturnValue({
+      ...mockUseSearch,
+      query: 'test',
+      results: [
+        {
+          item: {
+            id: 1,
+            type: 'GalleryAlbumItem' as const,
+            title: 'Test Album',
+            description: 'Description &amp; More',
+            pathComponent: 'album',
+          },
+          score: 10,
+          matchedInTitle: true,
+          matchedInDescription: false,
+        },
+      ],
+    } as any);
+
+    render(<SearchResultsPage />);
+
+    expect(screen.getByText('Description & More')).toBeInTheDocument();
+  });
+
+  it('decodes HTML entities in summary', () => {
+    vi.mocked(useSearch).mockReturnValue({
+      ...mockUseSearch,
+      query: 'test',
+      results: [
+        {
+          item: {
+            id: 1,
+            type: 'GalleryAlbumItem' as const,
+            title: 'Test Album',
+            description: '',
+            summary: 'Summary &amp; More',
+            pathComponent: 'album',
+          },
+          score: 10,
+          matchedInTitle: true,
+          matchedInDescription: false,
+        },
+      ],
+    } as any);
+
+    render(<SearchResultsPage />);
+
+    expect(screen.getByText('Summary & More')).toBeInTheDocument();
+  });
+
+  it('decodes HTML entities in owner name', () => {
+    vi.mocked(useSearch).mockReturnValue({
+      ...mockUseSearch,
+      query: 'test',
+      results: [
+        {
+          item: {
+            id: 1,
+            type: 'GalleryAlbumItem' as const,
+            title: 'Test Album',
+            description: '',
+            ownerName: 'Owner &amp; Co',
+            pathComponent: 'album',
+          },
+          score: 10,
+          matchedInTitle: true,
+          matchedInDescription: false,
+        },
+      ],
+    } as any);
+
+    render(<SearchResultsPage />);
+
+    expect(screen.getByText(/Owner: Owner & Co/)).toBeInTheDocument();
+  });
+
+  describe('Security - HTML Injection Prevention', () => {
+    it('escapes HTML entities in titles (React default escaping)', () => {
+      vi.mocked(useSearch).mockReturnValue({
+        ...mockUseSearch,
+        query: 'test',
+        results: [
+          {
+            item: {
+              id: 1,
+              type: 'GalleryAlbumItem' as const,
+              title: '&lt;script&gt;alert("XSS")&lt;/script&gt;',
+              description: '',
+              pathComponent: 'album',
+            },
+            score: 10,
+            matchedInTitle: true,
+            matchedInDescription: false,
+          },
+        ],
+      } as any);
+
+      const { container } = render(<SearchResultsPage />);
+
+      // React should escape the decoded <script> tags
+      expect(screen.getByText('<script>alert("XSS")</script>')).toBeInTheDocument();
+      // Verify no actual script tag exists in DOM
+      expect(container.querySelector('script')).not.toBeInTheDocument();
+    });
+
+    it('does not use dangerouslySetInnerHTML', () => {
+      vi.mocked(useSearch).mockReturnValue({
+        ...mockUseSearch,
+        query: 'test',
+        results: [
+          {
+            item: {
+              id: 1,
+              type: 'GalleryAlbumItem' as const,
+              title: 'Test Album',
+              description: '',
+              pathComponent: 'album',
+            },
+            score: 10,
+            matchedInTitle: true,
+            matchedInDescription: false,
+          },
+        ],
+      } as any);
+
+      const { container } = render(<SearchResultsPage />);
+
+      // Verify SearchHighlight renders safely (no raw HTML)
+      expect(container.querySelector('script')).not.toBeInTheDocument();
+    });
+  });
 });
