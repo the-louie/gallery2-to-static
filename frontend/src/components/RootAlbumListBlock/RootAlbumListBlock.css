@@ -8,6 +8,22 @@
  * @module frontend/src/components/RootAlbumListBlock
  */
 
+/* Height calculation variables for 6 items in 2-column grid (3 rows) */
+:root {
+  --root-album-subalbum-item-height: 2.75rem;
+  --root-album-subalbum-gap: 0.5rem;
+  --root-album-subalbums-list-padding: 2px;
+  --root-album-subalbums-title-margin-bottom: 0.5rem;
+  --root-album-subalbums-more-margin-top: 0.5rem;
+  --root-album-subalbums-list-height: calc((var(--root-album-subalbum-item-height) * 3) + (var(--root-album-subalbum-gap) * 2) + (var(--root-album-subalbums-list-padding) * 2));
+  --root-album-subalbums-more-height: calc(var(--root-album-subalbums-more-margin-top) + 1.5rem);
+  --root-album-subalbums-section-padding: 2rem; /* Desktop: 1rem top + 1rem bottom */
+  --root-album-subalbums-section-padding-mobile: 1.5rem; /* Mobile: 0.75rem top + 0.75rem bottom */
+  --root-album-subalbums-title-height: calc(1rem + var(--root-album-subalbums-title-margin-bottom));
+  --root-album-subalbums-section-max-height: calc(var(--root-album-subalbums-section-padding) + var(--root-album-subalbums-title-height) + var(--root-album-subalbums-list-height) + var(--root-album-subalbums-more-height));
+  --root-album-subalbums-section-max-height-mobile: calc(var(--root-album-subalbums-section-padding-mobile) + var(--root-album-subalbums-title-height) + var(--root-album-subalbums-list-height) + var(--root-album-subalbums-more-height));
+}
+
 .root-album-list-block {
   border: 1px solid var(--album-card-border, #ddd8d0);
   border-radius: var(--album-card-border-radius, 8px);
@@ -18,6 +34,7 @@
     var(--gradient-card-start, var(--album-card-bg)) 0%,
     var(--gradient-card-end, var(--album-card-bg)) 100%
   );
+  min-height: calc(var(--root-album-subalbums-section-max-height) + 8rem);
 }
 
 .root-album-list-block:last-child {
@@ -176,7 +193,7 @@
 }
 
 .root-album-list-block-subalbums-title {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--root-album-subalbums-title-margin-bottom) 0;
   font-size: 1rem;
   font-weight: 600;
   color: var(--album-detail-title-color, #333333);
@@ -184,13 +201,11 @@
 
 .root-album-list-block-subalbums-list {
   margin: 0;
-  padding: 2px;
+  padding: var(--root-album-subalbums-list-padding);
   list-style: none;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-  max-height: 13rem;
-  overflow-y: auto;
+  gap: var(--root-album-subalbum-gap);
 }
 
 .root-album-list-block-subalbum-link {
@@ -241,7 +256,7 @@
 
 .root-album-list-block-subalbums-more {
   display: block;
-  margin-top: 0.5rem;
+  margin-top: var(--root-album-subalbums-more-margin-top);
   font-size: 0.875rem;
   color: var(--album-detail-text-muted, var(--color-text-muted));
   opacity: 0.85;
@@ -250,6 +265,7 @@
 @media (max-width: 767px) {
   .root-album-list-block {
     padding: 0.75rem;
+    min-height: calc(var(--root-album-subalbums-section-max-height-mobile) + 12rem);
   }
 
   .root-album-list-block-title {

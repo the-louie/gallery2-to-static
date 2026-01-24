@@ -57,59 +57,6 @@ Per-album theme configuration system with JSON file and theme resolution logic
 
 ---
 
-## Fix Root Album Block Height to Accommodate All Subalbums
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Low
-**Estimated Time:** 1-2 hours
-
-### Description
-Fix the height of album divs (`.root-album-list-block`) in the root album view to use a fixed height that is high enough to fit all 5 subalbums without requiring scrolling. Currently, the subalbums list section has a `max-height` constraint with `overflow-y: auto`, which can cause scrolling when all 5 subalbums are displayed. The entire album block should have a consistent fixed height that accommodates the maximum number of subalbums shown (5 items).
-
-### Requirements
-
-#### Research Tasks
-- Research current CSS layout structure of `.root-album-list-block` and `.root-album-list-block-subalbums`
-- Research height calculation for subalbums list (5 items × item height + spacing + header)
-- Research responsive behavior considerations (mobile vs desktop layouts)
-- Research CSS fixed height patterns that maintain responsive design
-- Research impact on albums with fewer than 5 subalbums (should still use same height for consistency)
-
-#### Implementation Tasks
-- Calculate required height for subalbums section: 5 items × item height + list padding + title height + spacing
-- Remove or adjust `max-height` and `overflow-y: auto` from `.root-album-list-block-subalbums-list`
-- Set fixed height on `.root-album-list-block` or `.root-album-list-block-inner` to accommodate all content
-- Ensure fixed height works correctly in both mobile (stacked) and desktop (two-column) layouts
-- Verify height accommodates all 5 subalbums plus "And much more" text when applicable
-- Test with albums that have 0, 1-4, exactly 5, and more than 5 subalbums
-- Ensure consistent height across all album blocks in the root album list
-- Verify no content is cut off or hidden due to fixed height constraint
-- Test responsive breakpoints to ensure fixed height works at all screen sizes
-
-### Deliverable
-Fixed height album blocks in root album view that accommodate all 5 displayed subalbums without scrolling
-
-### Testing Requirements
-- Verify album blocks with 5 subalbums display all items without scrolling
-- Check album blocks with fewer than 5 subalbums maintain consistent height
-- Ensure album blocks with more than 5 subalbums show 5 items plus "And much more" text
-- Verify fixed height works correctly on mobile (stacked layout)
-- Verify fixed height works correctly on desktop (two-column layout)
-- Test with albums that have no subalbums (should not break layout)
-- Check that all content (thumbnail, title, description, metadata, subalbums) is visible
-- Verify consistent height across all album blocks in the list
-
-### Technical Notes
-- Fixed height should be calculated based on maximum content (5 subalbums + header + spacing)
-- Consider using CSS custom properties (variables) for maintainability
-- Fixed height should not break responsive design - may need different heights for mobile vs desktop
-- Ensure height calculation accounts for all spacing, padding, and margins
-- Remove scrolling behavior from subalbums list when fixed height is implemented
-- All album blocks should have the same height for visual consistency in the list
-
----
-
 ## Remove Duplicate Title and Description from Album Section Headers
 
 **Status:** Pending
