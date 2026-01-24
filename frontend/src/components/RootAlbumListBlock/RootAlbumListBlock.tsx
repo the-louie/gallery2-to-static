@@ -2,7 +2,7 @@
  * RootAlbumListBlock Component
  *
  * Renders a single root-level album as a rich block: thumbnail (link to album),
- * "Album: [title]" (bold), description, optional "Website: …" from summary/description,
+ * "Album: [title]" (bold), description, optional website link from summary/description,
  * metadata (Date, Owner), and "Subalbums:" list. The Subalbums section shows at most
  * the latest 5 subalbums (by timestamp descending, nulls last); when more exist,
  * "... And much more" is shown below the list. Two-column layout (album left,
@@ -117,7 +117,6 @@ export function RootAlbumListBlock({
             )}
             {extUrl && (
               <p className="root-album-list-block-website">
-                Website:{' '}
                 <a
                   href={extUrl.url}
                   target="_blank"

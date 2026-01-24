@@ -127,7 +127,6 @@ describe('RootAlbumListBlock', () => {
       summary: '[url=https://example.com]Example[/url]',
     } as Album;
     render(<RootAlbumListBlock album={withUrl} subalbums={[]} />);
-    expect(screen.getByText(/Website:/i)).toBeInTheDocument();
     const ext = screen.getByRole('link', { name: 'Example' });
     expect(ext).toHaveAttribute('href', 'https://example.com');
   });

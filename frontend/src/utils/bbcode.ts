@@ -444,7 +444,7 @@ const URL_SCHEME_REGEX = /^https?:\/\//i;
 
 /**
  * Extract the first [url=...]...[/url] or [url]...[/url] from text.
- * Returns the URL and optional label for "Website: …" display.
+ * Returns the URL and optional label for use as a standalone link in the root album list.
  * Only http and https URLs are accepted; invalid schemes (e.g. javascript:) return null.
  *
  * @param text - Summary or description that may contain BBCode URL tags

@@ -135,46 +135,6 @@ Root album list shows album names without the "Album: " prefix; all tests update
 
 ---
 
-## Remove "Website: " Prefix from Root Album Website Links
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 30 minutes
-
-### Description
-The root album list ([RootAlbumListBlock](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx)) displays an extracted URL from album summary/description (via `extractUrlFromBBCode`) with a "Website: " prefix before the link (e.g. "Website: Example"). Remove this prefix so that only the link is shown (e.g. "Example" or the URL when no label). The link remains in a `<p>` with class `root-album-list-block-website`; only the prefix text is removed.
-
-### Requirements
-
-#### Research Tasks
-- Confirm "Website: " is rendered only in [RootAlbumListBlock](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx) (lines ~109–120: `Website:{' '}` then `<a>` with `extUrl.label ?? extUrl.url`)
-- Review [RootAlbumListBlock.test](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.test.tsx): "shows Website link when summary has [url=...]...[/url]" asserts `screen.getByText(/Website:/i)` and `getByRole('link', { name: 'Example' })`; update assertions once prefix is removed
-- Check JSDoc and module comments that mention "Website: …" (e.g. RootAlbumListBlock, [bbcode.ts](frontend/src/utils/bbcode.ts) `extractUrlFromBBCode`) and update to describe link-only display
-
-#### Implementation Tasks
-- In [RootAlbumListBlock.tsx](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx), remove the `Website:{' '}` segment from the website block; render only the `<a>` (or keep a wrapping `<p>` with just the link as child)
-- Update [RootAlbumListBlock.test](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.test.tsx): remove or replace the `getByText(/Website:/i)` assertion; ensure the link is still found (e.g. by `getByRole('link', { name: 'Example' })`) and `href` is correct
-- Update RootAlbumListBlock and any relevant bbcode JSDoc that describe "Website: …" output
-
-#### Code-Review Tasks
-- Verify no other components or tests depend on the "Website: " prefix
-- Confirm [RootAlbumList.integration](frontend/src/pages/RootAlbumList.integration.test.tsx) and related tests do not break
-
-### Deliverable
-Root album list website links display without the "Website: " prefix; link text and `href` unchanged; tests updated and passing.
-
-### Testing Requirements
-- Website link still renders when summary/description contains `[url=...]...[/url]`; link navigates correctly and has correct `href`
-- RootAlbumListBlock tests updated and passing; no assertions on "Website:" text
-
-### Technical Notes
-- [RootAlbumListBlock](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx) lines ~109–120: `<p className="root-album-list-block-website">Website:{' '}<a ...>{extUrl.label ?? extUrl.url}</a></p>`
-- `extUrl` from `extractUrlFromBBCode(album.summary ?? album.description ?? '')`; structure unchanged
-- CSS class `root-album-list-block-website` and `root-album-list-block-website-link` can remain as-is
-
----
-
 ## Fix HTML Entity Encoding for Album Names, Breadcrumbs, and Subalbum Lists
 
 **Status:** Pending
