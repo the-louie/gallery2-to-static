@@ -76,6 +76,12 @@ export interface AlbumMetadata {
     ownerName: string | null;
     /** Breadcrumb path from root to this album */
     breadcrumbPath?: BreadcrumbItem[];
+    /**
+     * Highlight image URL for the album (from highlightId if present, or first image recursively).
+     * Uses same URL format as photo urlPath (getLinkTarget, uipath-based directory).
+     * Omitted when no image can be found.
+     */
+    highlightImageUrl?: string | null;
 }
 
 /**

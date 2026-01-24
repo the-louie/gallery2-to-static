@@ -2,7 +2,7 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 import mysql from 'mysql2/promise'
 import sqlUtils from './sqlUtils'
-import { Config, Child, AlbumFile, BreadcrumbItem } from './types'
+import { Config, Child, AlbumFile, BreadcrumbItem, AlbumMetadata } from './types'
 import { cleanup_uipathcomponent } from './cleanupUipath'
 import { getLinkTarget, getThumbTarget } from './legacyPaths'
 
@@ -38,6 +38,115 @@ function isBlacklisted(id: number, set: Set<number>): boolean {
  */
 const findFirstPhoto = (children: Child[]): Child | null => {
     return children.find(child => child.type === 'GalleryPhotoItem') || null;
+}
+
+/**
+ * Recursively finds the first photo in an album or its sub-albums.
+ * Uses breadth-first search: checks direct children first, then recurses into sub-albums.
+ * Respects ignoreSet when recursing into sub-albums.
+ * @param albumId Album ID to search
+ * @param sql SQL utilities instance
+ * @param uipath Current UI path array for URL construction
+ * @param pathComponent Current path component array for URL construction
+ * @param ignoreSet Set of album IDs to ignore
+ * @param config Configuration object
+ * @returns Object with photo and its uipath/pathComponent for URL building, or null if none found
+ */
+async function findFirstPhotoRecursive(
+    albumId: number,
+    sql: ReturnType<typeof sqlUtils>,
+    uipath: Array<string>,
+    pathComponent: Array<string>,
+    ignoreSet: Set<number>,
+    config: Config,
+): Promise<{ photo: Child; uipath: Array<string>; pathComponent: Array<string> } | null> {
+    const children = await sql.getChildren(albumId);
+    const filtered = children.filter(
+        (c) => c.type !== 'GalleryAlbumItem' || !isBlacklisted(c.id, ignoreSet),
+    );
+    
+    // Check direct children first (photos)
+    const firstPhoto = findFirstPhoto(filtered);
+    if (firstPhoto) {
+        return {
+            photo: firstPhoto,
+            uipath,
+            pathComponent,
+        };
+    }
+    
+    // Recurse into sub-albums (breadth-first: process all albums at this level before going deeper)
+    for (const child of filtered) {
+        if (child.type === 'GalleryAlbumItem' && child.hasChildren && child.pathComponent) {
+            const title = cleanup_uipathcomponent(child.title ?? child.pathComponent ?? '');
+            const result = await findFirstPhotoRecursive(
+                child.id,
+                sql,
+                uipath.concat([title]),
+                pathComponent.concat([child.pathComponent]),
+                ignoreSet,
+                config,
+            );
+            if (result) {
+                return result;
+            }
+        }
+    }
+    
+    return null;
+}
+
+/**
+ * Resolves the highlight image URL for an album.
+ * Since highlightId is not available in the database schema, this function
+ * uses recursive first-image fallback only.
+ * @param root Album ID
+ * @param sql SQL utilities instance
+ * @param uipath Current UI path array
+ * @param pathComponent Current path component array
+ * @param ignoreSet Set of album IDs to ignore
+ * @param config Configuration object
+ * @returns Highlight image URL string, or null if no image found
+ */
+async function resolveHighlightImageUrl(
+    root: number,
+    sql: ReturnType<typeof sqlUtils>,
+    uipath: Array<string>,
+    pathComponent: Array<string>,
+    ignoreSet: Set<number>,
+    config: Config,
+): Promise<string | null> {
+    try {
+        const result = await findFirstPhotoRecursive(
+            root,
+            sql,
+            uipath,
+            pathComponent,
+            ignoreSet,
+            config,
+        );
+        
+        if (!result) {
+            return null;
+        }
+        
+        const { photo, uipath: photoUipath } = result;
+        
+        if (!photo.pathComponent) {
+            return null;
+        }
+        
+        const cleanedTitle = cleanup_uipathcomponent(photo.title ?? photo.pathComponent ?? '');
+        const rawPath = photo.pathComponent;
+        const dir = photoUipath.slice(1).join('/');
+        const linkFilename = getLinkTarget(cleanedTitle, rawPath);
+        const urlPath = dir ? `${dir}/${linkFilename}` : linkFilename;
+        
+        return urlPath;
+    } catch (error) {
+        console.warn(`Error resolving highlight image for album ${root}:`, error);
+        return null;
+    }
 }
 
 /**
@@ -84,6 +193,7 @@ const main = async (
     thumbPrefix: string,
     ignoreSet: Set<number>,
     breadcrumbAncestors: BreadcrumbItem[] = [],
+    config: Config,
 ) => {
     const children = await sql.getChildren(root);
     const filtered = children.filter(
@@ -118,6 +228,7 @@ const main = async (
                         thumbPrefix,
                         ignoreSet,
                         breadcrumbPath,
+                        config,
                     ),
                 );
             }
@@ -196,7 +307,7 @@ const main = async (
             }
         }
 
-        const metadata = {
+        const metadata: AlbumMetadata = {
             albumId: albumInfo.albumId,
             albumTitle: albumInfo.albumTitle,
             albumDescription: albumInfo.albumDescription,
@@ -204,6 +315,21 @@ const main = async (
             ownerName: albumInfo.ownerName,
             breadcrumbPath,
         };
+        
+        // Resolve highlight image URL (recursive first image fallback)
+        const highlightImageUrl = await resolveHighlightImageUrl(
+            root,
+            sql,
+            uipath,
+            pathComponent,
+            ignoreSet,
+            config,
+        );
+        
+        if (highlightImageUrl !== null) {
+            metadata.highlightImageUrl = highlightImageUrl;
+        }
+        
         const albumFile: AlbumFile = { metadata, children: processedChildrenWithThumbnails };
         const filePath = path.join(dataDir, `${root}.json`);
         try {
@@ -273,7 +399,7 @@ let connection: mysql.Connection | null = null;
         const searchIndex = new Map<number, SearchIndexItem>();
         
         const thumbPrefix = config.thumbPrefix ?? 't__';
-        await main(sql, rootId, [], [''], dataDir, searchIndex, thumbPrefix, ignoreSet);
+        await main(sql, rootId, [], [''], dataDir, searchIndex, thumbPrefix, ignoreSet, [], config);
         
         // Generate search index file
         try {
