@@ -228,7 +228,7 @@ This guide helps you resolve common issues when using Gallery 2 to Static.
 2. Check that albums are in the hierarchy starting from the root album ID
 3. Re-run conversion script
 4. Check conversion script completed without errors
-5. **Note**: The `ignoreAlbums` and `onlyAlbums` configuration options are not currently implemented
+5. **Note**: `ignoreAlbums` is implemented; `onlyAlbums` is not currently implemented
 
 ### Invalid JSON Structure
 

@@ -7,6 +7,31 @@ import { cleanup_uipathcomponent } from './cleanupUipath'
 import { getLinkTarget, getThumbTarget } from './legacyPaths'
 
 /**
+ * Build a Set of album IDs to ignore from config.ignoreAlbums.
+ * Handles missing, null, non-array; normalizes strings/numbers to number; skips invalid entries.
+ */
+function buildIgnoreSet(raw: Array<string | number> | null | undefined): Set<number> {
+    const arr = Array.isArray(raw) ? raw : [];
+    const set = new Set<number>();
+    for (const x of arr) {
+        const n = typeof x === 'number' ? x : parseInt(String(x), 10);
+        if (!Number.isFinite(n)) {
+            console.warn(`ignoreAlbums: invalid album ID "${x}", skipping`);
+            continue;
+        }
+        set.add(n);
+    }
+    return set;
+}
+
+/**
+ * Check whether an album ID is in the ignore set.
+ */
+function isBlacklisted(id: number, set: Set<number>): boolean {
+    return set.has(id);
+}
+
+/**
  * Finds the first photo (GalleryPhotoItem) in a children array.
  * @param children Array of child items (albums and photos)
  * @returns The first photo found, or null if no photos exist
@@ -57,11 +82,15 @@ const main = async (
     dataDir: string,
     searchIndex: Map<number, SearchIndexItem>,
     thumbPrefix: string,
+    ignoreSet: Set<number>,
 ) => {
     const children = await sql.getChildren(root);
-    if (children.length > 0) {
+    const filtered = children.filter(
+        (c) => c.type !== 'GalleryAlbumItem' || !isBlacklisted(c.id, ignoreSet),
+    );
+    if (filtered.length > 0) {
         const recursivePromises: Promise<void>[] = [];
-        children.forEach((child) => {
+        filtered.forEach((child) => {
             if (child.hasChildren && child.pathComponent) {
                 const title = cleanup_uipathcomponent(child.title ?? child.pathComponent ?? '');
                 recursivePromises.push(
@@ -73,11 +102,12 @@ const main = async (
                         dataDir,
                         searchIndex,
                         thumbPrefix,
+                        ignoreSet,
                     ),
                 );
             }
         });
-        const processedChildren = children.map((child) => {
+        const processedChildren = filtered.map((child) => {
             if (child.type === 'GalleryPhotoItem' && child.pathComponent) {
                 const fullPath = pathComponent.concat([child.pathComponent]).join('/');
                 const cleanedTitle = cleanup_uipathcomponent(child.title ?? child.pathComponent ?? '');
@@ -217,12 +247,18 @@ let connection: mysql.Connection | null = null;
         
         const rootId = config.rootId ?? await sql.getRootAlbumId();
         console.log(`Using root album ID: ${rootId}`);
-        
+
+        const ignoreSet = buildIgnoreSet(config.ignoreAlbums);
+        if (isBlacklisted(rootId, ignoreSet)) {
+            console.log('Root album is blacklisted; skipping export.');
+            return;
+        }
+
         // Initialize search index accumulator
         const searchIndex = new Map<number, SearchIndexItem>();
         
         const thumbPrefix = config.thumbPrefix ?? 't__';
-        await main(sql, rootId, [], [''], dataDir, searchIndex, thumbPrefix);
+        await main(sql, rootId, [], [''], dataDir, searchIndex, thumbPrefix, ignoreSet);
         
         // Generate search index file
         try {

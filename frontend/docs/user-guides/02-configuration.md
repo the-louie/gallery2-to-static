@@ -174,23 +174,20 @@ This prefix is used when processing image paths. Gallery 2 typically prefixes th
 
 ## Album Filtering
 
-The configuration file includes two options for controlling which albums are included in the conversion: `ignoreAlbums` and `onlyAlbums`. 
-
-**Note**: These options are currently defined in the configuration interface but are not yet implemented in the conversion script. Setting these values will not affect the conversion output at this time. They are included for future functionality.
+The configuration file includes two options for controlling which albums are included in the conversion: `ignoreAlbums` and `onlyAlbums`.
 
 ### ignoreAlbums
 
-- **Type**: Array of strings
+- **Type**: Array of strings or numbers
 - **Required**: No
 - **Default**: `[]` (empty array - no albums ignored)
-- **Description**: List of album IDs to exclude from conversion (planned feature)
+- **Description**: List of album IDs to exclude from conversion. **Implemented.** Listed albums and all their descendants are excluded silently (no JSON files, no entries in parent `children` arrays, not in search index).
 - **Use Case**: Exclude specific albums you don't want in the static gallery
-- **Status**: Not currently implemented
 
-Album IDs are specified as strings (e.g., `"10"`, `"25"`). When implemented, albums listed here and all their children will be skipped.
+Album IDs may be strings (e.g. `"10"`, `"25"`) or numbers; both are normalized. Invalid entries are skipped with a warning. If the root album is listed, the conversion skips entirely (no export, no `index.json`).
 
 ```json
-"ignoreAlbums": ["10", "25", "30"]
+"ignoreAlbums": ["10", "25", 30]
 ```
 
 **Example**: If you want to exclude a "Private" album with ID 10 and a "Drafts" album with ID 25:
@@ -204,7 +201,7 @@ Album IDs are specified as strings (e.g., `"10"`, `"25"`). When implemented, alb
 - **Type**: Array of strings
 - **Required**: No
 - **Default**: `[]` (empty array - all albums included)
-- **Description**: List of album IDs to include in conversion (exclusive - only these albums) (planned feature)
+- **Description**: List of album IDs to include in conversion (exclusive - only these albums). **Not currently implemented.**
 - **Use Case**: Convert only specific albums, ignoring everything else
 - **Status**: Not currently implemented
 
@@ -225,7 +222,7 @@ Album IDs are specified as strings. When implemented, **only** the albums listed
 - **ignoreAlbums**: "Convert everything except these albums"
 - **onlyAlbums**: "Convert only these albums and nothing else"
 
-**Important**: These options are mutually exclusive in practice. If you specify `onlyAlbums`, the `ignoreAlbums` option is effectively ignored.
+**Important**: These options are mutually exclusive in practice. When `onlyAlbums` is implemented, specifying it will cause `ignoreAlbums` to be ignored.
 
 ## Complete Configuration Example
 

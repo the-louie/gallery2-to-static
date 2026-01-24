@@ -89,6 +89,6 @@ export interface Config {
     gallerySettings: GallerySettings;
     thumbPrefix: string;
     rootId?: number;
-    ignoreAlbums?: Array<string>;
+    ignoreAlbums?: Array<string | number>;
     onlyAlbums?: Array<string>;
 }

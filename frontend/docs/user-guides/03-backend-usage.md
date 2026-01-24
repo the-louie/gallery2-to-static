@@ -228,7 +228,7 @@ Ensure files are valid JSON (they should parse without errors). You can use onli
 
 **Solutions**:
 - Empty arrays `[]` are normal for empty albums
-- Check `ignoreAlbums` and `onlyAlbums` settings
+- Check `ignoreAlbums` (implemented) and `onlyAlbums` (not implemented) settings
 - Verify database contains data
 
 ### Missing Albums
@@ -242,7 +242,7 @@ Ensure files are valid JSON (they should parse without errors). You can use onli
 - Verify root album ID includes desired albums in the hierarchy
 - Check that albums are actually children of the root album in the database
 - Check database connectivity
-- **Note**: The `ignoreAlbums` and `onlyAlbums` configuration options are not currently implemented
+- **Note**: `ignoreAlbums` is implemented; `onlyAlbums` is not currently implemented
 
 ### Database Connection Errors
 
@@ -259,7 +259,7 @@ For galleries with many albums and photos:
 
 ### Optimization Tips
 
-- **Note**: The `onlyAlbums` and `ignoreAlbums` configuration options are not currently implemented
+- **Note**: `ignoreAlbums` is implemented; `onlyAlbums` is not currently implemented
 - For large galleries, consider processing in batches manually if needed
 - Ensure sufficient disk space for all JSON files
 
