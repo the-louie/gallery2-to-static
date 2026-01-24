@@ -154,9 +154,14 @@
   color: var(--album-detail-title-color, #333333);
 }
 
+/* Subalbums section: snazzy pill-style links, subtle container */
 .root-album-list-block-subalbums {
   flex-shrink: 0;
   min-width: 0;
+  background-color: var(--color-background-secondary, #f5f5f5);
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: var(--radius-md, 8px);
+  padding: 1rem;
 }
 
 @media (min-width: 768px) {
@@ -174,24 +179,58 @@
 
 .root-album-list-block-subalbums-list {
   margin: 0;
-  padding-left: 1.25rem;
-  list-style: disc;
+  padding: 2px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   max-height: 12rem;
   overflow-y: auto;
 }
 
 .root-album-list-block-subalbum-link {
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  min-height: 2.75rem;
+  box-sizing: border-box;
+  border-radius: var(--radius-md, 8px);
+  background-color: transparent;
   color: var(--color-primary, #0066cc);
-  text-decoration: underline;
+  text-decoration: none;
+  line-height: 1.5;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .root-album-list-block-subalbum-link:hover {
-  text-decoration: none;
+  background-color: var(--color-primary-light, #e6f2ff);
+  color: var(--color-primary-hover, #0052a3);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
 }
 
 .root-album-list-block-subalbum-link:focus {
   outline: 2px solid var(--color-focus, #0066cc);
   outline-offset: 2px;
+  background-color: var(--color-primary-light, #e6f2ff);
+}
+
+.root-album-list-block-subalbum-link:active {
+  background-color: var(--color-primary-active, #004085);
+  color: var(--color-text-inverse, #ffffff);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root-album-list-block-subalbum-link {
+    transition: none;
+  }
+
+  .root-album-list-block-subalbum-link:hover {
+    transform: none;
+  }
 }
 
 .root-album-list-block-subalbums-more {
@@ -213,5 +252,9 @@
 
   .root-album-list-block-thumbnail {
     max-width: 100%;
+  }
+
+  .root-album-list-block-subalbums {
+    padding: 0.75rem;
   }
 }
