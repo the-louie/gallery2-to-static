@@ -31,7 +31,6 @@ describe('RootAlbumListBlock', () => {
     render(
       <RootAlbumListBlock album={baseAlbum} subalbums={[]} />,
     );
-    expect(screen.getByText(/Album:/)).toBeInTheDocument();
     expect(screen.getByText('Test Album')).toBeInTheDocument();
     const link = screen.getByRole('link', { name: /open album: test album/i });
     expect(link).toHaveAttribute('href', '/album/1');

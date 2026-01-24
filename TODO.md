@@ -93,48 +93,6 @@ A visually improved, snazzier subalbums list in RootAlbumListBlock that feels co
 
 ---
 
-## Remove "Album: " Prefix from Root Album List
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 30 minutes
-
-### Description
-The root album list ([RootAlbumListBlock](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx)) currently displays each album title with an "Album: " prefix (e.g. "Album: My Vacation"). Remove this prefix so that only the album title is shown (e.g. "My Vacation"). The root list is the only place that uses this prefix; nested album views (AlbumDetail, AlbumGrid) do not.
-
-### Requirements
-
-#### Research Tasks
-- Confirm "Album: " is rendered only in [RootAlbumListBlock](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx) (line ~104: `Album: {parsedTitle}`)
-- Review [RootAlbumListBlock.test](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.test.tsx): assertion `screen.getByText(/Album:/)` and any other references to "Album:"
-- Check JSDoc and module comments in RootAlbumListBlock that mention "Album: [title]" and update accordingly
-- Ensure `parsedTitle` (BBCode-parsed) and "Untitled Album" fallback remain unchanged; only the prefix is removed
-
-#### Implementation Tasks
-- In [RootAlbumListBlock.tsx](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx), change the title render from `Album: {parsedTitle}` to `{parsedTitle}` (or equivalent) so the prefix is removed
-- Update [RootAlbumListBlock.test](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.test.tsx): remove or replace assertions that match "Album:" (e.g. assert on album title text instead)
-- Update RootAlbumListBlock JSDoc/module comment that describes "Album: [title]" to describe title-only display
-
-#### Code-Review Tasks
-- Verify no other components or tests rely on the "Album: " prefix
-- Confirm [RootAlbumList.integration](frontend/src/pages/RootAlbumList.integration.test.tsx) and related integration tests do not break
-
-### Deliverable
-Root album list shows album names without the "Album: " prefix; all tests updated and passing.
-
-### Testing Requirements
-- RootAlbumListBlock renders album title only (no prefix)
-- Existing RootAlbumListBlock tests updated and passing
-- RootAlbumList integration tests still pass
-
-### Technical Notes
-- [RootAlbumListBlock](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx) line ~104: `<h2 ...>Album: {parsedTitle}</h2>`
-- `parsedTitle` is `parseBBCode(album.title)` or "Untitled Album" when missing; keep that logic
-- `aria-labelledby` and `id` on the title remain valid; no need to change based on prefix removal
-
----
-
 ## Implement Per-Album Theme Configuration
 
 **Status:** Pending
