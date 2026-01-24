@@ -2,6 +2,7 @@
  * RootAlbumListBlock component styles
  *
  * Two-column layout (album block left, subalbums right). Stacks on narrow viewports.
+ * Subalbums section displays up to 6 items in a 2-column grid layout.
  * Reuses theme variables from AlbumDetail / AlbumCard.
  *
  * @module frontend/src/components/RootAlbumListBlock
@@ -185,15 +186,16 @@
   margin: 0;
   padding: 2px;
   list-style: none;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.5rem;
-  max-height: 12rem;
+  max-height: 13rem;
   overflow-y: auto;
 }
 
 .root-album-list-block-subalbum-link {
   display: inline-block;
+  width: 100%;
   padding: 0.5rem 0.75rem;
   min-height: 2.75rem;
   box-sizing: border-box;

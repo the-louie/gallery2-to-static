@@ -4,8 +4,8 @@
  * Renders a single root-level album as a rich block: thumbnail (link to album),
  * album title (bold), description, optional website link from summary/description,
  * metadata (Date, Owner), and "Subalbums:" list. The Subalbums section shows at most
- * the latest 5 subalbums (by timestamp descending, nulls last); when more exist,
- * "... And much more" is shown below the list. Two-column layout (album left,
+ * the latest 6 subalbums (by timestamp descending, nulls last) in a 2-column grid layout;
+ * when more exist, "... And much more" is shown below the list. Two-column layout (album left,
  * subalbums right); stacks on narrow viewports.
  *
  * Size and Views are omitted (not in backend); see dateUtils for note.
@@ -74,10 +74,10 @@ export function RootAlbumListBlock({
   const showSubalbums = subalbums.length > 0;
 
   const displaySubalbums = useMemo(
-    () => sortItems([...subalbums], 'date-desc').slice(0, 5),
+    () => sortItems([...subalbums], 'date-desc').slice(0, 6),
     [subalbums],
   );
-  const hasMoreSubalbums = subalbums.length > 5;
+  const hasMoreSubalbums = subalbums.length > 6;
 
   const linkTo = `/album/${album.id}`;
 
