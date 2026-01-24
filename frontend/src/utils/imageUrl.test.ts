@@ -40,7 +40,7 @@ describe('imageUrl utilities', () => {
 
     it('returns thumbnail URL when useThumbnail is true', () => {
       const url = getImageUrl(mockImage, true);
-      expect(url).toBe('/images/test-album/__t_test-photo.jpg');
+      expect(url).toBe('/images/test-album/t__test-photo.jpg');
     });
 
     it('handles image with no directory path', () => {
@@ -52,7 +52,7 @@ describe('imageUrl utilities', () => {
       const thumbUrl = getImageUrl(imageNoDir, true);
 
       expect(fullUrl).toBe('/images/photo.jpg');
-      expect(thumbUrl).toBe('/images/__t_photo.jpg');
+      expect(thumbUrl).toBe('/images/t__photo.jpg');
     });
 
     it('handles nested directory paths', () => {
@@ -61,7 +61,7 @@ describe('imageUrl utilities', () => {
         pathComponent: 'album/subalbum/photo.jpg',
       };
       const url = getImageUrl(nestedImage, true);
-      expect(url).toBe('/images/album/subalbum/__t_photo.jpg');
+      expect(url).toBe('/images/album/subalbum/t__photo.jpg');
     });
 
     it('handles empty pathComponent', () => {
@@ -98,8 +98,27 @@ describe('imageUrl utilities', () => {
         pathComponent: 'album/image.jpeg',
       };
 
-      expect(getImageUrl(pngImage, true)).toBe('/images/album/__t_image.png');
-      expect(getImageUrl(jpegImage, true)).toBe('/images/album/__t_image.jpeg');
+      expect(getImageUrl(pngImage, true)).toBe('/images/album/t__image.png');
+      expect(getImageUrl(jpegImage, true)).toBe('/images/album/t__image.jpeg');
+    });
+
+    it('prefers urlPath over pathComponent when present', () => {
+      const imageWithUrlPath: Image = {
+        ...mockImage,
+        pathComponent: 'raw/raw.jpg',
+        urlPath: 'legacy/legacy_photo.jpg',
+      };
+      expect(getImageUrl(imageWithUrlPath, false)).toBe('/images/legacy/legacy_photo.jpg');
+      expect(getImageUrl(imageWithUrlPath, true)).toBe('/images/legacy/t__legacy_photo.jpg');
+    });
+
+    it('falls back to pathComponent when urlPath missing', () => {
+      const imageNoUrlPath: Image = {
+        ...mockImage,
+        pathComponent: 'album/photo.jpg',
+      };
+      expect(getImageUrl(imageNoUrlPath, false)).toBe('/images/album/photo.jpg');
+      expect(getImageUrl(imageNoUrlPath, true)).toBe('/images/album/t__photo.jpg');
     });
   });
 
@@ -121,12 +140,12 @@ describe('imageUrl utilities', () => {
 
     it('returns WebP format URL for thumbnail', () => {
       const url = getImageUrlWithFormat(mockImage, true, 'webp');
-      expect(url).toBe('/images/test-album/__t_test-photo.webp');
+      expect(url).toBe('/images/test-album/t__test-photo.webp');
     });
 
     it('returns AVIF format URL for thumbnail', () => {
       const url = getImageUrlWithFormat(mockImage, true, 'avif');
-      expect(url).toBe('/images/test-album/__t_test-photo.avif');
+      expect(url).toBe('/images/test-album/t__test-photo.avif');
     });
 
     it('handles images without extension', () => {
@@ -153,7 +172,7 @@ describe('imageUrl utilities', () => {
         pathComponent: 'album/subalbum/photo.jpg',
       };
       const url = getImageUrlWithFormat(nestedImage, true, 'webp');
-      expect(url).toBe('/images/album/subalbum/__t_photo.webp');
+      expect(url).toBe('/images/album/subalbum/t__photo.webp');
     });
 
     it('handles custom thumbnail prefix with format', () => {
@@ -172,7 +191,7 @@ describe('imageUrl utilities', () => {
     it('uses absolute base URL for thumbnail', () => {
       vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('https://cdn.example.com');
       const url = getImageUrl(mockImage, true);
-      expect(url).toBe('https://cdn.example.com/test-album/__t_test-photo.jpg');
+      expect(url).toBe('https://cdn.example.com/test-album/t__test-photo.jpg');
     });
 
     it('uses relative base URL for full image', () => {
@@ -184,7 +203,7 @@ describe('imageUrl utilities', () => {
     it('uses relative base URL for thumbnail', () => {
       vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/gallery-images');
       const url = getImageUrl(mockImage, true);
-      expect(url).toBe('/gallery-images/test-album/__t_test-photo.jpg');
+      expect(url).toBe('/gallery-images/test-album/t__test-photo.jpg');
     });
 
     it('handles absolute URL with nested paths', () => {
@@ -234,7 +253,7 @@ describe('imageUrl utilities', () => {
     it('uses absolute base URL with WebP thumbnail', () => {
       vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('https://cdn.example.com');
       const url = getImageUrlWithFormat(mockImage, true, 'webp');
-      expect(url).toBe('https://cdn.example.com/test-album/__t_test-photo.webp');
+      expect(url).toBe('https://cdn.example.com/test-album/t__test-photo.webp');
     });
 
     it('uses relative base URL with WebP format', () => {
@@ -250,7 +269,7 @@ describe('imageUrl utilities', () => {
         pathComponent: 'album/subalbum/photo.jpg',
       };
       const url = getImageUrlWithFormat(nestedImage, true, 'webp');
-      expect(url).toBe('https://cdn.example.com/album/subalbum/__t_photo.webp');
+      expect(url).toBe('https://cdn.example.com/album/subalbum/t__photo.webp');
     });
   });
 
@@ -273,13 +292,14 @@ describe('imageUrl utilities', () => {
     it('returns thumbnail URL with default base URL', () => {
       vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
       const url = getAlbumThumbnailUrl(mockAlbum);
-      expect(url).toBe('/images/test-album/__t_thumbnail.jpg');
+      expect(url).toBe('/images/test-album/t__thumbnail.jpg');
     });
 
     it('returns null when album has no thumbnail', () => {
       const albumWithoutThumb: Album = {
         ...mockAlbum,
         thumbnailPathComponent: null,
+        thumbnailUrlPath: null,
       };
       const url = getAlbumThumbnailUrl(albumWithoutThumb);
       expect(url).toBeNull();
@@ -288,19 +308,41 @@ describe('imageUrl utilities', () => {
     it('uses absolute base URL for album thumbnail', () => {
       vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('https://cdn.example.com');
       const url = getAlbumThumbnailUrl(mockAlbum);
-      expect(url).toBe('https://cdn.example.com/test-album/__t_thumbnail.jpg');
+      expect(url).toBe('https://cdn.example.com/test-album/t__thumbnail.jpg');
     });
 
     it('uses relative base URL for album thumbnail', () => {
       vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/gallery-images');
       const url = getAlbumThumbnailUrl(mockAlbum);
-      expect(url).toBe('/gallery-images/test-album/__t_thumbnail.jpg');
+      expect(url).toBe('/gallery-images/test-album/t__thumbnail.jpg');
     });
 
     it('handles custom thumbnail prefix with external domain', () => {
       vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('https://cdn.example.com');
       const url = getAlbumThumbnailUrl(mockAlbum, 'thumb_');
       expect(url).toBe('https://cdn.example.com/test-album/thumb_thumbnail.jpg');
+    });
+
+    it('prefers thumbnailUrlPath over thumbnailPathComponent when present', () => {
+      const albumWithLegacy: Album = {
+        ...mockAlbum,
+        thumbnailPathComponent: 'raw/thumb.jpg',
+        thumbnailUrlPath: 'legacy/path/t__legacy_thumb.jpg',
+      };
+      vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
+      const url = getAlbumThumbnailUrl(albumWithLegacy);
+      expect(url).toBe('/images/legacy/path/t__legacy_thumb.jpg');
+    });
+
+    it('falls back to thumbnailPathComponent when thumbnailUrlPath missing', () => {
+      const albumFallback: Album = {
+        ...mockAlbum,
+        thumbnailPathComponent: 'album/thumb.jpg',
+        thumbnailUrlPath: undefined,
+      };
+      vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
+      const url = getAlbumThumbnailUrl(albumFallback);
+      expect(url).toBe('/images/album/t__thumb.jpg');
     });
   });
 });

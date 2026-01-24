@@ -9,16 +9,12 @@
  *
  * - Base URL: Configurable via environment variable (`VITE_IMAGE_BASE_URL`) or
  *   runtime config file (`/image-config.json`). Defaults to `/images` if not configured.
- * - Full images: `{baseUrl}/{pathComponent}`
- * - Thumbnails: `{baseUrl}/__t_{filename}` (prefix-based pattern)
+ * - Full images: `{baseUrl}/{pathComponent}` or `{baseUrl}/{urlPath}` when present (legacy)
+ * - Thumbnails: `{baseUrl}/{dir}t__{filename}` (prefix `t__` for legacy match)
  * - Format variants: Replace extension with `.webp` or `.avif`
  *
- * The thumbPrefix pattern (`__t_`) is applied to the filename portion
- * of the pathComponent. For example:
- * - Full: `/images/album/photo.jpg` (default) or `https://cdn.example.com/album/photo.jpg` (configured)
- * - Thumb: `/images/album/__t_photo.jpg` (default) or `https://cdn.example.com/album/__t_photo.jpg` (configured)
- * - Full WebP: `/images/album/photo.webp` (default) or `https://cdn.example.com/album/photo.webp` (configured)
- * - Thumb WebP: `/images/album/__t_photo.webp` (default) or `https://cdn.example.com/album/__t_photo.webp` (configured)
+ * Thumb prefix `t__` (legacy) is applied to the filename when using pathComponent.
+ * When urlPath/thumbnailUrlPath are present, those are used for image URLs.
  *
  * ## Configuration
  *
@@ -41,11 +37,9 @@ import type { Image, Album } from '../types';
 import { getImageBaseUrl } from './imageConfig';
 
 /**
- * Default thumbnail prefix pattern
- *
- * Matches the thumbPrefix from config_example.json: "__t_"
+ * Default thumbnail prefix for legacy URL compatibility (matches Python config thumb_prefix).
  */
-const DEFAULT_THUMB_PREFIX = '__t_';
+const DEFAULT_THUMB_PREFIX = 't__';
 
 /**
  * Construct thumbnail URL from pathComponent
@@ -53,11 +47,11 @@ const DEFAULT_THUMB_PREFIX = '__t_';
  * Applies the thumbnail prefix to the filename portion of the pathComponent.
  * Uses the configured base URL from imageConfig.
  *
- * For example: "album/photo.jpg" -> "/images/album/__t_photo.jpg" (default)
- * or "https://cdn.example.com/album/__t_photo.jpg" (if configured)
+ * For example: "album/photo.jpg" -> "/images/album/t__photo.jpg" (default)
+ * or "https://cdn.example.com/album/t__photo.jpg" (if configured)
  *
  * @param pathComponent - Full path component from image data
- * @param thumbPrefix - Thumbnail prefix (defaults to "__t_")
+ * @param thumbPrefix - Thumbnail prefix (defaults to "t__")
  * @param format - Optional format variant: 'webp', 'avif', or 'original' (default)
  * @returns Thumbnail URL path
  */
@@ -177,7 +171,7 @@ function constructFullImageUrl(
  * };
  *
  * const thumbUrl = getImageUrl(image, true);
- * // Returns: "/images/album/__t_photo.jpg" (default) or configured base URL
+ * // Returns: "/images/album/t__photo.jpg" (default) or configured base URL
  *
  * const fullUrl = getImageUrl(image, false);
  * // Returns: "/images/album/photo.jpg" (default) or configured base URL
@@ -188,13 +182,14 @@ export function getImageUrl(
   useThumbnail: boolean = false,
   thumbPrefix?: string,
 ): string {
-  const pathComponent = image.pathComponent;
+  const path = image.urlPath ?? image.pathComponent;
+  const prefix = thumbPrefix ?? DEFAULT_THUMB_PREFIX;
 
   if (useThumbnail) {
-    return constructThumbnailUrl(pathComponent, thumbPrefix);
+    return constructThumbnailUrl(path, prefix);
   }
 
-  return constructFullImageUrl(pathComponent);
+  return constructFullImageUrl(path);
 }
 
 /**
@@ -222,7 +217,7 @@ export function getImageUrl(
  * // Returns: "/images/album/photo.webp" (default) or configured base URL
  *
  * const thumbWebpUrl = getImageUrlWithFormat(image, true, 'webp');
- * // Returns: "/images/album/__t_photo.webp" (default) or configured base URL
+ * // Returns: "/images/album/t__photo.webp" (default) or configured base URL
  * ```
  */
 export function getImageUrlWithFormat(
@@ -231,13 +226,14 @@ export function getImageUrlWithFormat(
   format: 'webp' | 'avif' | 'original' = 'original',
   thumbPrefix?: string,
 ): string {
-  const pathComponent = image.pathComponent;
+  const path = image.urlPath ?? image.pathComponent;
+  const prefix = thumbPrefix ?? DEFAULT_THUMB_PREFIX;
 
   if (useThumbnail) {
-    return constructThumbnailUrl(pathComponent, thumbPrefix, format);
+    return constructThumbnailUrl(path, prefix, format);
   }
 
-  return constructFullImageUrl(pathComponent, format);
+  return constructFullImageUrl(path, format);
 }
 
 /**
@@ -246,9 +242,9 @@ export function getImageUrlWithFormat(
  * Constructs a thumbnail URL from the album's thumbnailPathComponent field.
  * Returns null if the album doesn't have a thumbnail path component.
  *
- * @param album - Album object with optional thumbnailPathComponent field
- * @param thumbPrefix - Optional thumbnail prefix override (defaults to "__t_")
- * @returns Thumbnail URL path, or null if thumbnailPathComponent is missing
+ * @param album - Album object with optional thumbnailPathComponent or thumbnailUrlPath field
+ * @param thumbPrefix - Optional thumbnail prefix override (defaults to "t__")
+ * @returns Thumbnail URL path, or null if no thumbnail path available
  *
  * @example
  * ```typescript
@@ -260,7 +256,7 @@ export function getImageUrlWithFormat(
  * };
  *
  * const thumbUrl = getAlbumThumbnailUrl(album);
- * // Returns: "/images/album/__t_photo.jpg" (default) or configured base URL
+ * // Returns: "/images/album/t__photo.jpg" (default) or configured base URL
  *
  * const albumWithoutThumb: Album = {
  *   id: 2,
@@ -276,11 +272,16 @@ export function getAlbumThumbnailUrl(
   album: Album,
   thumbPrefix?: string,
 ): string | null {
-  const pathComponent = album.thumbnailPathComponent;
+  if (album.thumbnailUrlPath && album.thumbnailUrlPath.length > 0) {
+    const baseUrl = getImageBaseUrl();
+    return `${baseUrl}/${album.thumbnailUrlPath}`;
+  }
 
+  const pathComponent = album.thumbnailPathComponent;
   if (!pathComponent) {
     return null;
   }
 
-  return constructThumbnailUrl(pathComponent, thumbPrefix);
+  const prefix = thumbPrefix ?? DEFAULT_THUMB_PREFIX;
+  return constructThumbnailUrl(pathComponent, prefix);
 }

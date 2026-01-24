@@ -103,7 +103,7 @@ export interface ThemeContextValue {
   /** Function to update the theme */
   setTheme: (theme: ThemeName) => void;
   /** Array of all available themes */
-  availableThemes: readonly ReturnType<typeof getAllThemes>;
+  availableThemes: ReturnType<typeof getAllThemes>;
   /** Convenience property: true if current theme is dark */
   isDark: boolean;
   /** Convenience property: true if current theme is light */

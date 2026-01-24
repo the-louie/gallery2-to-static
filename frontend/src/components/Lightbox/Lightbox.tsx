@@ -370,7 +370,7 @@ export function Lightbox({
     if (image) {
       setDomFullImageLoaded(false);
     }
-  }, [image?.id, image?.pathComponent]);
+  }, [image?.id, image?.pathComponent, image?.urlPath]);
 
   // Reset zoom when image ID changes (separate effect to avoid dependency issues)
   useEffect(() => {
@@ -961,6 +961,7 @@ export function Lightbox({
                   loading="eager"
                   decoding="async"
                   aria-hidden="true"
+                  crossOrigin="anonymous"
                 />
               )}
               {/* Full image (fades in when loaded) */}
@@ -974,6 +975,7 @@ export function Lightbox({
                   onError={handleImageError}
                   loading="eager"
                   decoding="async"
+                  crossOrigin="anonymous"
                   style={{
                     transform: imageTransform,
                     transformOrigin: 'center center',

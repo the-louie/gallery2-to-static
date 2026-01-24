@@ -128,7 +128,7 @@ function ImageThumbnailComponent({
     }
     setShouldLoad(false);
     setDomFullImageLoaded(false);
-  }, [image.id, image.pathComponent, useThumbnail]);
+  }, [image.id, image.pathComponent, image.urlPath, useThumbnail]);
 
   // Set up Intersection Observer for lazy loading
   useEffect(() => {
@@ -281,6 +281,7 @@ function ImageThumbnailComponent({
               loading="lazy"
               decoding="async"
               aria-hidden="true"
+              crossOrigin="anonymous"
             />
           )}
           {/* Full image (fades in when loaded) */}
@@ -294,6 +295,7 @@ function ImageThumbnailComponent({
               onError={handleImageError}
               loading="lazy"
               decoding="async"
+              crossOrigin="anonymous"
             />
           )}
         </>
@@ -316,11 +318,12 @@ export const ImageThumbnail = React.memo(ImageThumbnailComponent, (prevProps, ne
   if (!prevProps.image || !nextProps.image) {
     return prevProps.image === nextProps.image;
   }
-  // Compare image properties that affect rendering: id, pathComponent, title, description
-  // Title and description are included because they're used for alt text
+  // Compare image properties that affect rendering: id, pathComponent, urlPath, title, description
+  // urlPath used for image URLs when present; pathComponent fallback
   return (
     prevProps.image.id === nextProps.image.id &&
     prevProps.image.pathComponent === nextProps.image.pathComponent &&
+    prevProps.image.urlPath === nextProps.image.urlPath &&
     prevProps.image.title === nextProps.image.title &&
     prevProps.image.description === nextProps.image.description &&
     prevProps.useThumbnail === nextProps.useThumbnail &&

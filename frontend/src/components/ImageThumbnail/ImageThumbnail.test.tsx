@@ -85,7 +85,7 @@ describe('ImageThumbnail', () => {
         const img = screen.getByAltText('Test Photo');
         expect(img).toHaveAttribute(
           'src',
-          '/images/test-album/__t_test-photo.jpg',
+          '/images/test-album/t__test-photo.jpg',
         );
       });
     });

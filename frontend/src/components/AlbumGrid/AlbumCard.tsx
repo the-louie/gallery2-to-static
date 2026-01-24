@@ -109,6 +109,7 @@ function AlbumCardComponent({
             alt={album.title || 'Album thumbnail'}
             className="album-card-thumbnail-image"
             onError={handleImageError}
+            crossOrigin="anonymous"
           />
         ) : (
           <div className="album-card-thumbnail-placeholder" aria-hidden="true">

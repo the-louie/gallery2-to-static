@@ -167,6 +167,14 @@ function validateChildArray(data: unknown): data is Child[] {
       !('summary' in child) ||
       child.summary === null ||
       typeof child.summary === 'string';
+    const urlPathOk =
+      !('urlPath' in child) ||
+      child.urlPath === null ||
+      typeof child.urlPath === 'string';
+    const thumbnailUrlPathOk =
+      !('thumbnailUrlPath' in child) ||
+      child.thumbnailUrlPath === null ||
+      typeof child.thumbnailUrlPath === 'string';
     return (
       typeof child.id === 'number' &&
       typeof child.type === 'string' &&
@@ -180,7 +188,9 @@ function validateChildArray(data: unknown): data is Child[] {
       (child.thumb_width === null || typeof child.thumb_width === 'number') &&
       (child.thumb_height === null || typeof child.thumb_height === 'number') &&
       ownerNameOk &&
-      summaryOk
+      summaryOk &&
+      urlPathOk &&
+      thumbnailUrlPathOk
     );
   });
 }

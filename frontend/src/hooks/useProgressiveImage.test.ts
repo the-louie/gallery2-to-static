@@ -53,7 +53,7 @@ describe('useProgressiveImage', () => {
     // Mock imageUrl functions
     vi.spyOn(imageUrl, 'getImageUrl').mockImplementation((image, useThumbnail) => {
       if (useThumbnail) {
-        return '/images/test-album/__t_test-photo.jpg';
+        return '/images/test-album/t__test-photo.jpg';
       }
       return '/images/test-album/test-photo.jpg';
     });
@@ -61,7 +61,7 @@ describe('useProgressiveImage', () => {
     vi.spyOn(imageUrl, 'getImageUrlWithFormat').mockImplementation(
       (image, useThumbnail, format) => {
         const baseUrl = useThumbnail
-          ? '/images/test-album/__t_test-photo'
+          ? '/images/test-album/t__test-photo'
           : '/images/test-album/test-photo';
         if (format === 'webp') {
           return `${baseUrl}.webp`;
@@ -87,7 +87,7 @@ describe('useProgressiveImage', () => {
 
       expect(result.current.state).toBe('thumbnail');
       expect(result.current.hasError).toBe(false);
-      expect(result.current.thumbnailUrl).toBe('/images/test-album/__t_test-photo.jpg');
+      expect(result.current.thumbnailUrl).toBe('/images/test-album/t__test-photo.jpg');
     });
 
     it('handles null image', () => {

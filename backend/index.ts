@@ -3,6 +3,8 @@ import * as path from 'path'
 import mysql from 'mysql2/promise'
 import sqlUtils from './sqlUtils'
 import { Config, Child } from './types'
+import { cleanup_uipathcomponent } from './cleanupUipath'
+import { getLinkTarget, getThumbTarget } from './legacyPaths'
 
 /**
  * Finds the first photo (GalleryPhotoItem) in a children array.
@@ -47,76 +49,114 @@ interface SearchIndexItem {
     ancestors?: string; // Optional, path of ancestor albums (root omitted), e.g. "dreamhack/dreamhack 08/crew"
 }
 
-const main = async (sql: ReturnType<typeof sqlUtils>, root: number, pathComponent: Array<string> = [], dataDir: string, searchIndex: Map<number, SearchIndexItem>) => {
+const main = async (
+    sql: ReturnType<typeof sqlUtils>,
+    root: number,
+    pathComponent: Array<string> = [],
+    uipath: Array<string> = [''],
+    dataDir: string,
+    searchIndex: Map<number, SearchIndexItem>,
+    thumbPrefix: string,
+) => {
     const children = await sql.getChildren(root);
     if (children.length > 0) {
         const recursivePromises: Promise<void>[] = [];
         children.forEach((child) => {
             if (child.hasChildren && child.pathComponent) {
-                recursivePromises.push(main(sql, child.id, pathComponent.concat([child.pathComponent]), dataDir, searchIndex));
+                const title = cleanup_uipathcomponent(child.title ?? child.pathComponent ?? '');
+                recursivePromises.push(
+                    main(
+                        sql,
+                        child.id,
+                        pathComponent.concat([child.pathComponent]),
+                        uipath.concat([title]),
+                        dataDir,
+                        searchIndex,
+                        thumbPrefix,
+                    ),
+                );
             }
         });
         const processedChildren = children.map((child) => {
             if (child.type === 'GalleryPhotoItem' && child.pathComponent) {
                 const fullPath = pathComponent.concat([child.pathComponent]).join('/');
-                return { ...child, pathComponent: fullPath };
+                const cleanedTitle = cleanup_uipathcomponent(child.title ?? child.pathComponent ?? '');
+                const rawPath = child.pathComponent;
+                const dir = uipath.slice(1).join('/');
+                const linkFilename = getLinkTarget(cleanedTitle, rawPath);
+                const urlPath = dir ? `${dir}/${linkFilename}` : linkFilename;
+                return { ...child, pathComponent: fullPath, urlPath };
             }
             return child;
         });
         await Promise.all(recursivePromises);
-        
-        // Extract thumbnail info for albums from their first photo
-        const processedChildrenWithThumbnails = await Promise.all(processedChildren.map(async (child) => {
-            if (child.type === 'GalleryAlbumItem') {
-                const albumChildren = await sql.getChildren(child.id);
-                const firstPhoto = findFirstPhoto(albumChildren);
-                if (firstPhoto) {
-                    // Build full path for photo: current path + album path + photo filename
-                    const photoPathComponent = firstPhoto.pathComponent && child.pathComponent
-                        ? pathComponent.concat([child.pathComponent, firstPhoto.pathComponent]).join('/')
-                        : firstPhoto.pathComponent;
-                    const processedFirstPhoto = { ...firstPhoto, pathComponent: photoPathComponent };
-                    const thumbnailInfo = extractThumbnailInfo(processedFirstPhoto);
-                    return { ...child, ...thumbnailInfo };
+
+        const processedChildrenWithThumbnails = await Promise.all(
+            processedChildren.map(async (child) => {
+                if (child.type === 'GalleryAlbumItem') {
+                    const albumChildren = await sql.getChildren(child.id);
+                    const firstPhoto = findFirstPhoto(albumChildren);
+                    if (firstPhoto) {
+                        const photoPathComponent =
+                            firstPhoto.pathComponent && child.pathComponent
+                                ? pathComponent
+                                      .concat([child.pathComponent, firstPhoto.pathComponent])
+                                      .join('/')
+                                : firstPhoto.pathComponent;
+                        const processedFirstPhoto = {
+                            ...firstPhoto,
+                            pathComponent: photoPathComponent,
+                        };
+                        const thumbnailInfo = extractThumbnailInfo(processedFirstPhoto);
+                        const albumTitle = cleanup_uipathcomponent(
+                            child.title ?? child.pathComponent ?? '',
+                        );
+                        const albumUipath = uipath.concat([albumTitle]);
+                        const cleanedTitle = cleanup_uipathcomponent(
+                            firstPhoto.title ?? firstPhoto.pathComponent ?? '',
+                        );
+                        const rawPath = firstPhoto.pathComponent ?? '';
+                        const dir = albumUipath.slice(1).join('/');
+                        const thumbFilename = getThumbTarget(
+                            cleanedTitle,
+                            rawPath,
+                            thumbPrefix,
+                        );
+                        const thumbnailUrlPath = dir
+                            ? `${dir}/${thumbFilename}`
+                            : thumbFilename;
+                        return { ...child, ...thumbnailInfo, thumbnailUrlPath };
+                    }
                 }
-            }
-            return child;
-        }));
-        
-        // Add albums to search index (only albums, not photos)
-        // Children of the current album have the current album as their parent
+                return child;
+            }),
+        );
+
         for (const child of processedChildrenWithThumbnails) {
-            // Only include albums in search index to reduce file size
             if (child.type === 'GalleryAlbumItem') {
-                // Build search item with only non-empty fields to reduce file size
                 const searchItem: SearchIndexItem = {
                     id: child.id,
                     type: 'GalleryAlbumItem',
                     title: child.title ?? '',
                     pathComponent: child.pathComponent ?? '',
                 };
-                
-                // Only include description if it has a non-empty value
                 if (child.description && child.description.trim().length > 0) {
                     searchItem.description = child.description;
                 }
-                
-                // Always include parentId for navigation
                 searchItem.parentId = root;
-                
-                // Include ancestors path (pathComponent array contains ancestor path components)
-                // Root album is omitted (empty pathComponent array)
-                if (pathComponent.length > 0) {
-                    searchItem.ancestors = pathComponent.join('/');
+                if (uipath.length > 1) {
+                    searchItem.ancestors = uipath.slice(1).join('/');
                 }
-                
                 searchIndex.set(child.id, searchItem);
             }
         }
-        
+
         const filePath = path.join(dataDir, `${root}.json`);
         try {
-            await fs.writeFile(filePath, JSON.stringify(processedChildrenWithThumbnails, null, 2));
+            await fs.writeFile(
+                filePath,
+                JSON.stringify(processedChildrenWithThumbnails, null, 2),
+            );
         } catch (error) {
             console.error(`Error writing file ${filePath}:`, error);
             throw error;
@@ -133,8 +173,8 @@ let connection: mysql.Connection | null = null;
         try {
             const configFile = await fs.readFile(configPath, 'utf-8');
             config = JSON.parse(configFile) as Config;
-            if (!config.mysqlSettings || !config.gallerySettings || !config.thumbPrefix) {
-                throw new Error('Missing required config fields: mysqlSettings, gallerySettings, or thumbPrefix');
+            if (!config.mysqlSettings || !config.gallerySettings) {
+                throw new Error('Missing required config fields: mysqlSettings or gallerySettings');
             }
             if (!config.mysqlSettings.host || !config.mysqlSettings.user || !config.mysqlSettings.database) {
                 throw new Error('Missing required mysqlSettings fields: host, user, or database');
@@ -172,7 +212,8 @@ let connection: mysql.Connection | null = null;
         // Initialize search index accumulator
         const searchIndex = new Map<number, SearchIndexItem>();
         
-        await main(sql, rootId, [], dataDir, searchIndex);
+        const thumbPrefix = config.thumbPrefix ?? 't__';
+        await main(sql, rootId, [], [''], dataDir, searchIndex, thumbPrefix);
         
         // Generate search index file
         try {

@@ -9,7 +9,7 @@
         "tablePrefix": "g2_",
         "columnPrefix": "g_"
     },
-    "thumbPrefix": "__t_",
+    "thumbPrefix": "t__",
     "ignoreAlbums": [],
     "onlyAlbums": []
 }

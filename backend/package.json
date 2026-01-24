@@ -1,10 +1,12 @@
 {
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/unidecode": "^1.1.0",
     "ts-node": "^10.9.2"
   },
   "dependencies": {
-    "mysql2": "^3.9.8"
+    "mysql2": "^3.9.8",
+    "unidecode": "^1.1.0"
   },
   "scripts": {
     "start": "ts-node index.ts"

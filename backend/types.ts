@@ -15,10 +15,18 @@ export interface Child {
      */
     order?: number | null;
     /**
+     * Legacy URL path for images (uipath-based dir + link filename). Present for photos when backend emits legacy paths.
+     */
+    urlPath?: string | null;
+    /**
      * Thumbnail path component extracted from the first photo in the album.
      * Only present for albums (GalleryAlbumItem) that contain photos.
      */
     thumbnailPathComponent?: string | null;
+    /**
+     * Legacy URL path for album thumbnail (uipath-based dir + thumb filename). Present for albums with thumbnails when backend emits legacy paths.
+     */
+    thumbnailUrlPath?: string | null;
     /**
      * ID of the photo used as the album thumbnail.
      * Only present for albums (GalleryAlbumItem) that contain photos.

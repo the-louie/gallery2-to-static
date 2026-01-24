@@ -168,7 +168,7 @@ export function useProgressiveImage(
         fullImgRef.current = null;
       }
     };
-  }, [image?.id, image?.pathComponent]);
+  }, [image?.id, image?.pathComponent, image?.urlPath]);
 
   // Load thumbnail image (or skip if useThumbnail is false)
   useEffect(() => {
