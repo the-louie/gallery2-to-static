@@ -28,17 +28,12 @@
   border: 1px solid var(--album-card-border, #ddd8d0);
   border-radius: var(--album-card-border-radius, 8px);
   padding: 1rem;
-  margin-bottom: 1.5rem;
   background: linear-gradient(
     180deg,
     var(--gradient-card-start, var(--album-card-bg)) 0%,
     var(--gradient-card-end, var(--album-card-bg)) 100%
   );
   min-height: calc(var(--root-album-subalbums-section-max-height) + 8rem);
-}
-
-.root-album-list-block:last-child {
-  margin-bottom: 0;
 }
 
 .root-album-list-block-inner {

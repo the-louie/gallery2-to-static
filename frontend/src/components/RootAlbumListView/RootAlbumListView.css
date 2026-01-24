@@ -35,6 +35,10 @@
   list-style: none;
 }
 
+.root-album-list-view-list > li:not(:first-child) {
+  margin-top: 1.5rem;
+}
+
 .root-album-list-error {
   padding: 2rem;
   text-align: center;
