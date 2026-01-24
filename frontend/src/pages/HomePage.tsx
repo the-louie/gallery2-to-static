@@ -2,14 +2,15 @@
  * HomePage Component
  *
  * Displays the root album on the home page. Discovers the root album ID
- * and displays its children using the AlbumGrid component.
+ * and displays its children using the RootAlbumListView (list layout).
+ * Nested albums use AlbumGrid via AlbumDetailPage.
  *
  * @module frontend/src/pages
  */
 
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlbumGrid } from '@/components/AlbumGrid';
+import { RootAlbumListView } from '@/components/RootAlbumListView';
 import { FilterPanel } from '@/components/FilterPanel';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { findRootAlbumId, DataLoadError } from '@/utils/dataLoader';
@@ -118,7 +119,7 @@ export function HomePage() {
   return (
     <div className="home-page">
       <FilterPanel />
-      <AlbumGrid albumId={rootAlbumId} onAlbumClick={handleAlbumClick} />
+      <RootAlbumListView albumId={rootAlbumId} onAlbumClick={handleAlbumClick} />
     </div>
   );
 }

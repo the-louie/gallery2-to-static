@@ -16,10 +16,13 @@ const albumFileForRoot: AlbumFile = {
   children: mockChildren,
 };
 
-vi.mock('@/utils/dataLoader', () => ({
-  findRootAlbumId: vi.fn(),
-  loadAlbum: vi.fn(),
-}));
+vi.mock('@/utils/dataLoader', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/utils/dataLoader')>();
+  return {
+    ...actual,
+    findRootAlbumId: vi.fn(),
+  };
+});
 
 describe('HomePage', () => {
   beforeEach(() => {
@@ -40,8 +43,7 @@ describe('HomePage', () => {
     );
 
     render(<HomePage />);
-    // AlbumGrid should show loading skeleton
-    expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: /loading gallery/i })).toBeInTheDocument();
   });
 
   it('displays root album when found', async () => {
@@ -53,10 +55,11 @@ describe('HomePage', () => {
       expect(findRootAlbumId).toHaveBeenCalled();
     });
 
-    // AlbumGrid should render with the root album ID
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('/data/7.json');
+      expect(screen.getByRole('region', { name: /root albums/i })).toBeInTheDocument();
     });
+
+    expect(global.fetch).toHaveBeenCalledWith('/data/7.json');
   });
 
   it('displays error when root album not found', async () => {

@@ -431,6 +431,59 @@ function parseBBCodeInternal(text: string): React.ReactNode {
 }
 
 /**
+ * Result of extracting a URL from BBCode [url=...]...[/url] or [url]...[/url].
+ */
+export interface ExtractedUrl {
+  /** The URL (http or https only). */
+  url: string;
+  /** Optional label (inner text); when [url]...[/url], same as url. */
+  label?: string;
+}
+
+const URL_SCHEME_REGEX = /^https?:\/\//i;
+
+/**
+ * Extract the first [url=...]...[/url] or [url]...[/url] from text.
+ * Returns the URL and optional label for "Website: …" display.
+ * Only http and https URLs are accepted; invalid schemes (e.g. javascript:) return null.
+ *
+ * @param text - Summary or description that may contain BBCode URL tags
+ * @returns { url, label? } or null if no valid match
+ *
+ * @example
+ * extractUrlFromBBCode('[url=https://example.com]Example[/url]') // { url: 'https://...', label: 'Example' }
+ * extractUrlFromBBCode('[url]https://example.com[/url]')         // { url: 'https://...', label: 'https://...' }
+ * extractUrlFromBBCode('no url here')                            // null
+ */
+export function extractUrlFromBBCode(text: string): ExtractedUrl | null {
+  if (!text || typeof text !== 'string') {
+    return null;
+  }
+
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+
+  // [url=URL]label[/url]
+  const attrMatch = trimmed.match(/\[url=([^\]]+)\]([\s\S]*?)\[\/url\]/i);
+  if (attrMatch) {
+    const rawUrl = attrMatch[1].trim().replace(/^["']|["']$/g, '');
+    const label = attrMatch[2].trim();
+    if (!URL_SCHEME_REGEX.test(rawUrl)) return null;
+    return { url: rawUrl, label: label || undefined };
+  }
+
+  // [url]URL[/url]
+  const simpleMatch = trimmed.match(/\[url\]([\s\S]*?)\[\/url\]/i);
+  if (simpleMatch) {
+    const rawUrl = simpleMatch[1].trim();
+    if (!URL_SCHEME_REGEX.test(rawUrl)) return null;
+    return { url: rawUrl, label: rawUrl || undefined };
+  }
+
+  return null;
+}
+
+/**
  * Parse BBCode text and convert to React elements
  *
  * @param text - Text containing BBCode tags

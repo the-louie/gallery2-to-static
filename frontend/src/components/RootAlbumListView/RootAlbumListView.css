@@ -1,0 +1,69 @@
+/**
+ * RootAlbumListView component styles
+ *
+ * Vertical list of root-level album blocks. Reuses album-grid error styling.
+ *
+ * @module frontend/src/components/RootAlbumListView
+ */
+
+.root-album-list-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.root-album-list-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.root-album-list-view-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--album-detail-title-color, #333333);
+}
+
+.root-album-list-view-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.root-album-list-error {
+  padding: 2rem;
+  text-align: center;
+  color: var(--album-grid-error-color, #d32f2f);
+  background-color: var(--album-grid-error-bg, #ffebee);
+  border-radius: var(--album-grid-border-radius, 8px);
+}
+
+.root-album-list-error p {
+  margin: 0 0 1rem 0;
+}
+
+.root-album-list-error button {
+  padding: 0.5rem 1rem;
+  background-color: var(--album-grid-error-button-bg, #d32f2f);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-sm, 4px);
+  cursor: pointer;
+  font-size: 0.875rem;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.root-album-list-error button:hover {
+  background-color: var(--album-grid-error-button-hover, #b71c1c);
+}
+
+.root-album-list-error button:focus {
+  outline: 2px solid var(--album-grid-error-button-focus, #0066cc);
+  outline-offset: 2px;
+}

@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { parseBBCode, clearBBCodeCache, getBBCodeCacheStats } from './bbcode';
+import { parseBBCode, clearBBCodeCache, getBBCodeCacheStats, extractUrlFromBBCode } from './bbcode';
 
 describe('parseBBCode', () => {
   beforeEach(() => {
@@ -327,5 +327,57 @@ describe('parseBBCode', () => {
       expect(spans[0]?.style.color).toBe('red');
       expect(spans[1]?.style.color).toBe('blue');
     });
+  });
+});
+
+describe('extractUrlFromBBCode', () => {
+  it('extracts [url=...]...[/url] with label', () => {
+    const result = extractUrlFromBBCode('[url=https://example.com]Example[/url]');
+    expect(result).not.toBeNull();
+    expect(result?.url).toBe('https://example.com');
+    expect(result?.label).toBe('Example');
+  });
+
+  it('extracts [url=...]...[/url] with http', () => {
+    const result = extractUrlFromBBCode('[url=http://site.org]Site[/url]');
+    expect(result).not.toBeNull();
+    expect(result?.url).toBe('http://site.org');
+    expect(result?.label).toBe('Site');
+  });
+
+  it('returns first match when multiple [url] tags present', () => {
+    const text = 'a [url=https://first.com]First[/url] b [url=https://second.com]Second[/url]';
+    const result = extractUrlFromBBCode(text);
+    expect(result).not.toBeNull();
+    expect(result?.url).toBe('https://first.com');
+    expect(result?.label).toBe('First');
+  });
+
+  it('returns null when no match', () => {
+    expect(extractUrlFromBBCode('no url here')).toBeNull();
+    expect(extractUrlFromBBCode('[b]bold[/b]')).toBeNull();
+    expect(extractUrlFromBBCode('')).toBeNull();
+  });
+
+  it('returns null for invalid URL scheme (javascript:)', () => {
+    const result = extractUrlFromBBCode('[url=javascript:alert(1)]Click[/url]');
+    expect(result).toBeNull();
+  });
+
+  it('returns null for data: URL', () => {
+    const result = extractUrlFromBBCode('[url=data:text/html,foo]Data[/url]');
+    expect(result).toBeNull();
+  });
+
+  it('extracts [url]...[/url] form (URL as content)', () => {
+    const result = extractUrlFromBBCode('[url]https://example.com[/url]');
+    expect(result).not.toBeNull();
+    expect(result?.url).toBe('https://example.com');
+    expect(result?.label).toBe('https://example.com');
+  });
+
+  it('handles empty or whitespace-only text', () => {
+    expect(extractUrlFromBBCode('')).toBeNull();
+    expect(extractUrlFromBBCode('   ')).toBeNull();
   });
 });

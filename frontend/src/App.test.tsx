@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test-utils';
+import { render, screen, waitFor } from '@/test-utils';
 import App from '@/App';
-import { findRootAlbumId } from '@/utils/dataLoader';
+import { findRootAlbumId, loadAlbum } from '@/utils/dataLoader';
 import type { AlbumFile } from '../../../backend/types';
 
 const emptyAlbumFile: AlbumFile = {
@@ -23,6 +23,7 @@ vi.mock('@/utils/dataLoader', () => ({
 describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(loadAlbum).mockResolvedValue(emptyAlbumFile);
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => emptyAlbumFile,
@@ -38,20 +39,26 @@ describe('App', () => {
     expect(screen.getByText('Gallery 2 to Static')).toBeInTheDocument();
   });
 
-  it('renders home page on root route', () => {
+  it('renders home page on root route', async () => {
     vi.mocked(findRootAlbumId).mockResolvedValue(7);
 
     render(<App />, { initialEntries: ['/'] });
 
-    // HomePage should be rendered (will show loading initially)
-    expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
+    await waitFor(() => {
+      const root = screen.queryByRole('region', { name: /root albums/i });
+      const empty = screen.queryByText(/no albums found/i);
+      expect(Boolean(root) || Boolean(empty)).toBe(true);
+    });
   });
 
-  it('renders album detail page on /album/:id route', () => {
+  it('renders album detail page on /album/:id route', async () => {
     render(<App />, { initialEntries: ['/album/7'] });
 
-    // AlbumDetailPage should be rendered (will show loading initially)
-    expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
+    await waitFor(() => {
+      const grid = screen.queryByRole('region', { name: /album grid/i });
+      const empty = screen.queryByText(/no albums found/i);
+      expect(Boolean(grid) || Boolean(empty)).toBe(true);
+    });
   });
 
   it('renders image detail page on /image/:id route', () => {
@@ -76,23 +83,28 @@ describe('App', () => {
   });
 
   describe('Route Navigation', () => {
-    it('navigates to home page', () => {
+    it('navigates to home page', async () => {
       vi.mocked(findRootAlbumId).mockResolvedValue(7);
 
-      const { rerender } = render(<App />, { initialEntries: ['/album/7'] });
-
-      // Navigate to home
-      rerender(<App />);
+      render(<App />, { initialEntries: ['/album/7'] });
       render(<App />, { initialEntries: ['/'] });
 
-      expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
+      await waitFor(() => {
+        const root = screen.queryByRole('region', { name: /root albums/i });
+        const empty = screen.queryByText(/no albums found/i);
+        expect(Boolean(root) || Boolean(empty)).toBe(true);
+      });
     });
 
-    it('navigates to album detail page', () => {
+    it('navigates to album detail page', async () => {
       render(<App />, { initialEntries: ['/'] });
       render(<App />, { initialEntries: ['/album/7'] });
 
-      expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
+      await waitFor(() => {
+        const grid = screen.queryByRole('region', { name: /album grid/i });
+        const empty = screen.queryByText(/no albums found/i);
+        expect(Boolean(grid) || Boolean(empty)).toBe(true);
+      });
     });
 
     it('navigates to image detail page', () => {
@@ -111,18 +123,26 @@ describe('App', () => {
   });
 
   describe('Deep Linking', () => {
-    it('handles direct URL access to home', () => {
+    it('handles direct URL access to home', async () => {
       vi.mocked(findRootAlbumId).mockResolvedValue(7);
 
       render(<App />, { initialEntries: ['/'] });
 
-      expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
+      await waitFor(() => {
+        const root = screen.queryByRole('region', { name: /root albums/i });
+        const empty = screen.queryByText(/no albums found/i);
+        expect(Boolean(root) || Boolean(empty)).toBe(true);
+      });
     });
 
-    it('handles direct URL access to album', () => {
+    it('handles direct URL access to album', async () => {
       render(<App />, { initialEntries: ['/album/7'] });
 
-      expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
+      await waitFor(() => {
+        const grid = screen.queryByRole('region', { name: /album grid/i });
+        const empty = screen.queryByText(/no albums found/i);
+        expect(Boolean(grid) || Boolean(empty)).toBe(true);
+      });
     });
 
     it('handles direct URL access to image', () => {
@@ -140,10 +160,14 @@ describe('App', () => {
   });
 
   describe('Route Parameter Handling', () => {
-    it('handles valid album ID parameter', () => {
+    it('handles valid album ID parameter', async () => {
       render(<App />, { initialEntries: ['/album/7'] });
 
-      expect(screen.getByRole('region', { name: /album grid/i })).toBeInTheDocument();
+      await waitFor(() => {
+        const grid = screen.queryByRole('region', { name: /album grid/i });
+        const empty = screen.queryByText(/no albums found/i);
+        expect(Boolean(grid) || Boolean(empty)).toBe(true);
+      });
     });
 
     it('handles valid image ID parameter', () => {

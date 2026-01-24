@@ -12,6 +12,8 @@ export type { SystemTheme } from './useSystemThemePreference';
 // Data hooks
 export { useAlbumData } from './useAlbumData';
 export type { UseAlbumDataReturn } from './useAlbumData';
+export { useSubalbumsMap } from './useSubalbumsMap';
+export type { UseSubalbumsMapReturn } from './useSubalbumsMap';
 
 // Scroll position hooks
 export { useScrollPosition } from './useScrollPosition';
