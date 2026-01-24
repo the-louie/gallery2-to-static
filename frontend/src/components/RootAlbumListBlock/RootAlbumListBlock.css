@@ -194,6 +194,14 @@
   outline-offset: 2px;
 }
 
+.root-album-list-block-subalbums-more {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--album-detail-text-muted, var(--color-text-muted));
+  opacity: 0.85;
+}
+
 @media (max-width: 767px) {
   .root-album-list-block {
     padding: 0.75rem;

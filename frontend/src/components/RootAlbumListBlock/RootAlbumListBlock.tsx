@@ -3,7 +3,9 @@
  *
  * Renders a single root-level album as a rich block: thumbnail (link to album),
  * "Album: [title]" (bold), description, optional "Website: …" from summary/description,
- * metadata (Date, Owner), and "Subalbums:" list. Two-column layout (album left,
+ * metadata (Date, Owner), and "Subalbums:" list. The Subalbums section shows at most
+ * the latest 5 subalbums (by timestamp descending, nulls last); when more exist,
+ * "... And much more" is shown below the list. Two-column layout (album left,
  * subalbums right); stacks on narrow viewports.
  *
  * Size and Views are omitted (not in backend); see dateUtils for note.
@@ -16,6 +18,7 @@ import { Link } from 'react-router-dom';
 import { getAlbumThumbnailUrl } from '@/utils/imageUrl';
 import { parseBBCode, extractUrlFromBBCode } from '@/utils/bbcode';
 import { formatAlbumDate } from '@/utils/dateUtils';
+import { sortItems } from '@/utils/sorting';
 import type { Album } from '@/types';
 import './RootAlbumListBlock.css';
 
@@ -68,6 +71,12 @@ export function RootAlbumListBlock({
   const showOwner = Boolean(album.ownerName?.trim());
   const showDescription = Boolean(album.description?.trim());
   const showSubalbums = subalbums.length > 0;
+
+  const displaySubalbums = useMemo(
+    () => sortItems([...subalbums], 'date-desc').slice(0, 5),
+    [subalbums],
+  );
+  const hasMoreSubalbums = subalbums.length > 5;
 
   const linkTo = `/album/${album.id}`;
 
@@ -142,7 +151,7 @@ export function RootAlbumListBlock({
           >
             <h3 className="root-album-list-block-subalbums-title">Subalbums:</h3>
             <ul className="root-album-list-block-subalbums-list">
-              {subalbums.map((sub) => (
+              {displaySubalbums.map((sub) => (
                 <li key={sub.id}>
                   <Link
                     to={`/album/${sub.id}`}
@@ -153,6 +162,11 @@ export function RootAlbumListBlock({
                 </li>
               ))}
             </ul>
+            {hasMoreSubalbums && (
+              <span className="root-album-list-block-subalbums-more">
+                ... And much more
+              </span>
+            )}
           </section>
         )}
       </div>

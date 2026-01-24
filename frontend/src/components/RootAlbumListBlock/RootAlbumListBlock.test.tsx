@@ -22,6 +22,10 @@ const albumWithDesc: Album = {
   timestamp: 1609459200000,
 } as Album;
 
+function makeSub(id: number, title: string, ts: number): Album {
+  return { ...mockAlbum, type: 'GalleryAlbumItem', id, title, timestamp: ts } as Album;
+}
+
 describe('RootAlbumListBlock', () => {
   it('renders album title and thumbnail link', () => {
     render(
@@ -64,6 +68,56 @@ describe('RootAlbumListBlock', () => {
     expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument();
     const subLink = screen.getByRole('link', { name: 'Parent Album' });
     expect(subLink).toHaveAttribute('href', '/album/10');
+  });
+
+  it('shows all subalbum links and no "... And much more" when ≤5 subalbums', () => {
+    const sub1: Album = { ...mockAlbumWithChildren, type: 'GalleryAlbumItem', id: 10, title: 'Parent Album', timestamp: 1609459200 } as Album;
+    const sub2: Album = { ...mockAlbum, type: 'GalleryAlbumItem', id: 11, title: 'Sub A', timestamp: 1609459100 } as Album;
+    const sub3: Album = { ...mockAlbum, type: 'GalleryAlbumItem', id: 12, title: 'Sub B', timestamp: 1609459000 } as Album;
+    render(<RootAlbumListBlock album={baseAlbum} subalbums={[sub1, sub2, sub3]} />);
+    expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Parent Album' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sub A' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sub B' })).toBeInTheDocument();
+    expect(screen.queryByText(/\.\.\. And much more/i)).not.toBeInTheDocument();
+  });
+
+  it('shows all 5 subalbum links and no "... And much more" when exactly 5 subalbums', () => {
+    const subs: Album[] = [
+      makeSub(10, 'Parent Album', 1609459200),
+      makeSub(11, 'Sub A', 1609459100),
+      makeSub(12, 'Sub B', 1609459000),
+      makeSub(13, 'Sub C', 1609458900),
+      makeSub(14, 'Sub D', 1609458800),
+    ];
+    render(<RootAlbumListBlock album={baseAlbum} subalbums={subs} />);
+    expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Parent Album' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sub A' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sub B' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sub C' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sub D' })).toBeInTheDocument();
+    expect(screen.queryByText(/\.\.\. And much more/i)).not.toBeInTheDocument();
+  });
+
+  it('shows only 5 subalbum links and "... And much more" when >5 subalbums', () => {
+    const subs: Album[] = [
+      makeSub(10, 'Parent Album', 1609459200),
+      makeSub(11, 'Sub A', 1609459100),
+      makeSub(12, 'Sub B', 1609459000),
+      makeSub(13, 'Sub C', 1609458900),
+      makeSub(14, 'Sub D', 1609458800),
+      makeSub(15, 'Sub E', 1609458700),
+    ];
+    render(<RootAlbumListBlock album={baseAlbum} subalbums={subs} />);
+    expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Parent Album' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sub A' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sub B' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sub C' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Sub D' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Sub E' })).not.toBeInTheDocument();
+    expect(screen.getByText(/\.\.\. And much more/i)).toBeInTheDocument();
   });
 
   it('shows Website link when summary has [url=...]...[/url]', () => {
