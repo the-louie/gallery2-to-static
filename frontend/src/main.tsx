@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
-import { ThemeProvider, ViewModeProvider } from './contexts';
+import { ThemeProvider } from './contexts';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import App from './App';
 import './styles/themes.css';
@@ -12,9 +12,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <ErrorBoundary>
       <HashRouter>
         <ThemeProvider>
-          <ViewModeProvider>
-            <App />
-          </ViewModeProvider>
+          <App />
         </ThemeProvider>
       </HashRouter>
     </ErrorBoundary>

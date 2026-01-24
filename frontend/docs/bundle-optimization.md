@@ -190,7 +190,6 @@ The application uses React.memo for components that receive stable props:
 - AlbumCard
 - ImageThumbnail (with custom comparison)
 - SortDropdown
-- ViewModeToggle
 - Breadcrumbs (with custom comparison)
 
 All Context providers use memoized values to prevent unnecessary re-renders.

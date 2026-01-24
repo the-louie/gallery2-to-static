@@ -90,38 +90,9 @@
   -webkit-box-orient: vertical;
 }
 
-/* List view layout */
-.album-card-list {
-  flex-direction: row;
-  align-items: center;
-}
-
-.album-card-list .album-card-thumbnail {
-  width: 120px;
-  min-width: 120px;
-  aspect-ratio: 1;
-  flex-shrink: 0;
-}
-
-.album-card-list .album-card-content {
-  flex: 1;
-  padding: 1rem;
-  min-width: 0;
-}
-
-.album-card-list:hover {
-  transform: none;
-  box-shadow: var(--shadow-md, 0 4px 8px rgba(0, 0, 0, 0.1));
-}
-
 /* Responsive adjustments */
 @media (min-width: 768px) {
   .album-card:hover {
     box-shadow: var(--shadow-lg, 0 6px 12px rgba(0, 0, 0, 0.15));
-  }
-
-  .album-card-list .album-card-thumbnail {
-    width: 150px;
-    min-width: 150px;
   }
 }

@@ -17,7 +17,6 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useSort } from '@/hooks/useSort';
 import { useFilter } from '@/contexts/FilterContext';
-import { useViewMode } from '@/contexts/ViewModeContext';
 import { useSiteMetadata } from '@/hooks/useSiteMetadata';
 import { useAlbumMetadata } from '@/hooks/useAlbumMetadata';
 import { applyFilters } from '@/utils/filterUtils';
@@ -26,7 +25,6 @@ import { getParentAlbumId } from '@/utils/breadcrumbPath';
 import { AlbumGrid } from '@/components/AlbumGrid';
 import { ImageGrid } from '@/components/ImageGrid';
 import { SortDropdown } from '@/components/SortDropdown';
-import { ViewModeToggle } from '@/components/ViewModeToggle';
 import { AlbumDetailEmpty } from './AlbumDetailEmpty';
 import type { Album, Image, Child } from '@/types';
 import { isAlbum, isImage } from '@/types';
@@ -91,9 +89,6 @@ export function AlbumDetail({
   // Get sort preferences for albums and images
   const albumsSort = useSort('albums');
   const imagesSort = useSort('images');
-
-  // Get view mode preferences from context
-  const { albumViewMode, imageViewMode } = useViewMode();
 
   // Load album metadata if not provided as prop
   const album = useAlbumMetadata(albumId, albumProp, rootAlbumId);
@@ -330,7 +325,7 @@ export function AlbumDetail({
           {!isRootAlbum && showTitle && parsedTitle && (
             <h2 className="album-detail-title">{parsedTitle}</h2>
           )}
-          {!isRootAlbum && showTitle && parsedTitle && album.description && (
+          {!isRootAlbum && showDescription && showTitle && parsedTitle && album.description && (
             <p className="album-detail-description">{album.description}</p>
           )}
           {typeof album.summary === 'string' && album.summary.trim() && (
@@ -353,7 +348,6 @@ export function AlbumDetail({
           <div className="album-detail-section-header">
             <h2 className="album-detail-section-title">Albums</h2>
             <div className="album-detail-section-controls">
-              <ViewModeToggle contentType="albums" />
               <SortDropdown
                 currentOption={albumsSort.option}
                 onOptionChange={albumsSort.setOption}
@@ -364,7 +358,6 @@ export function AlbumDetail({
             albums={albums}
             onAlbumClick={handleAlbumClick}
             sortOption={albumsSort.option}
-            viewMode={albumViewMode}
           />
         </section>
       )}
@@ -378,7 +371,6 @@ export function AlbumDetail({
           <div className="album-detail-section-header">
             <h2 className="album-detail-section-title">Images</h2>
             <div className="album-detail-section-controls">
-              <ViewModeToggle contentType="images" />
               <SortDropdown
                 currentOption={imagesSort.option}
                 onOptionChange={imagesSort.setOption}
@@ -389,7 +381,6 @@ export function AlbumDetail({
             images={images}
             onImageClick={handleImageClick}
             sortOption={imagesSort.option}
-            viewMode={imageViewMode}
           />
         </section>
       )}

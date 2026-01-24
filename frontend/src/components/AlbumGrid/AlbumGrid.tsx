@@ -14,7 +14,6 @@ import { useAlbumData } from '@/hooks/useAlbumData';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { useSort } from '@/hooks/useSort';
 import { useFilter } from '@/contexts/FilterContext';
-import { useViewMode } from '@/contexts/ViewModeContext';
 import { applyFilters } from '@/utils/filterUtils';
 import { sortItems } from '@/utils/sorting';
 import type { AlbumGridProps, Album, Child, SortOption } from '@/types';
@@ -40,7 +39,6 @@ export function AlbumGrid({
   isLoading: isLoadingProp,
   onAlbumClick,
   className,
-  viewMode: viewModeProp,
   albumId,
   sortOption: sortOptionProp,
 }: Omit<AlbumGridProps, 'albums'> & {
@@ -55,10 +53,6 @@ export function AlbumGrid({
 
   // Get filter criteria from context
   const { criteria } = useFilter();
-
-  // Get view mode from context or use prop if provided (prop takes precedence)
-  const { albumViewMode } = useViewMode();
-  const finalViewMode = viewModeProp ?? albumViewMode;
 
   // Get sort option from hook or use prop if provided
   const { option: sortOptionFromHook } = useSort('albums');
@@ -115,9 +109,9 @@ export function AlbumGrid({
   // Render function for virtual grid
   const renderAlbum = useCallback(
     (album: Album, index: number) => (
-      <AlbumCard key={album.id} album={album} onClick={handleAlbumClick} viewMode={finalViewMode} />
+      <AlbumCard key={album.id} album={album} onClick={handleAlbumClick} />
     ),
-    [handleAlbumClick, finalViewMode],
+    [handleAlbumClick],
   );
 
   // Loading state
@@ -162,7 +156,6 @@ export function AlbumGrid({
       <VirtualGrid
         items={albums}
         renderItem={renderAlbum}
-        viewMode={finalViewMode}
         className={className ? `album-grid ${className}` : 'album-grid'}
         role="region"
         aria-label="Album grid"

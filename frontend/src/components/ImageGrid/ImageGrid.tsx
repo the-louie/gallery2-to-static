@@ -14,7 +14,6 @@ import { useAlbumData } from '@/hooks/useAlbumData';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { useSort } from '@/hooks/useSort';
 import { useFilter } from '@/contexts/FilterContext';
-import { useViewMode } from '@/contexts/ViewModeContext';
 import { applyFilters } from '@/utils/filterUtils';
 import { sortItems } from '@/utils/sorting';
 import type { ImageGridProps, Image, Child, SortOption } from '@/types';
@@ -40,7 +39,6 @@ export function ImageGrid({
   isLoading: isLoadingProp,
   onImageClick,
   className,
-  viewMode: viewModeProp,
   albumId,
   sortOption: sortOptionProp,
 }: Omit<ImageGridProps, 'images'> & {
@@ -55,10 +53,6 @@ export function ImageGrid({
 
   // Get filter criteria from context
   const { criteria } = useFilter();
-
-  // Get view mode from context or use prop if provided (prop takes precedence)
-  const { imageViewMode } = useViewMode();
-  const finalViewMode = viewModeProp ?? imageViewMode;
 
   // Get sort option from hook or use prop if provided
   const { option: sortOptionFromHook } = useSort('images');
@@ -120,10 +114,9 @@ export function ImageGrid({
         image={image}
         useThumbnail={true}
         onClick={handleImageClick}
-        viewMode={finalViewMode}
       />
     ),
-    [handleImageClick, finalViewMode],
+    [handleImageClick],
   );
 
   // Loading state
@@ -168,7 +161,6 @@ export function ImageGrid({
       <VirtualGrid
         items={images}
         renderItem={renderImage}
-        viewMode={finalViewMode}
         className={className ? `image-grid ${className}` : 'image-grid'}
         role="region"
         aria-label="Image grid"

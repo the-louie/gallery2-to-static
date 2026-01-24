@@ -16,12 +16,6 @@
   flex-direction: column;
 }
 
-.virtual-grid-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
 .virtual-grid-row {
   width: 100%;
 }
@@ -29,16 +23,6 @@
 /* Ensure items maintain their aspect ratios */
 .virtual-grid-row > div {
   width: 100%;
-}
-
-/* List view item spacing */
-.virtual-grid-list > div {
-  width: 100%;
-  margin-bottom: 0.5rem;
-}
-
-.virtual-grid-list > div:last-child {
-  margin-bottom: 0;
 }
 
 /* Loading states */

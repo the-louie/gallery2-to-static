@@ -49,7 +49,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import type { Image, ViewMode } from '@/types';
+import type { Image } from '@/types';
 import { getAspectRatioWithFallback } from '@/utils/aspectRatio';
 import { useProgressiveImage } from '@/hooks/useProgressiveImage';
 import './ImageThumbnail.css';
@@ -68,8 +68,6 @@ export interface ImageThumbnailProps {
   className?: string;
   /** Optional alt text override (defaults to image title or description) */
   alt?: string;
-  /** View mode: 'grid' or 'list' (default: 'grid') */
-  viewMode?: ViewMode;
 }
 
 /**
@@ -91,7 +89,6 @@ function ImageThumbnailComponent({
   onClick,
   className,
   alt,
-  viewMode = 'grid',
 }: ImageThumbnailProps) {
   const [shouldLoad, setShouldLoad] = useState(false);
   const [domFullImageLoaded, setDomFullImageLoaded] = useState(false);
@@ -241,8 +238,8 @@ function ImageThumbnailComponent({
   };
 
   const containerClassName = className
-    ? `image-thumbnail-container image-thumbnail-${viewMode} ${className}`
-    : `image-thumbnail-container image-thumbnail-${viewMode}`;
+    ? `image-thumbnail-container image-thumbnail-grid ${className}`
+    : 'image-thumbnail-container image-thumbnail-grid';
 
   return (
     <div
@@ -327,7 +324,6 @@ export const ImageThumbnail = React.memo(ImageThumbnailComponent, (prevProps, ne
     prevProps.image.title === nextProps.image.title &&
     prevProps.image.description === nextProps.image.description &&
     prevProps.useThumbnail === nextProps.useThumbnail &&
-    prevProps.viewMode === nextProps.viewMode &&
     prevProps.className === nextProps.className &&
     prevProps.alt === nextProps.alt &&
     prevProps.onClick === nextProps.onClick

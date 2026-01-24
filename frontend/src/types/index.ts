@@ -246,41 +246,6 @@ export interface ThemeState {
 }
 
 /**
- * View mode - determines how content is displayed
- *
- * 'grid' displays items in a grid layout, 'list' displays items in a list layout.
- */
-export type ViewMode = 'grid' | 'list';
-
-/**
- * View mode state for view mode context
- *
- * Used to manage view mode preferences and provide view mode switching functionality.
- */
-export interface ViewModeState {
-  /** Current view mode for albums */
-  albumViewMode: ViewMode;
-  /** Current view mode for images */
-  imageViewMode: ViewMode;
-  /** Function to set album view mode */
-  setAlbumViewMode: (mode: ViewMode) => void;
-  /** Function to set image view mode */
-  setImageViewMode: (mode: ViewMode) => void;
-}
-
-/**
- * View mode preferences per content type
- *
- * Allows separate view mode preferences for albums and images.
- */
-export interface ViewModePreference {
-  /** View mode preference for albums */
-  albums: ViewMode;
-  /** View mode preference for images */
-  images: ViewMode;
-}
-
-/**
  * Filter criteria for filtering albums and images
  *
  * All properties are optional to support flexible filtering combinations.
@@ -400,8 +365,6 @@ export interface AlbumGridProps {
   onAlbumClick?: (album: Album) => void;
   /** Optional className for styling */
   className?: string;
-  /** View mode (grid or list) */
-  viewMode?: ViewMode;
 }
 
 /**
@@ -419,8 +382,6 @@ export interface ImageGridProps {
   onImageClick?: (image: Image) => void;
   /** Optional className for styling */
   className?: string;
-  /** View mode (grid or list) */
-  viewMode?: ViewMode;
 }
 
 /**

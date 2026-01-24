@@ -237,38 +237,6 @@ describe('ImageGrid', () => {
     });
   });
 
-  describe('View Mode', () => {
-    it('applies grid view mode class', () => {
-      mockUseAlbumData.mockReturnValue({
-        data: null,
-        isLoading: false,
-        error: null,
-        refetch: vi.fn(),
-      });
-
-      const { container } = render(
-        <ImageGrid images={mockPhotos} viewMode="grid" />,
-      );
-      const grid = container.querySelector('.image-grid');
-      expect(grid).toHaveClass('image-grid-grid');
-    });
-
-    it('applies list view mode class', () => {
-      mockUseAlbumData.mockReturnValue({
-        data: null,
-        isLoading: false,
-        error: null,
-        refetch: vi.fn(),
-      });
-
-      const { container } = render(
-        <ImageGrid images={mockPhotos} viewMode="list" />,
-      );
-      const grid = container.querySelector('.image-grid');
-      expect(grid).toHaveClass('image-grid-list');
-    });
-  });
-
   describe('Accessibility', () => {
     it('has proper ARIA attributes', () => {
       mockUseAlbumData.mockReturnValue({

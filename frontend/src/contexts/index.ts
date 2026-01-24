@@ -28,15 +28,3 @@ export type {
   FilterContextValue,
   FilterProviderProps,
 } from './FilterContext';
-
-// View mode context
-export {
-  ViewModeContext,
-  ViewModeProvider,
-  useViewMode,
-} from './ViewModeContext';
-
-export type {
-  ViewModeContextValue,
-  ViewModeProviderProps,
-} from './ViewModeContext';

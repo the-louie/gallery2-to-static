@@ -1,10 +1,9 @@
 /**
  * VirtualGrid Component
  *
- * A responsive grid wrapper component that renders all items in a grid or list layout.
- * Supports both grid and list view modes with responsive column calculation.
+ * A responsive grid wrapper component that renders all items in a grid layout.
  * The container grows to fit all children and scrolls with the page.
- * 
+ *
  * Scroll position tracking is supported via the onScroll callback, but scroll
  * restoration is handled by React Router and the browser's native scroll restoration.
  *
@@ -22,8 +21,6 @@ export interface VirtualGridProps<T> {
   items: T[];
   /** Function to render each item */
   renderItem: (item: T, index: number) => React.ReactNode;
-  /** View mode: 'grid' or 'list' */
-  viewMode?: 'grid' | 'list';
   /** Optional CSS class name */
   className?: string;
   /** Optional role attribute */
@@ -66,7 +63,6 @@ function calculateColumns(width: number): number {
 export function VirtualGrid<T>({
   items,
   renderItem,
-  viewMode = 'grid',
   className,
   role = 'region',
   'aria-label': ariaLabel,
@@ -79,24 +75,14 @@ export function VirtualGrid<T>({
     typeof window !== 'undefined' ? window.innerWidth : 1024,
   );
 
-  // Calculate columns based on window width
-  const columns = useMemo(() => {
-    if (viewMode === 'list') return 1;
-    return calculateColumns(windowWidth);
-  }, [viewMode, windowWidth]);
+  const columns = useMemo(() => calculateColumns(windowWidth), [windowWidth]);
 
-  // Calculate rows needed for grid
   const totalRows = useMemo(() => {
     if (items.length === 0) return 0;
-    if (viewMode === 'list') return items.length;
     return Math.ceil(items.length / columns);
-  }, [items.length, columns, viewMode]);
+  }, [items.length, columns]);
 
-  // Handle window resize
   useEffect(() => {
-    if (viewMode === 'list') return;
-
-    // Debounce resize events
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const handleResize = () => {
       if (timeoutId) {
@@ -115,7 +101,7 @@ export function VirtualGrid<T>({
         clearTimeout(timeoutId);
       }
     };
-  }, [viewMode]);
+  }, []);
 
   // Handle page scroll for scroll position tracking
   useEffect(() => {
@@ -132,7 +118,6 @@ export function VirtualGrid<T>({
     };
   }, [onScroll]);
 
-  // Empty state
   if (items.length === 0) {
     return (
       <div
@@ -144,25 +129,6 @@ export function VirtualGrid<T>({
     );
   }
 
-  // List mode: render all items directly
-  if (viewMode === 'list') {
-    return (
-      <div
-        className={className ? `virtual-grid virtual-grid-list ${className}` : 'virtual-grid virtual-grid-list'}
-        role={role}
-        aria-label={ariaLabel}
-        ref={containerRef}
-      >
-        {items.map((item, index) => (
-          <div key={index} data-item-index={index}>
-            {renderItem(item, index)}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  // Grid mode: render all rows directly
   return (
     <div
       className={className ? `virtual-grid virtual-grid-grid ${className}` : 'virtual-grid virtual-grid-grid'}

@@ -238,38 +238,6 @@ describe('AlbumGrid', () => {
     });
   });
 
-  describe('View Mode', () => {
-    it('applies grid view mode class', () => {
-      mockUseAlbumData.mockReturnValue({
-        data: null,
-        isLoading: false,
-        error: null,
-        refetch: vi.fn(),
-      });
-
-      const { container } = render(
-        <AlbumGrid albums={mockAlbums} viewMode="grid" />,
-      );
-      const grid = container.querySelector('.album-grid');
-      expect(grid).toHaveClass('album-grid-grid');
-    });
-
-    it('applies list view mode class', () => {
-      mockUseAlbumData.mockReturnValue({
-        data: null,
-        isLoading: false,
-        error: null,
-        refetch: vi.fn(),
-      });
-
-      const { container } = render(
-        <AlbumGrid albums={mockAlbums} viewMode="list" />,
-      );
-      const grid = container.querySelector('.album-grid');
-      expect(grid).toHaveClass('album-grid-list');
-    });
-  });
-
   describe('Accessibility', () => {
     it('has proper ARIA attributes', () => {
       mockUseAlbumData.mockReturnValue({

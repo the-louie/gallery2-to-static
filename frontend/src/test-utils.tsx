@@ -3,7 +3,7 @@ import { render, RenderOptions } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import { ThemeProvider, ViewModeProvider, type Theme } from './contexts';
+import { ThemeProvider, type Theme } from './contexts';
 
 // Re-export everything from @testing-library/react
 export * from '@testing-library/react';
@@ -47,9 +47,7 @@ function customRender(ui: ReactElement, options?: CustomRenderOptions) {
     return (
       <MemoryRouter initialEntries={initialEntries}>
         <ThemeProvider defaultTheme={defaultTheme}>
-          <ViewModeProvider>
-            {children}
-          </ViewModeProvider>
+          {children}
         </ThemeProvider>
       </MemoryRouter>
     );

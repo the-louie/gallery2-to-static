@@ -235,17 +235,6 @@
   --theme-switcher-border-hover: #cccccc;
   --theme-switcher-focus: #0066cc;
 
-  /* ViewModeToggle Component */
-  --view-mode-toggle-bg: transparent;
-  --view-mode-toggle-border: #e0e0e0;
-  --view-mode-toggle-color: #666666;
-  --view-mode-toggle-color-hover: #333333;
-  --view-mode-toggle-bg-hover: #f0f0f0;
-  --view-mode-toggle-bg-active: #e0e0e0;
-  --view-mode-toggle-color-active: #333333;
-  --view-mode-toggle-bg-active-hover: #d0d0d0;
-  --view-mode-toggle-focus: #0066cc;
-
   /* SortDropdown Component */
   --sort-dropdown-bg: #ffffff;
   --sort-dropdown-border: #e0e0e0;
@@ -468,17 +457,6 @@
   --theme-switcher-border-hover: #cccccc;
   --theme-switcher-focus: #0066cc;
 
-  /* ViewModeToggle Component */
-  --view-mode-toggle-bg: transparent;
-  --view-mode-toggle-border: #e0e0e0;
-  --view-mode-toggle-color: #666666;
-  --view-mode-toggle-color-hover: #333333;
-  --view-mode-toggle-bg-hover: #f0f0f0;
-  --view-mode-toggle-bg-active: #e0e0e0;
-  --view-mode-toggle-color-active: #333333;
-  --view-mode-toggle-bg-active-hover: #d0d0d0;
-  --view-mode-toggle-focus: #0066cc;
-
   /* SortDropdown Component */
   --sort-dropdown-bg: #ffffff;
   --sort-dropdown-border: #e0e0e0;
@@ -700,17 +678,6 @@
   --theme-switcher-bg-hover: #404040;
   --theme-switcher-border-hover: #525252;
   --theme-switcher-focus: #4da6ff;
-
-  /* ViewModeToggle Component */
-  --view-mode-toggle-bg: transparent;
-  --view-mode-toggle-border: #404040;
-  --view-mode-toggle-color: #b3b3b3;
-  --view-mode-toggle-color-hover: #e5e5e5;
-  --view-mode-toggle-bg-hover: #404040;
-  --view-mode-toggle-bg-active: #525252;
-  --view-mode-toggle-color-active: #e5e5e5;
-  --view-mode-toggle-bg-active-hover: #606060;
-  --view-mode-toggle-focus: #4da6ff;
 
   /* SortDropdown Component */
   --sort-dropdown-bg: #2d2d2d;

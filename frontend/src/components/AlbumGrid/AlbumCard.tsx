@@ -12,7 +12,7 @@
  */
 
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
-import type { Album, ViewMode } from '@/types';
+import type { Album } from '@/types';
 import { getAlbumThumbnailUrl } from '@/utils/imageUrl';
 import { parseBBCode } from '@/utils/bbcode';
 import './AlbumCard.css';
@@ -29,8 +29,6 @@ export interface AlbumCardProps {
   className?: string;
   /** Optional aria-label override */
   'aria-label'?: string;
-  /** View mode: 'grid' or 'list' (default: 'grid') */
-  viewMode?: ViewMode;
 }
 
 /**
@@ -47,7 +45,6 @@ function AlbumCardComponent({
   onClick,
   className,
   'aria-label': ariaLabel,
-  viewMode = 'grid',
 }: AlbumCardProps) {
   const [imageError, setImageError] = useState(false);
   const thumbnailUrl = getAlbumThumbnailUrl(album);
@@ -89,9 +86,7 @@ function AlbumCardComponent({
     return parseBBCode(album.title);
   }, [album.title]);
 
-  const cardClassName = className
-    ? `album-card album-card-${viewMode} ${className}`
-    : `album-card album-card-${viewMode}`;
+  const cardClassName = className ? `album-card ${className}` : 'album-card';
 
   return (
     <article
