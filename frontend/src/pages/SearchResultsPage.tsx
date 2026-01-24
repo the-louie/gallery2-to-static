@@ -12,6 +12,7 @@ import { useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useSearch } from '@/hooks/useSearch';
 import { SearchHighlight } from '@/components/SearchHighlight';
+import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import type { SearchIndexItem } from '@/utils/searchIndex';
 import './SearchResultsPage.css';
@@ -159,12 +160,15 @@ export function SearchResultsPage() {
                   >
                     <div className="search-results-item-content">
                       <h3 className="search-results-item-title">
-                        <SearchHighlight text={album.title} query={urlQuery} />
+                        <SearchHighlight
+                          text={decodeHtmlEntities(album.title)}
+                          query={urlQuery}
+                        />
                       </h3>
                       {album.description && (
                         <p className="search-results-item-description">
                           <SearchHighlight
-                            text={album.description}
+                            text={decodeHtmlEntities(album.description)}
                             query={urlQuery}
                           />
                         </p>
@@ -173,7 +177,7 @@ export function SearchResultsPage() {
                         album.summary.trim() && (
                           <p className="search-results-item-summary">
                             <SearchHighlight
-                              text={album.summary.trim()}
+                              text={decodeHtmlEntities(album.summary.trim())}
                               query={urlQuery}
                             />
                           </p>
@@ -181,7 +185,7 @@ export function SearchResultsPage() {
                       {typeof album.ownerName === 'string' &&
                         album.ownerName.trim() && (
                           <p className="search-results-item-owner">
-                            Owner: {album.ownerName.trim()}
+                            Owner: {decodeHtmlEntities(album.ownerName.trim())}
                           </p>
                         )}
                     </div>
@@ -215,12 +219,15 @@ export function SearchResultsPage() {
                   >
                     <div className="search-results-item-content">
                       <h3 className="search-results-item-title">
-                        <SearchHighlight text={image.title} query={urlQuery} />
+                        <SearchHighlight
+                          text={decodeHtmlEntities(image.title)}
+                          query={urlQuery}
+                        />
                       </h3>
                       {image.description && (
                         <p className="search-results-item-description">
                           <SearchHighlight
-                            text={image.description}
+                            text={decodeHtmlEntities(image.description)}
                             query={urlQuery}
                           />
                         </p>
@@ -229,7 +236,7 @@ export function SearchResultsPage() {
                         image.summary.trim() && (
                           <p className="search-results-item-summary">
                             <SearchHighlight
-                              text={image.summary.trim()}
+                              text={decodeHtmlEntities(image.summary.trim())}
                               query={urlQuery}
                             />
                           </p>
@@ -237,7 +244,7 @@ export function SearchResultsPage() {
                       {typeof image.ownerName === 'string' &&
                         image.ownerName.trim() && (
                           <p className="search-results-item-owner">
-                            Owner: {image.ownerName.trim()}
+                            Owner: {decodeHtmlEntities(image.ownerName.trim())}
                           </p>
                         )}
                     </div>

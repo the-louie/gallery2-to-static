@@ -10,6 +10,7 @@
 
 import { loadAlbum, findRootAlbumId, DataLoadError } from './dataLoader';
 import { getAlbumMetadata } from './albumMetadata';
+import { decodeHtmlEntities } from './decodeHtmlEntities';
 import type { BreadcrumbItem, BreadcrumbPath } from '@/types';
 
 /**
@@ -163,7 +164,7 @@ export async function buildBreadcrumbPath(
     return [
       {
         id: rootId,
-        title: 'Home',
+        title: decodeHtmlEntities('Home'),
         path: '/',
       },
     ];
@@ -197,13 +198,13 @@ export async function buildBreadcrumbPath(
         if (albumMetadata) {
           path.unshift({
             id: currentAlbumId,
-            title: albumMetadata.title ?? `Album ${currentAlbumId}`,
+            title: decodeHtmlEntities(albumMetadata.title ?? `Album ${currentAlbumId}`),
             path: `/album/${currentAlbumId}`,
           });
         } else {
           path.unshift({
             id: currentAlbumId,
-            title: `Album ${currentAlbumId}`,
+            title: decodeHtmlEntities(`Album ${currentAlbumId}`),
             path: `/album/${currentAlbumId}`,
           });
         }
@@ -211,7 +212,7 @@ export async function buildBreadcrumbPath(
         // If we can't load, use ID as title
         path.unshift({
           id: currentAlbumId,
-          title: `Album ${currentAlbumId}`,
+          title: decodeHtmlEntities(`Album ${currentAlbumId}`),
           path: `/album/${currentAlbumId}`,
         });
       }
@@ -225,13 +226,13 @@ export async function buildBreadcrumbPath(
       if (albumMetadata) {
         path.unshift({
           id: currentAlbumId,
-          title: albumMetadata.title ?? `Album ${currentAlbumId}`,
+          title: decodeHtmlEntities(albumMetadata.title ?? `Album ${currentAlbumId}`),
           path: `/album/${currentAlbumId}`,
         });
       } else {
         path.unshift({
           id: currentAlbumId,
-          title: `Album ${currentAlbumId}`,
+          title: decodeHtmlEntities(`Album ${currentAlbumId}`),
           path: `/album/${currentAlbumId}`,
         });
       }
@@ -243,7 +244,7 @@ export async function buildBreadcrumbPath(
       );
       path.unshift({
         id: currentAlbumId,
-        title: `Album ${currentAlbumId}`,
+        title: decodeHtmlEntities(`Album ${currentAlbumId}`),
         path: `/album/${currentAlbumId}`,
       });
     }
@@ -256,7 +257,7 @@ export async function buildBreadcrumbPath(
   // For root, we use "Home" as title and "/" as path
   path.unshift({
     id: rootId,
-    title: 'Home',
+    title: decodeHtmlEntities('Home'),
     path: '/',
   });
 

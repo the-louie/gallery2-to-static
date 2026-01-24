@@ -16,7 +16,8 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAlbumThumbnailUrl } from '@/utils/imageUrl';
-import { parseBBCode, extractUrlFromBBCode } from '@/utils/bbcode';
+import { parseBBCodeDecoded, extractUrlFromBBCode } from '@/utils/bbcode';
+import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { formatAlbumDate } from '@/utils/dateUtils';
 import { sortItems } from '@/utils/sorting';
 import type { Album } from '@/types';
@@ -59,7 +60,7 @@ export function RootAlbumListBlock({
 
   const parsedTitle = useMemo(() => {
     const t = album.title?.trim();
-    return t ? parseBBCode(t) : 'Untitled Album';
+    return t ? parseBBCodeDecoded(t) : 'Untitled Album';
   }, [album.title]);
 
   const extUrl = useMemo(
@@ -90,7 +91,7 @@ export function RootAlbumListBlock({
           <div className="root-album-list-block-thumbnail">
             <Link
               to={linkTo}
-              aria-label={`Open album: ${album.title || 'Untitled'}`}
+              aria-label={`Open album: ${decodeHtmlEntities(album.title || 'Untitled')}`}
               className="root-album-list-block-thumb-link"
             >
               {shouldShowThumbnail && thumbnailUrl ? (
@@ -113,7 +114,9 @@ export function RootAlbumListBlock({
               Album: {parsedTitle}
             </h2>
             {showDescription && (
-              <p className="root-album-list-block-description">{album.description}</p>
+              <p className="root-album-list-block-description">
+                {decodeHtmlEntities(album.description!)}
+              </p>
             )}
             {extUrl && (
               <p className="root-album-list-block-website">
@@ -123,7 +126,7 @@ export function RootAlbumListBlock({
                   rel="noopener noreferrer"
                   className="root-album-list-block-website-link"
                 >
-                  {extUrl.label ?? extUrl.url}
+                  {decodeHtmlEntities(extUrl.label ?? extUrl.url)}
                 </a>
               </p>
             )}
@@ -137,7 +140,9 @@ export function RootAlbumListBlock({
               {showOwner && (
                 <>
                   <dt className="root-album-list-block-meta-dt">Owner</dt>
-                  <dd className="root-album-list-block-meta-dd">{album.ownerName}</dd>
+                  <dd className="root-album-list-block-meta-dd">
+                    {decodeHtmlEntities(album.ownerName!)}
+                  </dd>
                 </>
               )}
             </dl>
@@ -156,7 +161,7 @@ export function RootAlbumListBlock({
                     to={`/album/${sub.id}`}
                     className="root-album-list-block-subalbum-link"
                   >
-                    {sub.title?.trim() ? parseBBCode(sub.title.trim()) : 'Untitled'}
+                    {sub.title?.trim() ? parseBBCodeDecoded(sub.title.trim()) : 'Untitled'}
                   </Link>
                 </li>
               ))}

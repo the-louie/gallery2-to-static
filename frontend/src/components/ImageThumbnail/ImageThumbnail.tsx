@@ -51,6 +51,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Image } from '@/types';
 import { getAspectRatioWithFallback } from '@/utils/aspectRatio';
+import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { useProgressiveImage } from '@/hooks/useProgressiveImage';
 import './ImageThumbnail.css';
 
@@ -111,10 +112,10 @@ function ImageThumbnailComponent({
   );
 
   // Generate alt text from image title or description (memoized)
-  const altText = useMemo(
-    () => alt || image.title || image.description || 'Image',
-    [alt, image.title, image.description],
-  );
+  const altText = useMemo(() => {
+    const raw = alt || image.title || image.description || 'Image';
+    return decodeHtmlEntities(raw);
+  }, [alt, image.title, image.description]);
 
   // Reset lazy loading state when image changes
   useEffect(() => {

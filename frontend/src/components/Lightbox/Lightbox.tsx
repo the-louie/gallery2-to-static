@@ -72,7 +72,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Image } from '@/types';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { parseBBCode } from '@/utils/bbcode';
+import { parseBBCodeDecoded } from '@/utils/bbcode';
+import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { useImageNavigation } from '@/hooks/useImageNavigation';
 import { useImagePreload } from '@/hooks/useImagePreload';
 import { useImageZoom } from '@/hooks/useImageZoom';
@@ -117,7 +118,7 @@ export function Lightbox({
   onClose,
   className,
   albumContext = [],
-  albumId = null,
+  albumId: _albumId = null,
   onNext,
   onPrevious,
 }: LightboxProps) {
@@ -305,7 +306,8 @@ export function Lightbox({
     if (!image) {
       return 'Image';
     }
-    return image.title || image.description || 'Image';
+    const raw = image.title || image.description || 'Image';
+    return decodeHtmlEntities(raw);
   }, [image]);
 
   // Parse BBCode in image title for display
@@ -313,7 +315,7 @@ export function Lightbox({
     if (!image || !image.title) {
       return null;
     }
-    return parseBBCode(image.title);
+    return parseBBCodeDecoded(image.title);
   }, [image?.title]);
 
   // Format date from timestamp
@@ -1006,14 +1008,18 @@ export function Lightbox({
               </h2>
             )}
             {image.description && (
-              <p className="lightbox-description">{image.description}</p>
+              <p className="lightbox-description">
+                {decodeHtmlEntities(image.description)}
+              </p>
             )}
             {typeof image.summary === 'string' && image.summary.trim() && (
-              <p className="lightbox-summary">{image.summary.trim()}</p>
+              <p className="lightbox-summary">
+                {decodeHtmlEntities(image.summary.trim())}
+              </p>
             )}
             {typeof image.ownerName === 'string' && image.ownerName.trim() && (
               <p className="lightbox-owner">
-                Owner: {image.ownerName.trim()}
+                Owner: {decodeHtmlEntities(image.ownerName.trim())}
               </p>
             )}
             <div className="lightbox-details">

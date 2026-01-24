@@ -9,6 +9,7 @@
  */
 
 import React from 'react';
+import { decodeHtmlEntities } from './decodeHtmlEntities';
 
 /**
  * Options for BBCode parsing
@@ -534,4 +535,24 @@ export function parseBBCode(text: string, options: BBCodeParseOptions = {}): Rea
   }
 
   return result;
+}
+
+/**
+ * Decode HTML entities then parse BBCode. Use for user-provided title/heading
+ * text that may contain entities (e.g. album names). Ensures decode runs
+ * before parse so escapeHtml in the parser does not double-encode.
+ *
+ * @param text - Raw title/heading string (may contain entities)
+ * @param options - Parsing options (same as parseBBCode)
+ * @returns React node (parsed BBCode from decoded input)
+ */
+export function parseBBCodeDecoded(
+  text: string,
+  options: BBCodeParseOptions = {},
+): React.ReactNode {
+  if (!text || typeof text !== 'string') {
+    return text;
+  }
+  const decoded = decodeHtmlEntities(text);
+  return parseBBCode(decoded, options);
 }

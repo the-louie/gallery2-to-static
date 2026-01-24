@@ -24,7 +24,8 @@ import { useFilter } from '@/contexts/FilterContext';
 import { useSiteMetadata } from '@/hooks/useSiteMetadata';
 import { useAlbumMetadata } from '@/hooks/useAlbumMetadata';
 import { applyFilters } from '@/utils/filterUtils';
-import { parseBBCode } from '@/utils/bbcode';
+import { parseBBCodeDecoded } from '@/utils/bbcode';
+import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { albumFromMetadata } from '@/utils/albumMetadata';
 import { getParentAlbumId } from '@/utils/breadcrumbPath';
 import { AlbumGrid } from '@/components/AlbumGrid';
@@ -110,23 +111,23 @@ export function AlbumDetail({
     if (!album || !album.title) {
       return null;
     }
-    return parseBBCode(album.title);
+    return parseBBCodeDecoded(album.title);
   }, [album]);
 
   // Section headers: use metadata.albumTitle / metadata.albumDescription when present
   const sectionTitleAlbums = useMemo(() => {
     const t = metadata?.albumTitle?.trim();
-    return t ? parseBBCode(t) : 'Albums';
+    return t ? parseBBCodeDecoded(t) : 'Albums';
   }, [metadata]);
 
   const sectionTitleImages = useMemo(() => {
     const t = metadata?.albumTitle?.trim();
-    return t ? parseBBCode(t) : 'Images';
+    return t ? parseBBCodeDecoded(t) : 'Images';
   }, [metadata]);
 
   const sectionDescription = useMemo(() => {
     const d = metadata?.albumDescription?.trim();
-    return d || null;
+    return d ? decodeHtmlEntities(d) : null;
   }, [metadata]);
 
   // Separate albums and images from the data, then apply filters
@@ -351,14 +352,18 @@ export function AlbumDetail({
             <h2 className="album-detail-title">{parsedTitle}</h2>
           )}
           {!isRootAlbum && showDescription && showTitle && parsedTitle && album.description && (
-            <p className="album-detail-description">{album.description}</p>
+            <p className="album-detail-description">
+              {decodeHtmlEntities(album.description)}
+            </p>
           )}
           {typeof album.summary === 'string' && album.summary.trim() && (
-            <p className="album-detail-summary">{album.summary.trim()}</p>
+            <p className="album-detail-summary">
+              {decodeHtmlEntities(album.summary.trim())}
+            </p>
           )}
           {typeof album.ownerName === 'string' && album.ownerName.trim() && (
             <p className="album-detail-owner">
-              Owner: {album.ownerName.trim()}
+              Owner: {decodeHtmlEntities(album.ownerName.trim())}
             </p>
           )}
         </div>

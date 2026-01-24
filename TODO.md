@@ -135,49 +135,6 @@ Root album list shows album names without the "Album: " prefix; all tests update
 
 ---
 
-## Fix HTML Entity Encoding for Album Names, Breadcrumbs, and Subalbum Lists
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Medium
-**Estimated Time:** 1.5–2 hours
-
-### Description
-Album names, breadcrumb titles, subalbum link labels, and other displayed titles sometimes show HTML entities literally (e.g. "N&amp;auml;sslan" instead of "Nässlan"). This happens when source data contains entities like `&auml;` and we later escape `&` to `&amp;` (e.g. in [parseBBCode](frontend/src/utils/bbcode.ts) via `escapeHtml`), or when already double-encoded data is rendered as plain text. Decode HTML entities before display (and before BBCode parsing, where applicable) so that characters such as ä, ö, ü render correctly everywhere we show album names, breadcrumbs, subalbum lists, and related titles.
-
-### Requirements
-
-#### Research Tasks
-- Identify all surfaces that display album/photo titles: [AlbumDetail](frontend/src/components/AlbumDetail/AlbumDetail.tsx) (header, section titles), [AlbumCard](frontend/src/components/AlbumGrid/AlbumCard.tsx), [RootAlbumListBlock](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx) (main title, subalbum links), [Breadcrumbs](frontend/src/components/Breadcrumbs/Breadcrumbs.tsx), [Lightbox](frontend/src/components/Lightbox/Lightbox.tsx) image titles, metadata in album JSON used by [buildBreadcrumbPath](frontend/src/utils/breadcrumbPath.ts)
-- Review [bbcode.ts](frontend/src/utils/bbcode.ts) `escapeHtml` usage: plain text passed to `parseBBCode` is escaped (including `&` → `&amp;`); decoding must happen **before** BBCode parsing to avoid double-encoding
-- Check backend: titles come from DB via [sqlUtils](backend/sqlUtils.ts); [cleanupUipath](backend/cleanupUipath.ts) `unescapeHtml` applies only to path cleanup, not display titles; JSON likely contains raw or pre-encoded titles
-- Decide where to decode: shared utility (e.g. `decodeHtmlEntities`) used at display time vs. at data load; ensure we don't break URL or non-display uses of titles
-
-#### Implementation Tasks
-- Add a `decodeHtmlEntities` (or similar) utility that decodes common entities (`&amp;`, `&auml;`, `&ouml;`, `&uuml;`, `&lt;`, `&gt;`, `&quot;`, `&#39;`, `&#N;`, `&#xN;`). Use a loop or ordered replacements so that `&amp;` is decoded last and double-encoding is handled; align with [cleanupUipath](backend/cleanupUipath.ts) `unescapeHtml` pattern if useful
-- Apply decoding to all title display paths: (1) before `parseBBCode` where we parse titles (AlbumDetail, AlbumCard, RootAlbumListBlock, Lightbox, Breadcrumbs once BBCode is added), (2) where we render raw titles (subalbum links, breadcrumb items, etc.). Use a single place or small set of helpers to avoid inconsistency
-- Ensure decoding runs **before** BBCode parsing so that `escapeHtml` in bbcode never double-encodes existing entities
-- Add unit tests for `decodeHtmlEntities` (e.g. `&amp;auml;` → `ä`, `&auml;` → `ä`, multiple entities, empty input, no entities)
-
-#### Code-Review Tasks
-- Verify no title display surface is missed; confirm breadcrumbs, subalbum list, album grid, album detail, lightbox all use decoded titles
-- Ensure we don't decode in contexts where raw entities are required (e.g. URL components, attributes) if any; limit to display strings
-
-### Deliverable
-Album names, breadcrumb titles, subalbum list labels, and other displayed titles render with correct characters (e.g. ä, ö, ü) instead of literal `&amp;auml;` or `&auml;`; decoding is consistent and applied before BBCode parsing.
-
-### Testing Requirements
-- Unit tests for `decodeHtmlEntities`: common entities, double-encoding, edge cases
-- Manual or automated checks: subalbum list, breadcrumbs, album cards, album detail header, lightbox show correct characters for titles with entities
-- No regressions in BBCode rendering or in components that display titles
-
-### Technical Notes
-- [bbcode.ts](frontend/src/utils/bbcode.ts): `escapeHtml` escapes `&<>"'`; `parseBBCodeInternal` uses it for plain text. Decoding before parse avoids turning `&auml;` into `&amp;auml;`
-- [cleanupUipath](backend/cleanupUipath.ts) `unescapeHtml` loop handles `&amp;` first and repeats until stable; consider similar ordering for frontend decoder
-- Apply decode only to strings used for **display**; do not change backend JSON shape or persist decoded values in place of originals
-
----
-
 ## Implement Per-Album Theme Configuration
 
 **Status:** Pending

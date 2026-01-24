@@ -14,7 +14,8 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import type { Album } from '@/types';
 import { getAlbumThumbnailUrl } from '@/utils/imageUrl';
-import { parseBBCode } from '@/utils/bbcode';
+import { parseBBCodeDecoded } from '@/utils/bbcode';
+import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import './AlbumCard.css';
 
 /**
@@ -75,7 +76,7 @@ function AlbumCardComponent({
     setImageError(true);
   }, []);
 
-  const defaultAriaLabel = album.title || 'Album';
+  const defaultAriaLabel = decodeHtmlEntities(album.title || 'Album');
   const cardAriaLabel = ariaLabel || defaultAriaLabel;
 
   // Parse BBCode in title for display
@@ -83,7 +84,7 @@ function AlbumCardComponent({
     if (!album.title) {
       return 'Untitled Album';
     }
-    return parseBBCode(album.title);
+    return parseBBCodeDecoded(album.title);
   }, [album.title]);
 
   const cardClassName = className ? `album-card ${className}` : 'album-card';
@@ -101,7 +102,7 @@ function AlbumCardComponent({
         {shouldShowThumbnail && thumbnailUrl ? (
           <img
             src={thumbnailUrl}
-            alt={album.title || 'Album thumbnail'}
+            alt={decodeHtmlEntities(album.title || 'Album thumbnail')}
             className="album-card-thumbnail-image"
             onError={handleImageError}
             crossOrigin="anonymous"

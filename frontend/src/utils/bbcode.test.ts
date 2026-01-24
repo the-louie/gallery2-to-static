@@ -5,7 +5,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { parseBBCode, clearBBCodeCache, getBBCodeCacheStats, extractUrlFromBBCode } from './bbcode';
+import {
+  parseBBCode,
+  parseBBCodeDecoded,
+  clearBBCodeCache,
+  getBBCodeCacheStats,
+  extractUrlFromBBCode,
+} from './bbcode';
 
 describe('parseBBCode', () => {
   beforeEach(() => {
@@ -379,5 +385,34 @@ describe('extractUrlFromBBCode', () => {
   it('handles empty or whitespace-only text', () => {
     expect(extractUrlFromBBCode('')).toBeNull();
     expect(extractUrlFromBBCode('   ')).toBeNull();
+  });
+});
+
+describe('parseBBCodeDecoded', () => {
+  beforeEach(() => {
+    clearBBCodeCache();
+  });
+
+  it('decodes HTML entities then parses BBCode', () => {
+    const result = parseBBCodeDecoded('N&auml;sslan');
+    const { container } = render(<>{result}</>);
+    expect(container.textContent).toBe('Nässlan');
+  });
+
+  it('decodes double-encoded entities then parses', () => {
+    const result = parseBBCodeDecoded('[b]N&amp;auml;sslan[/b]');
+    const { container } = render(<>{result}</>);
+    const strong = container.querySelector('strong');
+    expect(strong).toBeInTheDocument();
+    expect(strong?.textContent).toBe('Nässlan');
+  });
+
+  it('handles empty string', () => {
+    expect(parseBBCodeDecoded('')).toBe('');
+  });
+
+  it('handles null/undefined like parseBBCode', () => {
+    expect(parseBBCodeDecoded(null as unknown as string)).toBe(null);
+    expect(parseBBCodeDecoded(undefined as unknown as string)).toBe(undefined);
   });
 });
