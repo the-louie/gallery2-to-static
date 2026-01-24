@@ -11,7 +11,7 @@
  * @module frontend/src/components/RootAlbumListBlock
  */
 
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAlbumThumbnailUrl } from '@/utils/imageUrl';
 import { parseBBCode, extractUrlFromBBCode } from '@/utils/bbcode';
@@ -45,6 +45,10 @@ export function RootAlbumListBlock({
   const [imageError, setImageError] = useState(false);
   const thumbnailUrl = getAlbumThumbnailUrl(album);
   const shouldShowThumbnail = thumbnailUrl !== null && !imageError;
+
+  useEffect(() => {
+    setImageError(false);
+  }, [album.id, thumbnailUrl]);
 
   const handleImageError = useCallback(() => {
     setImageError(true);

@@ -37,13 +37,14 @@ export function useSubalbumsMap(albumIds: number[]): UseSubalbumsMapReturn {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<DataLoadError | null>(null);
   const isMountedRef = useRef(true);
+  const fetchIdsKeyRef = useRef<string>('');
 
   const idsKey = useMemo(
     () => (albumIds.length ? [...albumIds].sort((a, b) => a - b).join(',') : ''),
     [albumIds],
   );
 
-  const fetchAll = useCallback(async (ids: number[]) => {
+  const fetchAll = useCallback(async (ids: number[], key: string) => {
     if (ids.length === 0) {
       setSubalbumsMap(new Map());
       setIsLoading(false);
@@ -51,6 +52,7 @@ export function useSubalbumsMap(albumIds: number[]): UseSubalbumsMapReturn {
       return;
     }
 
+    fetchIdsKeyRef.current = key;
     setIsLoading(true);
     setError(null);
 
@@ -71,6 +73,7 @@ export function useSubalbumsMap(albumIds: number[]): UseSubalbumsMapReturn {
     );
 
     if (!isMountedRef.current) return;
+    if (fetchIdsKeyRef.current !== key) return;
 
     const nextMap = new Map<number, Album[]>();
     let firstError: DataLoadError | null = null;
@@ -88,7 +91,7 @@ export function useSubalbumsMap(albumIds: number[]): UseSubalbumsMapReturn {
 
   useEffect(() => {
     isMountedRef.current = true;
-    fetchAll(albumIds);
+    fetchAll(albumIds, idsKey);
     return () => {
       isMountedRef.current = false;
     };
