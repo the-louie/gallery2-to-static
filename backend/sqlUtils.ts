@@ -1,5 +1,5 @@
 import type mysql from 'mysql2/promise'
-import type { Child, Config } from './types'
+import type { Child, Config, AlbumMetadata } from './types'
 
 export default (connection: mysql.Connection, config: Config) => {
     const SQL_GET_CHILDREN = `
@@ -75,6 +75,20 @@ export default (connection: mysql.Connection, config: Config) => {
         WHERE
             ce.${config.gallerySettings.columnPrefix}id = ?`
 
+    const SQL_GET_ALBUM_INFO = `
+        SELECT
+            ce.${config.gallerySettings.columnPrefix}id as id,
+            i.${config.gallerySettings.columnPrefix}title as title,
+            i.${config.gallerySettings.columnPrefix}description as description,
+            i.${config.gallerySettings.columnPrefix}originationTimestamp as timestamp,
+            COALESCE(u.${config.gallerySettings.columnPrefix}fullName, u.${config.gallerySettings.columnPrefix}userName) as ownerName
+        FROM ${config.gallerySettings.tablePrefix}ChildEntity ce
+        LEFT JOIN ${config.gallerySettings.tablePrefix}Entity e ON e.${config.gallerySettings.columnPrefix}id=ce.${config.gallerySettings.columnPrefix}id
+        LEFT JOIN ${config.gallerySettings.tablePrefix}Item i ON i.${config.gallerySettings.columnPrefix}id=ce.${config.gallerySettings.columnPrefix}id
+        LEFT JOIN ${config.gallerySettings.tablePrefix}User u ON u.${config.gallerySettings.columnPrefix}id = i.${config.gallerySettings.columnPrefix}ownerId
+        WHERE
+            ce.${config.gallerySettings.columnPrefix}id = ?`
+
     return {
         getChildren: async (itemId: number): Promise<Array<Child>> => {
             const [results] = await connection.execute(SQL_GET_CHILDREN, [itemId]);
@@ -127,6 +141,23 @@ export default (connection: mysql.Connection, config: Config) => {
                 title: row.title ?? null,
                 description: row.description ?? null,
                 timestamp: row.timestamp ?? null
+            };
+        },
+        getAlbumInfo: async (albumId: number): Promise<AlbumMetadata> => {
+            const [results] = await connection.execute(SQL_GET_ALBUM_INFO, [albumId]);
+            if (!Array.isArray(results) || results.length === 0) {
+                throw new Error(`Album ${albumId} not found`);
+            }
+            const row = results[0] as { id: number; title: string | null; description: string | null; timestamp: number | null; ownerName: string | null };
+            if (typeof row.id !== 'number') {
+                throw new Error('Invalid album ID format');
+            }
+            return {
+                albumId: row.id,
+                albumTitle: row.title ?? null,
+                albumDescription: row.description ?? null,
+                albumTimestamp: row.timestamp ?? null,
+                ownerName: row.ownerName == null ? null : (typeof row.ownerName === 'string' ? row.ownerName : null)
             };
         }
     }

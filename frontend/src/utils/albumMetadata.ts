@@ -1,16 +1,37 @@
 /**
  * Album metadata utility functions
  *
- * Provides utilities for retrieving album metadata from parent album data.
- * Since the JSON data structure contains only children of an album (not the album itself),
- * we need to look up album metadata from the parent album's children array.
+ * getAlbumMetadata finds an album in a parent's children array (e.g. for breadcrumbs).
+ * albumFromMetadata builds an Album from AlbumMetadata (e.g. from a loaded album file).
  *
  * @module frontend/src/utils/albumMetadata
  */
 
-import type { Child } from '../../../backend/types';
+import type { Child, AlbumMetadata } from '../../../backend/types';
 import type { Album } from '@/types';
 import { isAlbum } from '@/types';
+
+/**
+ * Build an Album from AlbumMetadata (e.g. from loaded album file).
+ * Used when displaying the current album and metadata comes from its JSON file.
+ */
+export function albumFromMetadata(m: AlbumMetadata): Album {
+  return {
+    id: m.albumId,
+    type: 'GalleryAlbumItem',
+    hasChildren: true,
+    title: m.albumTitle,
+    description: m.albumDescription,
+    pathComponent: null,
+    timestamp: m.albumTimestamp,
+    width: null,
+    height: null,
+    thumb_width: null,
+    thumb_height: null,
+    ownerName: m.ownerName,
+    summary: null,
+  } as Album;
+}
 
 /**
  * Get album metadata from parent album's children array
@@ -24,8 +45,8 @@ import { isAlbum } from '@/types';
  *
  * @example
  * ```typescript
- * const parentChildren = await loadAlbum(parentId);
- * const albumMetadata = getAlbumMetadata(albumId, parentChildren);
+ * const { children } = await loadAlbum(parentId);
+ * const albumMetadata = getAlbumMetadata(albumId, children);
  * if (albumMetadata) {
  *   console.log(albumMetadata.title);
  * }

@@ -10,7 +10,20 @@ import {
   NotFoundError,
   DataLoadError,
 } from './dataLoader';
-import type { Child } from '../../../backend/types';
+import type { Child, AlbumFile } from '../../../backend/types';
+
+function albumFile(albumId: number, children: Child[], metadata?: Partial<AlbumFile['metadata']>): AlbumFile {
+  return {
+    metadata: {
+      albumId,
+      albumTitle: metadata?.albumTitle ?? 'Test',
+      albumDescription: metadata?.albumDescription ?? null,
+      albumTimestamp: metadata?.albumTimestamp ?? 0,
+      ownerName: metadata?.ownerName ?? null,
+    },
+    children,
+  };
+}
 
 describe('dataLoader', () => {
   beforeEach(() => {
@@ -20,7 +33,7 @@ describe('dataLoader', () => {
 
   describe('loadAlbum', () => {
     it('loads album data successfully', async () => {
-      const mockData: Child[] = [
+      const mockChildren: Child[] = [
         {
           id: 1,
           type: 'GalleryAlbumItem',
@@ -35,20 +48,22 @@ describe('dataLoader', () => {
           thumb_height: null,
         },
       ];
+      const mock = albumFile(1, mockChildren);
 
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => mockData,
+        json: async () => mock,
       });
 
       const result = await loadAlbum(1);
 
-      expect(result).toEqual(mockData);
+      expect(result.metadata.albumId).toBe(1);
+      expect(result.children).toEqual(mockChildren);
       expect(global.fetch).toHaveBeenCalledWith('/data/1.json');
     });
 
     it('returns cached data if available', async () => {
-      const mockData: Child[] = [
+      const mockChildren: Child[] = [
         {
           id: 2,
           type: 'GalleryAlbumItem',
@@ -63,19 +78,17 @@ describe('dataLoader', () => {
           thumb_height: null,
         },
       ];
+      const mock = albumFile(2, mockChildren);
+      setCachedData('/data/2.json', mock);
 
-      // Set cache
-      setCachedData('/data/2.json', mockData);
-
-      // Should not call fetch
       const result = await loadAlbum(2);
 
-      expect(result).toEqual(mockData);
+      expect(result.children).toEqual(mockChildren);
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
     it('caches data after successful load', async () => {
-      const mockData: Child[] = [
+      const mockChildren: Child[] = [
         {
           id: 3,
           type: 'GalleryAlbumItem',
@@ -90,22 +103,21 @@ describe('dataLoader', () => {
           thumb_height: null,
         },
       ];
-
+      const mock = albumFile(3, mockChildren);
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => mockData,
+        json: async () => mock,
       });
 
-      // First load
       await loadAlbum(3);
 
-      // Verify data was cached
       const cached = getCachedData('/data/3.json');
-      expect(cached).toEqual(mockData);
+      expect(cached).not.toBeNull();
+      expect(cached!.children).toEqual(mockChildren);
     });
 
     it('uses cache on second load without calling fetch', async () => {
-      const mockData: Child[] = [
+      const mockChildren: Child[] = [
         {
           id: 4,
           type: 'GalleryAlbumItem',
@@ -120,21 +132,19 @@ describe('dataLoader', () => {
           thumb_height: null,
         },
       ];
-
+      const mock = albumFile(4, mockChildren);
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => mockData,
+        json: async () => mock,
       });
 
-      // First load - should call fetch
       const result1 = await loadAlbum(4);
-      expect(result1).toEqual(mockData);
+      expect(result1.children).toEqual(mockChildren);
       expect(global.fetch).toHaveBeenCalledTimes(1);
 
-      // Second load - should use cache, not call fetch
-      global.fetch.mockClear();
+      vi.mocked(global.fetch).mockClear();
       const result2 = await loadAlbum(4);
-      expect(result2).toEqual(mockData);
+      expect(result2.children).toEqual(mockChildren);
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
@@ -190,27 +200,29 @@ describe('dataLoader', () => {
       await expect(loadAlbum(1)).rejects.toThrow('Invalid data structure');
     });
 
-    it('throws ParseError for non-array data', async () => {
+    it('throws ParseError for non-object data', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => 'not an array',
+        json: async () => 'not an object',
       });
 
       await expect(loadAlbum(1)).rejects.toThrow(ParseError);
     });
 
-    it('handles empty array', async () => {
+    it('handles empty children array', async () => {
+      const mock = albumFile(1, []);
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => [],
+        json: async () => mock,
       });
 
       const result = await loadAlbum(1);
-      expect(result).toEqual([]);
+      expect(result.children).toEqual([]);
+      expect(result.metadata.albumId).toBe(1);
     });
 
-    it('accepts JSON with ownerName and summary', async () => {
-      const mockData: Child[] = [
+    it('accepts JSON with ownerName and summary in children', async () => {
+      const mockChildren: Child[] = [
         {
           id: 1,
           type: 'GalleryAlbumItem',
@@ -242,22 +254,21 @@ describe('dataLoader', () => {
           summary: null,
         },
       ];
-
+      const mock = albumFile(1, mockChildren);
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => mockData,
+        json: async () => mock,
       });
 
       const result = await loadAlbum(1);
-      expect(result).toEqual(mockData);
-      expect(result[0].ownerName).toBe('Jane Doe');
-      expect(result[0].summary).toBe('Album summary');
-      expect(result[1].ownerName).toBeNull();
-      expect(result[1].summary).toBeNull();
+      expect(result.children[0].ownerName).toBe('Jane Doe');
+      expect(result.children[0].summary).toBe('Album summary');
+      expect(result.children[1].ownerName).toBeNull();
+      expect(result.children[1].summary).toBeNull();
     });
 
-    it('accepts legacy JSON without ownerName or summary', async () => {
-      const legacyData = [
+    it('rejects legacy Child[]-only format', async () => {
+      const legacyChildren = [
         {
           id: 5,
           type: 'GalleryAlbumItem',
@@ -272,22 +283,17 @@ describe('dataLoader', () => {
           thumb_height: null,
         },
       ];
-
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => legacyData,
+        json: async () => legacyChildren,
       });
 
-      const result = await loadAlbum(5);
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toBe(5);
-      expect(result[0].title).toBe('Legacy');
-      expect('ownerName' in result[0]).toBe(false);
-      expect('summary' in result[0]).toBe(false);
+      await expect(loadAlbum(5)).rejects.toThrow(ParseError);
+      await expect(loadAlbum(5)).rejects.toThrow('Invalid data structure');
     });
 
-    it('accepts JSON with null title, description, or pathComponent', async () => {
-      const dataWithNulls = [
+    it('accepts JSON with null title, description, or pathComponent in children', async () => {
+      const childrenWithNulls = [
         {
           id: 6,
           type: 'GalleryPhotoItem',
@@ -302,23 +308,50 @@ describe('dataLoader', () => {
           thumb_height: 50,
         },
       ];
-
+      const mock = albumFile(6, childrenWithNulls as Child[]);
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => dataWithNulls,
+        json: async () => mock,
       });
 
       const result = await loadAlbum(6);
-      expect(result).toHaveLength(1);
-      expect(result[0].title).toBeNull();
-      expect(result[0].description).toBeNull();
-      expect(result[0].pathComponent).toBe('photo.jpg');
+      expect(result.children).toHaveLength(1);
+      expect(result.children[0].title).toBeNull();
+      expect(result.children[0].description).toBeNull();
+      expect(result.children[0].pathComponent).toBe('photo.jpg');
+    });
+
+    it('accepts JSON with null timestamp in children', async () => {
+      const childrenWithNullTimestamp = [
+        {
+          id: 8,
+          type: 'GalleryAlbumItem',
+          hasChildren: false,
+          title: 'No date',
+          description: null,
+          pathComponent: 'no-date',
+          timestamp: null,
+          width: null,
+          height: null,
+          thumb_width: null,
+          thumb_height: null,
+        },
+      ];
+      const mock = albumFile(8, childrenWithNullTimestamp as Child[]);
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => mock,
+      });
+
+      const result = await loadAlbum(8);
+      expect(result.children).toHaveLength(1);
+      expect(result.children[0].timestamp).toBeNull();
     });
   });
 
   describe('findRootAlbumId', () => {
     it('returns 7 if 7.json exists', async () => {
-      const mockData: Child[] = [
+      const rootChildren: Child[] = [
         {
           id: 7,
           type: 'GalleryAlbumItem',
@@ -333,10 +366,16 @@ describe('dataLoader', () => {
           thumb_height: null,
         },
       ];
-
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => mockData,
+      const rootFile = albumFile(7, rootChildren);
+      global.fetch = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+        if (url?.includes('/data/index.json')) {
+          return Promise.resolve({ ok: false, status: 404, statusText: 'Not Found' });
+        }
+        if (url?.includes('/data/7.json')) {
+          return Promise.resolve({ ok: true, json: async () => rootFile });
+        }
+        return Promise.resolve({ ok: false, status: 404, statusText: 'Not Found' });
       });
 
       const rootId = await findRootAlbumId();
@@ -346,33 +385,35 @@ describe('dataLoader', () => {
     });
 
     it('tries common root IDs if 7.json not found', async () => {
-      // Mock 7.json as not found
-      global.fetch = vi
-        .fn()
-        .mockResolvedValueOnce({
-          ok: false,
-          status: 404,
-          statusText: 'Not Found',
-        })
-        // Mock 1.json as found
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => [
-            {
-              id: 1,
-              type: 'GalleryAlbumItem',
-              hasChildren: true,
-              title: 'Root',
-              description: 'Root',
-              pathComponent: 'root',
-              timestamp: 1234567890,
-              width: null,
-              height: null,
-              thumb_width: null,
-              thumb_height: null,
-            },
-          ],
-        });
+      const oneChildren: Child[] = [
+        {
+          id: 1,
+          type: 'GalleryAlbumItem',
+          hasChildren: true,
+          title: 'Root',
+          description: 'Root',
+          pathComponent: 'root',
+          timestamp: 1234567890,
+          width: null,
+          height: null,
+          thumb_width: null,
+          thumb_height: null,
+        },
+      ];
+      const oneFile = albumFile(1, oneChildren);
+      global.fetch = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+        if (url?.includes('/data/index.json')) {
+          return Promise.resolve({ ok: false, status: 404, statusText: 'Not Found' });
+        }
+        if (url?.includes('/data/7.json')) {
+          return Promise.resolve({ ok: false, status: 404, statusText: 'Not Found' });
+        }
+        if (url?.includes('/data/1.json')) {
+          return Promise.resolve({ ok: true, json: async () => oneFile });
+        }
+        return Promise.resolve({ ok: false, status: 404, statusText: 'Not Found' });
+      });
 
       const rootId = await findRootAlbumId();
 
@@ -411,7 +452,7 @@ describe('dataLoader', () => {
     });
 
     it('setCachedData and getCachedData work together', () => {
-      const mockData: Child[] = [
+      const mockChildren: Child[] = [
         {
           id: 10,
           type: 'GalleryAlbumItem',
@@ -426,15 +467,16 @@ describe('dataLoader', () => {
           thumb_height: null,
         },
       ];
-
-      setCachedData('/data/10.json', mockData);
+      const mock = albumFile(10, mockChildren);
+      setCachedData('/data/10.json', mock);
       const result = getCachedData('/data/10.json');
 
-      expect(result).toEqual(mockData);
+      expect(result).not.toBeNull();
+      expect(result!.children).toEqual(mockChildren);
     });
 
     it('clearCache removes all cached data', () => {
-      const mockData: Child[] = [
+      const mockChildren: Child[] = [
         {
           id: 11,
           type: 'GalleryAlbumItem',
@@ -449,8 +491,8 @@ describe('dataLoader', () => {
           thumb_height: null,
         },
       ];
-
-      setCachedData('/data/11.json', mockData);
+      const mock = albumFile(11, mockChildren);
+      setCachedData('/data/11.json', mock);
       clearCache();
       const result = getCachedData('/data/11.json');
 

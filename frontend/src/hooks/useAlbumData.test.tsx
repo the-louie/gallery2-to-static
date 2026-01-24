@@ -2,7 +2,20 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useAlbumData } from './useAlbumData';
 import { loadAlbum, NotFoundError, NetworkError } from '../utils/dataLoader';
-import type { Child } from '../../../backend/types';
+import type { Child, AlbumFile } from '../../../backend/types';
+
+function albumFile(albumId: number, children: Child[]): AlbumFile {
+  return {
+    metadata: {
+      albumId,
+      albumTitle: 'Test',
+      albumDescription: null,
+      albumTimestamp: 0,
+      ownerName: null,
+    },
+    children,
+  };
+}
 
 // Mock the dataLoader module
 vi.mock('../utils/dataLoader', () => ({
@@ -45,7 +58,7 @@ describe('useAlbumData', () => {
   });
 
   it('has initial loading state', () => {
-    const mockData: Child[] = [
+    const mockChildren: Child[] = [
       {
         id: 1,
         type: 'GalleryAlbumItem',
@@ -60,8 +73,7 @@ describe('useAlbumData', () => {
         thumb_height: null,
       },
     ];
-
-    mockLoadAlbum.mockResolvedValue(mockData);
+    mockLoadAlbum.mockResolvedValue(albumFile(1, mockChildren));
 
     const { result } = renderHook(() => useAlbumData(1));
 
@@ -71,7 +83,7 @@ describe('useAlbumData', () => {
   });
 
   it('loads data successfully', async () => {
-    const mockData: Child[] = [
+    const mockChildren: Child[] = [
       {
         id: 1,
         type: 'GalleryAlbumItem',
@@ -86,8 +98,8 @@ describe('useAlbumData', () => {
         thumb_height: null,
       },
     ];
-
-    mockLoadAlbum.mockResolvedValue(mockData);
+    const file = albumFile(1, mockChildren);
+    mockLoadAlbum.mockResolvedValue(file);
 
     const { result } = renderHook(() => useAlbumData(1));
 
@@ -95,7 +107,8 @@ describe('useAlbumData', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(result.current.data).toEqual(mockData);
+    expect(result.current.data).toEqual(mockChildren);
+    expect(result.current.metadata).toEqual(file.metadata);
     expect(result.current.error).toBeNull();
     expect(mockLoadAlbum).toHaveBeenCalledWith(1);
   });
@@ -133,6 +146,7 @@ describe('useAlbumData', () => {
 
     expect(result.current.isLoading).toBe(false);
     expect(result.current.data).toBeNull();
+    expect(result.current.metadata).toBeNull();
     expect(result.current.error).toBeNull();
     expect(mockLoadAlbum).not.toHaveBeenCalled();
   });
@@ -153,7 +167,6 @@ describe('useAlbumData', () => {
         thumb_height: null,
       },
     ];
-
     const mockData2: Child[] = [
       {
         id: 2,
@@ -169,16 +182,13 @@ describe('useAlbumData', () => {
         thumb_height: null,
       },
     ];
-
     mockLoadAlbum
-      .mockResolvedValueOnce(mockData1)
-      .mockResolvedValueOnce(mockData2);
+      .mockResolvedValueOnce(albumFile(1, mockData1))
+      .mockResolvedValueOnce(albumFile(2, mockData2));
 
     const { result, rerender } = renderHook(
       ({ id }) => useAlbumData(id),
-      {
-        initialProps: { id: 1 },
-      },
+      { initialProps: { id: 1 } },
     );
 
     await waitFor(() => {
@@ -197,7 +207,7 @@ describe('useAlbumData', () => {
   });
 
   it('refetch function reloads data', async () => {
-    const mockData: Child[] = [
+    const mockChildren: Child[] = [
       {
         id: 1,
         type: 'GalleryAlbumItem',
@@ -212,18 +222,17 @@ describe('useAlbumData', () => {
         thumb_height: null,
       },
     ];
-
-    mockLoadAlbum.mockResolvedValue(mockData);
+    const file = albumFile(1, mockChildren);
+    mockLoadAlbum.mockResolvedValue(file);
 
     const { result } = renderHook(() => useAlbumData(1));
 
     await waitFor(() => {
-      expect(result.current.data).toEqual(mockData);
+      expect(result.current.data).toEqual(mockChildren);
     });
 
-    // Clear mock to verify refetch calls it again
     mockLoadAlbum.mockClear();
-    mockLoadAlbum.mockResolvedValue(mockData);
+    mockLoadAlbum.mockResolvedValue(file);
 
     result.current.refetch();
 
@@ -233,7 +242,7 @@ describe('useAlbumData', () => {
   });
 
   it('does not update state after unmount', async () => {
-    const mockData: Child[] = [
+    const mockChildren: Child[] = [
       {
         id: 1,
         type: 'GalleryAlbumItem',
@@ -248,27 +257,20 @@ describe('useAlbumData', () => {
         thumb_height: null,
       },
     ];
-
-    let resolveLoad: (value: Child[]) => void;
-    const loadPromise = new Promise<Child[]>((resolve) => {
+    const file = albumFile(1, mockChildren);
+    let resolveLoad: (value: AlbumFile) => void;
+    const loadPromise = new Promise<AlbumFile>((resolve) => {
       resolveLoad = resolve;
     });
-
     mockLoadAlbum.mockReturnValue(loadPromise);
 
-    const { result, unmount } = renderHook(() => useAlbumData(1));
+    const { unmount } = renderHook(() => useAlbumData(1));
 
-    // Unmount before promise resolves
     unmount();
+    resolveLoad!(file);
 
-    // Resolve the promise after unmount
-    resolveLoad!(mockData);
-
-    // Wait a bit to ensure state doesn't update
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // State should not have updated (we can't directly check unmounted component,
-    // but this test verifies cleanup prevents errors)
     expect(mockLoadAlbum).toHaveBeenCalledWith(1);
   });
 
@@ -288,7 +290,6 @@ describe('useAlbumData', () => {
         thumb_height: null,
       },
     ];
-
     const mockData2: Child[] = [
       {
         id: 2,
@@ -304,26 +305,21 @@ describe('useAlbumData', () => {
         thumb_height: null,
       },
     ];
-
     mockLoadAlbum
-      .mockResolvedValueOnce(mockData1)
-      .mockResolvedValueOnce(mockData2);
+      .mockResolvedValueOnce(albumFile(1, mockData1))
+      .mockResolvedValueOnce(albumFile(2, mockData2));
 
     const { result, rerender } = renderHook(
       ({ id }) => useAlbumData(id),
-      {
-        initialProps: { id: 1 },
-      },
+      { initialProps: { id: 1 } },
     );
 
-    // Change id before first load completes
     rerender({ id: 2 });
 
     await waitFor(() => {
       expect(result.current.data).toEqual(mockData2);
     });
 
-    // Should have called loadAlbum for both IDs
     expect(mockLoadAlbum).toHaveBeenCalledWith(1);
     expect(mockLoadAlbum).toHaveBeenCalledWith(2);
   });

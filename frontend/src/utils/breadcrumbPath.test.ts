@@ -5,7 +5,20 @@ import {
   getParentAlbumId,
 } from './breadcrumbPath';
 import { loadAlbum, findRootAlbumId } from './dataLoader';
-import type { Child } from '../../../backend/types';
+import type { Child, AlbumFile } from '../../../backend/types';
+
+function albumFile(children: Child[]): AlbumFile {
+  return {
+    metadata: {
+      albumId: 0,
+      albumTitle: null,
+      albumDescription: null,
+      albumTimestamp: 0,
+      ownerName: null,
+    },
+    children,
+  };
+}
 
 // Mock the dataLoader module
 vi.mock('./dataLoader', () => ({
@@ -66,8 +79,8 @@ describe('breadcrumbPath', () => {
 
       vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
       vi.mocked(loadAlbum)
-        .mockResolvedValueOnce(rootChildren) // For finding parent of childId
-        .mockResolvedValueOnce(rootChildren); // For getting child metadata
+        .mockResolvedValueOnce(albumFile(rootChildren))
+        .mockResolvedValueOnce(albumFile(rootChildren));
 
       const path = await buildBreadcrumbPath(childId, rootId);
 
@@ -124,9 +137,9 @@ describe('breadcrumbPath', () => {
 
       vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
       vi.mocked(loadAlbum)
-        .mockResolvedValueOnce(rootChildren) // For finding parent of grandchildId (try rootId)
-        .mockResolvedValueOnce(childChildren) // For finding parent of grandchildId (try childId)
-        .mockResolvedValueOnce(childChildren); // For getting grandchild metadata
+        .mockResolvedValueOnce(albumFile(rootChildren))
+        .mockResolvedValueOnce(albumFile(childChildren))
+        .mockResolvedValueOnce(albumFile(childChildren));
 
       const path = await buildBreadcrumbPath(grandchildId, rootId);
 
@@ -165,8 +178,8 @@ describe('breadcrumbPath', () => {
 
       vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
       vi.mocked(loadAlbum)
-        .mockResolvedValueOnce(rootChildren)
-        .mockResolvedValueOnce(rootChildren);
+        .mockResolvedValueOnce(albumFile(rootChildren))
+        .mockResolvedValueOnce(albumFile(rootChildren));
 
       const path = await buildBreadcrumbPath(childId);
 
@@ -189,8 +202,8 @@ describe('breadcrumbPath', () => {
 
       vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
       vi.mocked(loadAlbum)
-        .mockResolvedValueOnce([]) // Root children (orphaned not found)
-        .mockResolvedValueOnce([]); // Try to get metadata from root
+        .mockResolvedValueOnce(albumFile([]))
+        .mockResolvedValueOnce(albumFile([]));
 
       const path = await buildBreadcrumbPath(orphanedId, rootId);
 
@@ -222,7 +235,7 @@ describe('breadcrumbPath', () => {
       const rootId = 7;
 
       vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
-      vi.mocked(loadAlbum).mockResolvedValue([]);
+      vi.mocked(loadAlbum).mockResolvedValue(albumFile([]));
 
       const path = await buildBreadcrumbPath(-1, rootId);
 
@@ -235,7 +248,7 @@ describe('breadcrumbPath', () => {
       const childId = 10;
 
       vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
-      vi.mocked(loadAlbum).mockResolvedValue([]); // Empty children
+      vi.mocked(loadAlbum).mockResolvedValue(albumFile([]));
 
       const path = await buildBreadcrumbPath(childId, rootId);
 
@@ -248,7 +261,7 @@ describe('breadcrumbPath', () => {
       const rootId = 7;
 
       vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
-      vi.mocked(loadAlbum).mockResolvedValue([]);
+      vi.mocked(loadAlbum).mockResolvedValue(albumFile([]));
 
       // First call
       await buildBreadcrumbPath(10, undefined);
@@ -279,9 +292,8 @@ describe('breadcrumbPath', () => {
         },
       ];
 
-      // Simulate circular reference by making child point to itself
       vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
-      vi.mocked(loadAlbum).mockResolvedValue(rootChildren);
+      vi.mocked(loadAlbum).mockResolvedValue(albumFile(rootChildren));
 
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -300,7 +312,7 @@ describe('breadcrumbPath', () => {
       const rootId = 7;
 
       vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
-      vi.mocked(loadAlbum).mockResolvedValue([]);
+      vi.mocked(loadAlbum).mockResolvedValue(albumFile([]));
 
       // First call - should cache
       await buildBreadcrumbPath(10, undefined);
@@ -319,7 +331,7 @@ describe('breadcrumbPath', () => {
     it('returns null for root album', async () => {
       const rootId = 7;
       vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
-      vi.mocked(loadAlbum).mockResolvedValue([]);
+      vi.mocked(loadAlbum).mockResolvedValue(albumFile([]));
 
       const parentId = await getParentAlbumId(rootId);
 
@@ -347,9 +359,9 @@ describe('breadcrumbPath', () => {
 
       vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
       vi.mocked(loadAlbum)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce(rootChildren);
+        .mockResolvedValueOnce(albumFile([]))
+        .mockResolvedValueOnce(albumFile([]))
+        .mockResolvedValueOnce(albumFile(rootChildren));
 
       const parentId = await getParentAlbumId(childId);
 
@@ -360,7 +372,7 @@ describe('breadcrumbPath', () => {
       const rootId = 7;
       const orphanedId = 999;
       vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
-      vi.mocked(loadAlbum).mockResolvedValue([]);
+      vi.mocked(loadAlbum).mockResolvedValue(albumFile([]));
 
       const parentId = await getParentAlbumId(orphanedId);
 

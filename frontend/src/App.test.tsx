@@ -2,8 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test-utils';
 import App from '@/App';
 import { findRootAlbumId } from '@/utils/dataLoader';
+import type { AlbumFile } from '../../../backend/types';
 
-// Mock the dataLoader module
+const emptyAlbumFile: AlbumFile = {
+  metadata: {
+    albumId: 7,
+    albumTitle: null,
+    albumDescription: null,
+    albumTimestamp: 0,
+    ownerName: null,
+  },
+  children: [],
+};
+
 vi.mock('@/utils/dataLoader', () => ({
   findRootAlbumId: vi.fn(),
   loadAlbum: vi.fn(),
@@ -12,10 +23,9 @@ vi.mock('@/utils/dataLoader', () => ({
 describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock successful fetch for data loading
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => [],
+      json: async () => emptyAlbumFile,
     } as Response);
   });
 

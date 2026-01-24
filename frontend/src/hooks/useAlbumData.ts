@@ -40,9 +40,9 @@
  */
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { loadAlbum, type DataLoadError } from '../utils/dataLoader';
+import { loadAlbum, DataLoadError } from '../utils/dataLoader';
 import { useRetry, type UseRetryConfig } from './useRetry';
-import type { Child } from '../../../backend/types';
+import type { Child, AlbumMetadata } from '../../../backend/types';
 
 /**
  * Configuration for useAlbumData hook
@@ -58,8 +58,10 @@ export interface UseAlbumDataConfig {
  * Return type for useAlbumData hook
  */
 export interface UseAlbumDataReturn {
-  /** Loaded album data, null if not loaded yet or if id is null */
+  /** Loaded album children (Child[]), null if not loaded yet or if id is null */
   data: Child[] | null;
+  /** Album metadata from the loaded file, null if not loaded yet or if id is null */
+  metadata: AlbumMetadata | null;
   /** True while loading, false otherwise */
   isLoading: boolean;
   /** Error object if loading failed, null otherwise */
@@ -106,6 +108,7 @@ export function useAlbumData(
 ): UseAlbumDataReturn {
   const { enableAutoRetry = false, retryConfig } = config;
   const [data, setData] = useState<Child[] | null>(null);
+  const [metadata, setMetadata] = useState<AlbumMetadata | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<DataLoadError | null>(null);
   const isMountedRef = useRef(true);
@@ -121,9 +124,10 @@ export function useAlbumData(
     setError(null);
 
     try {
-      const loadedData = await loadAlbum(albumId);
+      const file = await loadAlbum(albumId);
       if (isMountedRef.current) {
-        setData(loadedData);
+        setData(file.children);
+        setMetadata(file.metadata);
         setIsLoading(false);
       }
     } catch (err) {
@@ -186,6 +190,7 @@ export function useAlbumData(
     // Don't load if id is null
     if (id === null) {
       setData(null);
+      setMetadata(null);
       setIsLoading(false);
       setError(null);
       if (enableAutoRetry) {
@@ -223,6 +228,7 @@ export function useAlbumData(
 
   return {
     data,
+    metadata,
     isLoading: isLoading || (enableAutoRetry ? retryHook.isRetrying : false),
     error,
     refetch,

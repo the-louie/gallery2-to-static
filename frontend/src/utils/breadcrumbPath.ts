@@ -8,7 +8,7 @@
  * @module frontend/src/utils/breadcrumbPath
  */
 
-import { loadAlbum, findRootAlbumId, type DataLoadError } from './dataLoader';
+import { loadAlbum, findRootAlbumId, DataLoadError } from './dataLoader';
 import { getAlbumMetadata } from './albumMetadata';
 import type { BreadcrumbItem, BreadcrumbPath } from '@/types';
 
@@ -97,8 +97,8 @@ async function findParentAlbumId(
   // Try each candidate
   for (const candidateId of candidatesToTry) {
     try {
-      const children = await loadAlbum(candidateId);
-      const childAlbum = getAlbumMetadata(childAlbumId, children);
+      const file = await loadAlbum(candidateId);
+      const childAlbum = getAlbumMetadata(childAlbumId, file.children);
 
       if (childAlbum !== null) {
         // Found parent!
@@ -191,18 +191,16 @@ export async function buildBreadcrumbPath(
       // Orphaned album (no parent found)
       // Add current album to path and stop
       try {
-        // Try to get album metadata from root's children as fallback
-        const rootChildren = await loadAlbum(rootId);
-        const albumMetadata = getAlbumMetadata(currentAlbumId, rootChildren);
+        const rootFile = await loadAlbum(rootId);
+        const albumMetadata = getAlbumMetadata(currentAlbumId, rootFile.children);
 
         if (albumMetadata) {
           path.unshift({
             id: currentAlbumId,
-            title: albumMetadata.title,
+            title: albumMetadata.title ?? `Album ${currentAlbumId}`,
             path: `/album/${currentAlbumId}`,
           });
         } else {
-          // Use ID as fallback title
           path.unshift({
             id: currentAlbumId,
             title: `Album ${currentAlbumId}`,
@@ -220,19 +218,17 @@ export async function buildBreadcrumbPath(
       break;
     }
 
-    // Get current album metadata from parent's children
     try {
-      const parentChildren = await loadAlbum(parentId);
-      const albumMetadata = getAlbumMetadata(currentAlbumId, parentChildren);
+      const parentFile = await loadAlbum(parentId);
+      const albumMetadata = getAlbumMetadata(currentAlbumId, parentFile.children);
 
       if (albumMetadata) {
         path.unshift({
           id: currentAlbumId,
-          title: albumMetadata.title,
+          title: albumMetadata.title ?? `Album ${currentAlbumId}`,
           path: `/album/${currentAlbumId}`,
         });
       } else {
-        // Fallback: use ID as title
         path.unshift({
           id: currentAlbumId,
           title: `Album ${currentAlbumId}`,

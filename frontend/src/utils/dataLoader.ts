@@ -10,7 +10,7 @@
  * import { loadAlbum, findRootAlbumId } from './utils/dataLoader';
  *
  * // Load a specific album
- * const children = await loadAlbum(7);
+ * const { metadata, children } = await loadAlbum(7);
  *
  * // Find root album ID
  * const rootId = await findRootAlbumId();
@@ -33,9 +33,11 @@
  * - `getCachedData(url)`: Get cached data
  * - `setCachedData(url, data)`: Set cached data
  * - `clearCache()`: Clear all cached data
+ *
+ * Album JSON files use the structure `{ metadata: AlbumMetadata, children: Child[] }`.
  */
 
-import type { Child } from '../../../backend/types';
+import type { Child, AlbumFile } from '../../../backend/types';
 import type { IndexMetadata } from '../types';
 
 /**
@@ -88,7 +90,7 @@ export class NotFoundError extends DataLoadError {
 
 /**
  * In-memory cache for album data
- * Key: URL string, Value: Child[] array
+ * Key: URL string, Value: AlbumFile
  *
  * Cache Strategy:
  * - No size limit: Static JSON files are typically small and limited in number
@@ -96,15 +98,15 @@ export class NotFoundError extends DataLoadError {
  * - Cache persists for application lifetime
  * - If memory becomes an issue, consider implementing LRU eviction or size limits
  */
-const cache = new Map<string, Child[]>();
+const cache = new Map<string, AlbumFile>();
 
 /**
  * Get cached data for a URL
  *
  * @param url - The URL to check in cache
- * @returns Cached data or null if not found
+ * @returns Cached AlbumFile or null if not found
  */
-export function getCachedData(url: string): Child[] | null {
+export function getCachedData(url: string): AlbumFile | null {
   return cache.get(url) ?? null;
 }
 
@@ -112,9 +114,9 @@ export function getCachedData(url: string): Child[] | null {
  * Set cached data for a URL
  *
  * @param url - The URL to cache
- * @param data - The data to cache
+ * @param data - The AlbumFile to cache
  */
-export function setCachedData(url: string, data: Child[]): void {
+export function setCachedData(url: string, data: AlbumFile): void {
   cache.set(url, data);
 }
 
@@ -127,8 +129,8 @@ export function clearCache(): void {
 }
 
 /**
- * Validate that data matches Child[] structure
- * Basic runtime validation to catch type mismatches
+ * Validate that data matches Child[] structure.
+ * Used for the children array inside AlbumFile.
  *
  * @param data - Data to validate
  * @returns True if data appears to be valid Child[]
@@ -182,7 +184,7 @@ function validateChildArray(data: unknown): data is Child[] {
       (child.title === null || typeof child.title === 'string') &&
       (child.description === null || typeof child.description === 'string') &&
       (child.pathComponent === null || typeof child.pathComponent === 'string') &&
-      typeof child.timestamp === 'number' &&
+      (child.timestamp === null || typeof child.timestamp === 'number') &&
       (child.width === null || typeof child.width === 'number') &&
       (child.height === null || typeof child.height === 'number') &&
       (child.thumb_width === null || typeof child.thumb_width === 'number') &&
@@ -196,14 +198,47 @@ function validateChildArray(data: unknown): data is Child[] {
 }
 
 /**
+ * Validate that data matches AlbumFile structure ({ metadata, children }).
+ *
+ * @param data - Data to validate
+ * @returns True if data appears to be valid AlbumFile
+ */
+function validateAlbumFile(data: unknown): data is AlbumFile {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+  const obj = data as Record<string, unknown>;
+  if (!('metadata' in obj) || !('children' in obj)) {
+    return false;
+  }
+  const meta = obj.metadata;
+  if (typeof meta !== 'object' || meta === null) {
+    return false;
+  }
+  const m = meta as Record<string, unknown>;
+  if (
+    typeof m.albumId !== 'number' ||
+    (m.albumTitle !== null && typeof m.albumTitle !== 'string') ||
+    (m.albumDescription !== null && typeof m.albumDescription !== 'string') ||
+    (m.albumTimestamp !== null && typeof m.albumTimestamp !== 'number') ||
+    (m.ownerName !== null && typeof m.ownerName !== 'string')
+  ) {
+    return false;
+  }
+  if (!validateChildArray(obj.children)) {
+    return false;
+  }
+  return true;
+}
+
+/**
  * Load album JSON data by ID
  *
- * Loads JSON data from `/data/{id}.json` with caching support.
- * Checks cache first, then fetches from network if not cached.
- * Validates data structure matches Child[] type.
+ * Loads JSON from `/data/{id}.json` with caching. Validates structure
+ * matches { metadata: AlbumMetadata, children: Child[] }.
  *
  * @param id - Album ID to load
- * @returns Promise resolving to array of Child items
+ * @returns Promise resolving to AlbumFile
  * @throws {NotFoundError} When album file is not found (404)
  * @throws {NetworkError} When network request fails (offline, timeout, etc.)
  * @throws {ParseError} When JSON parsing fails or data structure is invalid
@@ -211,7 +246,7 @@ function validateChildArray(data: unknown): data is Child[] {
  * @example
  * ```typescript
  * try {
- *   const children = await loadAlbum(7);
+ *   const { metadata, children } = await loadAlbum(7);
  *   console.log(`Loaded ${children.length} items`);
  * } catch (error) {
  *   if (error instanceof NotFoundError) {
@@ -222,10 +257,9 @@ function validateChildArray(data: unknown): data is Child[] {
  * }
  * ```
  */
-export async function loadAlbum(id: number): Promise<Child[]> {
+export async function loadAlbum(id: number): Promise<AlbumFile> {
   const url = `/data/${id}.json`;
 
-  // Check cache first
   const cached = getCachedData(url);
   if (cached !== null) {
     return cached;
@@ -257,17 +291,15 @@ export async function loadAlbum(id: number): Promise<Child[]> {
       );
     }
 
-    // Validate data structure
-    if (!validateChildArray(jsonData)) {
+    if (!validateAlbumFile(jsonData)) {
       throw new ParseError(
-        `Invalid data structure for album ${id}: expected Child[] array`,
+        `Invalid data structure for album ${id}: expected { metadata, children }`,
       );
     }
 
-    // Store in cache
-    setCachedData(url, jsonData);
-
-    return jsonData;
+    const file = jsonData as AlbumFile;
+    setCachedData(url, file);
+    return file;
   } catch (error) {
     // Re-throw known errors
     if (
@@ -387,7 +419,7 @@ export async function loadIndex(): Promise<IndexMetadata | null> {
  * ```typescript
  * const rootId = await findRootAlbumId();
  * if (rootId !== null) {
- *   const children = await loadAlbum(rootId);
+ *   const { children } = await loadAlbum(rootId);
  * }
  * ```
  */

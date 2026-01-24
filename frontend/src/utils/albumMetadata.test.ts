@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { getAlbumMetadata } from './albumMetadata';
+import { getAlbumMetadata, albumFromMetadata } from './albumMetadata';
 import type { Child } from '../../../backend/types';
 import type { Album, Image } from '@/types';
 
@@ -88,5 +88,23 @@ describe('getAlbumMetadata', () => {
     expect(result).not.toBeNull();
     expect(result?.id).toBe(3);
     expect(result?.title).toBe('Another Album');
+  });
+});
+
+describe('albumFromMetadata', () => {
+  it('builds Album from AlbumMetadata', () => {
+    const meta = {
+      albumId: 42,
+      albumTitle: 'My Album',
+      albumDescription: 'Desc',
+      albumTimestamp: 1234567890,
+      ownerName: 'Owner',
+    };
+    const album = albumFromMetadata(meta);
+    expect(album.id).toBe(42);
+    expect(album.type).toBe('GalleryAlbumItem');
+    expect(album.title).toBe('My Album');
+    expect(album.description).toBe('Desc');
+    expect(album.ownerName).toBe('Owner');
   });
 });

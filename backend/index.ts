@@ -2,7 +2,7 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 import mysql from 'mysql2/promise'
 import sqlUtils from './sqlUtils'
-import { Config, Child } from './types'
+import { Config, Child, AlbumFile } from './types'
 import { cleanup_uipathcomponent } from './cleanupUipath'
 import { getLinkTarget, getThumbTarget } from './legacyPaths'
 
@@ -151,11 +151,20 @@ const main = async (
             }
         }
 
+        const albumInfo = await sql.getAlbumInfo(root);
+        const metadata = {
+            albumId: albumInfo.albumId,
+            albumTitle: albumInfo.albumTitle,
+            albumDescription: albumInfo.albumDescription,
+            albumTimestamp: albumInfo.albumTimestamp,
+            ownerName: albumInfo.ownerName,
+        };
+        const albumFile: AlbumFile = { metadata, children: processedChildrenWithThumbnails };
         const filePath = path.join(dataDir, `${root}.json`);
         try {
             await fs.writeFile(
                 filePath,
-                JSON.stringify(processedChildrenWithThumbnails, null, 2),
+                JSON.stringify(albumFile, null, 2),
             );
         } catch (error) {
             console.error(`Error writing file ${filePath}:`, error);

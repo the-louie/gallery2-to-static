@@ -86,6 +86,7 @@ describe('ImageGrid', () => {
         data: null,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -99,6 +100,7 @@ describe('ImageGrid', () => {
         data: null,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -111,6 +113,7 @@ describe('ImageGrid', () => {
         data: null,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -125,6 +128,7 @@ describe('ImageGrid', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -137,6 +141,7 @@ describe('ImageGrid', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -152,6 +157,7 @@ describe('ImageGrid', () => {
         data: null,
         isLoading: true,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -183,6 +189,7 @@ describe('ImageGrid', () => {
         data: mockEmptyChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -226,6 +233,7 @@ describe('ImageGrid', () => {
         data: null,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -243,6 +251,7 @@ describe('ImageGrid', () => {
         data: null,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -256,6 +265,7 @@ describe('ImageGrid', () => {
         data: null,
         isLoading: true,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -271,6 +281,7 @@ describe('ImageGrid', () => {
         data: null,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -283,6 +294,7 @@ describe('ImageGrid', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -297,6 +309,7 @@ describe('ImageGrid', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -339,6 +352,7 @@ describe('ImageGrid', () => {
         data: imagesWithDates,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -368,6 +382,7 @@ describe('ImageGrid', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -398,6 +413,7 @@ describe('ImageGrid', () => {
         data: mockPhotos,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 

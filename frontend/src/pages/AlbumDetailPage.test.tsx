@@ -47,6 +47,7 @@ describe('AlbumDetailPage', () => {
   it('displays loading state', () => {
     vi.mocked(useAlbumData).mockReturnValue({
       data: null,
+      metadata: null,
       isLoading: true,
       error: null,
       refetch: vi.fn(),
@@ -63,6 +64,7 @@ describe('AlbumDetailPage', () => {
   it('displays albums and images when data is loaded', async () => {
     vi.mocked(useAlbumData).mockReturnValue({
       data: mockChildren,
+      metadata: null,
       isLoading: false,
       error: null,
       refetch: vi.fn(),
@@ -84,6 +86,7 @@ describe('AlbumDetailPage', () => {
 
     vi.mocked(useAlbumData).mockReturnValue({
       data: null,
+      metadata: null,
       isLoading: false,
       error,
       refetch: vi.fn(),
@@ -102,6 +105,7 @@ describe('AlbumDetailPage', () => {
 
     vi.mocked(useAlbumData).mockReturnValue({
       data: null,
+      metadata: null,
       isLoading: false,
       error,
       refetch: vi.fn(),
@@ -118,6 +122,7 @@ describe('AlbumDetailPage', () => {
   it('displays empty state when album has no children', () => {
     vi.mocked(useAlbumData).mockReturnValue({
       data: [],
+      metadata: null,
       isLoading: false,
       error: null,
       refetch: vi.fn(),
@@ -136,6 +141,7 @@ describe('AlbumDetailPage', () => {
   it('redirects to 404 when album ID is invalid', () => {
     vi.mocked(useAlbumData).mockReturnValue({
       data: null,
+      metadata: null,
       isLoading: false,
       error: null,
       refetch: vi.fn(),
@@ -157,6 +163,7 @@ describe('AlbumDetailPage', () => {
 
       vi.mocked(useAlbumData).mockReturnValue({
         data: mockChildren,
+        metadata: null,
         isLoading: false,
         error: null,
         refetch: vi.fn(),
@@ -184,6 +191,7 @@ describe('AlbumDetailPage', () => {
     it('does not display breadcrumbs when path is empty', () => {
       vi.mocked(useAlbumData).mockReturnValue({
         data: mockChildren,
+        metadata: null,
         isLoading: false,
         error: null,
         refetch: vi.fn(),
@@ -208,6 +216,7 @@ describe('AlbumDetailPage', () => {
     it('handles breadcrumb loading state', () => {
       vi.mocked(useAlbumData).mockReturnValue({
         data: mockChildren,
+        metadata: null,
         isLoading: false,
         error: null,
         refetch: vi.fn(),

@@ -3,8 +3,19 @@ import { render, screen, waitFor } from '@/test-utils';
 import { HomePage } from './HomePage';
 import { findRootAlbumId } from '@/utils/dataLoader';
 import { mockChildren } from '@/__mocks__/mockData';
+import type { AlbumFile } from '../../../backend/types';
 
-// Mock the dataLoader module
+const albumFileForRoot: AlbumFile = {
+  metadata: {
+    albumId: 7,
+    albumTitle: null,
+    albumDescription: null,
+    albumTimestamp: 0,
+    ownerName: null,
+  },
+  children: mockChildren,
+};
+
 vi.mock('@/utils/dataLoader', () => ({
   findRootAlbumId: vi.fn(),
   loadAlbum: vi.fn(),
@@ -13,10 +24,9 @@ vi.mock('@/utils/dataLoader', () => ({
 describe('HomePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock successful fetch for AlbumGrid
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => mockChildren,
+      json: async () => albumFileForRoot,
     } as Response);
   });
 

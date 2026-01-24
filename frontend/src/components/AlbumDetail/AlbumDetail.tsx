@@ -21,6 +21,7 @@ import { useSiteMetadata } from '@/hooks/useSiteMetadata';
 import { useAlbumMetadata } from '@/hooks/useAlbumMetadata';
 import { applyFilters } from '@/utils/filterUtils';
 import { parseBBCode } from '@/utils/bbcode';
+import { albumFromMetadata } from '@/utils/albumMetadata';
 import { getParentAlbumId } from '@/utils/breadcrumbPath';
 import { AlbumGrid } from '@/components/AlbumGrid';
 import { ImageGrid } from '@/components/ImageGrid';
@@ -78,7 +79,7 @@ export function AlbumDetail({
   breadcrumbs,
 }: AlbumDetailProps) {
   const navigate = useNavigate();
-  const { data, isLoading, error, refetch } = useAlbumData(albumId);
+  const { data, metadata, isLoading, error, refetch } = useAlbumData(albumId);
   const [isNavigatingUp, setIsNavigatingUp] = useState(false);
   const isNavigatingRef = useRef(false);
   const { rootAlbumId } = useSiteMetadata();
@@ -90,8 +91,12 @@ export function AlbumDetail({
   const albumsSort = useSort('albums');
   const imagesSort = useSort('images');
 
-  // Load album metadata if not provided as prop
-  const album = useAlbumMetadata(albumId, albumProp, rootAlbumId);
+  const albumPropFromFile = useMemo(
+    () => (metadata ? albumFromMetadata(metadata) : null),
+    [metadata],
+  );
+  const albumPropToUse = albumPropFromFile ?? albumProp ?? undefined;
+  const album = useAlbumMetadata(albumId, albumPropToUse, rootAlbumId);
 
   // Check if this is the root album
   const isRootAlbum = rootAlbumId !== null && albumId === rootAlbumId;
@@ -102,7 +107,7 @@ export function AlbumDetail({
       return null;
     }
     return parseBBCode(album.title);
-  }, [album?.title]);
+  }, [album]);
 
   // Separate albums and images from the data, then apply filters
   const albums = useMemo<Album[]>(() => {

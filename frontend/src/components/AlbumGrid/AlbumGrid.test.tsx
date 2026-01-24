@@ -86,6 +86,7 @@ describe('AlbumGrid', () => {
         data: null,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -99,6 +100,7 @@ describe('AlbumGrid', () => {
         data: null,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -111,6 +113,7 @@ describe('AlbumGrid', () => {
         data: null,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -125,6 +128,7 @@ describe('AlbumGrid', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -137,6 +141,7 @@ describe('AlbumGrid', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -151,6 +156,7 @@ describe('AlbumGrid', () => {
         data: null,
         isLoading: true,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -169,6 +175,7 @@ describe('AlbumGrid', () => {
         data: null,
         isLoading: false,
         error: mockError,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -182,6 +189,7 @@ describe('AlbumGrid', () => {
         data: mockEmptyChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -203,6 +211,7 @@ describe('AlbumGrid', () => {
         data: null,
         isLoading: false,
         error: mockError,
+        metadata: null,
         refetch: mockRefetch,
       });
 
@@ -225,6 +234,7 @@ describe('AlbumGrid', () => {
         data: null,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -244,6 +254,7 @@ describe('AlbumGrid', () => {
         data: null,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -257,6 +268,7 @@ describe('AlbumGrid', () => {
         data: null,
         isLoading: true,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -272,6 +284,7 @@ describe('AlbumGrid', () => {
         data: null,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -284,6 +297,7 @@ describe('AlbumGrid', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -298,6 +312,7 @@ describe('AlbumGrid', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -340,6 +355,7 @@ describe('AlbumGrid', () => {
         data: albumsWithDates,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -369,6 +385,7 @@ describe('AlbumGrid', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -410,6 +427,7 @@ describe('AlbumGrid', () => {
         data: albumsWithDates,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -438,6 +456,7 @@ describe('AlbumGrid', () => {
         data: mockAlbums,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 

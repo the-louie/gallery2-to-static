@@ -1,11 +1,11 @@
 /**
  * Hook to load album metadata (title, description, etc.)
  *
- * Loads the album metadata by finding it in the parent album's children array.
- * This is needed because JSON files only contain children, not the album itself.
+ * Uses albumProp when provided (e.g. from album file metadata). Otherwise loads
+ * the parent album and finds this album in the parent's children array.
  *
  * @param albumId - The album ID to load metadata for
- * @param albumProp - Optional album metadata if already available
+ * @param albumProp - Optional album metadata if already available (e.g. from loadAlbum)
  * @param rootAlbumId - The root album ID (to skip loading for root)
  * @returns Album metadata or null
  *
@@ -62,8 +62,8 @@ export function useAlbumMetadata(
           return;
         }
 
-        const parentChildren = await loadAlbum(parentId);
-        const albumMetadata = getAlbumMetadata(albumId, parentChildren);
+        const parentFile = await loadAlbum(parentId);
+        const albumMetadata = getAlbumMetadata(albumId, parentFile.children);
 
         if (isMountedRef.current) {
           setAlbum(albumMetadata);

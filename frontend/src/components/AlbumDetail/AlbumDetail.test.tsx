@@ -95,6 +95,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -108,6 +109,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -130,6 +132,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -142,6 +145,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -154,6 +158,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -171,6 +176,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -194,6 +200,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -206,6 +213,7 @@ describe('AlbumDetail', () => {
         data: null,
         isLoading: true,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -220,6 +228,7 @@ describe('AlbumDetail', () => {
         data: null,
         isLoading: false,
         error,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -233,6 +242,7 @@ describe('AlbumDetail', () => {
         data: [],
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -247,6 +257,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -260,6 +271,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -276,6 +288,7 @@ describe('AlbumDetail', () => {
         data: albumsOnly,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -293,6 +306,7 @@ describe('AlbumDetail', () => {
         data: imagesOnly,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -308,6 +322,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
       mockUseSiteMetadata.mockReturnValue({
@@ -328,6 +343,7 @@ describe('AlbumDetail', () => {
         data: [],
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
       mockUseSiteMetadata.mockReturnValue({
@@ -351,6 +367,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -375,6 +392,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -399,6 +417,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -439,6 +458,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -463,6 +483,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -489,6 +510,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -513,6 +535,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -537,6 +560,7 @@ describe('AlbumDetail', () => {
         data: null,
         isLoading: false,
         error,
+        metadata: null,
         refetch: mockRefetch,
       });
 
@@ -555,6 +579,7 @@ describe('AlbumDetail', () => {
         data: null,
         isLoading: false,
         error,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -570,6 +595,7 @@ describe('AlbumDetail', () => {
         data: null,
         isLoading: false,
         error,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -588,6 +614,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -604,6 +631,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -619,6 +647,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -635,6 +664,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -648,6 +678,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -667,6 +698,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -686,6 +718,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -720,6 +753,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -764,6 +798,7 @@ describe('AlbumDetail', () => {
         data: itemsWithDates,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -790,6 +825,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -815,6 +851,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -836,6 +873,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 
@@ -859,6 +897,7 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
+        metadata: null,
         refetch: vi.fn(),
       });
 

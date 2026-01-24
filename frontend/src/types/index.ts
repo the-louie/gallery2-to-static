@@ -8,7 +8,7 @@
  * @module frontend/src/types
  */
 
-import type { Child } from '../../../backend/types';
+import type { Child, AlbumMetadata, AlbumFile } from '../../../backend/types';
 
 /**
  * Re-export the base Child interface for convenience
@@ -16,7 +16,7 @@ import type { Child } from '../../../backend/types';
  * This allows frontend code to import Child directly from the frontend types module
  * while maintaining a single source of truth in the backend/types.ts file.
  */
-export type { Child };
+export type { Child, AlbumMetadata, AlbumFile };
 
 /**
  * Index metadata structure from index.json

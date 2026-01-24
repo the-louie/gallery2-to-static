@@ -52,6 +52,26 @@ export interface Child {
     summary?: string | null;
 }
 
+/**
+ * Album metadata embedded in each album JSON file.
+ * Matches the shape produced by getAlbumInfo and consumed by the frontend.
+ */
+export interface AlbumMetadata {
+    albumId: number;
+    albumTitle: string | null;
+    albumDescription: string | null;
+    albumTimestamp: number | null;
+    ownerName: string | null;
+}
+
+/**
+ * Album JSON file structure: metadata for the album plus its children.
+ */
+export interface AlbumFile {
+    metadata: AlbumMetadata;
+    children: Child[];
+}
+
 interface MysqlSettings {
     host: string;
     user: string;
