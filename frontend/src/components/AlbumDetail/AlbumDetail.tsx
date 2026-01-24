@@ -348,7 +348,7 @@ export function AlbumDetail({
           {!isRootAlbum && showTitle && parsedTitle && (
             <h2 className="album-detail-title">{parsedTitle}</h2>
           )}
-          {!isRootAlbum && showDescription && showTitle && parsedTitle && album.description && (
+          {!isRootAlbum && showDescription && album.description && (
             <p className="album-detail-description">
               {decodeHtmlEntities(album.description)}
             </p>
