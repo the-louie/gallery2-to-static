@@ -1,8 +1,8 @@
 /**
  * Hook to load album metadata (title, description, etc.)
  *
- * Uses albumProp when provided (e.g. from album file metadata). Otherwise loads
- * the parent album and finds this album in the parent's children array.
+ * Uses albumProp when provided (e.g. from album file metadata). When albumProp
+ * is not provided, returns null (metadata should always be available from album file).
  *
  * @param albumId - The album ID to load metadata for
  * @param albumProp - Optional album metadata if already available (e.g. from loadAlbum)
@@ -19,9 +19,6 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { loadAlbum } from '@/utils/dataLoader';
-import { getParentAlbumId } from '@/utils/breadcrumbPath';
-import { getAlbumMetadata } from '@/utils/albumMetadata';
 import type { Album } from '@/types';
 
 export function useAlbumMetadata(
@@ -52,32 +49,10 @@ export function useAlbumMetadata(
       return;
     }
 
-    // Load album metadata by finding parent and looking in parent's children
-    async function loadMetadata() {
-      try {
-        const parentId = await getParentAlbumId(albumId);
-        if (parentId === null) {
-          // No parent found (orphaned or root)
-          setAlbum(null);
-          return;
-        }
-
-        const parentFile = await loadAlbum(parentId);
-        const albumMetadata = getAlbumMetadata(albumId, parentFile.children);
-
-        if (isMountedRef.current) {
-          setAlbum(albumMetadata);
-        }
-      } catch (error) {
-        // If we can't load metadata, just leave it as null
-        // The component can still work without it
-        if (isMountedRef.current) {
-          setAlbum(null);
-        }
-      }
+    // No albumProp and not root - return null (metadata should come from album file)
+    if (isMountedRef.current) {
+      setAlbum(null);
     }
-
-    loadMetadata();
 
     return () => {
       isMountedRef.current = false;

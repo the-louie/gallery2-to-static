@@ -2,7 +2,7 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 import mysql from 'mysql2/promise'
 import sqlUtils from './sqlUtils'
-import { Config, Child, AlbumFile } from './types'
+import { Config, Child, AlbumFile, BreadcrumbItem } from './types'
 import { cleanup_uipathcomponent } from './cleanupUipath'
 import { getLinkTarget, getThumbTarget } from './legacyPaths'
 
@@ -83,12 +83,26 @@ const main = async (
     searchIndex: Map<number, SearchIndexItem>,
     thumbPrefix: string,
     ignoreSet: Set<number>,
+    breadcrumbAncestors: BreadcrumbItem[] = [],
 ) => {
     const children = await sql.getChildren(root);
     const filtered = children.filter(
         (c) => c.type !== 'GalleryAlbumItem' || !isBlacklisted(c.id, ignoreSet),
     );
     if (filtered.length > 0) {
+        const albumInfo = await sql.getAlbumInfo(root);
+        
+        // Build breadcrumbPath for current album
+        const isRoot = breadcrumbAncestors.length === 0;
+        const currentBreadcrumbItem: BreadcrumbItem = {
+            id: root,
+            title: isRoot ? 'Home' : (albumInfo.albumTitle ?? `Album ${root}`),
+            path: isRoot ? '/' : `/album/${root}`,
+        };
+        const breadcrumbPath: BreadcrumbItem[] = isRoot
+            ? [currentBreadcrumbItem]
+            : breadcrumbAncestors.concat([currentBreadcrumbItem]);
+        
         const recursivePromises: Promise<void>[] = [];
         filtered.forEach((child) => {
             if (child.hasChildren && child.pathComponent) {
@@ -103,6 +117,7 @@ const main = async (
                         searchIndex,
                         thumbPrefix,
                         ignoreSet,
+                        breadcrumbPath,
                     ),
                 );
             }
@@ -181,13 +196,13 @@ const main = async (
             }
         }
 
-        const albumInfo = await sql.getAlbumInfo(root);
         const metadata = {
             albumId: albumInfo.albumId,
             albumTitle: albumInfo.albumTitle,
             albumDescription: albumInfo.albumDescription,
             albumTimestamp: albumInfo.albumTimestamp,
             ownerName: albumInfo.ownerName,
+            breadcrumbPath,
         };
         const albumFile: AlbumFile = { metadata, children: processedChildrenWithThumbnails };
         const filePath = path.join(dataDir, `${root}.json`);

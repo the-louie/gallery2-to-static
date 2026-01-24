@@ -25,12 +25,12 @@ import { applyFilters } from '@/utils/filterUtils';
 import { parseBBCodeDecoded } from '@/utils/bbcode';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { albumFromMetadata } from '@/utils/albumMetadata';
-import { getParentAlbumId } from '@/utils/breadcrumbPath';
 import { AlbumGrid } from '@/components/AlbumGrid';
 import { ImageGrid } from '@/components/ImageGrid';
 import { SortDropdown } from '@/components/SortDropdown';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { AlbumDetailEmpty } from './AlbumDetailEmpty';
-import type { Album, Image, Child } from '@/types';
+import type { Album, Image, Child, BreadcrumbPath } from '@/types';
 import { isAlbum, isImage } from '@/types';
 import './AlbumDetail.css';
 
@@ -56,8 +56,6 @@ export interface AlbumDetailProps {
   showTitle?: boolean;
   /** Whether to show the album description (default: true) */
   showDescription?: boolean;
-  /** Optional breadcrumb component (for future integration) */
-  breadcrumbs?: React.ReactNode;
 }
 
 /**
@@ -79,7 +77,6 @@ export function AlbumDetail({
   showBackButton = true,
   showTitle = true,
   showDescription = true,
-  breadcrumbs,
 }: AlbumDetailProps) {
   const navigate = useNavigate();
   const { data, metadata, isLoading, error, refetch } = useAlbumData(albumId);
@@ -103,6 +100,18 @@ export function AlbumDetail({
 
   // Check if this is the root album
   const isRootAlbum = rootAlbumId !== null && albumId === rootAlbumId;
+
+  // Build breadcrumbs from metadata
+  const breadcrumbPath = useMemo<BreadcrumbPath | null>(() => {
+    if (!metadata?.breadcrumbPath || metadata.breadcrumbPath.length === 0) {
+      return null;
+    }
+    // Decode HTML entities in titles
+    return metadata.breadcrumbPath.map((item) => ({
+      ...item,
+      title: decodeHtmlEntities(item.title),
+    }));
+  }, [metadata]);
 
   // Parse BBCode in album title for display
   const parsedTitle = useMemo(() => {
@@ -163,7 +172,7 @@ export function AlbumDetail({
     [onImageClick, navigate, albumId],
   );
 
-  const handleBackClick = useCallback(async () => {
+  const handleBackClick = useCallback(() => {
     if (onBackClick) {
       onBackClick();
       return;
@@ -180,20 +189,21 @@ export function AlbumDetail({
     isNavigatingRef.current = true;
     setIsNavigatingUp(true);
     try {
-      const parentId = await getParentAlbumId(albumId);
-      if (parentId !== null) {
-        navigate(`/album/${parentId}`);
+      // Get parent from breadcrumbPath
+      if (breadcrumbPath && breadcrumbPath.length >= 2) {
+        const parent = breadcrumbPath[breadcrumbPath.length - 2];
+        navigate(parent.path);
       } else {
         navigate('/');
       }
     } catch (err) {
-      console.warn('Error finding parent album, navigating to home:', err);
+      console.warn('Error navigating to parent, navigating to home:', err);
       navigate('/');
     } finally {
       isNavigatingRef.current = false;
       setIsNavigatingUp(false);
     }
-  }, [onBackClick, navigate, albumId, isRootAlbum]);
+  }, [onBackClick, navigate, isRootAlbum, breadcrumbPath]);
 
   const handleRetry = useCallback(() => {
     refetch();
@@ -250,8 +260,10 @@ export function AlbumDetail({
             ↑ Up
           </button>
         )}
-        {breadcrumbs && (
-          <div className="album-detail-breadcrumbs">{breadcrumbs}</div>
+        {breadcrumbPath && breadcrumbPath.length > 0 && (
+          <div className="album-detail-breadcrumbs">
+            <Breadcrumbs path={breadcrumbPath} />
+          </div>
         )}
         <div className="album-detail-error-content" role="alert" aria-live="assertive">
           <h2>Error Loading Album</h2>
@@ -296,8 +308,10 @@ export function AlbumDetail({
             ↑ Up
           </button>
         )}
-        {breadcrumbs && (
-          <div className="album-detail-breadcrumbs">{breadcrumbs}</div>
+        {breadcrumbPath && breadcrumbPath.length > 0 && (
+          <div className="album-detail-breadcrumbs">
+            <Breadcrumbs path={breadcrumbPath} />
+          </div>
         )}
         <AlbumDetailEmpty onBackClick={handleBackClick} showGoUp={!isRootAlbum} />
       </div>
@@ -323,8 +337,10 @@ export function AlbumDetail({
           ← Up
         </button>
       )}
-      {breadcrumbs && (
-        <div className="album-detail-breadcrumbs">{breadcrumbs}</div>
+      {breadcrumbPath && breadcrumbPath.length > 0 && (
+        <div className="album-detail-breadcrumbs">
+          <Breadcrumbs path={breadcrumbPath} />
+        </div>
       )}
 
       {/* Album metadata */}

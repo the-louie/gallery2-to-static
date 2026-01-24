@@ -1,7 +1,7 @@
 /**
  * Album metadata utility functions
  *
- * getAlbumMetadata finds an album in a parent's children array (e.g. for breadcrumbs).
+ * getAlbumMetadata finds an album in a parent's children array.
  * albumFromMetadata builds an Album from AlbumMetadata (e.g. from a loaded album file).
  *
  * @module frontend/src/utils/albumMetadata

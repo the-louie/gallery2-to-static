@@ -11,10 +11,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo } from 'react';
 import { AlbumDetail } from '@/components/AlbumDetail';
-import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { FilterPanel } from '@/components/FilterPanel';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { useBreadcrumbPath } from '@/hooks/useBreadcrumbPath';
 import { parseAlbumId } from '@/utils/routeParams';
 import type { RouteParams } from '@/types';
 
@@ -31,7 +29,6 @@ export function AlbumDetailPage() {
   const navigate = useNavigate();
 
   const albumId = useMemo(() => parseAlbumId(id), [id]);
-  const { path: breadcrumbPath } = useBreadcrumbPath(albumId);
 
   // Redirect to 404 if album ID is invalid
   useEffect(() => {
@@ -53,17 +50,11 @@ export function AlbumDetailPage() {
     );
   }
 
-  // Render breadcrumbs if path is available
-  const breadcrumbs =
-    breadcrumbPath && breadcrumbPath.length > 0 ? (
-      <Breadcrumbs path={breadcrumbPath} />
-    ) : null;
-
   // Use AlbumDetail component for rendering
   return (
     <div className="album-detail-page">
       <FilterPanel />
-      <AlbumDetail albumId={albumId} breadcrumbs={breadcrumbs} />
+      <AlbumDetail albumId={albumId} />
     </div>
   );
 }

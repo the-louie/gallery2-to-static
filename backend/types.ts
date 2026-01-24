@@ -53,6 +53,18 @@ export interface Child {
 }
 
 /**
+ * Breadcrumb item representing a single level in the navigation hierarchy
+ */
+export interface BreadcrumbItem {
+    /** Unique identifier for the album */
+    id: number;
+    /** Display title for the breadcrumb (raw, not decoded) */
+    title: string;
+    /** URL path for navigation */
+    path: string;
+}
+
+/**
  * Album metadata embedded in each album JSON file.
  * Matches the shape produced by getAlbumInfo and consumed by the frontend.
  */
@@ -62,6 +74,8 @@ export interface AlbumMetadata {
     albumDescription: string | null;
     albumTimestamp: number | null;
     ownerName: string | null;
+    /** Breadcrumb path from root to this album */
+    breadcrumbPath?: BreadcrumbItem[];
 }
 
 /**

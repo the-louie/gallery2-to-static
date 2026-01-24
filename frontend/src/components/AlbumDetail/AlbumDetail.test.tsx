@@ -52,10 +52,9 @@ vi.mock('@/hooks/useSort', () => ({
   })),
 }));
 
-// Mock breadcrumbPath utilities
-const mockGetParentAlbumId = vi.fn();
+// Mock breadcrumbPath utilities (deprecated, but tests may still reference)
 vi.mock('@/utils/breadcrumbPath', () => ({
-  getParentAlbumId: (...args: unknown[]) => mockGetParentAlbumId(...args),
+  getParentAlbumId: vi.fn(),
   buildBreadcrumbPath: vi.fn(),
   clearBreadcrumbCache: vi.fn(),
 }));
@@ -80,8 +79,6 @@ describe('AlbumDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockNavigate.mockClear();
-    mockGetParentAlbumId.mockClear();
-    mockGetParentAlbumId.mockResolvedValue(5);
     mockUseSiteMetadata.mockReturnValue({
       siteName: null,
       rootAlbumId: 1,
@@ -329,7 +326,14 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
-        metadata: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: 'Root',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+          breadcrumbPath: [{ id: 7, title: 'Home', path: '/' }],
+        },
         refetch: vi.fn(),
       });
       mockUseSiteMetadata.mockReturnValue({
@@ -342,7 +346,6 @@ describe('AlbumDetail', () => {
       render(<AlbumDetail albumId={7} />);
 
       expect(screen.queryByLabelText('Go up')).not.toBeInTheDocument();
-      expect(mockGetParentAlbumId).not.toHaveBeenCalled();
     });
 
     it('hides up button and AlbumDetailEmpty Go Up when empty album at root', () => {
@@ -374,12 +377,16 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
-        metadata: null,
+        metadata: {
+          albumId: 99,
+          albumTitle: 'Orphaned',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+          breadcrumbPath: [{ id: 99, title: 'Orphaned', path: '/album/99' }],
+        },
         refetch: vi.fn(),
       });
-
-      // Orphaned album - parent not found
-      mockGetParentAlbumId.mockResolvedValue(null);
 
       render(<AlbumDetail albumId={99} />);
 
@@ -387,7 +394,6 @@ describe('AlbumDetail', () => {
       await user.click(backButton);
 
       await waitFor(() => {
-        expect(mockGetParentAlbumId).toHaveBeenCalledWith(99);
         expect(mockNavigate).toHaveBeenCalledWith('/');
       });
     });
@@ -399,12 +405,16 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
-        metadata: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: 'Test',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+          breadcrumbPath: [{ id: 7, title: 'Test', path: '/album/7' }],
+        },
         refetch: vi.fn(),
       });
-
-      // Parent lookup throws error
-      mockGetParentAlbumId.mockRejectedValue(new Error('Network error'));
 
       render(<AlbumDetail albumId={7} />);
 
@@ -412,7 +422,6 @@ describe('AlbumDetail', () => {
       await user.click(backButton);
 
       await waitFor(() => {
-        expect(mockGetParentAlbumId).toHaveBeenCalledWith(7);
         expect(mockNavigate).toHaveBeenCalledWith('/');
       });
     });
@@ -424,16 +433,19 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
-        metadata: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: 'Test',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+          breadcrumbPath: [
+            { id: 5, title: 'Parent', path: '/album/5' },
+            { id: 7, title: 'Test', path: '/album/7' },
+          ],
+        },
         refetch: vi.fn(),
       });
-
-      // Delay parent lookup to test loading state
-      let resolveParent: (value: number | null) => void;
-      const parentPromise = new Promise<number | null>((resolve) => {
-        resolveParent = resolve;
-      });
-      mockGetParentAlbumId.mockReturnValue(parentPromise);
 
       render(<AlbumDetail albumId={7} />);
 
@@ -441,16 +453,7 @@ describe('AlbumDetail', () => {
       expect(backButton).not.toBeDisabled();
 
       // Click button
-      const clickPromise = user.click(backButton);
-
-      // Button should be disabled during lookup
-      await waitFor(() => {
-        expect(backButton).toBeDisabled();
-      });
-
-      // Resolve parent lookup
-      resolveParent!(5);
-      await clickPromise;
+      await user.click(backButton);
 
       await waitFor(() => {
         expect(mockNavigate).toHaveBeenCalledWith('/album/5');
@@ -517,11 +520,19 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
-        metadata: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: 'Child',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+          breadcrumbPath: [
+            { id: 5, title: 'Parent', path: '/album/5' },
+            { id: 7, title: 'Child', path: '/album/7' },
+          ],
+        },
         refetch: vi.fn(),
       });
-
-      mockGetParentAlbumId.mockResolvedValue(5);
 
       render(<AlbumDetail albumId={7} />);
 
@@ -529,7 +540,6 @@ describe('AlbumDetail', () => {
       await user.click(backButton);
 
       await waitFor(() => {
-        expect(mockGetParentAlbumId).toHaveBeenCalledWith(7);
         expect(mockNavigate).toHaveBeenCalledWith('/album/5');
       });
     });
@@ -543,7 +553,18 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
-        metadata: null,
+        metadata: {
+          albumId: 20,
+          albumTitle: 'Grandchild',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+          breadcrumbPath: [
+            { id: 1, title: 'Home', path: '/' },
+            { id: 10, title: 'Parent', path: '/album/10' },
+            { id: 20, title: 'Grandchild', path: '/album/20' },
+          ],
+        },
         refetch: vi.fn(),
       });
       mockUseSiteMetadata.mockReturnValue({
@@ -552,7 +573,6 @@ describe('AlbumDetail', () => {
         isLoading: false,
         error: null,
       });
-      mockGetParentAlbumId.mockResolvedValue(directParentId);
 
       render(<AlbumDetail albumId={albumId} />);
 
@@ -560,7 +580,6 @@ describe('AlbumDetail', () => {
       await user.click(backButton);
 
       await waitFor(() => {
-        expect(mockGetParentAlbumId).toHaveBeenCalledWith(albumId);
         expect(mockNavigate).toHaveBeenCalledWith(`/album/${directParentId}`);
       });
     });
@@ -573,7 +592,17 @@ describe('AlbumDetail', () => {
         data: mockChildren,
         isLoading: false,
         error: null,
-        metadata: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: 'Test',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+          breadcrumbPath: [
+            { id: 5, title: 'Parent', path: '/album/5' },
+            { id: 7, title: 'Test', path: '/album/7' },
+          ],
+        },
         refetch: vi.fn(),
       });
 
@@ -583,7 +612,6 @@ describe('AlbumDetail', () => {
       await user.click(backButton);
 
       expect(handleBackClick).toHaveBeenCalled();
-      expect(mockGetParentAlbumId).not.toHaveBeenCalled();
       expect(mockNavigate).not.toHaveBeenCalled();
     });
   });
@@ -647,7 +675,56 @@ describe('AlbumDetail', () => {
   });
 
   describe('Breadcrumbs Integration', () => {
-    it('renders breadcrumbs when provided', () => {
+    it('renders breadcrumbs from metadata', () => {
+      const breadcrumbPath = [
+        { id: 7, title: 'Home', path: '/' },
+        { id: 10, title: 'Photos', path: '/album/10' },
+      ];
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 10,
+          albumTitle: 'Photos',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+          breadcrumbPath,
+        },
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={10} />);
+      expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Go to home page' })).toBeInTheDocument();
+      expect(screen.getByText('Photos')).toBeInTheDocument();
+    });
+
+    it('does not render breadcrumbs when metadata breadcrumbPath is empty', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 10,
+          albumTitle: 'Photos',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+          breadcrumbPath: [],
+        },
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={10} />);
+      expect(
+        screen.queryByRole('navigation', { name: 'Breadcrumb' }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not render breadcrumbs when metadata is missing', () => {
       mockUseAlbumData.mockReturnValue({
         data: mockChildren,
         isLoading: false,
@@ -656,10 +733,10 @@ describe('AlbumDetail', () => {
         refetch: vi.fn(),
       });
 
-      const breadcrumbs = <nav>Home / Albums / Test</nav>;
-
-      render(<AlbumDetail albumId={7} breadcrumbs={breadcrumbs} />);
-      expect(screen.getByText('Home / Albums / Test')).toBeInTheDocument();
+      render(<AlbumDetail albumId={10} />);
+      expect(
+        screen.queryByRole('navigation', { name: 'Breadcrumb' }),
+      ).not.toBeInTheDocument();
     });
   });
 

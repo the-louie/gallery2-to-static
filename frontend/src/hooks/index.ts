@@ -20,7 +20,6 @@ export { useScrollPosition } from './useScrollPosition';
 export type { UseScrollPositionReturn } from './useScrollPosition';
 
 // Navigation hooks
-export { useBreadcrumbPath } from './useBreadcrumbPath';
 export { useImageNavigation } from './useImageNavigation';
 
 // Image hooks
