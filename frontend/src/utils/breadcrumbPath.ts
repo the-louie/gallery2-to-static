@@ -140,7 +140,7 @@ async function findParentAlbumId(
  * ```typescript
  * const path = await buildBreadcrumbPath(42, 7);
  * // Returns: [
- * //   { id: 7, title: "Root Album", path: "/" },
+ * //   { id: 7, title: "Home", path: "/" },
  * //   { id: 20, title: "Child Album", path: "/album/20" },
  * //   { id: 42, title: "Current Album", path: "/album/42" }
  * // ]
@@ -174,6 +174,7 @@ export async function buildBreadcrumbPath(
   const path: BreadcrumbItem[] = [];
   let currentAlbumId: number | null = albumId;
   const visited = new Set<number>(); // Prevent infinite loops
+  let isOrphan = false;
 
   while (currentAlbumId !== null && currentAlbumId !== rootId) {
     // Prevent infinite loops
@@ -189,8 +190,8 @@ export async function buildBreadcrumbPath(
     const parentId = await findParentAlbumId(currentAlbumId, rootId);
 
     if (parentId === null) {
-      // Orphaned album (no parent found)
-      // Add current album to path and stop
+      // Orphaned album (no parent found); path = [orphan] only (no root)
+      isOrphan = true;
       try {
         const rootFile = await loadAlbum(rootId);
         const albumMetadata = getAlbumMetadata(currentAlbumId, rootFile.children);
@@ -209,7 +210,6 @@ export async function buildBreadcrumbPath(
           });
         }
       } catch {
-        // If we can't load, use ID as title
         path.unshift({
           id: currentAlbumId,
           title: decodeHtmlEntities(`Album ${currentAlbumId}`),
@@ -253,25 +253,26 @@ export async function buildBreadcrumbPath(
     currentAlbumId = parentId;
   }
 
-  // Add root album at the beginning
-  // For root, we use "Home" as title and "/" as path
-  path.unshift({
-    id: rootId,
-    title: decodeHtmlEntities('Home'),
-    path: '/',
-  });
+  // Add root album at the beginning (skip for orphan; path = [orphan] only)
+  if (!isOrphan) {
+    path.unshift({
+      id: rootId,
+      title: decodeHtmlEntities('Home'),
+      path: '/',
+    });
+  }
 
   return path;
 }
 
 /**
- * Get parent album ID for a given album
+ * Get the direct (immediate) parent album ID for a given album.
  *
- * Wrapper function that handles root album detection internally.
- * Returns null if the album is the root album or if the parent cannot be found.
+ * Uses {@link buildBreadcrumbPath} to traverse upward, then extracts the direct
+ * parent from the path. Returns null for root album, orphaned album, or errors.
  *
  * @param albumId - The album ID to find the parent for
- * @returns Promise resolving to parent album ID, or null if root album or parent not found
+ * @returns Promise resolving to direct parent album ID, or null if root, orphaned, or error
  *
  * @example
  * ```typescript
@@ -282,16 +283,43 @@ export async function buildBreadcrumbPath(
  *   navigate('/'); // Root album or orphaned
  * }
  * ```
+ * @example
+ * Multi-level hierarchy (root → A → B → C): getParentAlbumId(C) returns B, not root.
  */
 export async function getParentAlbumId(
   albumId: number,
 ): Promise<number | null> {
+  if (parentCache.has(albumId)) {
+    return parentCache.get(albumId) ?? null;
+  }
+
   const rootId = await getRootAlbumId();
   if (rootId === null) {
-    // Can't determine parent without root
     return null;
   }
-  return findParentAlbumId(albumId, rootId);
+
+  try {
+    const path = await buildBreadcrumbPath(albumId, rootId);
+
+    if (path.length === 0) {
+      parentCache.set(albumId, null);
+      return null;
+    }
+
+    if (path.length === 1) {
+      // Root album or orphaned album
+      parentCache.set(albumId, null);
+      return null;
+    }
+
+    const directParent = path[path.length - 2];
+    const parentId = directParent.id;
+    parentCache.set(albumId, parentId);
+    return parentId;
+  } catch {
+    parentCache.set(albumId, null);
+    return null;
+  }
 }
 
 /**

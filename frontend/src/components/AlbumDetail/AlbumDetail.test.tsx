@@ -534,6 +534,37 @@ describe('AlbumDetail', () => {
       });
     });
 
+    it('navigates to direct parent in multi-level hierarchy when Up clicked', async () => {
+      const user = userEvent.setup();
+      const albumId = 20;
+      const directParentId = 10;
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: null,
+        refetch: vi.fn(),
+      });
+      mockUseSiteMetadata.mockReturnValue({
+        siteName: null,
+        rootAlbumId: 1,
+        isLoading: false,
+        error: null,
+      });
+      mockGetParentAlbumId.mockResolvedValue(directParentId);
+
+      render(<AlbumDetail albumId={albumId} />);
+
+      const backButton = screen.getByLabelText('Go up');
+      await user.click(backButton);
+
+      await waitFor(() => {
+        expect(mockGetParentAlbumId).toHaveBeenCalledWith(albumId);
+        expect(mockNavigate).toHaveBeenCalledWith(`/album/${directParentId}`);
+      });
+    });
+
     it('calls custom onBackClick handler when provided', async () => {
       const user = userEvent.setup();
       const handleBackClick = vi.fn();

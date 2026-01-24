@@ -207,11 +207,10 @@ describe('breadcrumbPath', () => {
 
       const path = await buildBreadcrumbPath(orphanedId, rootId);
 
-      // Should still return a path with root and orphaned album
-      expect(path.length).toBeGreaterThanOrEqual(2);
-      expect(path[0].id).toBe(rootId);
-      expect(path[path.length - 1].id).toBe(orphanedId);
-      expect(path[path.length - 1].title).toContain('Album');
+      // Orphan: path = [orphan] only (no root)
+      expect(path.length).toBe(1);
+      expect(path[0].id).toBe(orphanedId);
+      expect(path[0].title).toContain('Album');
     });
 
     it('handles network errors gracefully', async () => {
@@ -223,12 +222,11 @@ describe('breadcrumbPath', () => {
         new Error('Network error'),
       );
 
-      // Should not throw, but return a path with fallback
+      // Should not throw; no parent found (orphan path) → path = [child] only
       const path = await buildBreadcrumbPath(childId, rootId);
 
-      // Should return at least root
       expect(path.length).toBeGreaterThanOrEqual(1);
-      expect(path[0].id).toBe(rootId);
+      expect(path[0].id).toBe(childId);
     });
 
     it('handles invalid album IDs', async () => {
@@ -239,7 +237,7 @@ describe('breadcrumbPath', () => {
 
       const path = await buildBreadcrumbPath(-1, rootId);
 
-      // Should return at least root
+      // Invalid ID → no parent found (orphan path); path has one item
       expect(path.length).toBeGreaterThanOrEqual(1);
     });
 
@@ -252,7 +250,7 @@ describe('breadcrumbPath', () => {
 
       const path = await buildBreadcrumbPath(childId, rootId);
 
-      expect(path.length).toBeGreaterThanOrEqual(2);
+      expect(path.length).toBeGreaterThanOrEqual(1);
       const childItem = path.find((item) => item.id === childId);
       expect(childItem?.title).toContain('Album');
     });
@@ -361,6 +359,7 @@ describe('breadcrumbPath', () => {
       vi.mocked(loadAlbum)
         .mockResolvedValueOnce(albumFile([]))
         .mockResolvedValueOnce(albumFile([]))
+        .mockResolvedValueOnce(albumFile(rootChildren))
         .mockResolvedValueOnce(albumFile(rootChildren));
 
       const parentId = await getParentAlbumId(childId);
@@ -377,6 +376,134 @@ describe('breadcrumbPath', () => {
       const parentId = await getParentAlbumId(orphanedId);
 
       expect(parentId).toBeNull();
+    });
+
+    it('returns direct parent in multi-level hierarchy (root → A → B)', async () => {
+      const rootId = 7;
+      const aId = 10;
+      const bId = 20;
+      const rootChildren: Child[] = [
+        {
+          id: aId,
+          type: 'GalleryAlbumItem',
+          hasChildren: true,
+          title: 'Album A',
+          description: '',
+          pathComponent: 'a',
+          timestamp: 1234567890,
+          width: null,
+          height: null,
+          thumb_width: null,
+          thumb_height: null,
+        },
+      ];
+      const aChildren: Child[] = [
+        {
+          id: bId,
+          type: 'GalleryAlbumItem',
+          hasChildren: true,
+          title: 'Album B',
+          description: '',
+          pathComponent: 'b',
+          timestamp: 1234567891,
+          width: null,
+          height: null,
+          thumb_width: null,
+          thumb_height: null,
+        },
+      ];
+
+      vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
+      vi.mocked(loadAlbum).mockImplementation((id: number) => {
+        if (id === rootId) return Promise.resolve(albumFile(rootChildren));
+        if (id === aId) return Promise.resolve(albumFile(aChildren));
+        return Promise.resolve(albumFile([]));
+      });
+
+      const parentId = await getParentAlbumId(bId);
+
+      expect(parentId).toBe(aId);
+    });
+
+    it('returns direct parent in deeply nested hierarchy (root → A → B → C → D)', async () => {
+      const rootId = 1;
+      const aId = 10;
+      const bId = 20;
+      const cId = 30;
+      const dId = 40;
+      const rootChildren: Child[] = [
+        {
+          id: aId,
+          type: 'GalleryAlbumItem',
+          hasChildren: true,
+          title: 'A',
+          description: '',
+          pathComponent: 'a',
+          timestamp: 1,
+          width: null,
+          height: null,
+          thumb_width: null,
+          thumb_height: null,
+        },
+      ];
+      const aChildren: Child[] = [
+        {
+          id: bId,
+          type: 'GalleryAlbumItem',
+          hasChildren: true,
+          title: 'B',
+          description: '',
+          pathComponent: 'b',
+          timestamp: 2,
+          width: null,
+          height: null,
+          thumb_width: null,
+          thumb_height: null,
+        },
+      ];
+      const bChildren: Child[] = [
+        {
+          id: cId,
+          type: 'GalleryAlbumItem',
+          hasChildren: true,
+          title: 'C',
+          description: '',
+          pathComponent: 'c',
+          timestamp: 3,
+          width: null,
+          height: null,
+          thumb_width: null,
+          thumb_height: null,
+        },
+      ];
+      const cChildren: Child[] = [
+        {
+          id: dId,
+          type: 'GalleryAlbumItem',
+          hasChildren: true,
+          title: 'D',
+          description: '',
+          pathComponent: 'd',
+          timestamp: 4,
+          width: null,
+          height: null,
+          thumb_width: null,
+          thumb_height: null,
+        },
+      ];
+
+      vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
+      vi.mocked(loadAlbum).mockImplementation((id: number) => {
+        if (id === rootId) return Promise.resolve(albumFile(rootChildren));
+        if (id === aId) return Promise.resolve(albumFile(aChildren));
+        if (id === bId) return Promise.resolve(albumFile(bChildren));
+        if (id === cId) return Promise.resolve(albumFile(cChildren));
+        return Promise.resolve(albumFile([]));
+      });
+
+      const parentId = await getParentAlbumId(dId);
+
+      expect(parentId).toBe(cId);
     });
   });
 });
