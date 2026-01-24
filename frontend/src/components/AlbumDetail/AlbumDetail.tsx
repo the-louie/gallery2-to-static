@@ -8,7 +8,7 @@
  * The album title supports BBCode formatting (e.g., [b]bold[/b], [i]italic[/i]).
  * Only the title field supports BBCode; description and summary are rendered as plain text.
  *
- * Section headers display only controls (sort dropdown) without duplicate titles or descriptions.
+ * Section headers display controls (sort dropdown for images section) without duplicate titles or descriptions.
  *
  * @module frontend/src/components/AlbumDetail
  */
@@ -230,8 +230,10 @@ export function AlbumDetail({
             ↑ Up
           </button>
         )}
-        {breadcrumbs && (
-          <div className="album-detail-breadcrumbs">{breadcrumbs}</div>
+        {breadcrumbPath && breadcrumbPath.length > 0 && (
+          <div className="album-detail-breadcrumbs">
+            <Breadcrumbs path={breadcrumbPath} />
+          </div>
         )}
         <AlbumGrid isLoading={true} />
         <ImageGrid isLoading={true} />
@@ -373,14 +375,6 @@ export function AlbumDetail({
           className="album-detail-albums"
           aria-label="Child albums"
         >
-          <div className="album-detail-section-header">
-            <div className="album-detail-section-controls">
-              <SortDropdown
-                currentOption={albumsSort.option}
-                onOptionChange={albumsSort.setOption}
-              />
-            </div>
-          </div>
           <AlbumGrid
             albums={albums}
             onAlbumClick={handleAlbumClick}

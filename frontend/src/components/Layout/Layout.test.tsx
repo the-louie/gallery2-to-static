@@ -358,3 +358,78 @@ describe('Layout Theme Dropdown', () => {
     expect(themeDropdown).toHaveTextContent('Dark');
   });
 });
+
+describe('Layout Sort Dropdown', () => {
+  it('renders sort dropdown in header', () => {
+    render(
+      <Layout>
+        <div>Content</div>
+      </Layout>,
+    );
+
+    const sortDropdown = screen.getByRole('combobox', { name: /sort by/i });
+    expect(sortDropdown).toBeInTheDocument();
+  });
+
+  it('sort dropdown is in header actions area', () => {
+    const { container } = render(
+      <Layout>
+        <div>Content</div>
+      </Layout>,
+    );
+
+    const headerActions = container.querySelector('.layout-header-actions');
+    expect(headerActions).toBeInTheDocument();
+
+    const sortDropdown = headerActions?.querySelector('.sort-dropdown');
+    expect(sortDropdown).toBeInTheDocument();
+  });
+
+  it('sort dropdown is positioned after theme dropdown', () => {
+    const { container } = render(
+      <Layout>
+        <div>Content</div>
+      </Layout>,
+    );
+
+    const headerActions = container.querySelector('.layout-header-actions');
+    const children = Array.from(headerActions?.children || []);
+    
+    const searchBarIndex = children.findIndex(el => el.querySelector('.search-bar'));
+    const themeDropdownIndex = children.findIndex(el => el.querySelector('.theme-dropdown'));
+    const sortDropdownIndex = children.findIndex(el => el.querySelector('.sort-dropdown'));
+
+    expect(searchBarIndex).toBeGreaterThanOrEqual(0);
+    expect(themeDropdownIndex).toBeGreaterThan(searchBarIndex);
+    expect(sortDropdownIndex).toBeGreaterThan(themeDropdownIndex);
+  });
+
+  it('sort dropdown is keyboard accessible', () => {
+    render(
+      <Layout>
+        <div>Content</div>
+      </Layout>,
+    );
+
+    const sortDropdown = screen.getByRole('combobox', { name: /sort by/i });
+    sortDropdown.focus();
+    expect(sortDropdown).toHaveFocus();
+  });
+
+  it('sort dropdown allows selecting sort options', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Layout>
+        <div>Content</div>
+      </Layout>,
+    );
+
+    const sortDropdown = screen.getByRole('combobox', { name: /sort by/i });
+    
+    // Change sort option
+    await user.selectOptions(sortDropdown, 'date-desc');
+    
+    expect(sortDropdown).toHaveValue('date-desc');
+  });
+});

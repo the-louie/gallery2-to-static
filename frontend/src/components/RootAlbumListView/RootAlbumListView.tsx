@@ -20,7 +20,6 @@ import { sortItems } from '@/utils/sorting';
 import { useSubalbumsMap } from '@/hooks/useSubalbumsMap';
 import { AlbumGridSkeleton } from '@/components/AlbumGrid/AlbumGridSkeleton';
 import { AlbumGridEmpty } from '@/components/AlbumGrid/AlbumGridEmpty';
-import { SortDropdown } from '@/components/SortDropdown';
 import { RootAlbumListBlock } from '@/components/RootAlbumListBlock';
 import type { Album, Child } from '@/types';
 import { isAlbum } from '@/types';
@@ -48,7 +47,7 @@ export function RootAlbumListView({
 }: RootAlbumListViewProps) {
   const { data, isLoading, error, refetch } = useAlbumData(albumId);
   const { criteria } = useFilter();
-  const { option: sortOption, setOption: setSortOption } = useSort('albums');
+  const { option: sortOption } = useSort('albums');
 
   const albums = useMemo(() => {
     if (!data) return [];
@@ -119,10 +118,6 @@ export function RootAlbumListView({
       >
         <div className="root-album-list-view-header">
           <h2 className="root-album-list-view-title">Albums</h2>
-          <SortDropdown
-            currentOption={sortOption}
-            onOptionChange={setSortOption}
-          />
         </div>
         <ul className="root-album-list-view-list">
           {albums.map((album) => (

@@ -2,7 +2,9 @@ import React, { useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ThemeDropdown } from '../ThemeDropdown';
 import { SearchBar } from '../SearchBar';
+import { SortDropdown } from '../SortDropdown';
 import { useSiteMetadata } from '@/hooks/useSiteMetadata';
+import { useSort } from '@/hooks/useSort';
 import './Layout.css';
 
 /**
@@ -35,6 +37,7 @@ export interface LayoutProps {
  */
 export function Layout({ children, className }: LayoutProps) {
   const { siteName } = useSiteMetadata();
+  const { option: sortOption, setOption: setSortOption } = useSort('albums');
   const handleSkipClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     const mainContent = document.getElementById('main-content');
@@ -71,6 +74,10 @@ export function Layout({ children, className }: LayoutProps) {
           <div className="layout-header-actions">
             <SearchBar />
             <ThemeDropdown />
+            <SortDropdown
+              currentOption={sortOption}
+              onOptionChange={setSortOption}
+            />
           </div>
         </div>
       </header>

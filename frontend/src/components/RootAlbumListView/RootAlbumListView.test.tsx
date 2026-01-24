@@ -110,6 +110,7 @@ describe('RootAlbumListView', () => {
     });
 
     renderWithProviders(<RootAlbumListView albumId={7} />);
-    expect(screen.getByRole('combobox', { name: /sort by/i })).toBeInTheDocument();
+    // SortDropdown is now in Layout header, not in this component
+    expect(screen.getByText('Test Album')).toBeInTheDocument();
   });
 });

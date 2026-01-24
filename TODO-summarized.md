@@ -7,16 +7,15 @@
 - Fix Album Card Content Height for Consistent Tile Heights - Low - 30 minutes - 1 hour - Set fixed height on album-card-content for two rows, truncate longer text with ellipses
 - Remove Thumbnail from Root Album Display - Low - 30 minutes - 1 hour - Remove thumbnail div and all related functionality from RootAlbumListBlock component
 - Widen Sub-Album Display Box to Prevent Name Line-Breaking - Low - 30 minutes - 1 hour - Increase sub-album box width so names fit on single line without wrapping
-- Move Gallery Order Dropdown Next to Theme Dropdown - Low - 30 minutes - 1 hour - Move SortDropdown from content sections to header next to ThemeDropdown
 
 ---
 
 ## Summary
 
-**Total Tasks:** 9
-**Pending:** 9
+**Total Tasks:** 6
+**Pending:** 6
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 10.75-16 hours
+**Estimated Total Time:** 8-12 hours
