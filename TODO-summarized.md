@@ -8,16 +8,15 @@
 - Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
 - Root Album List View with Rich Metadata - Medium - 3-4 hours - Root album list view with description, metadata, and subalbums like original lanbilder.se design
 - Remove Grid/List View Mode Toggle - Low - 1-2 hours - Remove grid/list toggle component as it is not useful, maintain default grid view
-- Show Full Path in Search Results - Low - 1-2 hours - Display full path from root to search hit above result link, same style as description
 
 ---
 
 ## Summary
 
-**Total Tasks:** 8
-**Pending:** 8
+**Total Tasks:** 7
+**Pending:** 7
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 18-28 hours
+**Estimated Total Time:** 17-26 hours

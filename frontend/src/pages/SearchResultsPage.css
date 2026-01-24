@@ -53,6 +53,11 @@
   margin: 0;
 }
 
+/* Path element above search result link */
+.search-results-item > .search-results-item-description {
+  margin: 0 0 0.5rem 0;
+}
+
 .search-results-link {
   display: block;
   text-decoration: none;

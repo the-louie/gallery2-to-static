@@ -99,6 +99,7 @@ describe('SearchResultsPage', () => {
             title: 'Test Album',
             description: 'Test description',
             pathComponent: 'test',
+            ancestors: 'dreamhack/dreamhack 08/crew',
             summary: 'Album summary',
             ownerName: 'Album Owner',
           },
@@ -113,6 +114,7 @@ describe('SearchResultsPage', () => {
             title: 'Test Photo',
             description: 'Photo description',
             pathComponent: 'photo.jpg',
+            ancestors: 'events/summer',
             summary: 'Photo summary',
             ownerName: 'Photo Owner',
           },
@@ -203,5 +205,135 @@ describe('SearchResultsPage', () => {
     render(<SearchResultsPage />);
 
     expect(mockSearch).toHaveBeenCalledWith('test');
+  });
+
+  it('displays path above link for albums with ancestors', () => {
+    vi.mocked(useSearch).mockReturnValue({
+      ...mockUseSearch,
+      query: 'test',
+      results: [
+        {
+          item: {
+            id: 1,
+            type: 'GalleryAlbumItem' as const,
+            title: 'Test Album',
+            description: '',
+            pathComponent: 'tuktuk',
+            ancestors: 'dreamhack/dreamhack 08/crew',
+          },
+          score: 10,
+          matchedInTitle: true,
+          matchedInDescription: false,
+        },
+      ],
+    } as any);
+
+    render(<SearchResultsPage />);
+
+    expect(screen.getByText('dreamhack / dreamhack 08 / crew / tuktuk')).toBeInTheDocument();
+  });
+
+  it('displays path for root-level albums without ancestors', () => {
+    vi.mocked(useSearch).mockReturnValue({
+      ...mockUseSearch,
+      query: 'test',
+      results: [
+        {
+          item: {
+            id: 1,
+            type: 'GalleryAlbumItem' as const,
+            title: 'Root Album',
+            description: '',
+            pathComponent: 'root-album',
+          },
+          score: 10,
+          matchedInTitle: true,
+          matchedInDescription: false,
+        },
+      ],
+    } as any);
+
+    render(<SearchResultsPage />);
+
+    expect(screen.getByText('root-album')).toBeInTheDocument();
+  });
+
+  it('does not render path when pathComponent is missing', () => {
+    vi.mocked(useSearch).mockReturnValue({
+      ...mockUseSearch,
+      query: 'test',
+      results: [
+        {
+          item: {
+            id: 1,
+            type: 'GalleryAlbumItem' as const,
+            title: 'Test Album',
+            description: '',
+            pathComponent: '',
+          },
+          score: 10,
+          matchedInTitle: true,
+          matchedInDescription: false,
+        },
+      ],
+    } as any);
+
+    render(<SearchResultsPage />);
+
+    expect(screen.getByText('Test Album')).toBeInTheDocument();
+  });
+
+  it('displays path for images section', () => {
+    vi.mocked(useSearch).mockReturnValue({
+      ...mockUseSearch,
+      query: 'test',
+      results: [
+        {
+          item: {
+            id: 1,
+            type: 'GalleryPhotoItem' as const,
+            title: 'Test Photo',
+            description: '',
+            pathComponent: 'photo.jpg',
+            ancestors: 'events/summer',
+          },
+          score: 10,
+          matchedInTitle: true,
+          matchedInDescription: false,
+        },
+      ],
+    } as any);
+
+    render(<SearchResultsPage />);
+
+    expect(screen.getByText('events / summer / photo.jpg')).toBeInTheDocument();
+  });
+
+  it('formats path with proper separators', () => {
+    vi.mocked(useSearch).mockReturnValue({
+      ...mockUseSearch,
+      query: 'test',
+      results: [
+        {
+          item: {
+            id: 1,
+            type: 'GalleryAlbumItem' as const,
+            title: 'Test Album',
+            description: '',
+            pathComponent: 'album',
+            ancestors: 'a/b/c',
+          },
+          score: 10,
+          matchedInTitle: true,
+          matchedInDescription: false,
+        },
+      ],
+    } as any);
+
+    render(<SearchResultsPage />);
+
+    const pathElement = screen.getByText('a / b / c / album');
+    expect(pathElement).toBeInTheDocument();
+    expect(pathElement.className).toBe('search-results-item-description');
   });
 });

@@ -13,7 +13,30 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useSearch } from '@/hooks/useSearch';
 import { SearchHighlight } from '@/components/SearchHighlight';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import type { SearchIndexItem } from '@/utils/searchIndex';
 import './SearchResultsPage.css';
+
+/**
+ * Build full path string from SearchIndexItem
+ * 
+ * Constructs the complete hierarchical path from root album to the search hit.
+ * Formats the path for display by replacing '/' separators with ' / ' for better readability.
+ * 
+ * @param item - SearchIndexItem with ancestors and pathComponent fields
+ * @returns Formatted path string, or empty string if pathComponent is missing
+ */
+function buildFullPath(item: SearchIndexItem): string {
+  if (!item.pathComponent) {
+    return '';
+  }
+  
+  const fullPath = item.ancestors 
+    ? `${item.ancestors}/${item.pathComponent}`
+    : item.pathComponent;
+  
+  // Format for display: replace '/' with ' / ' for better readability
+  return fullPath.split('/').filter(Boolean).join(' / ');
+}
 
 /**
  * SearchResultsPage component
@@ -121,43 +144,51 @@ export function SearchResultsPage() {
             Albums ({albums.length})
           </h2>
           <ul className="search-results-list">
-            {albums.map(album => (
-              <li key={album.id} className="search-results-item">
-                <Link
-                  to={`/album/${album.id}`}
-                  className="search-results-link"
-                >
-                  <div className="search-results-item-content">
-                    <h3 className="search-results-item-title">
-                      <SearchHighlight text={album.title} query={urlQuery} />
-                    </h3>
-                    {album.description && (
-                      <p className="search-results-item-description">
-                        <SearchHighlight
-                          text={album.description}
-                          query={urlQuery}
-                        />
-                      </p>
-                    )}
-                    {typeof album.summary === 'string' &&
-                      album.summary.trim() && (
-                        <p className="search-results-item-summary">
+            {albums.map(album => {
+              const fullPath = buildFullPath(album);
+              return (
+                <li key={album.id} className="search-results-item">
+                  {fullPath && (
+                    <p className="search-results-item-description">
+                      {fullPath}
+                    </p>
+                  )}
+                  <Link
+                    to={`/album/${album.id}`}
+                    className="search-results-link"
+                  >
+                    <div className="search-results-item-content">
+                      <h3 className="search-results-item-title">
+                        <SearchHighlight text={album.title} query={urlQuery} />
+                      </h3>
+                      {album.description && (
+                        <p className="search-results-item-description">
                           <SearchHighlight
-                            text={album.summary.trim()}
+                            text={album.description}
                             query={urlQuery}
                           />
                         </p>
                       )}
-                    {typeof album.ownerName === 'string' &&
-                      album.ownerName.trim() && (
-                        <p className="search-results-item-owner">
-                          Owner: {album.ownerName.trim()}
-                        </p>
-                      )}
-                  </div>
-                </Link>
-              </li>
-            ))}
+                      {typeof album.summary === 'string' &&
+                        album.summary.trim() && (
+                          <p className="search-results-item-summary">
+                            <SearchHighlight
+                              text={album.summary.trim()}
+                              query={urlQuery}
+                            />
+                          </p>
+                        )}
+                      {typeof album.ownerName === 'string' &&
+                        album.ownerName.trim() && (
+                          <p className="search-results-item-owner">
+                            Owner: {album.ownerName.trim()}
+                          </p>
+                        )}
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}
@@ -169,43 +200,51 @@ export function SearchResultsPage() {
             Images ({images.length})
           </h2>
           <ul className="search-results-list">
-            {images.map(image => (
-              <li key={image.id} className="search-results-item">
-                <Link
-                  to={`/image/${image.id}`}
-                  className="search-results-link"
-                >
-                  <div className="search-results-item-content">
-                    <h3 className="search-results-item-title">
-                      <SearchHighlight text={image.title} query={urlQuery} />
-                    </h3>
-                    {image.description && (
-                      <p className="search-results-item-description">
-                        <SearchHighlight
-                          text={image.description}
-                          query={urlQuery}
-                        />
-                      </p>
-                    )}
-                    {typeof image.summary === 'string' &&
-                      image.summary.trim() && (
-                        <p className="search-results-item-summary">
+            {images.map(image => {
+              const fullPath = buildFullPath(image);
+              return (
+                <li key={image.id} className="search-results-item">
+                  {fullPath && (
+                    <p className="search-results-item-description">
+                      {fullPath}
+                    </p>
+                  )}
+                  <Link
+                    to={`/image/${image.id}`}
+                    className="search-results-link"
+                  >
+                    <div className="search-results-item-content">
+                      <h3 className="search-results-item-title">
+                        <SearchHighlight text={image.title} query={urlQuery} />
+                      </h3>
+                      {image.description && (
+                        <p className="search-results-item-description">
                           <SearchHighlight
-                            text={image.summary.trim()}
+                            text={image.description}
                             query={urlQuery}
                           />
                         </p>
                       )}
-                    {typeof image.ownerName === 'string' &&
-                      image.ownerName.trim() && (
-                        <p className="search-results-item-owner">
-                          Owner: {image.ownerName.trim()}
-                        </p>
-                      )}
-                  </div>
-                </Link>
-              </li>
-            ))}
+                      {typeof image.summary === 'string' &&
+                        image.summary.trim() && (
+                          <p className="search-results-item-summary">
+                            <SearchHighlight
+                              text={image.summary.trim()}
+                              query={urlQuery}
+                            />
+                          </p>
+                        )}
+                      {typeof image.ownerName === 'string' &&
+                        image.ownerName.trim() && (
+                          <p className="search-results-item-owner">
+                            Owner: {image.ownerName.trim()}
+                          </p>
+                        )}
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}
