@@ -167,6 +167,7 @@ describe('Breadcrumbs', () => {
       const preventDefaultSpy = vi.spyOn(clickEvent, 'preventDefault');
 
       homeLink.dispatchEvent(clickEvent);
+      expect(preventDefaultSpy).toHaveBeenCalled();
       await user.click(homeLink);
 
       expect(onItemClick).toHaveBeenCalled();
@@ -295,6 +296,35 @@ describe('Breadcrumbs', () => {
       render(<Breadcrumbs path={path} />);
 
       expect(screen.getByText("Album & Photos (2024)")).toBeInTheDocument();
+    });
+  });
+
+  describe('BBCode', () => {
+    it('renders BBCode-formatted title for non-home current page', () => {
+      const path: BreadcrumbPath = [
+        { id: 7, title: 'Home', path: '/' },
+        { id: 10, title: '[b]Bold[/b]', path: '/album/10' },
+      ];
+
+      render(<Breadcrumbs path={path} />);
+
+      expect(screen.getByText('Bold')).toBeInTheDocument();
+      expect(screen.getByText('Bold').closest('span')).toHaveAttribute('aria-current', 'page');
+      const nav = screen.getByRole('navigation', { name: 'Breadcrumb' });
+      expect(nav.querySelector('strong')).toBeInTheDocument();
+      expect(nav.querySelector('strong')).toHaveTextContent('Bold');
+    });
+
+    it('renders Home as plain text when root item', () => {
+      const path: BreadcrumbPath = [
+        { id: 7, title: 'Home', path: '/' },
+        { id: 10, title: 'Photos', path: '/album/10' },
+      ];
+
+      render(<Breadcrumbs path={path} />);
+
+      expect(screen.getByText('Home')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Go to home page' })).toBeInTheDocument();
     });
   });
 });

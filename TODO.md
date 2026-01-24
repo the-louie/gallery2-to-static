@@ -178,49 +178,6 @@ Album names, breadcrumb titles, subalbum list labels, and other displayed titles
 
 ---
 
-## Add BBCode Support to Breadcrumbs and Subalbum Titles
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Low
-**Estimated Time:** 1–1.5 hours
-
-### Description
-Breadcrumb segments and subalbum link labels currently render album titles as plain text. When titles contain BBCode (e.g. `[b]Internationella[/b]`, `[b]AskersundsLAN #9[/b]`), the tags appear literally instead of being formatted. Add BBCode parsing so that breadcrumb titles and subalbum titles display formatted text (bold, italic, etc.) consistent with AlbumDetail, AlbumCard, and Lightbox.
-
-### Requirements
-
-#### Research Tasks
-- Review [Breadcrumbs](frontend/src/components/Breadcrumbs/Breadcrumbs.tsx): `item.title` is rendered as plain text (lines ~90, 104) for both the current-page `<span>` and parent `<Link>`s; "Home" is hardcoded and should remain plain
-- Review [buildBreadcrumbPath](frontend/src/utils/breadcrumbPath.ts): `BreadcrumbItem.title` is set from `albumMetadata.title` (raw from JSON); no parsing at source
-- Review [RootAlbumListBlock](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx): subalbum links use `{sub.title ?? 'Untitled'}` (line ~151); main album title uses `parseBBCode`; subalbum titles are not parsed
-- Confirm [parseBBCode](frontend/src/utils/bbcode.ts) is used elsewhere for titles (AlbumDetail, AlbumCard, Lightbox) and returns `React.ReactNode`; handle null/empty input per existing patterns
-
-#### Implementation Tasks
-- **Breadcrumbs:** When rendering each breadcrumb item, use `parseBBCode(item.title)` for non-home items. Keep "Home" as literal text for the root item. Ensure both link labels and the current-page span receive parsed output; preserve `aria-label` / `aria-current` semantics (use plain string for ARIA where appropriate, e.g. strip tags or use original title for screen readers if needed)
-- **Subalbum titles:** In [RootAlbumListBlock](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx), replace `{sub.title ?? 'Untitled'}` with parsed output: use `parseBBCode(sub.title)` when `sub.title` is non-empty, otherwise `'Untitled'`; mirror the main album `parsedTitle` pattern (trim, fallback)
-- Add `parseBBCode` import where missing (Breadcrumbs, RootAlbumListBlock already has it for main title)
-- Handle edge cases: null/empty titles, existing "Untitled" / "Album N" fallbacks from `buildBreadcrumbPath`; ensure no duplicate parsing (e.g. avoid parsing "Home" or fallback strings that contain no BBCode)
-
-#### Code-Review Tasks
-- Verify [Breadcrumbs.test](frontend/src/components/Breadcrumbs/Breadcrumbs.test.tsx) still passes; add or update tests for breadcrumb items with BBCode in `title` (e.g. `[b]Bold[/b]`) and assert formatted output
-- Verify [RootAlbumListBlock.test](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.test.tsx) and [RootAlbumList.integration](frontend/src/pages/RootAlbumList.integration.test.tsx): subalbum links still navigate correctly; consider adding a test with BBCode in subalbum title
-
-### Deliverable
-Breadcrumb segments and subalbum link labels render BBCode-formatted titles (e.g. bold) instead of raw tags; "Home" and fallbacks unchanged; tests updated and passing.
-
-### Testing Requirements
-- Breadcrumbs: items with `[b]...[/b]` (and other supported tags) render formatted; "Home" remains plain; links and current page both display correctly
-- Subalbums: links with BBCode in title render formatted; "Untitled" fallback when title null/empty; navigation to `/album/:id` unchanged
-- No regressions in AlbumDetailPage breadcrumb integration or RootAlbumListBlock behaviour
-
-### Technical Notes
-- [Breadcrumbs](frontend/src/components/Breadcrumbs/Breadcrumbs.tsx): `item.title` is `string`; `parseBBCode` returns `React.ReactNode`; use for display only, keep ARIA attributes using plain text where appropriate
-- [RootAlbumListBlock](frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx) line ~151: subalbum `Link` children currently `{sub.title ?? 'Untitled'}`; match `parsedTitle` pattern (e.g. `useMemo` per sub or inline `trim` + `parseBBCode` + fallback)
-- [buildBreadcrumbPath](frontend/src/utils/breadcrumbPath.ts) stores raw `albumMetadata.title`; parsing happens at render time in Breadcrumbs, not in breadcrumbPath
-
----
-
 ## Implement Per-Album Theme Configuration
 
 **Status:** Pending

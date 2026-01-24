@@ -120,6 +120,22 @@ describe('RootAlbumListBlock', () => {
     expect(screen.getByText(/\.\.\. And much more/i)).toBeInTheDocument();
   });
 
+  it('renders BBCode-formatted subalbum title', () => {
+    const sub: Album = {
+      ...mockAlbumWithChildren,
+      type: 'GalleryAlbumItem',
+      id: 42,
+      title: '[b]Bold Subalbum[/b]',
+    } as Album;
+    const { container } = render(<RootAlbumListBlock album={baseAlbum} subalbums={[sub]} />);
+    expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument();
+    expect(screen.getByText('Bold Subalbum')).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: 'Bold Subalbum' });
+    expect(link).toHaveAttribute('href', '/album/42');
+    const list = container.querySelector('.root-album-list-block-subalbums-list');
+    expect(list?.querySelector('strong')).toHaveTextContent('Bold Subalbum');
+  });
+
   it('shows Website link when summary has [url=...]...[/url]', () => {
     const withUrl: Album = {
       ...baseAlbum,

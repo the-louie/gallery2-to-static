@@ -156,7 +156,7 @@ export function RootAlbumListBlock({
                     to={`/album/${sub.id}`}
                     className="root-album-list-block-subalbum-link"
                   >
-                    {sub.title ?? 'Untitled'}
+                    {sub.title?.trim() ? parseBBCode(sub.title.trim()) : 'Untitled'}
                   </Link>
                 </li>
               ))}
