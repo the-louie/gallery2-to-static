@@ -1,21 +1,19 @@
 /**
  * RootAlbumListBlock Component
  *
- * Renders a single root-level album as a rich block: thumbnail (link to album),
- * album title (bold), description, optional website link from summary/description,
- * metadata (Date, Owner), and "Subalbums:" list. The Subalbums section shows at most
- * the latest 6 subalbums (by timestamp descending, nulls last) in a 2-column grid layout;
- * when more exist, "... And much more" is shown below the list. Two-column layout (album left,
- * subalbums right); stacks on narrow viewports.
+ * Renders a single root-level album as a rich block: album title (bold), description,
+ * optional website link from summary/description, metadata (Date, Owner), and "Subalbums:" list.
+ * The Subalbums section shows at most the latest 6 subalbums (by timestamp descending, nulls last)
+ * in a 2-column grid layout; when more exist, "... And much more" is shown below the list.
+ * Two-column layout (album left, subalbums right); stacks on narrow viewports.
  *
  * Size and Views are omitted (not in backend); see dateUtils for note.
  *
  * @module frontend/src/components/RootAlbumListBlock
  */
 
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { getAlbumThumbnailUrl } from '@/utils/imageUrl';
 import { parseBBCodeDecoded, extractUrlFromBBCode } from '@/utils/bbcode';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { formatAlbumDate } from '@/utils/dateUtils';
@@ -46,17 +44,6 @@ export function RootAlbumListBlock({
   onAlbumClick: _onAlbumClick,
   className,
 }: RootAlbumListBlockProps) {
-  const [imageError, setImageError] = useState(false);
-  const thumbnailUrl = getAlbumThumbnailUrl(album);
-  const shouldShowThumbnail = thumbnailUrl !== null && !imageError;
-
-  useEffect(() => {
-    setImageError(false);
-  }, [album.id, thumbnailUrl]);
-
-  const handleImageError = useCallback(() => {
-    setImageError(true);
-  }, []);
 
   const parsedTitle = useMemo(() => {
     const t = album.title?.trim();
@@ -88,27 +75,6 @@ export function RootAlbumListBlock({
     >
       <div className="root-album-list-block-inner">
         <section className="root-album-list-block-main" aria-label="Album info">
-          <div className="root-album-list-block-thumbnail">
-            <Link
-              to={linkTo}
-              aria-label={`Open album: ${decodeHtmlEntities(album.title || 'Untitled')}`}
-              className="root-album-list-block-thumb-link"
-            >
-              {shouldShowThumbnail && thumbnailUrl ? (
-                <img
-                  src={thumbnailUrl}
-                  alt=""
-                  className="root-album-list-block-thumb-img"
-                  onError={handleImageError}
-                  crossOrigin="anonymous"
-                />
-              ) : (
-                <span className="root-album-list-block-thumb-placeholder" aria-hidden="true">
-                  📁
-                </span>
-              )}
-            </Link>
-          </div>
           <div className="root-album-list-block-content">
             <h2 id={`root-album-title-${album.id}`} className="root-album-list-block-title">
               <Link

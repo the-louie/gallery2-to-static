@@ -27,16 +27,14 @@ function makeSub(id: number, title: string, ts: number): Album {
 }
 
 describe('RootAlbumListBlock', () => {
-  it('renders album title and thumbnail link', () => {
+  it('renders album title', () => {
     render(
       <RootAlbumListBlock album={baseAlbum} subalbums={[]} />,
     );
     expect(screen.getByText('Test Album')).toBeInTheDocument();
-    const links = screen.getAllByRole('link', { name: /open album: test album/i });
-    expect(links.length).toBeGreaterThanOrEqual(2); // Thumbnail link and title link
-    const thumbnailLink = links.find(link => link.className.includes('root-album-list-block-thumb-link'));
-    expect(thumbnailLink).toBeInTheDocument();
-    expect(thumbnailLink).toHaveAttribute('href', '/album/1');
+    const titleLink = screen.getByRole('link', { name: /open album: test album/i });
+    expect(titleLink).toBeInTheDocument();
+    expect(titleLink).toHaveAttribute('href', '/album/1');
   });
 
   it('title link navigates to album page', () => {
@@ -168,13 +166,6 @@ describe('RootAlbumListBlock', () => {
     expect(ext).toHaveAttribute('href', 'https://example.com');
   });
 
-  it('thumbnail link navigates to album', () => {
-    render(<RootAlbumListBlock album={baseAlbum} subalbums={[]} />);
-    const links = screen.getAllByRole('link', { name: /open album: test album/i });
-    const thumbnailLink = links.find(link => link.className.includes('root-album-list-block-thumb-link'));
-    expect(thumbnailLink).toBeInTheDocument();
-    expect(thumbnailLink).toHaveAttribute('href', '/album/1');
-  });
 
   describe('HTML Entity Decoding', () => {
     it('decodes HTML entities in main album title', () => {
@@ -201,8 +192,8 @@ describe('RootAlbumListBlock', () => {
         title: 'Album &amp; Photos',
       };
       render(<RootAlbumListBlock album={albumWithEntities} subalbums={[]} />);
-      const links = screen.getAllByRole('link', { name: /open album: album & photos/i });
-      expect(links.length).toBeGreaterThanOrEqual(1);
+      const titleLink = screen.getByRole('link', { name: /open album: album & photos/i });
+      expect(titleLink).toBeInTheDocument();
     });
 
     it('decodes HTML entities in subalbum titles', () => {
