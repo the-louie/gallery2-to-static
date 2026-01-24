@@ -147,55 +147,6 @@ Album pages displaying custom album title and description in section headers usi
 
 ---
 
-## Fix Up Button Navigation Behavior
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Low
-**Estimated Time:** 1-2 hours
-
-### Description
-Fix the up button navigation behavior to ensure it only moves the user one step up in the album hierarchy to the parent album, rather than navigating to the root or home page. The button should navigate to the immediate parent album when clicked, maintaining proper hierarchical navigation.
-
-### Requirements
-
-#### Research Tasks
-- Review current up button implementation in AlbumDetail component
-- Research album hierarchy structure and parent-child relationships
-- Review getParentAlbumId utility function behavior
-- Analyze edge cases: root album, orphaned albums, missing parent data
-- Review navigation flow and routing behavior
-
-#### Implementation Tasks
-- Verify getParentAlbumId returns correct parent album ID
-- Update up button click handler to navigate only to immediate parent
-- Ensure proper handling when parent is root album (should navigate to parent, not home)
-- Handle edge case when parent is not found (orphaned album) - decide on appropriate behavior
-- Update error handling to maintain one-step-up behavior
-- Verify navigation works correctly for nested album structures
-- Test navigation from deeply nested albums to ensure single-step behavior
-- Update tests to verify one-step-up navigation behavior
-
-### Deliverable
-Up button that navigates exactly one step up in the album hierarchy to the parent album
-
-### Testing Requirements
-- Verify up button navigates to immediate parent album (not root/home)
-- Test navigation from nested albums (3+ levels deep)
-- Verify behavior at root album level
-- Test with orphaned albums (missing parent data)
-- Verify error handling maintains correct navigation behavior
-- Test breadcrumb integration with up button navigation
-
-### Technical Notes
-- Current implementation may navigate to home when parent is null - this should be reviewed
-- Parent album lookup uses getParentAlbumId from breadcrumbPath utilities
-- Navigation uses React Router's navigate function
-- Consider whether root album should have an up button or if it should be hidden
-- Ensure consistent behavior across AlbumDetail and AlbumDetailEmpty components
-
----
-
 ## Implement Album Blacklist Functionality
 
 **Status:** Pending

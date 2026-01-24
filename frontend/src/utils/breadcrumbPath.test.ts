@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   buildBreadcrumbPath,
   clearBreadcrumbCache,
+  getParentAlbumId,
 } from './breadcrumbPath';
 import { loadAlbum, findRootAlbumId } from './dataLoader';
 import type { Child } from '../../../backend/types';
@@ -311,6 +312,59 @@ describe('breadcrumbPath', () => {
       // Second call - should discover again
       await buildBreadcrumbPath(20, undefined);
       expect(findRootAlbumId).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('getParentAlbumId', () => {
+    it('returns null for root album', async () => {
+      const rootId = 7;
+      vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
+      vi.mocked(loadAlbum).mockResolvedValue([]);
+
+      const parentId = await getParentAlbumId(rootId);
+
+      expect(parentId).toBeNull();
+    });
+
+    it('returns parent album ID when child has known parent', async () => {
+      const rootId = 7;
+      const childId = 10;
+      const rootChildren: Child[] = [
+        {
+          id: childId,
+          type: 'GalleryAlbumItem',
+          hasChildren: true,
+          title: 'Child Album',
+          description: '',
+          pathComponent: 'child',
+          timestamp: 1234567890,
+          width: null,
+          height: null,
+          thumb_width: null,
+          thumb_height: null,
+        },
+      ];
+
+      vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
+      vi.mocked(loadAlbum)
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce(rootChildren);
+
+      const parentId = await getParentAlbumId(childId);
+
+      expect(parentId).toBe(rootId);
+    });
+
+    it('returns null for orphaned album', async () => {
+      const rootId = 7;
+      const orphanedId = 999;
+      vi.mocked(findRootAlbumId).mockResolvedValue(rootId);
+      vi.mocked(loadAlbum).mockResolvedValue([]);
+
+      const parentId = await getParentAlbumId(orphanedId);
+
+      expect(parentId).toBeNull();
     });
   });
 });

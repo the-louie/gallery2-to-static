@@ -6,7 +6,6 @@
  * @module frontend/src/components/AlbumDetail
  */
 
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AlbumDetailEmpty.css';
 
@@ -16,6 +15,8 @@ import './AlbumDetailEmpty.css';
 export interface AlbumDetailEmptyProps {
   /** Handler for back button clicks */
   onBackClick?: () => void;
+  /** Whether to show the Go Up button (default: true). Hide when at root album. */
+  showGoUp?: boolean;
   /** Optional CSS class name */
   className?: string;
 }
@@ -30,6 +31,7 @@ export interface AlbumDetailEmptyProps {
  */
 export function AlbumDetailEmpty({
   onBackClick,
+  showGoUp = true,
   className,
 }: AlbumDetailEmptyProps) {
   const navigate = useNavigate();
@@ -38,7 +40,6 @@ export function AlbumDetailEmpty({
     if (onBackClick) {
       onBackClick();
     } else {
-      // Fallback: navigate to home if no handler provided
       navigate('/');
     }
   };
@@ -59,14 +60,16 @@ export function AlbumDetailEmpty({
         <h2>Empty Album</h2>
         <p>This album contains no albums or images.</p>
         <div className="album-detail-empty-actions">
-          <button
-            type="button"
-            onClick={handleBackClick}
-            aria-label="Go up"
-            className="album-detail-empty-button"
-          >
-            Go Up
-          </button>
+          {showGoUp && (
+            <button
+              type="button"
+              onClick={handleBackClick}
+              aria-label="Go up"
+              className="album-detail-empty-button"
+            >
+              Go Up
+            </button>
+          )}
           <button
             type="button"
             onClick={handleHomeClick}

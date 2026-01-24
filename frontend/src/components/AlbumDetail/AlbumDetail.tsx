@@ -161,7 +161,10 @@ export function AlbumDetail({
       return;
     }
 
-    // Prevent multiple clicks while navigating
+    if (isRootAlbum) {
+      return;
+    }
+
     if (isNavigatingRef.current) {
       return;
     }
@@ -171,21 +174,18 @@ export function AlbumDetail({
     try {
       const parentId = await getParentAlbumId(albumId);
       if (parentId !== null) {
-        // Navigate to parent album
         navigate(`/album/${parentId}`);
       } else {
-        // Root album or orphaned album - navigate to home
         navigate('/');
       }
-    } catch (error) {
-      // Error during parent lookup - fallback to home
-      console.warn('Error finding parent album, navigating to home:', error);
+    } catch (err) {
+      console.warn('Error finding parent album, navigating to home:', err);
       navigate('/');
     } finally {
       isNavigatingRef.current = false;
       setIsNavigatingUp(false);
     }
-  }, [onBackClick, navigate, albumId]);
+  }, [onBackClick, navigate, albumId, isRootAlbum]);
 
   const handleRetry = useCallback(() => {
     refetch();
@@ -201,7 +201,7 @@ export function AlbumDetail({
             : 'album-detail album-detail-loading'
         }
       >
-        {showBackButton && (
+        {showBackButton && !isRootAlbum && (
           <button
             type="button"
             className="album-detail-back"
@@ -231,7 +231,7 @@ export function AlbumDetail({
             : 'album-detail album-detail-error'
         }
       >
-        {showBackButton && (
+        {showBackButton && !isRootAlbum && (
           <button
             type="button"
             className="album-detail-back"
@@ -277,7 +277,7 @@ export function AlbumDetail({
             : 'album-detail album-detail-empty'
         }
       >
-        {showBackButton && (
+        {showBackButton && !isRootAlbum && (
           <button
             type="button"
             className="album-detail-back"
@@ -291,7 +291,7 @@ export function AlbumDetail({
         {breadcrumbs && (
           <div className="album-detail-breadcrumbs">{breadcrumbs}</div>
         )}
-        <AlbumDetailEmpty onBackClick={handleBackClick} />
+        <AlbumDetailEmpty onBackClick={handleBackClick} showGoUp={!isRootAlbum} />
       </div>
     );
   }
@@ -304,7 +304,7 @@ export function AlbumDetail({
           className ? `album-detail ${className}` : 'album-detail'
         }
       >
-      {showBackButton && (
+      {showBackButton && !isRootAlbum && (
         <button
           type="button"
           className="album-detail-back"

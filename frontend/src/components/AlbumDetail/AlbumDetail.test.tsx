@@ -46,7 +46,7 @@ vi.mock('@/contexts/FilterContext', () => ({
 
 // Mock the useSort hook
 vi.mock('@/hooks/useSort', () => ({
-  useSort: vi.fn((context: 'albums' | 'images') => ({
+  useSort: vi.fn((_context: 'albums' | 'images') => ({
     option: 'order-asc' as const,
     setOption: vi.fn(),
   })),
@@ -60,6 +60,12 @@ vi.mock('@/utils/breadcrumbPath', () => ({
   clearBreadcrumbCache: vi.fn(),
 }));
 
+// Mock useSiteMetadata so we can control rootAlbumId (for root vs non-root tests)
+const mockUseSiteMetadata = vi.fn();
+vi.mock('@/hooks/useSiteMetadata', () => ({
+  useSiteMetadata: () => mockUseSiteMetadata(),
+}));
+
 describe('AlbumDetail', () => {
   const mockUseAlbumData = vi.mocked(useAlbumDataHook.useAlbumData);
   const mockUseFilter = vi.mocked(useFilterHook.useFilter);
@@ -68,9 +74,13 @@ describe('AlbumDetail', () => {
     vi.clearAllMocks();
     mockNavigate.mockClear();
     mockGetParentAlbumId.mockClear();
-    // Default: assume parent exists (return parent ID 5 for album 7)
     mockGetParentAlbumId.mockResolvedValue(5);
-    // Default filter state (no active filters)
+    mockUseSiteMetadata.mockReturnValue({
+      siteName: null,
+      rootAlbumId: 1,
+      isLoading: false,
+      error: null,
+    });
     mockUseFilter.mockReturnValue({
       criteria: {},
       setCriteria: vi.fn(),
@@ -293,28 +303,45 @@ describe('AlbumDetail', () => {
   });
 
   describe('Navigation', () => {
-    it('navigates to home when back button is clicked on root album', async () => {
-      const user = userEvent.setup();
-
+    it('hides up button when at root album', () => {
       mockUseAlbumData.mockReturnValue({
         data: mockChildren,
         isLoading: false,
         error: null,
         refetch: vi.fn(),
       });
-
-      // Root album has no parent
-      mockGetParentAlbumId.mockResolvedValue(null);
+      mockUseSiteMetadata.mockReturnValue({
+        siteName: null,
+        rootAlbumId: 7,
+        isLoading: false,
+        error: null,
+      });
 
       render(<AlbumDetail albumId={7} />);
 
-      const backButton = screen.getByLabelText('Go up');
-      await user.click(backButton);
+      expect(screen.queryByLabelText('Go up')).not.toBeInTheDocument();
+      expect(mockGetParentAlbumId).not.toHaveBeenCalled();
+    });
 
-      await waitFor(() => {
-        expect(mockGetParentAlbumId).toHaveBeenCalledWith(7);
-        expect(mockNavigate).toHaveBeenCalledWith('/');
+    it('hides up button and AlbumDetailEmpty Go Up when empty album at root', () => {
+      mockUseAlbumData.mockReturnValue({
+        data: [],
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
       });
+      mockUseSiteMetadata.mockReturnValue({
+        siteName: null,
+        rootAlbumId: 7,
+        isLoading: false,
+        error: null,
+      });
+
+      render(<AlbumDetail albumId={7} />);
+
+      expect(screen.queryByLabelText('Go up')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('Go to home page')).toBeInTheDocument();
+      expect(screen.getByText(/Empty Album/)).toBeInTheDocument();
     });
 
     it('navigates to home when parent is not found (orphaned album)', async () => {
@@ -755,8 +782,9 @@ describe('AlbumDetail', () => {
     it('renders BBCode in album title', async () => {
       const albumWithBBCode: Album = {
         ...mockAlbum,
+        type: 'GalleryAlbumItem',
         title: '[b]Bold Album Title[/b]',
-      };
+      } as Album;
 
       mockUseAlbumData.mockReturnValue({
         data: mockChildren,
@@ -779,8 +807,9 @@ describe('AlbumDetail', () => {
     it('renders nested BBCode in album title', async () => {
       const albumWithBBCode: Album = {
         ...mockAlbum,
+        type: 'GalleryAlbumItem',
         title: '[b][i]Bold Italic Title[/i][/b]',
-      };
+      } as Album;
 
       mockUseAlbumData.mockReturnValue({
         data: mockChildren,
@@ -810,7 +839,7 @@ describe('AlbumDetail', () => {
         refetch: vi.fn(),
       });
 
-      render(<AlbumDetail albumId={1} album={mockAlbum} />);
+      render(<AlbumDetail albumId={1} album={mockAlbum as Album} />);
 
       await waitFor(() => {
         expect(screen.getByText('Test Album')).toBeInTheDocument();
@@ -820,10 +849,11 @@ describe('AlbumDetail', () => {
     it('does not parse BBCode in description or summary', async () => {
       const albumWithBBCode: Album = {
         ...mockAlbum,
+        type: 'GalleryAlbumItem',
         title: '[b]Title[/b]',
         description: '[b]Description[/b]',
         summary: '[b]Summary[/b]',
-      };
+      } as Album;
 
       mockUseAlbumData.mockReturnValue({
         data: mockChildren,

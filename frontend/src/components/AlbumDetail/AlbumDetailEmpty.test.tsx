@@ -66,6 +66,13 @@ describe('AlbumDetailEmpty', () => {
       expect(mockNavigate).not.toHaveBeenCalled();
     });
 
+    it('hides Go Up button when showGoUp is false, shows Go to Home', () => {
+      render(<AlbumDetailEmpty showGoUp={false} />);
+
+      expect(screen.queryByLabelText('Go up')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('Go to home page')).toBeInTheDocument();
+    });
+
     it('navigates to home when onBackClick is not provided', async () => {
       const user = userEvent.setup();
 
