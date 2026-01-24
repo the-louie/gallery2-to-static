@@ -793,10 +793,10 @@ describe('AlbumDetail', () => {
         refetch: vi.fn(),
       });
 
-      render(<AlbumDetail albumId={7} />);
+      const { container } = render(<AlbumDetail albumId={7} />);
       // Main header + both sections use metadata.albumTitle
       expect(screen.getAllByText('My Sections').length).toBeGreaterThanOrEqual(2);
-      expect(document.querySelectorAll('.album-detail-section-description')).toHaveLength(0);
+      expect(container.querySelectorAll('.album-detail-section-description')).toHaveLength(0);
     });
 
     it('shows section description from metadata.albumDescription with fallback titles', () => {
@@ -856,8 +856,8 @@ describe('AlbumDetail', () => {
         refetch: vi.fn(),
       });
 
-      const { unmount } = render(<AlbumDetail albumId={7} />);
-      expect(document.querySelectorAll('.album-detail-section-description')).toHaveLength(0);
+      const { container, unmount } = render(<AlbumDetail albumId={7} />);
+      expect(container.querySelectorAll('.album-detail-section-description')).toHaveLength(0);
       unmount();
 
       mockUseAlbumData.mockReturnValue({
@@ -874,8 +874,8 @@ describe('AlbumDetail', () => {
         refetch: vi.fn(),
       });
 
-      render(<AlbumDetail albumId={7} />);
-      expect(document.querySelectorAll('.album-detail-section-description')).toHaveLength(0);
+      const { container: container2 } = render(<AlbumDetail albumId={7} />);
+      expect(container2.querySelectorAll('.album-detail-section-description')).toHaveLength(0);
     });
 
     it('falls back to Albums/Images when albumTitle is null or empty', () => {
