@@ -123,6 +123,40 @@
   color: var(--album-detail-title-color, #333333);
 }
 
+.root-album-list-block-title-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.root-album-list-block-title-link:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+.root-album-list-block-title-link:active {
+  color: inherit;
+}
+
+.root-album-list-block-title-link:visited {
+  color: inherit;
+}
+
+.root-album-list-block-title-link:focus {
+  outline: 2px solid var(--color-focus, #0066cc);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.root-album-list-block-title-link:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.root-album-list-block-title-link:focus-visible {
+  outline: 2px solid var(--color-focus, #0066cc);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 4px);
+}
+
 .root-album-list-block-description {
   margin: 0;
   font-size: 1rem;

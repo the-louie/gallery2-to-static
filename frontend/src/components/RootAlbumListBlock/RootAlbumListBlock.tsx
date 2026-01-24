@@ -111,7 +111,13 @@ export function RootAlbumListBlock({
           </div>
           <div className="root-album-list-block-content">
             <h2 id={`root-album-title-${album.id}`} className="root-album-list-block-title">
-              {parsedTitle}
+              <Link
+                to={linkTo}
+                aria-label={`Open album: ${decodeHtmlEntities(album.title || 'Untitled')}`}
+                className="root-album-list-block-title-link"
+              >
+                {parsedTitle}
+              </Link>
             </h2>
             {showDescription && (
               <p className="root-album-list-block-description">

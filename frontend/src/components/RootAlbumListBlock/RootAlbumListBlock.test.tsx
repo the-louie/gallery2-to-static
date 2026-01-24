@@ -32,8 +32,26 @@ describe('RootAlbumListBlock', () => {
       <RootAlbumListBlock album={baseAlbum} subalbums={[]} />,
     );
     expect(screen.getByText('Test Album')).toBeInTheDocument();
-    const link = screen.getByRole('link', { name: /open album: test album/i });
-    expect(link).toHaveAttribute('href', '/album/1');
+    const links = screen.getAllByRole('link', { name: /open album: test album/i });
+    expect(links.length).toBeGreaterThanOrEqual(2); // Thumbnail link and title link
+    const thumbnailLink = links.find(link => link.className.includes('root-album-list-block-thumb-link'));
+    expect(thumbnailLink).toBeInTheDocument();
+    expect(thumbnailLink).toHaveAttribute('href', '/album/1');
+  });
+
+  it('title link navigates to album page', () => {
+    render(<RootAlbumListBlock album={baseAlbum} subalbums={[]} />);
+    const h2 = screen.getByRole('heading', { name: 'Test Album' });
+    const titleLink = h2.querySelector('a');
+    expect(titleLink).toBeInTheDocument();
+    expect(titleLink).toHaveAttribute('href', '/album/1');
+  });
+
+  it('title link has correct accessibility attributes', () => {
+    render(<RootAlbumListBlock album={baseAlbum} subalbums={[]} />);
+    const h2 = screen.getByRole('heading', { name: 'Test Album' });
+    const titleLink = h2.querySelector('a');
+    expect(titleLink).toHaveAttribute('aria-label', 'Open album: Test Album');
   });
 
   it('hides description when missing', () => {
@@ -152,7 +170,9 @@ describe('RootAlbumListBlock', () => {
 
   it('thumbnail link navigates to album', () => {
     render(<RootAlbumListBlock album={baseAlbum} subalbums={[]} />);
-    const link = screen.getByRole('link', { name: /open album: test album/i });
-    expect(link).toHaveAttribute('href', '/album/1');
+    const links = screen.getAllByRole('link', { name: /open album: test album/i });
+    const thumbnailLink = links.find(link => link.className.includes('root-album-list-block-thumb-link'));
+    expect(thumbnailLink).toBeInTheDocument();
+    expect(thumbnailLink).toHaveAttribute('href', '/album/1');
   });
 });

@@ -8,7 +8,6 @@
 - Remove Thumbnail from Root Album Display - Low - 30 minutes - 1 hour - Remove thumbnail div and all related functionality from RootAlbumListBlock component
 - Widen Sub-Album Display Box to Prevent Name Line-Breaking - Low - 30 minutes - 1 hour - Increase sub-album box width so names fit on single line without wrapping
 - Move Gallery Order Dropdown Next to Theme Dropdown - Low - 30 minutes - 1 hour - Move SortDropdown from content sections to header next to ThemeDropdown
-- Make Root Album Title Link to Album - Low - 15-30 minutes - Wrap root album title in Link component while preserving exact visual appearance
 
 ---
 
@@ -20,4 +19,4 @@
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** 11-16.5 hours
+**Estimated Total Time:** 10.75-16 hours
