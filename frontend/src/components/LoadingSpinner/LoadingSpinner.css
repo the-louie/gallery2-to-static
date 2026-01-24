@@ -65,14 +65,3 @@
   }
 }
 
-/* Dark theme support */
-@media (prefers-color-scheme: dark) {
-  .loading-spinner-circle {
-    border-color: var(--color-border, #404040);
-    border-top-color: var(--color-primary, #1976d2);
-  }
-
-  .loading-spinner-label {
-    color: var(--color-text-secondary, #cccccc);
-  }
-}

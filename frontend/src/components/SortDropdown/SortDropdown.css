@@ -45,7 +45,7 @@
 }
 
 .sort-dropdown:focus {
-  outline: 2px solid var(--sort-dropdown-focus, #0066cc);
+  outline: 2px solid var(--sort-dropdown-focus, var(--color-focus));
   outline-offset: 2px;
 }
 
@@ -54,7 +54,7 @@
 }
 
 .sort-dropdown:focus-visible {
-  outline: 2px solid var(--sort-dropdown-focus, #0066cc);
+  outline: 2px solid var(--sort-dropdown-focus, var(--color-focus));
   outline-offset: 2px;
 }
 

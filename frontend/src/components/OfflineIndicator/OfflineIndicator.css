@@ -48,10 +48,3 @@
   }
 }
 
-/* Dark theme support */
-@media (prefers-color-scheme: dark) {
-  .offline-indicator {
-    background-color: var(--color-error, #d32f2f);
-    color: var(--color-on-error, #ffffff);
-  }
-}

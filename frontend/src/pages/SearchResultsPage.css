@@ -18,11 +18,11 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0 0 1rem 0;
-  color: var(--text-primary, #333);
+  color: var(--color-text-primary, #333);
 }
 
 .search-results-count {
-  color: var(--text-secondary, #666);
+  color: var(--color-text-secondary, #666);
   font-size: 0.875rem;
   margin: 0 0 2rem 0;
 }
@@ -35,8 +35,8 @@
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0 0 1rem 0;
-  color: var(--text-primary, #333);
-  border-bottom: 2px solid var(--border-color, #e0e0e0);
+  color: var(--color-text-primary, #333);
+  border-bottom: 2px solid var(--color-border, #e0e0e0);
   padding-bottom: 0.5rem;
 }
 
@@ -63,21 +63,21 @@
   text-decoration: none;
   color: inherit;
   padding: 1rem;
-  border: 1px solid var(--border-color, #e0e0e0);
+  border: 1px solid var(--color-border, #e0e0e0);
   border-radius: var(--radius-md, 8px);
-  background: var(--card-bg, #fff);
+  background: var(--album-card-bg, #fff);
   transition: background-color 0.15s ease, border-color 0.15s ease,
     box-shadow 0.15s ease;
 }
 
 .search-results-link:hover {
-  background: var(--card-bg-hover, #f5f5f5);
-  border-color: var(--border-color-hover, #ccc);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--color-background-secondary, #f5f5f5);
+  border-color: var(--color-border-dark, #ccc);
+  box-shadow: var(--shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .search-results-link:focus {
-  outline: 2px solid var(--focus-color, #0066cc);
+  outline: 2px solid var(--focus-color, var(--color-focus));
   outline-offset: 2px;
 }
 
@@ -86,7 +86,7 @@
 }
 
 .search-results-link:focus-visible {
-  outline: 2px solid var(--focus-color, #0066cc);
+  outline: 2px solid var(--focus-color, var(--color-focus));
   outline-offset: 2px;
 }
 
@@ -100,27 +100,27 @@
   font-size: 1rem;
   font-weight: 600;
   margin: 0;
-  color: var(--text-primary, #333);
+  color: var(--color-text-primary, #333);
 }
 
 .search-results-item-description {
   font-size: 0.875rem;
   margin: 0;
-  color: var(--text-secondary, #666);
+  color: var(--color-text-secondary, #666);
   line-height: 1.5;
 }
 
 .search-results-item-summary {
   font-size: 0.875rem;
   margin: 0;
-  color: var(--text-secondary, #666);
+  color: var(--color-text-secondary, #666);
   line-height: 1.5;
 }
 
 .search-results-item-owner {
   font-size: 0.8125rem;
   margin: 0;
-  color: var(--text-secondary, #666);
+  color: var(--color-text-secondary, #666);
   line-height: 1.4;
 }
 
@@ -142,17 +142,17 @@
 .search-results-page-loading p,
 .search-results-page-empty p,
 .search-results-page-error p {
-  color: var(--text-secondary, #666);
+  color: var(--color-text-secondary, #666);
   margin: 0 0 2rem 0;
 }
 
 .search-results-page-error button,
 .search-results-page-empty button {
   padding: 0.75rem 1.5rem;
-  border: 1px solid var(--border-color, #e0e0e0);
+  border: 1px solid var(--color-border, #e0e0e0);
   border-radius: var(--radius-md, 8px);
-  background: var(--button-bg, #fff);
-  color: var(--button-text, #333);
+  background: var(--color-background-primary, #fff);
+  color: var(--color-text-primary, #333);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -163,13 +163,13 @@
 
 .search-results-page-error button:hover,
 .search-results-page-empty button:hover {
-  background: var(--button-bg-hover, #f0f0f0);
-  border-color: var(--border-color-hover, #ccc);
+  background: var(--color-hover, #f0f0f0);
+  border-color: var(--color-border-dark, #ccc);
 }
 
 .search-results-page-error button:focus,
 .search-results-page-empty button:focus {
-  outline: 2px solid var(--focus-color, #0066cc);
+  outline: 2px solid var(--focus-color, var(--color-focus));
   outline-offset: 2px;
 }
 

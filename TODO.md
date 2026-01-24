@@ -161,3 +161,116 @@ Section headers in album detail view that only show controls (sort dropdown) wit
 - Ensure accessibility is maintained (sections still have aria-label attributes)
 
 ---
+
+## Update Root Album Subalbums Display to 2 Columns with Max 6 Items
+
+**Status:** Pending
+**Priority:** Medium
+**Complexity:** Low
+**Estimated Time:** 1-2 hours
+
+### Description
+Update the subalbums display in root album blocks (`.root-album-list-block-subalbums-list`) to show subalbums in a 2-column grid layout instead of a single column, and increase the maximum number of displayed subalbums from 5 to 6. Currently, the subalbums list uses `flex-direction: column` to display items vertically, and limits display to 5 items. This change will improve space utilization and show more subalbums at once.
+
+### Requirements
+
+#### Research Tasks
+- Review current CSS structure of `.root-album-list-block-subalbums-list` (currently flex column layout)
+- Research CSS grid vs flexbox for 2-column layout in this context
+- Research responsive behavior considerations (should 2 columns work on mobile or stack to 1 column?)
+- Review current max-height and overflow behavior with 6 items in 2 columns
+- Research spacing and gap calculations for 2-column grid layout
+- Check impact on fixed height calculations (if implemented) for accommodating 6 items in 2 columns
+
+#### Implementation Tasks
+- Change `.root-album-list-block-subalbums-list` from `flex-direction: column` to CSS grid with 2 columns
+- Update CSS to use `display: grid` with `grid-template-columns: repeat(2, 1fr)` or similar
+- Adjust gap spacing for 2-column layout (may need different gap values)
+- Update JavaScript logic to change `.slice(0, 5)` to `.slice(0, 6)` in `displaySubalbums` useMemo
+- Update `hasMoreSubalbums` check from `subalbums.length > 5` to `subalbums.length > 6`
+- Update component documentation comment to reflect "at most 6 subalbums" instead of 5
+- Adjust max-height calculation if needed to accommodate 6 items in 2 columns (3 rows)
+- Consider responsive behavior: should 2 columns be maintained on mobile or stack to 1 column?
+- Update height calculations in related todo item "Fix Root Album Block Height" if that's implemented
+- Ensure subalbum link items work correctly in grid layout (proper sizing, alignment)
+- Verify "And much more" text positioning works correctly with 2-column layout
+
+### Deliverable
+Subalbums list in root album blocks displaying up to 6 items in a 2-column grid layout
+
+### Testing Requirements
+- Verify subalbums display in 2 columns on desktop/tablet viewports
+- Check that exactly 6 subalbums display correctly in 2 columns (3 rows)
+- Verify albums with fewer than 6 subalbums display correctly (1-5 items)
+- Ensure albums with more than 6 subalbums show 6 items plus "And much more" text
+- Test responsive behavior: verify 2-column layout works on different screen sizes
+- Check that subalbum links are properly sized and aligned in grid layout
+- Verify hover and focus states work correctly for items in grid layout
+- Test with albums that have no subalbums (should not break layout)
+- Verify spacing and gaps between items look correct in 2-column layout
+- Check that max-height and overflow behavior still works correctly with 6 items
+
+### Technical Notes
+- Current implementation uses `display: flex` with `flex-direction: column` - needs to change to `display: grid`
+- Grid layout should use `grid-template-columns: repeat(2, 1fr)` for equal-width columns
+- Gap spacing may need adjustment: current gap is `0.5rem` - may need to verify this works well for 2 columns
+- Max-height calculation: currently `12rem` - may need adjustment for 3 rows of items (6 items ÷ 2 columns = 3 rows)
+- Consider responsive breakpoint: should mobile devices show 1 column or maintain 2 columns?
+- Update related todo "Fix Root Album Block Height" calculations if that's implemented (change from 5 items to 6 items, 3 rows instead of 5 rows)
+- Component comment on line 7 mentions "at most 5 subalbums" - needs update to 6
+- The slice operation and hasMoreSubalbums check are straightforward number changes
+
+---
+
+## Add Margin Between Root Album List Items
+
+**Status:** Pending
+**Priority:** Low
+**Complexity:** Low
+**Estimated Time:** 15-30 minutes
+
+### Description
+Add top and bottom margin spacing between each list item (`li`) in the root album list view (`.root-album-list-view-list`). Currently, the list items have no margin, which may cause the album blocks to appear too close together. Adding appropriate vertical margin will improve visual separation and readability between album blocks in the root album list.
+
+### Requirements
+
+#### Research Tasks
+- Review current CSS structure of `.root-album-list-view-list` and its `li` children
+- Check if `RootAlbumListBlock` component already has margin that might conflict
+- Research appropriate margin values for list item spacing (consider existing spacing patterns in the codebase)
+- Review responsive behavior: should margin be consistent across all screen sizes or adjusted for mobile?
+- Check if margin should be applied to all items or use `:not(:first-child)` / `:not(:last-child)` patterns
+
+#### Implementation Tasks
+- Add CSS rule for `.root-album-list-view-list > li` selector
+- Apply `margin-top` and/or `margin-bottom` properties with appropriate values
+- Consider using `margin-top` on all items except first, or `margin-bottom` on all items except last
+- Alternatively, use `margin-top` and `margin-bottom` with `:not(:first-child)` and `:not(:last-child)` selectors
+- Ensure margin values are consistent with existing spacing patterns (e.g., `1rem`, `1.5rem`, `2rem`)
+- Verify margin doesn't conflict with existing spacing in `RootAlbumListBlock` component
+- Test that margin works correctly with first and last items in the list
+- Check responsive behavior: verify margin looks good on mobile and desktop viewports
+- Ensure margin doesn't create excessive spacing at the top or bottom of the list
+
+### Deliverable
+List items in root album list view with appropriate top/bottom margin spacing between album blocks
+
+### Testing Requirements
+- Verify margin appears between all list items in the root album list
+- Check that first item doesn't have unwanted top margin
+- Check that last item doesn't have unwanted bottom margin
+- Verify margin spacing looks visually appropriate and consistent
+- Test with lists containing 1, 2, 3, and many album items
+- Verify margin works correctly on mobile viewports
+- Verify margin works correctly on desktop/tablet viewports
+- Check that margin doesn't interfere with existing `RootAlbumListBlock` styling
+- Ensure no visual regressions in the root album list view
+
+### Technical Notes
+- Current `.root-album-list-view-list` has `margin: 0` and `padding: 0` with `list-style: none`
+- `RootAlbumListBlock` component already has `margin-bottom: 1.5rem` on `.root-album-list-block` class
+- May need to remove or adjust `margin-bottom` from `RootAlbumListBlock` if adding margin to `li` elements
+- Consider using CSS custom properties for margin value to maintain consistency
+- Common patterns: `margin-top: 1rem` with `:not(:first-child)` or `margin-bottom: 1.5rem` with `:not(:last-child)`
+- Should coordinate with existing `RootAlbumListBlock` margin to avoid double spacing
+

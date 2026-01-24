@@ -4,8 +4,7 @@
  * Styles for the search bar input component with icon and clear button.
  *
  * CSS Variables:
- * - Uses CSS custom properties from themes.css for theming
- * - All colors adapt to light/dark theme automatically
+ * - Uses theme variables from themes.css only (--color-*, --radius-*)
  *
  * Accessibility:
  * - Focus indicator meets WCAG 2.1 AA requirements
@@ -24,23 +23,24 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: var(--search-bar-bg, #fff);
-  border: 1px solid var(--search-bar-border, #e0e0e0);
+  background: var(--color-background-primary);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md, 8px);
   padding: 0.5rem 0.75rem;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, outline 0.15s ease;
 }
 
 .search-bar-input-wrapper:focus-within {
-  border-color: var(--search-bar-focus, #0066cc);
-  box-shadow: 0 0 0 2px var(--search-bar-focus-shadow, rgba(0, 102, 204, 0.2));
+  border-color: var(--color-focus);
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .search-bar-icon {
   width: 1.25rem;
   height: 1.25rem;
   flex-shrink: 0;
-  color: var(--search-bar-icon-color, #666);
+  color: var(--color-text-secondary);
 }
 
 .search-bar-input {
@@ -48,13 +48,13 @@
   border: none;
   outline: none;
   background: transparent;
-  color: var(--search-bar-text, #333);
+  color: var(--color-text-primary);
   font-size: 0.875rem;
   min-width: 0;
 }
 
 .search-bar-input::placeholder {
-  color: var(--search-bar-placeholder, #999);
+  color: var(--color-text-tertiary);
 }
 
 .search-bar-clear {
@@ -68,20 +68,20 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--search-bar-clear-color, #666);
+  color: var(--color-text-secondary);
   cursor: pointer;
   border-radius: var(--radius-sm, 4px);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
   flex-shrink: 0;
 }
 
 .search-bar-clear:hover {
-  background: var(--search-bar-clear-bg-hover, #f0f0f0);
-  color: var(--search-bar-clear-color-hover, #333);
+  background: var(--color-hover);
+  color: var(--color-text-primary);
 }
 
 .search-bar-clear:focus {
-  outline: 2px solid var(--search-bar-focus, #0066cc);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
@@ -90,7 +90,7 @@
 }
 
 .search-bar-clear:focus-visible {
-  outline: 2px solid var(--search-bar-focus, #0066cc);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 

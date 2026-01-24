@@ -49,9 +49,8 @@
 }
 
 .date-range-filter-input:focus {
-  outline: none;
-  border-color: var(--color-accent, #007bff);
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  outline: 2px solid var(--color-focus, var(--color-accent));
+  outline-offset: 2px;
 }
 
 .date-range-filter-input:hover {
@@ -76,9 +75,8 @@
 }
 
 .date-range-filter-clear:focus {
-  outline: none;
-  border-color: var(--color-accent, #007bff);
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  outline: 2px solid var(--color-focus, var(--color-accent));
+  outline-offset: 2px;
 }
 
 .date-range-filter-clear:active {

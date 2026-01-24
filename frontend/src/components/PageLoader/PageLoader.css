@@ -14,10 +14,3 @@
   color: var(--color-text, #000000);
 }
 
-/* Dark theme support */
-@media (prefers-color-scheme: dark) {
-  .page-loader {
-    background-color: var(--color-background, #1e1e1e);
-    color: var(--color-text, #ffffff);
-  }
-}

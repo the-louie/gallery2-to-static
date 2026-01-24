@@ -42,7 +42,11 @@
 
 .album-detail-empty-button {
   padding: 0.75rem 1.5rem;
-  background-color: var(--album-detail-error-button-bg, var(--color-primary));
+  background: linear-gradient(
+    180deg,
+    var(--gradient-cta-start, var(--album-detail-error-button-bg)) 0%,
+    var(--gradient-cta-end, var(--album-detail-error-button-bg)) 100%
+  );
   color: var(--color-text-inverse);
   border: none;
   border-radius: var(--radius-sm, 4px);
@@ -50,11 +54,11 @@
   font-size: 1rem;
   min-height: 44px;
   min-width: 120px;
-  transition: background-color 0.2s;
+  transition: background 0.2s;
 }
 
 .album-detail-empty-button:hover {
-  background-color: var(--album-detail-error-button-hover, var(--color-primary-hover));
+  background: var(--album-detail-error-button-hover, var(--color-primary-hover));
 }
 
 .album-detail-empty-button:focus {
@@ -63,7 +67,7 @@
 }
 
 .album-detail-empty-button:active {
-  background-color: var(--album-detail-error-button-active, var(--color-primary-active));
+  background: var(--album-detail-error-button-active, var(--color-primary-active));
 }
 
 /* Responsive design */

@@ -49,7 +49,11 @@
 
 .root-album-list-error button {
   padding: 0.5rem 1rem;
-  background-color: var(--album-grid-error-button-bg, #d32f2f);
+  background: linear-gradient(
+    180deg,
+    var(--gradient-cta-start, var(--album-grid-error-button-bg)) 0%,
+    var(--gradient-cta-end, var(--album-grid-error-button-bg)) 100%
+  );
   color: var(--color-text-inverse);
   border: none;
   border-radius: var(--radius-sm, 4px);
@@ -57,13 +61,14 @@
   font-size: 0.875rem;
   min-width: 44px;
   min-height: 44px;
+  transition: background 0.2s;
 }
 
 .root-album-list-error button:hover {
-  background-color: var(--album-grid-error-button-hover, #b71c1c);
+  background: var(--album-grid-error-button-hover, #b71c1c);
 }
 
 .root-album-list-error button:focus {
-  outline: 2px solid var(--album-grid-error-button-focus, #0066cc);
+  outline: 2px solid var(--album-grid-error-button-focus, var(--color-focus));
   outline-offset: 2px;
 }

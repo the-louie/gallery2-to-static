@@ -110,13 +110,13 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: background 0.2s, transform 0.1s;
   min-width: 120px;
   min-height: 44px;
 }
 
 .error-fallback-button:focus {
-  outline: 2px solid var(--color-primary, #1976d2);
+  outline: 2px solid var(--color-focus, var(--color-primary));
   outline-offset: 2px;
 }
 
@@ -125,12 +125,16 @@
 }
 
 .error-fallback-button-primary {
-  background-color: var(--color-primary, #1976d2);
-  color: var(--color-on-primary, #ffffff);
+  background: linear-gradient(
+    180deg,
+    var(--gradient-cta-start, var(--color-primary)) 0%,
+    var(--gradient-cta-end, var(--color-accent)) 100%
+  );
+  color: var(--color-on-primary, var(--color-text-inverse));
 }
 
 .error-fallback-button-primary:hover {
-  background-color: var(--color-primary-hover, #1565c0);
+  background: var(--color-accent-hover, var(--color-primary-hover));
 }
 
 .error-fallback-button-secondary {
@@ -140,24 +144,6 @@
 }
 
 .error-fallback-button-secondary:hover {
-  background-color: var(--color-background-hover, #eeeeee);
+  background-color: var(--color-background-hover, var(--color-hover));
 }
 
-/* Dark theme support */
-@media (prefers-color-scheme: dark) {
-  .error-fallback {
-    background-color: var(--color-background, #1e1e1e);
-    color: var(--color-text, #ffffff);
-  }
-
-  .error-fallback-details {
-    background-color: var(--color-background-secondary, #2d2d2d);
-    border-color: var(--color-border, #404040);
-  }
-
-  .error-fallback-stack,
-  .error-fallback-component-stack pre {
-    background-color: var(--color-background, #1e1e1e);
-    color: var(--color-text, #ffffff);
-  }
-}

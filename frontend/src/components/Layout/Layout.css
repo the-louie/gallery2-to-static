@@ -35,7 +35,11 @@
   flex-direction: column;
   min-height: 100vh;
   position: relative;
-  background: var(--color-background-primary, #ffffff);
+  background: linear-gradient(
+    180deg,
+    var(--gradient-bg-start, var(--color-background-primary)) 0%,
+    var(--gradient-bg-end, var(--color-background-secondary)) 100%
+  );
 }
 
 /* Skip to Content Link */

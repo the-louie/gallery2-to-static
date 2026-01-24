@@ -8,11 +8,15 @@
  */
 
 .root-album-list-block {
-  border: 1px solid var(--album-card-border, #e0e0e0);
+  border: 1px solid var(--album-card-border, #ddd8d0);
   border-radius: var(--album-card-border-radius, 8px);
   padding: 1rem;
   margin-bottom: 1.5rem;
-  background-color: var(--album-card-bg, #ffffff);
+  background: linear-gradient(
+    180deg,
+    var(--gradient-card-start, var(--album-card-bg)) 0%,
+    var(--gradient-card-end, var(--album-card-bg)) 100%
+  );
 }
 
 .root-album-list-block:last-child {

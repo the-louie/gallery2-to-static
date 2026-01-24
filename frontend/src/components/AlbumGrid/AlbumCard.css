@@ -8,8 +8,12 @@
 .album-card {
   display: flex;
   flex-direction: column;
-  background-color: var(--album-card-bg, #ffffff);
-  border: 1px solid var(--album-card-border, #e0e0e0);
+  background: linear-gradient(
+    180deg,
+    var(--gradient-card-start, var(--album-card-bg)) 0%,
+    var(--gradient-card-end, var(--album-card-bg)) 100%
+  );
+  border: 1px solid var(--album-card-border, #ddd8d0);
   border-radius: var(--album-card-border-radius, 8px);
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
