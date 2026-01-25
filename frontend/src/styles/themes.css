@@ -297,6 +297,14 @@
    ============================================================================ */
 
 [data-theme="light"] {
+  /* Gradient color stops (light theme: more pronounced for visibility) */
+  --gradient-bg-start: #f6f4f0;
+  --gradient-bg-end: #cfdfcf;
+  --gradient-card-start: #fffcf9;
+  --gradient-card-end: #e4dcd2;
+  --gradient-cta-start: #E2725B;
+  --gradient-cta-end: #c47272;
+
   /* Base Colors (2026 dual personality) */
   --color-primary: #101585;
   --color-primary-hover: #1a1fb8;

@@ -349,43 +349,6 @@ Add **max-width: 2400px** to the CSS classes **`.layout-main`** and **`.home-pag
 
 ---
 
-## Light-mode gradients more pronounced (Frontend CSS)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 20–30 minutes
-
-### Description
-In **light mode** only, make gradients more **pronounced** (visibly stronger) so the gradient effect is easier to see. Currently light theme uses `--gradient-bg-start`/`--gradient-bg-end`, `--gradient-card-start`/`--gradient-card-end`, and `--gradient-cta-start`/`--gradient-cta-end` in `frontend/src/styles/themes.css` (under `:root` and `[data-theme="light"]`). Adjust the light-theme gradient color stops so the difference between start and end is greater (e.g. more contrast or a clearer shift in hue/lightness), without making the result harsh or hurting readability. Dark theme and other theme variables are unchanged.
-
-### Requirements
-
-#### Scope
-- **Frontend only.** CSS variable values in `themes.css` (or wherever light theme gradients are defined).
-- **Light mode only.** Change only the gradient variables that apply when `[data-theme="light"]` (or the default/root light values). Do not alter `[data-theme="dark"]` or other themes.
-- **Gradients in scope.** At least: background gradient (`--gradient-bg-start`, `--gradient-bg-end`), card gradient (`--gradient-card-start`, `--gradient-card-end`). Optionally CTA gradient (`--gradient-cta-start`, `--gradient-cta-end`) if it should also be more pronounced in light mode.
-
-#### Implementation Tasks
-- In `frontend/src/styles/themes.css`, locate the light-theme gradient variables (in `:root` and/or `[data-theme="light"]`).
-- Increase the visual difference between each gradient’s start and end (e.g. adjust one or both stop colors so the transition is more visible). Keep colors on-brand and accessible (contrast, readability).
-- Compare before/after in the app (background, cards) to confirm gradients are more pronounced and still look good.
-- Leave dark-theme gradient definitions unchanged.
-
-### Deliverable
-Light mode backgrounds and cards (and optionally CTAs) show a clearly more pronounced gradient. Dark mode and other themes are unchanged.
-
-### Testing Requirements
-- Visually verify light mode: page background and card gradients are more visible than before.
-- Confirm dark mode and default/fallback behavior are unchanged.
-- Check text and UI remain readable and accessible on the new gradients.
-
-### Technical Notes
-- Gradient variables are used in multiple components; changing them in themes.css is sufficient.
-- Pronounced can mean stronger contrast between stops, a slightly wider range in lightness, or a subtle shift in hue—choose what fits the existing palette.
-
----
-
 ## Highlight image as faded/blurred background on article.root-album-list-block (Frontend)
 
 **Status:** Pending
@@ -424,47 +387,13 @@ Each album block (article.root-album-list-block) in the root album list and in c
 - Overlay can be e.g. `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.4))` or theme-aware overlay so it works in light and dark mode.
 
 ---
-
-## Strip BBCode from album titles in backend extraction (Backend)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 30–45 minutes
-
-### Description
-During **backend extraction**, all **album titles** written to the emitted JSON must have **BBCode stripped** to plain text. The Gallery 2 source may store titles with BBCode (e.g. `[b]Bold[/b]`, `[i]italic[/i]`, `[color=red]…[/color]`). Emitted album JSON (metadata and children) must contain title strings with those tags removed—only the inner text—so that the frontend receives plain-text titles everywhere (sub-album links, block titles, breadcrumbs, album detail header, album cards). No frontend change is required for stripping; the frontend may continue to decode HTML entities if needed, but will no longer need to parse or strip BBCode from titles because the backend will have done it.
-
-**Current behavior:** Titles are emitted as-is from the database (may contain BBCode); the frontend parses BBCode for display in some places and would need to strip it in others (e.g. sub-album links).  
-**Required behavior:** During extraction, before writing any album metadata or child item that has a `title` field, strip all BBCode tags from that title and write the resulting plain text. All emitted `title` and `metadata.albumTitle` (and equivalent in children) values are plain text.
-
-### Requirements
-
-#### Scope
-- **Backend only.** Extraction logic in `backend/` that builds album metadata and child items (e.g. `backend/index.ts`, and any helper that sets `title` or `albumTitle`). Add a strip-BBCode step (or helper) and apply it wherever album titles are assigned to the output (metadata for each album file, and each child item’s title in `children`).
+- **Backend only.** Extraction logic in `backend/` that builds album metadata and child items (e.g. `backend/index.ts`, and any helper that sets `title` or `albumTitle`). Add a strip-BBCode step (or helper) and apply it wherever album titles are assigned to the output (metadata for each album file, and each child item’s title 
 - **Titles only.** Strip BBCode from album title fields only. Do not strip from description or summary unless a separate product decision says so; this task is only for titles so that all consumers of `title` / `albumTitle` get plain text.
 - **Stripping.** "Strip" means remove all BBCode tags (e.g. `[b]`, `[/b]`, `[i]`, `[color=red]`, `[tag=value]`, etc.) and output only the concatenated inner text. Optionally decode HTML entities first (e.g. `&auml;` → `ä`) then strip tags, so the stored title is readable plain text. Handle nested tags and malformed/unclosed tags (leave remaining text).
 
 #### Implementation Tasks
-- Add a backend helper that strips BBCode to plain text, e.g. `stripBBCode(title: string): string` (in a shared place such as `backend/bbcode.ts` or alongside existing HTML/entity handling). It should remove `[tag]`, `[/tag]`, and `[tag=value]` and return the inner text only. Align with the same tag set the frontend parser knows (b, i, u, s, color, size, url, etc.). Optionally decode HTML entities before or after stripping.
+- Add a backend helper that strips BBCode to plain text, e.g. `stripBBCode(title: string): string` (in a shared place). It should remove `[tag]`, `[/tag]`, and `[tag=value]` and return the inner text only. Align with the same tag set the frontend parser knows (b, i, u, s, color, size, url, etc.). Optionally decode HTML entities before or after stripping.
 - Apply the helper wherever album titles are set during extraction: (1) when building `metadata.albumTitle` for each album file; (2) when building each child object’s `title` (for GalleryAlbumItem and any other type that has a title). Ensure root album and all child albums and nested extraction paths use the stripped title.
-- Re-run extraction and verify emitted JSON: any title that previously contained `[b]`, `[i]`, etc. now contains only the inner text (e.g. "Bold" not "[b]Bold[/b]").
-- **Frontend follow-up (optional for this task):** Once backend emits plain-text titles, the frontend can stop calling `parseBBCodeDecoded()` on album titles and display them as plain text (or keep decodeHtmlEntities only). Sub-album links, block titles, breadcrumbs, and album detail will then show plain text without further strip logic. Document or add a brief note that frontend may simplify title rendering after this backend change.
-
-### Deliverable
-All album titles in the emitted album JSON (metadata and children) are plain text with BBCode tags removed. No raw `[b]`, `[i]`, `[color=…]`, etc. in any `title` or `albumTitle` field. Frontend can treat titles as plain text (with optional HTML entity decoding).
-
-### Testing Requirements
-- Run extraction on a dataset that includes album titles with BBCode; confirm generated JSON has plain-text titles only.
-- Optionally add a unit test for the strip helper (inputs like `[b]Bold[/b]` → `"Bold"`, `[i]nested [b]text[/b][/i]` → `"nested text"`).
-
-### Technical Notes
-- Backend may not have an existing BBCode parser; implement a minimal stripper (regex or state machine) that removes `[…]` segments and keeps the rest. Ensure `[url=...]...[/url]` and `[url]...[/url]` strip to inner text only.
-- Reference: `backend/index.ts` (where metadata and children are built); any module that supplies title from the database (e.g. sqlUtils, getAlbumInfo, getChildren).
-
----
-
-
 **Album descriptions** must support **BBCode rendering** in two places: (1) in the **root album list** (each album block’s description in `RootAlbumListBlock`), and (2) in the **actual album view** (the album description in `AlbumDetail`). Today both locations render the description as plain text (HTML entities decoded only, e.g. `decodeHtmlEntities(album.description)`). Required behavior: parse and render BBCode in the description text (e.g. `[b]`, `[i]`, `[color=…]`, `[url=…]`) so that formatting and links are displayed, using the same parsing pipeline as album titles (e.g. `parseBBCodeDecoded`).
 
 ### Requirements
@@ -481,15 +410,15 @@ All album titles in the emitted album JSON (metadata and children) are plain tex
 
 ---
 
-## Prioritize search results by current album context (Frontend)
+## Prioritize search by album context (Frontend)
 
 **Status:** Pending
 **Priority:** Medium
 **Complexity:** Medium
-**Estimated Time:** 45–90 minutes
+**Estimated Time:** 1–2 hours
 
 ### Description
-When the user performs a search, results should be **ordered by relevance to the current album context**: (1) **children of the current album** first, (2) then **descendants of the current album** (other items in the subtree), (3) **last**, results from the **whole site** (outside the current album). Today search returns a flat list sorted only by relevance score (and title). Required behavior: if a “context album” is known (e.g. the album page the user was on when they opened search, or an optional URL param), sort the result list so that direct children of that album appear first, then remaining descendants, then all other hits. Within each tier, keep existing relevance (and title) ordering. If no context album is provided (e.g. search from home), keep current behavior (single tier, score + title sort).
+When a "context album" is known (e.g. the album page the user was on when they opened search, or an optional URL param), sort search results so that direct children of that album appear first, then remaining descendants of the current album, then results from the whole site. Within each tier, keep existing relevance (and title) ordering. If no context album is provided (e.g. search from home), keep current behavior (single tier, score + title sort).
 
 ### Requirements
 
@@ -514,8 +443,6 @@ Search results are ordered so that children of the current album (when applicabl
 
 ### Technical Notes
 - `SearchIndexItem` has `parentId` (see `frontend/src/utils/searchIndex.ts`). Use `SearchIndex.getItem(id)` to walk the parent chain and classify each result. Root items have no parentId or parentId not in index; treat as “other”.
-- Reference: `frontend/src/utils/searchIndex.ts` (search(), SearchIndexItem.parentId); `frontend/src/hooks/useSearch.ts` (search callback, cache); `frontend/src/pages/SearchResultsPage.tsx` (URL params, display order); `frontend/src/components/SearchBar/SearchBar.tsx` (navigate to `/search?q=...`).
-
 ---
 
 ## Implement Per-Album Theme Configuration

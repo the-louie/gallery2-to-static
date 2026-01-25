@@ -102,6 +102,15 @@ describe('imageUrl utilities', () => {
       expect(getImageUrl(jpegImage, true)).toBe('/images/album/t__image.jpeg');
     });
 
+    it('strips leading slash from pathComponent to avoid double slash with baseUrl', () => {
+      const imageWithLeadingSlash: Image = {
+        ...mockImage,
+        pathComponent: '/album/photo.jpg',
+      };
+      expect(getImageUrl(imageWithLeadingSlash, false)).toBe('/images/album/photo.jpg');
+      expect(getImageUrl(imageWithLeadingSlash, true)).toBe('/images/album/t__photo.jpg');
+    });
+
     it('prefers urlPath over pathComponent when present', () => {
       const imageWithUrlPath: Image = {
         ...mockImage,
@@ -295,14 +304,27 @@ describe('imageUrl utilities', () => {
       expect(url).toBe('/images/test-album/t__thumbnail.jpg');
     });
 
-    it('returns null when album has no thumbnail', () => {
+    it('returns null when album has no thumbnail or highlight', () => {
       const albumWithoutThumb: Album = {
         ...mockAlbum,
         thumbnailPathComponent: null,
         thumbnailUrlPath: null,
+        highlightImageUrl: undefined,
       };
       const url = getAlbumThumbnailUrl(albumWithoutThumb);
       expect(url).toBeNull();
+    });
+
+    it('falls back to highlightImageUrl when no thumbnail fields', () => {
+      const albumWithHighlight: Album = {
+        ...mockAlbum,
+        thumbnailPathComponent: null,
+        thumbnailUrlPath: null,
+        highlightImageUrl: 'internationella/hackers_at_large_2001/gea/trip_to_hal_2001___gea_to_hal.jpg',
+      };
+      vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
+      const url = getAlbumThumbnailUrl(albumWithHighlight);
+      expect(url).toBe('/images/internationella/hackers_at_large_2001/gea/trip_to_hal_2001___gea_to_hal.jpg');
     });
 
     it('uses absolute base URL for album thumbnail', () => {
@@ -343,6 +365,30 @@ describe('imageUrl utilities', () => {
       vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
       const url = getAlbumThumbnailUrl(albumFallback);
       expect(url).toBe('/images/album/t__thumb.jpg');
+    });
+
+    it('strips leading slash from thumbnailUrlPath to avoid double slash', () => {
+      const albumWithLeadingSlash: Album = {
+        ...mockAlbum,
+        thumbnailUrlPath: '/legacy/path/t__thumb.jpg',
+        thumbnailPathComponent: undefined,
+        highlightImageUrl: undefined,
+      };
+      vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
+      const url = getAlbumThumbnailUrl(albumWithLeadingSlash);
+      expect(url).toBe('/images/legacy/path/t__thumb.jpg');
+    });
+
+    it('strips leading slash from highlightImageUrl to avoid double slash', () => {
+      const albumHighlightOnly: Album = {
+        ...mockAlbum,
+        thumbnailUrlPath: null,
+        thumbnailPathComponent: undefined,
+        highlightImageUrl: '/internationella/hackers_at_large_2001/gea/image.jpg',
+      };
+      vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
+      const url = getAlbumThumbnailUrl(albumHighlightOnly);
+      expect(url).toBe('/images/internationella/hackers_at_large_2001/gea/image.jpg');
     });
   });
 });

@@ -42,6 +42,13 @@ import { getImageBaseUrl } from './imageConfig';
 const DEFAULT_THUMB_PREFIX = 't__';
 
 /**
+ * Strip leading slashes from a path segment so concatenation with baseUrl (no trailing slash) never produces double slashes.
+ */
+function ensureNoLeadingSlash(path: string): string {
+  return path.replace(/^\/+/, '');
+}
+
+/**
  * Construct thumbnail URL from pathComponent
  *
  * Applies the thumbnail prefix to the filename portion of the pathComponent.
@@ -66,8 +73,9 @@ function constructThumbnailUrl(
     return baseUrl;
   }
 
+  const path = ensureNoLeadingSlash(pathComponent);
   // Find the last slash to separate directory from filename
-  const lastSlashIndex = pathComponent.lastIndexOf('/');
+  const lastSlashIndex = path.lastIndexOf('/');
 
   let directory: string;
   let filename: string;
@@ -75,11 +83,11 @@ function constructThumbnailUrl(
   if (lastSlashIndex === -1) {
     // No directory, just filename
     directory = '';
-    filename = pathComponent;
+    filename = path;
   } else {
     // Split into directory and filename
-    directory = pathComponent.substring(0, lastSlashIndex + 1);
-    filename = pathComponent.substring(lastSlashIndex + 1);
+    directory = path.substring(0, lastSlashIndex + 1);
+    filename = path.substring(lastSlashIndex + 1);
   }
 
   // Apply format extension to filename
@@ -144,7 +152,7 @@ function constructFullImageUrl(
     return baseUrl;
   }
 
-  const pathWithFormat = replaceExtension(pathComponent, format);
+  const pathWithFormat = replaceExtension(ensureNoLeadingSlash(pathComponent), format);
   // baseUrl is normalized (no trailing slash)
   // pathComponent is the full path (e.g., "album/photo.jpg")
   return `${baseUrl}/${pathWithFormat}`;
@@ -239,10 +247,10 @@ export function getImageUrlWithFormat(
 /**
  * Get album thumbnail URL for an Album object
  *
- * Constructs a thumbnail URL from the album's thumbnailPathComponent field.
- * Returns null if the album doesn't have a thumbnail path component.
+ * Uses, in order: thumbnailUrlPath (legacy), thumbnailPathComponent (built with thumb prefix),
+ * then highlightImageUrl (full image path from backend). Returns null if none are set.
  *
- * @param album - Album object with optional thumbnailPathComponent or thumbnailUrlPath field
+ * @param album - Album with optional thumbnailUrlPath, thumbnailPathComponent, or highlightImageUrl
  * @param thumbPrefix - Optional thumbnail prefix override (defaults to "t__")
  * @returns Thumbnail URL path, or null if no thumbnail path available
  *
@@ -274,14 +282,19 @@ export function getAlbumThumbnailUrl(
 ): string | null {
   if (album.thumbnailUrlPath && album.thumbnailUrlPath.length > 0) {
     const baseUrl = getImageBaseUrl();
-    return `${baseUrl}/${album.thumbnailUrlPath}`;
+    return `${baseUrl}/${ensureNoLeadingSlash(album.thumbnailUrlPath)}`;
   }
 
   const pathComponent = album.thumbnailPathComponent;
-  if (!pathComponent) {
-    return null;
+  if (pathComponent) {
+    const prefix = thumbPrefix ?? DEFAULT_THUMB_PREFIX;
+    return constructThumbnailUrl(pathComponent, prefix);
   }
 
-  const prefix = thumbPrefix ?? DEFAULT_THUMB_PREFIX;
-  return constructThumbnailUrl(pathComponent, prefix);
+  if (album.highlightImageUrl && album.highlightImageUrl.length > 0) {
+    const baseUrl = getImageBaseUrl();
+    return `${baseUrl}/${ensureNoLeadingSlash(album.highlightImageUrl)}`;
+  }
+
+  return null;
 }
