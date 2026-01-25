@@ -69,56 +69,6 @@ Backend extraction no longer emits `ownerName: "Gallery Administrator"`; those e
 
 ---
 
-## Fix URL path: Nordic characters (å ä ö) to ASCII in backend (Bug)
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Low–Medium
-**Estimated Time:** 45–60 minutes
-
-### Description
-**Bug:** Emitted album JSON contains URL paths with malformed or non-standard segments. Examples:
-- `dreamhack/dreamhack_97/martin_ouml;jes/p000335.jpg` (e.g. album 4968) → should be `dreamhack/dreamhack_97/martin_ojes/p000335.jpg` (segment `martin_ojes`, no semicolon, no entity name).
-- `nasslan/n_auml;sslan_3/louie/0001f.jpg` (e.g. album 29666, `data/29666.json`) → should be `nasslan/nasslan_3/louie/0001f.jpg` (segment `nasslan_3`, not `n_auml;sslan_3`).
-
-This is caused by ISO-8859-1 / HTML-entity handling when building URL paths in the backend: characters like å, ä, ö (or their entity forms `&aring;`, `&auml;`, `&ouml;`) must **not** be decoded to the Unicode characters for use in URL paths; they must be **reduced to simplified ASCII** so paths are URL-safe and standard.
-
-**Required mapping (for URL-path construction only):**
-
-| Character | Replace with |
-|-----------|--------------|
-| å         | a            |
-| ä         | a            |
-| ö         | o            |
-
-Apply this in the **backend** wherever URL path segments are derived from titles or path components (e.g. `urlPath`, `thumbnailUrlPath`, `highlightImageUrl`, breadcrumb paths built from cleaned titles). Result: paths like `…/martin_ojes/…` instead of `…/martin_ouml;jes/…` or `…/martin_öjes/…`.
-
-### Requirements
-
-#### Scope
-- **Backend only.** Change path/URL construction so any segment that can contain å, ä, ö (or `&aring;`, `&auml;`, `&ouml;` / `&Aring;`, `&Auml;`, `&Ouml;`) uses the simplified form (a, a, o) in the emitted path string.
-- **Where paths are built.** Likely in `backend/cleanupUipath.ts` (`cleanup_uipathcomponent` and/or `decode` / HTML unescape). All call sites that produce `urlPath`, `thumbnailUrlPath`, `highlightImageUrl`, or other path strings used in URLs must use this logic. Do not change display-only fields (e.g. album title in metadata can still show “Martin Öjes” or stored HTML entities for the frontend to render).
-- **Do not decode to Unicode for path.** For the path string, do not turn `&ouml;` into `ö` and then use `ö` in the URL; either replace named entities directly with a/a/o, or after decoding replace å, ä, ö with a, a, o before building the path.
-
-#### Implementation Tasks
-- In `backend/cleanupUipath.ts` (or a single shared helper used for URL-path cleanup): ensure that after any HTML unescape or decode step that could produce å, ä, ö, these are replaced by a, a, o. Option A: add named-entity replacements for `&ouml;`, `&aring;`, `&auml;` (and uppercase variants like `&Ouml;`) → o, a, a **before** or instead of decoding them to Unicode in the path pipeline. Option B: after decoding to Unicode, replace the characters å, ä, ö (and uppercase Å, Ä, Ö) with a, a, o. Use one consistent approach so all path output is correct.
-- Ensure `cleanup_uipathcomponent` (and any other function used to build URL path segments) applies this mapping so that output never contains `ouml;`, `ö`, etc. in the path.
-- Re-run extraction and verify generated JSON: e.g. `data/4968.json` has paths like `…/martin_ojes/…` (not `…/martin_ouml;jes/…`); `data/29666.json` has paths like `nasslan/nasslan_3/louie/…` (not `nasslan/n_auml;sslan_3/louie/…`).
-
-### Deliverable
-Backend-emitted URL paths (e.g. in album JSON `urlPath`, `thumbnailUrlPath`, `highlightImageUrl`, and path segments derived from titles) use ASCII a/a/o for Nordic characters (å→a, ä→a, ö→o). No semicolons or entity names in path segments; no Unicode å, ä, ö in URL paths.
-
-### Testing Requirements
-- Run extraction and open albums that previously had the bug: e.g. album 4968 “Martin Öjes” → `urlPath`/`highlightImageUrl` use `martin_ojes` not `martin_ouml;jes`; album 29666 → `urlPath` uses `nasslan/nasslan_3/louie/…` not `nasslan/n_auml;sslan_3/louie/…`.
-- Optionally add unit tests in `cleanupUipath.test.ts` for inputs containing `&ouml;`, `ö`, `&auml;`, `ä`, `&aring;`, `å` and assert output contains only a/a/o in the path segment.
-
-### Technical Notes
-- The table å→a, ä→a, ö→o is fixed; no other characters need to be changed for this task unless the product requests more mappings.
-- Display titles (e.g. for breadcrumbs or album title in UI) can remain as-is or be decoded by the frontend; this task is only about **URL path** strings emitted by the backend.
-- Reference: `backend/cleanupUipath.ts`, `backend/legacyPaths.ts`, `backend/index.ts` (where `cleanup_uipathcomponent` is used to build dir/urlPath).
-
----
-
 ## Limit root album child-album descriptions to 20 words (Backend Extraction)
 
 **Status:** Pending
@@ -494,6 +444,42 @@ The layout header visually flows into the main content: no distinct background b
 
 ### Technical Notes
 - Reference: `Layout.css` (`.layout-header` lines 64–68: `background`, `border-bottom`, `padding`; `.layout-header-content` max-width 1200px; `.layout` gradient 37–42); `themes.css` (`--header-bg`, `--header-border` per theme). The main content area uses `.layout-main` with padding and the same max-width 2400px (content can be narrower); alignment is typically governed by inner content max-width (e.g. 1200px) shared with header.
+
+---
+
+## Fix un-decoded HTML entities in titles and labels (Frontend Bug)
+
+**Status:** Pending
+**Priority:** Medium
+**Complexity:** Low–Medium
+**Estimated Time:** 45–60 minutes
+
+### Description
+**Bug:** Several places in the UI still show **raw HTML entities** (e.g. `&ouml;`, `&auml;`, `&aring;`) instead of the decoded characters (ö, ä, å). Observed: **subalbum titles** on the root album list (e.g. on `http://localhost:5173/#/`), and **album titles** on album detail pages (e.g. `http://localhost:5173/#/album/549842`, `/album/41488`, `/album/41187`). Titles and labels that contain Nordic or other named/numeric entities must be decoded for display so users see “Martin Öjes” and “Nässlan” rather than “Martin &ouml;jes” or “N&auml;sslan”.
+
+### Requirements
+
+#### Scope
+- **Frontend only.** All display paths that render **album titles**, **subalbum titles**, **breadcrumb item titles**, and any other user-visible text that may contain HTML entities must decode them before (or when) rendering. Primary suspects: `frontend/src/utils/decodeHtmlEntities.ts` (ensure it covers all entities that appear in the data, e.g. `&aring;` / `&Aring;` for å/Å if missing); components that show titles: `RootAlbumListBlock` (main album title, subalbum link text), `AlbumDetail` (page title), `RootAlbumListView` (intro title from metadata), `Breadcrumbs` (item titles), `AlbumCard` (grid titles), `SearchResultsPage`, `Lightbox` (image/album text). The pipeline is usually `parseBBCodeDecoded(title)` which already calls `decodeHtmlEntities` internally; if entities still appear, either some paths bypass it or `decodeHtmlEntities` is missing entity definitions.
+- **Audit display paths.** For every place that renders `album.title`, `sub.title`, `metadata.albumTitle`, `item.title` (breadcrumb), or similar: ensure the string is passed through `decodeHtmlEntities` before display, or through `parseBBCodeDecoded` (which delegates to `decodeHtmlEntities` then BBCode). If any path uses raw `title` or only BBCode parsing without prior decode, add `decodeHtmlEntities` (or use `parseBBCodeDecoded` consistently).
+- **Extend decodeHtmlEntities if needed.** Current `decodeHtmlEntities.ts` includes `&auml;`, `&ouml;`, `&uuml;`, `&Auml;`, `&Ouml;`, `&Uuml;`, `&szlig;`, etc. If the backend or Gallery 2 data uses other named entities (e.g. `&aring;`, `&Aring;` for å/Å, or others found when checking the referenced pages), add them to the `NAMED_ENTITIES` list so they decode correctly. Numeric entities `&#123;` and `&#x7B;` are already handled.
+- **Verify in browser.** After changes, confirm on: root list (`/#/`) that subalbum titles show decoded characters; album pages `/#/album/549842`, `/#/album/41488`, `/#/album/41187` that album title (and breadcrumbs, child album titles) show decoded. Check both light and dark theme if applicable.
+
+#### Implementation Tasks
+- List every component and prop that displays a title or label derived from album/subalbum/metadata: RootAlbumListBlock (album.title, sub.title), AlbumDetail (album.title), RootAlbumListView (metadata.albumTitle), Breadcrumbs (item.title), AlbumCard (album.title), SearchResultsPage (album/image titles), Lightbox (image titles). Confirm each path uses `parseBBCodeDecoded(...)` or explicitly `decodeHtmlEntities(...)` before render.
+- In `decodeHtmlEntities.ts`, add any missing named entities that appear in real data (e.g. `&aring;` → å, `&Aring;` → Å). Optionally add a test case with a string containing those entities and assert the output is the decoded character.
+- If a display path is found that does not decode (e.g. a fallback or secondary title that bypasses parseBBCodeDecoded), fix it by applying decode (or parseBBCodeDecoded) to that string.
+- Manual test: load `http://localhost:5173/#/` and the three album URLs above; confirm no raw `&...;` sequences in subalbum or album titles and breadcrumbs.
+
+### Deliverable
+No raw HTML entities visible in album titles, subalbum titles, breadcrumb titles, or other displayed labels. Characters such as ö, ä, å display correctly. Verified on root list and album pages 549842, 41488, 41187.
+
+### Testing Requirements
+- Manual: Root page subalbum titles and album detail pages (549842, 41488, 41187) show decoded text; no `&ouml;`, `&auml;`, `&aring;` etc. in the UI.
+- Unit: Existing tests that assert decoded titles (e.g. RootAlbumListBlock “decodes HTML entities in subalbum titles”) still pass; add or extend tests for any new entities added to decodeHtmlEntities.
+
+### Technical Notes
+- `parseBBCodeDecoded` in `frontend/src/utils/bbcode.ts` already calls `decodeHtmlEntities(text)` before parsing; so any path that uses `parseBBCodeDecoded(title)` should decode. If entities still appear, either the title string is not going through that path (e.g. different data source or key), or the entity is not in the `NAMED_ENTITIES` list (e.g. `&aring;`). Reference: `decodeHtmlEntities.ts` (NAMED_ENTITIES), `bbcode.ts` (parseBBCodeDecoded), `RootAlbumListBlock.tsx` (parsedTitle, sub.title), `AlbumDetail.tsx` (parsedTitle), `RootAlbumListView.tsx` (introTitle), `Breadcrumbs.tsx` (item.title), `AlbumCard.tsx` (parsedTitle).
 
 ---
 
