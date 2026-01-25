@@ -1,5 +1,6 @@
 import type mysql from 'mysql2/promise'
 import type { Child, Config, AlbumMetadata } from './types'
+import { stripBBCode } from './bbcode'
 
 export default (connection: mysql.Connection, config: Config) => {
     const SQL_GET_CHILDREN = `
@@ -111,9 +112,10 @@ export default (connection: mysql.Connection, config: Config) => {
                 const hasChildren = typeof child.hasChildren === 'number' ? child.hasChildren !== 0 : child.hasChildren;
                 const ownerName = child.ownerName == null ? null : (typeof child.ownerName === 'string' ? child.ownerName : null);
                 const summary = child.summary == null ? null : (typeof child.summary === 'string' ? child.summary : null);
+                const title = child.title != null ? stripBBCode(String(child.title)) : null;
                 const { ownerId: _omit, ...rest } = child;
                 if ('ownerid' in rest) delete rest['ownerid'];
-                return { ...rest, hasChildren, ownerName, summary } as unknown as Child;
+                return { ...rest, title, hasChildren, ownerName, summary } as unknown as Child;
             });
         },
         getRootAlbumId: async (): Promise<number> => {
@@ -138,7 +140,7 @@ export default (connection: mysql.Connection, config: Config) => {
             }
             return {
                 id: row.id,
-                title: row.title ?? null,
+                title: row.title != null ? stripBBCode(row.title) : null,
                 description: row.description ?? null,
                 timestamp: row.timestamp ?? null
             };
@@ -154,7 +156,7 @@ export default (connection: mysql.Connection, config: Config) => {
             }
             return {
                 albumId: row.id,
-                albumTitle: row.title ?? null,
+                albumTitle: row.title != null ? stripBBCode(row.title) : null,
                 albumDescription: row.description ?? null,
                 albumTimestamp: row.timestamp ?? null,
                 ownerName: row.ownerName == null ? null : (typeof row.ownerName === 'string' ? row.ownerName : null)
