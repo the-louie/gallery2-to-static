@@ -90,4 +90,50 @@ describe('sortSearchResultsByContextTier', () => {
     expect(results[0].item.id).toBe(301);
     expect(results[1].item.id).toBe(201);
   });
+
+  it('classifies direct children of root when context album is root', () => {
+    const rootId = 1;
+    const childOfRoot = makeResult(10, rootId, 'ChildOfRoot');
+    const other = makeResult(20, 999, 'Other');
+    const getItem = vi.fn((id: number): SearchIndexItem | undefined => {
+      if (id === 999) return { id: 999, type: 'GalleryAlbumItem', title: 'X', pathComponent: 'x', parentId: undefined };
+      return undefined;
+    });
+
+    const results: SearchResult[] = [other, childOfRoot];
+    const sorted = sortSearchResultsByContextTier(results, rootId, getItem);
+
+    expect(sorted[0].item.id).toBe(10);
+    expect(sorted[1].item.id).toBe(20);
+  });
+
+  it('classifies deep descendant (chain length > 2) as tier 2', () => {
+    const ctx = 100;
+    const mid = makeResult(201, ctx, 'Mid');
+    const deep = makeResult(202, 201, 'Deep');
+    const getItem = vi.fn((id: number): SearchIndexItem | undefined => {
+      if (id === 201) return mid.item;
+      if (id === 100) return { id: 100, type: 'GalleryAlbumItem', title: 'Ctx', pathComponent: 'ctx', parentId: undefined };
+      return undefined;
+    });
+
+    const results: SearchResult[] = [deep];
+    const sorted = sortSearchResultsByContextTier(results, ctx, getItem);
+
+    expect(sorted.length).toBe(1);
+    expect(sorted[0].item.id).toBe(202);
+  });
+
+  it('puts result in tier 3 when parent chain has cycle', () => {
+    const resultWithCycle = makeResult(50, 51, 'A');
+    const getItem = vi.fn((id: number): SearchIndexItem | undefined => {
+      if (id === 51) return { id: 51, type: 'GalleryAlbumItem', title: 'B', pathComponent: 'b', parentId: 50 };
+      return undefined;
+    });
+
+    const sorted = sortSearchResultsByContextTier([resultWithCycle], 100, getItem);
+
+    expect(sorted.length).toBe(1);
+    expect(sorted[0].item.id).toBe(50);
+  });
 });

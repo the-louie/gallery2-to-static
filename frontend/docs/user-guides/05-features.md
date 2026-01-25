@@ -33,6 +33,16 @@ Search looks through:
 - **Click to Navigate**: Click any result to go to that album or image
 - **Clear Search**: Clear the search bar to return to browsing
 
+### Context-based result ordering
+
+When you search from an album page (or open a search URL that includes an album), results are ordered by relevance to that album:
+
+- **Tier 1**: Direct children of the album appear first.
+- **Tier 2**: Other descendants (nested subalbums) of that album appear next.
+- **Tier 3**: The rest of the site follows.
+
+Within each tier, the usual relevance and title order is preserved. Context is passed via the optional URL parameter `?album=id` (e.g. `/search?q=term&album=123`). If you search from the home page or use a URL without `album`, results use the default single-tier order (relevance and title only). The album param is added automatically when you submit search from an album or album image page, and the URL remains shareable and bookmark-friendly.
+
 ### Search Tips
 
 - Search is case-insensitive

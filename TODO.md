@@ -289,58 +289,9 @@ The root album view no longer displays the header section or "Albums" title. The
 ### Technical Notes
 - Reference: `frontend/src/components/RootAlbumListView/RootAlbumListView.tsx` (header block around lines 119–121); `frontend/src/components/RootAlbumListView/RootAlbumListView.css` (`.root-album-list-view-header` and `.root-album-list-view-title`).
 
----’s x when shown in a parent’s **Backend only.** Extraction logic in `backend/` that builds album metadata and child items (e.g. `backend/index.ts`, and any helper that sets `title` or `albumTitle`). Add a strip-BBCode step (or helper) and apply it wherever album titles are assigned to the output (metadata for each album file, and each child item’s title 
-- **Titles only.** Strip BBCode from album title fields only. Do not strip from description or summary unless a separate product decision says so; this task is only for titles so that all consumers of `title` / `albumTitle` get plain text.
-- **Stripping.** "Strip" means remove all BBCode tags (e.g. `[b]`, `[/b]`, `[i]`, `[color=red]`, `[tag=value]`, etc.) and output only the concatenated inner text. Optionally decode HTML entities first (e.g. `&auml;` → `ä`) then strip tags, so the stored title is readable plain text. Handle nested tags and malformed/unclosed tags (leave remaining text).
 
-#### Implementation Tasks
-- Add a backend helper that strips BBCode to plain text, e.g. `stripBBCode(title: string): string` (in a shared place). It should remove `[tag]`, `[/tag]`, and `[tag=value]` and return the inner text only. Align with the same tag set the frontend parser knows (b, i, u, s, color, size, url, etc.). Optionally decode HTML entities before or after stripping.
-- Apply the helper wherever album titles are set during extraction: (1) when building `metadata.albumTitle` for each album file; (2) when building each child object’s `title` (for GalleryAlbumItem and any other type that has a title). Ensure root album and all child albums and nested extraction paths use the stripped title.
-**Album descriptions** must support **BBCode rendering** in two places: (1) in the **root album list** (each album block’s description in `RootAlbumListBlock`), and (2) in the **actual album view** (the album description in `AlbumDetail`). Today both locations render the description as plain text (HTML entities decoded only, e.g. `decodeHtmlEntities(album.description)`). Required behavior: parse and render BBCode in the description text (e.g. `[b]`, `[i]`, `[color=…]`, `[url=…]`) so that formatting and links are displayed, using the same parsing pipeline as album titles (e.g. `parseBBCodeDecoded`).
-
-### Requirements
-
-#### Scope
-
-#### Implementation Tasks
-- In `RootAlbumListBlock.tsx`, replace the description output from `decodeHtmlEntities(album.description!)` to `parseBBCodeDecoded(album.description!)` (with null/empty guard: only render the paragraph when description is non-empty; pass trimmed string to the parser). Ensure `extractUrlFromBBCode` for the “website” link still receives raw summary/description if that behavior is separate.
-- In `AlbumDetail.tsx`, replace the description output from `decodeHtmlEntities(album.description)` to `parseBBCodeDecoded(album.description)` (with existing guard for `album.description`). If summary is rendered as a separate paragraph with `decodeHtmlEntities(album.summary)`, change it to `parseBBCodeDecoded(album.summary)` for consistency if product wants summary to support BBCode too.
-- Update tests: In `RootAlbumListBlock.test.tsx`, add or adjust a test that expects description with BBCode (e.g. `[b]bold[/b]`) to render as formatted (e.g. `<strong>bold</strong>`). In `AlbumDetail.test.tsx`, update the test “does not parse BBCode in description or summary” to instead expect BBCode to be parsed (description and optionally summary show formatted content, not raw `[b]...[/b]`). Adjust any snapshot or text assertions that assume plain-text description.
-
---- (“does not parse BBCode in description or summary”## Prioritize search by album context (Frontend)
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Medium
-**Estimated Time:** 1–2 hours
-
-### Description
-When a "context album" is known (e.g. the album page the user was on when they opened search, or an optional URL param), sort search results so that direct children of that album appear first, then remaining descendants of the current album, then results from the whole site. Within each tier, keep existing relevance (and title) ordering. If no context album is provided (e.g. search from home), keep current behavior (single tier, score + title sort).
-
-### Requirements
-
-#### Scope
-- **Frontend only.** Search flow: `SearchBar` (may pass context when navigating to search), `useSearch` hook, `SearchIndex.search()` (or a post-sort step), and `SearchResultsPage`. The search index (`SearchIndexItem`) already has `parentId` and optionally `ancestors`; use these to classify each result as “child of context”, “descendant of context”, or “other”.
-- **Context album.** Define how “current album” is set: e.g. when the user is on `/album/123` and submits search (or opens search from that page), pass album ID 123 as context. Options: (A) Add optional query param e.g. `/search?q=term&album=123` when navigating from an album page; SearchBar or Layout passes the current route’s album ID when present. (B) Store “last viewed album” in session or state and use it as context when on `/search`. Prefer (A) so the URL is shareable and back/forward is consistent.
-- **Tiers.** Tier 1: `item.parentId === contextAlbumId`. Tier 2: item is in the subtree of context album (ancestor chain via `parentId` contains contextAlbumId) but not a direct child. Tier 3: all other results. Sort by tier first, then by existing score and title within each tier.
-
-#### Implementation Tasks
-- **Pass context to search.** When navigating to the search page from an album page (e.g. user on `/album/123` and types in SearchBar then submits, or a “Search from this album” action), navigate to `/search?q=...&album=123`. SearchBar or the component that performs navigation needs access to the current album ID when on `/album/:id` (e.g. from route params or layout context). If search is initiated from home or a page without an album, do not add `album` param.
-- **Use context in results.** In `SearchResultsPage` or `useSearch`, read the `album` query param (context album ID). When present, after obtaining raw results from `SearchIndex.search(query)`, partition (or sort) results into the three tiers. For “descendant” check: walk each result’s `parentId` chain using `index.getItem(parentId)` until either contextAlbumId is found (then tier 2, or tier 1 if direct child) or no parent (then tier 3). Apply stable sort: tier 1 first, then tier 2, then tier 3; within each tier keep the existing relevance/title order.
-- **Search index.** No backend change required if `SearchIndexItem.parentId` is already populated in the pre-built index. If not, add `parentId` (and optionally ancestor IDs) in the backend when building the search index so the frontend can compute “child of” and “descendant of”.
-- **Cache.** If useSearch caches results by query only, cache key may need to include context album ID (e.g. `query + (albumId ?? '')`) so that the same query from home vs from an album can show different order. Invalidate or key cache accordingly.
-- **Tests.** Add tests: (1) with no context album, order unchanged; (2) with context album, a direct child of that album appears before a sibling’s descendant, which appears before an item outside the subtree.
-
-### Deliverable
-Search results are ordered so that children of the current album (when applicable) are shown first, then other descendants of the current album, then the rest of the site. Context album is derived from URL (e.g. `?album=123`) when the user searched from an album page. When no context is provided, behavior is unchanged.
-
-### Testing Requirements
-- Manual: From an album page, run a search that returns at least one direct child and one item outside the album; confirm children appear first. From home, run the same search; confirm order is by relevance only (or by context if home is treated as “root” context, per product decision).
-- Unit: Test sort logic with mock results and a context album ID: tier order is correct; within tier, score/title order preserved.
-
-### Technical Notes
-- `SearchIndexItem` has `parentId` (see `frontend/src/utils/searchIndex.ts`). Use `SearchIndex.getItem(id)` to walk the parent chain and classify each result. Root items have no parentId or parentId not in index; treat as “other”.
 ---
+
 
 ## Remove nav (Main navigation) and make root album intro title the only h1 (Frontend)
 

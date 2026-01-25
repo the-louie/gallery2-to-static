@@ -229,6 +229,17 @@ describe('SearchResultsPage', () => {
     expect(mockSearch).toHaveBeenCalledWith('term', undefined);
   });
 
+  it('calls search with contextAlbumId undefined when album param is non-numeric', () => {
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams('?q=term&album=abc'),
+      vi.fn(),
+    ]);
+
+    render(<SearchResultsPage />);
+
+    expect(mockSearch).toHaveBeenCalledWith('term', undefined);
+  });
+
   it('displays path above link for albums with ancestors', () => {
     vi.mocked(useSearch).mockReturnValue({
       ...mockUseSearch,
