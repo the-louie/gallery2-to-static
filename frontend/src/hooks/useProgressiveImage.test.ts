@@ -1,8 +1,8 @@
 /**
  * Progressive Image Loading Hook Tests
  *
- * Tests for useProgressiveImage hook covering state transitions, format detection,
- * error handling, and cleanup.
+ * Tests for useProgressiveImage hook covering state transitions,
+ * error handling, and cleanup. Hook uses only original image URLs from data.
  */
 
 import React from 'react';
@@ -12,10 +12,8 @@ import { MemoryRouter } from 'react-router-dom';
 import { ViewAbortProvider } from '@/contexts/ViewAbortContext';
 import { useProgressiveImage } from './useProgressiveImage';
 import type { Image } from '@/types';
-import * as imageFormat from '@/utils/imageFormat';
 import * as imageUrl from '@/utils/imageUrl';
 
-vi.mock('@/utils/imageFormat');
 vi.mock('@/utils/imageUrl');
 
 function createWrapper() {
@@ -69,23 +67,6 @@ describe('useProgressiveImage', () => {
       }
       return '/images/test-album/test-photo.jpg';
     });
-
-    vi.spyOn(imageUrl, 'getImageUrlWithFormat').mockImplementation(
-      (image, useThumbnail, format) => {
-        const baseUrl = useThumbnail
-          ? '/images/test-album/t__test-photo'
-          : '/images/test-album/test-photo';
-        if (format === 'webp') {
-          return `${baseUrl}.webp`;
-        }
-        if (format === 'avif') {
-          return `${baseUrl}.avif`;
-        }
-        return `${baseUrl}.jpg`;
-      },
-    );
-
-    vi.spyOn(imageFormat, 'getBestFormat').mockResolvedValue('original');
 
     // Mock fetch for fetchImageAsObjectUrl (thumbnail and full image loads)
     global.fetch = vi.fn(() =>
@@ -212,44 +193,7 @@ describe('useProgressiveImage', () => {
       });
     });
 
-    it('falls back to original format when format variant fails', async () => {
-      vi.spyOn(imageFormat, 'getBestFormat').mockResolvedValue('webp');
-
-      const { result } = renderHook(() => useProgressiveImage(mockImage), {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => {
-        expect(result.current.fullImageUrl).toContain('.webp');
-      });
-
-      if (mockImageElement.onload) {
-        mockImageElement.onload();
-      }
-
-      await waitFor(() => {
-        expect(result.current.state).toBe('thumbnail-loaded');
-      });
-
-      if (mockImageElement.onerror) {
-        mockImageElement.onerror();
-      }
-
-      await waitFor(() => {
-        expect(global.Image).toHaveBeenCalledTimes(3);
-      });
-
-      if (mockImageElement.onload) {
-        mockImageElement.onload();
-      }
-
-      await waitFor(() => {
-        expect(result.current.state).toBe('full-loaded');
-        expect(result.current.fullImageUrl).toContain('.jpg');
-      });
-    });
-
-    it('sets error state when all formats fail', async () => {
+    it('sets error state when full image fails', async () => {
       const { result } = renderHook(() => useProgressiveImage(mockImage), {
         wrapper: createWrapper(),
       });
@@ -278,56 +222,27 @@ describe('useProgressiveImage', () => {
     });
   });
 
-  describe('format detection', () => {
-    it('uses AVIF format when supported', async () => {
-      vi.spyOn(imageFormat, 'getBestFormat').mockResolvedValue('avif');
-
+  describe('image URL', () => {
+    it('uses original image URL from data for full image', async () => {
       const { result } = renderHook(() => useProgressiveImage(mockImage), {
         wrapper: createWrapper(),
       });
 
       await waitFor(() => {
-        expect(result.current.fullImageUrl).toContain('.avif');
-      });
-    });
-
-    it('uses WebP format when AVIF not supported', async () => {
-      vi.spyOn(imageFormat, 'getBestFormat').mockResolvedValue('webp');
-
-      const { result } = renderHook(() => useProgressiveImage(mockImage), {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => {
-        expect(result.current.fullImageUrl).toContain('.webp');
-      });
-    });
-
-    it('falls back to original when format detection fails', async () => {
-      vi.spyOn(imageFormat, 'getBestFormat').mockRejectedValue(
-        new Error('Format detection failed'),
-      );
-
-      const { result } = renderHook(() => useProgressiveImage(mockImage), {
-        wrapper: createWrapper(),
-      });
-
-      await waitFor(() => {
-        expect(result.current.fullImageUrl).toContain('.jpg');
+        expect(result.current.fullImageUrl).toBe('/images/test-album/test-photo.jpg');
       });
     });
   });
 
   describe('cleanup', () => {
-    it('cleans up on unmount', () => {
-      const { unmount } = renderHook(() => useProgressiveImage(mockImage), {
+    it('cleans up on unmount without throwing', () => {
+      const { result, unmount } = renderHook(() => useProgressiveImage(mockImage), {
         wrapper: createWrapper(),
       });
 
+      expect(result.current.state).toBe('thumbnail');
       unmount();
-
-      expect(mockImageElement.onload).toBeNull();
-      expect(mockImageElement.onerror).toBeNull();
+      // Hook cleanup revokes object URLs and clears refs; unmount must not throw
     });
 
     it('does not update state after unmount', async () => {

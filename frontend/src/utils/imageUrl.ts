@@ -203,7 +203,8 @@ export function getImageUrl(
 /**
  * Get image URL with format variant
  *
- * Constructs an image URL with a specific format variant (WebP, AVIF, or original).
+ * The app currently loads only original-format assets from the data JSON; the format
+ * parameter is for possible future use. Constructs an image URL with a specific format variant (WebP, AVIF, or original).
  * Supports both thumbnail and full image URLs.
  *
  * @param image - Image object with pathComponent field

@@ -1,6 +1,9 @@
 /**
  * Image Format Detection Utilities
  *
+ * Note: Asset URLs are not swapped by format; the app loads only the image URLs
+ * as provided in the data JSON (original format). This module is kept for possible future use.
+ *
  * Provides functions to detect browser support for modern image formats
  * (WebP and AVIF) using canvas-based feature detection. Results are cached
  * to avoid repeated checks.

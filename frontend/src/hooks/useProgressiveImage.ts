@@ -9,8 +9,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import type { Image } from '@/types';
-import { getImageUrl, getImageUrlWithFormat } from '@/utils/imageUrl';
-import { getBestFormat } from '@/utils/imageFormat';
+import { getImageUrl } from '@/utils/imageUrl';
 import { getImageCache } from '@/utils/imageCache';
 import { fetchImageAsObjectUrl } from '@/utils/fetchImageAsObjectUrl';
 import { useViewAbortSignal } from '@/contexts/ViewAbortContext';
@@ -35,7 +34,7 @@ export type ProgressiveImageState =
 export interface UseProgressiveImageReturn {
   /** Thumbnail image URL */
   thumbnailUrl: string;
-  /** Full image URL (with best format) */
+  /** Full image URL (original format from data) */
   fullImageUrl: string;
   /** Current loading state */
   state: ProgressiveImageState;
@@ -48,8 +47,8 @@ export interface UseProgressiveImageReturn {
 /**
  * Hook for progressive image loading with blur-up
  *
- * Loads thumbnail first, then full-resolution image. Automatically detects
- * best format (AVIF → WebP → Original) and uses format fallback.
+ * Loads thumbnail first, then full-resolution image. Uses only the image URLs
+ * as provided in the data (original format); no format variants (AVIF/WebP).
  *
  * @param image - Image object to load
  * @param useThumbnail - Whether to use thumbnail (default: true for progressive loading)
@@ -65,14 +64,12 @@ export function useProgressiveImage(
   const [error, setError] = useState<string | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
   const [fullImageUrl, setFullImageUrl] = useState<string>('');
-  const [format, setFormat] = useState<'webp' | 'avif' | 'original'>('original');
 
   const thumbnailImgRef = useRef<HTMLImageElement | null>(null);
   const fullImgRef = useRef<HTMLImageElement | null>(null);
   const thumbnailObjectUrlRef = useRef<string | null>(null);
   const fullObjectUrlRef = useRef<string | null>(null);
   const isMountedRef = useRef(true);
-  const formatDetectionDoneRef = useRef(false);
   const currentImageIdRef = useRef<number | null>(null);
 
   // Reset state when image changes
@@ -88,33 +85,14 @@ export function useProgressiveImage(
     const imageId = image.id;
     currentImageIdRef.current = imageId;
     isMountedRef.current = true;
-    formatDetectionDoneRef.current = false;
     setState('thumbnail');
     setHasError(false);
     setError(null);
 
     const thumbRequestUrl = getImageUrl(image, true);
     setThumbnailUrl(thumbRequestUrl);
-
-    getBestFormat()
-      .then((bestFormat) => {
-        if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
-          return;
-        }
-        formatDetectionDoneRef.current = true;
-        setFormat(bestFormat);
-        const fullUrl = getImageUrlWithFormat(image, false, bestFormat);
-        setFullImageUrl(fullUrl);
-      })
-      .catch((err) => {
-        if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
-          return;
-        }
-        formatDetectionDoneRef.current = true;
-        setFormat('original');
-        const fullUrl = getImageUrl(image, false);
-        setFullImageUrl(fullUrl);
-      });
+    const fullUrl = getImageUrl(image, false);
+    setFullImageUrl(fullUrl);
 
     return () => {
       isMountedRef.current = false;
@@ -218,12 +196,7 @@ export function useProgressiveImage(
 
   // Load full image (fetch + object URL)
   useEffect(() => {
-    if (
-      !image ||
-      !fullImageUrl ||
-      state !== 'thumbnail-loaded' ||
-      !formatDetectionDoneRef.current
-    ) {
+    if (!image || !fullImageUrl || state !== 'thumbnail-loaded') {
       return;
     }
 
@@ -269,67 +242,7 @@ export function useProgressiveImage(
             fullObjectUrlRef.current = null;
           }
           img.src = '';
-          if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
-            return;
-          }
-          if (format !== 'original') {
-            const originalUrl = getImageUrl(image, false);
-            const cachedOriginal = cache.get(originalUrl);
-            if (cachedOriginal) {
-              setFullImageUrl(originalUrl);
-              setFormat('original');
-              setState('full-loaded');
-              setHasError(false);
-              setError(null);
-              return;
-            }
-            fetchImageAsObjectUrl(originalUrl, signal)
-              .then((fallbackObjectUrl) => {
-                if (signal.aborted || !isMountedRef.current || currentImageIdRef.current !== imageId) {
-                  URL.revokeObjectURL(fallbackObjectUrl);
-                  return;
-                }
-                fullObjectUrlRef.current = fallbackObjectUrl;
-                const fallbackImg = new Image();
-                fullImgRef.current = fallbackImg;
-                fallbackImg.onload = () => {
-                  if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
-                    if (signal.aborted) {
-                      if (fullObjectUrlRef.current) {
-                        URL.revokeObjectURL(fullObjectUrlRef.current);
-                        fullObjectUrlRef.current = null;
-                      }
-                      fallbackImg.src = '';
-                    }
-                    return;
-                  }
-                  cache.set(originalUrl, fallbackImg);
-                  setFullImageUrl(fallbackObjectUrl);
-                  setFormat('original');
-                  setState('full-loaded');
-                  setHasError(false);
-                  setError(null);
-                };
-                fallbackImg.onerror = () => {
-                  URL.revokeObjectURL(fallbackObjectUrl);
-                  fallbackImg.src = '';
-                  if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
-                    setState('error');
-                    setHasError(true);
-                    setError('Failed to load image');
-                  }
-                };
-                fallbackImg.src = fallbackObjectUrl;
-              })
-              .catch((fallbackErr) => {
-                if (fallbackErr?.name === 'AbortError') return;
-                if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
-                  setState('error');
-                  setHasError(true);
-                  setError('Failed to load image');
-                }
-              });
-          } else {
+          if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
             setState('error');
             setHasError(true);
             setError('Failed to load image');
@@ -355,7 +268,7 @@ export function useProgressiveImage(
         fullObjectUrlRef.current = null;
       }
     };
-  }, [image, fullImageUrl, state, format, signal]);
+  }, [image, fullImageUrl, state, signal]);
 
   useEffect(() => {
     return () => {
