@@ -1209,6 +1209,28 @@ describe('AlbumDetail', () => {
         expect(screen.getByText(/Owner: Owner & Co/)).toBeInTheDocument();
       });
     });
+
+    it('decodes Latin accent entities in album title', async () => {
+      const albumWithAccent: Album = {
+        ...mockAlbum,
+        type: 'GalleryAlbumItem',
+        title: 'Daniel Lehn&eacute;r',
+      } as Album;
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: null,
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={7} album={albumWithAccent} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Daniel Lehnér')).toBeInTheDocument();
+      });
+    });
   });
 
   describe('Security - HTML Injection Prevention', () => {

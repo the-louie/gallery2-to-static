@@ -251,6 +251,15 @@ describe('RootAlbumListBlock', () => {
       expect(strong).toBeInTheDocument();
       expect(strong?.textContent).toBe('Album & Photos');
     });
+
+    it('decodes Latin accent entities in main title', () => {
+      const albumWithAccent: Album = {
+        ...baseAlbum,
+        title: 'Daniel Lehn&eacute;r',
+      };
+      render(<RootAlbumListBlock album={albumWithAccent} subalbums={[]} />);
+      expect(screen.getByText('Daniel Lehnér')).toBeInTheDocument();
+    });
   });
 
   describe('Highlight image background', () => {

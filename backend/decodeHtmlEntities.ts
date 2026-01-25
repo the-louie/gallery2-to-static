@@ -23,6 +23,20 @@ const NAMED_ENTITIES: [string, string][] = [
   ['&szlig;', 'ß'],
   ['&aring;', 'å'],
   ['&Aring;', 'Å'],
+  ['&agrave;', 'à'],
+  ['&Agrave;', 'À'],
+  ['&eacute;', 'é'],
+  ['&Eacute;', 'É'],
+  ['&egrave;', 'è'],
+  ['&Egrave;', 'È'],
+  ['&ecirc;', 'ê'],
+  ['&Ecirc;', 'Ê'],
+  ['&euml;', 'ë'],
+  ['&Euml;', 'Ë'],
+  ['&iacute;', 'í'],
+  ['&Iacute;', 'Í'],
+  ['&ntilde;', 'ñ'],
+  ['&Ntilde;', 'Ñ'],
 ];
 
 const MAX_ITERATIONS = 10;

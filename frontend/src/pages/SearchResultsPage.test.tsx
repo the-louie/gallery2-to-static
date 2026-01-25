@@ -497,6 +497,31 @@ describe('SearchResultsPage', () => {
     expect(screen.getByText(/Owner: Owner & Co/)).toBeInTheDocument();
   });
 
+  it('decodes Latin accent entities in album titles', () => {
+    vi.mocked(useSearch).mockReturnValue({
+      ...mockUseSearch,
+      query: 'Lehn',
+      results: [
+        {
+          item: {
+            id: 1,
+            type: 'GalleryAlbumItem' as const,
+            title: 'Daniel Lehn&eacute;r',
+            description: '',
+            pathComponent: 'album',
+          },
+          score: 10,
+          matchedInTitle: true,
+          matchedInDescription: false,
+        },
+      ],
+    } as any);
+
+    render(<SearchResultsPage />);
+
+    expect(screen.getByText('Daniel Lehnér')).toBeInTheDocument();
+  });
+
   describe('Security - HTML Injection Prevention', () => {
     it('escapes HTML entities in titles (React default escaping)', () => {
       vi.mocked(useSearch).mockReturnValue({

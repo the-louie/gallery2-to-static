@@ -400,6 +400,17 @@ describe('Breadcrumbs', () => {
       const link = screen.getByRole('link', { name: 'Go to Album & Photos album' });
       expect(link).toBeInTheDocument();
     });
+
+    it('decodes Latin accent entities in breadcrumb titles', () => {
+      const path: BreadcrumbPath = [
+        { id: 7, title: 'Home', path: '/' },
+        { id: 10, title: 'Daniel Lehn&eacute;r', path: '/album/10' },
+      ];
+
+      render(<Breadcrumbs path={path} />);
+
+      expect(screen.getByText('Daniel Lehnér')).toBeInTheDocument();
+    });
   });
 
   describe('Security - HTML Injection Prevention', () => {

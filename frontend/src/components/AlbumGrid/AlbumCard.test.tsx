@@ -308,6 +308,15 @@ describe('AlbumCard', () => {
       render(<AlbumCard album={albumWithEntities} />);
       expect(screen.getByText('Album & More')).toBeInTheDocument();
     });
+
+    it('decodes Latin accent entities in title', () => {
+      const albumWithAccent: Album = {
+        ...mockAlbum,
+        title: 'Daniel Lehn&eacute;r',
+      };
+      render(<AlbumCard album={albumWithAccent} />);
+      expect(screen.getByText('Daniel Lehnér')).toBeInTheDocument();
+    });
   });
 
   describe('Security - HTML Injection Prevention', () => {

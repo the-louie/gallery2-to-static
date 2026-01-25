@@ -79,6 +79,35 @@ describe('decodeHtmlEntities', () => {
     expect(decodeHtmlEntities('G&aring;rd')).toBe('Gård');
   });
 
+  it('decodes Latin accents: &eacute;, &agrave;, &egrave;, &ecirc;, &euml;, &iacute;, &ntilde;', () => {
+    expect(decodeHtmlEntities('&eacute;')).toBe('é');
+    expect(decodeHtmlEntities('&Eacute;')).toBe('É');
+    expect(decodeHtmlEntities('&agrave;')).toBe('à');
+    expect(decodeHtmlEntities('&Agrave;')).toBe('À');
+    expect(decodeHtmlEntities('&egrave;')).toBe('è');
+    expect(decodeHtmlEntities('&ecirc;')).toBe('ê');
+    expect(decodeHtmlEntities('&euml;')).toBe('ë');
+    expect(decodeHtmlEntities('&iacute;')).toBe('í');
+    expect(decodeHtmlEntities('&ntilde;')).toBe('ñ');
+    expect(decodeHtmlEntities('&Ntilde;')).toBe('Ñ');
+  });
+
+  it('decodes real-world title and name examples', () => {
+    expect(decodeHtmlEntities('Daniel Lehn&eacute;r')).toBe('Daniel Lehnér');
+    expect(decodeHtmlEntities('Catten &amp; Mamma')).toBe('Catten & Mamma');
+  });
+
+  it('decodes &#233; decimal and combined entity-heavy string', () => {
+    expect(decodeHtmlEntities('&#233;')).toBe('é');
+    expect(
+      decodeHtmlEntities('Catten &amp; Mamma &ouml; &eacute; &#233;'),
+    ).toBe('Catten & Mamma ö é é');
+  });
+
+  it('decodes double-encoded &amp;eacute; to é', () => {
+    expect(decodeHtmlEntities('&amp;eacute;')).toBe('é');
+  });
+
   it('handles empty &#; (no digits) as no-op', () => {
     expect(decodeHtmlEntities('&#;')).toBe('&#;');
   });

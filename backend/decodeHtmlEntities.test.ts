@@ -37,6 +37,32 @@ function run(): void {
   assert.strictEqual(stripBBCode(decodeHtmlEntities('')), '');
   assert.strictEqual(stripBBCode(decodeHtmlEntities(null as unknown as string)), '');
 
+  // New named entities: &eacute;, &agrave;, &egrave;, &ecirc;, &euml;, &iacute;, &ntilde; and uppercase
+  assert.strictEqual(decodeHtmlEntities('&eacute;'), 'é');
+  assert.strictEqual(decodeHtmlEntities('&Eacute;'), 'É');
+  assert.strictEqual(decodeHtmlEntities('&agrave;'), 'à');
+  assert.strictEqual(decodeHtmlEntities('&Agrave;'), 'À');
+  assert.strictEqual(decodeHtmlEntities('&egrave;'), 'è');
+  assert.strictEqual(decodeHtmlEntities('&Egrave;'), 'È');
+  assert.strictEqual(decodeHtmlEntities('&ecirc;'), 'ê');
+  assert.strictEqual(decodeHtmlEntities('&Ecirc;'), 'Ê');
+  assert.strictEqual(decodeHtmlEntities('&euml;'), 'ë');
+  assert.strictEqual(decodeHtmlEntities('&Euml;'), 'Ë');
+  assert.strictEqual(decodeHtmlEntities('&iacute;'), 'í');
+  assert.strictEqual(decodeHtmlEntities('&Iacute;'), 'Í');
+  assert.strictEqual(decodeHtmlEntities('&ntilde;'), 'ñ');
+  assert.strictEqual(decodeHtmlEntities('&Ntilde;'), 'Ñ');
+  assert.strictEqual(decodeHtmlEntities('Daniel Lehn&eacute;r'), 'Daniel Lehnér');
+  assert.strictEqual(decodeHtmlEntities('Catten &amp; Mamma'), 'Catten & Mamma');
+  assert.strictEqual(decodeHtmlEntities('&#233;'), 'é');
+  // Double-encoded: &amp;eacute; → é
+  assert.strictEqual(decodeHtmlEntities('&amp;eacute;'), 'é');
+  // Combined entities in one string
+  assert.strictEqual(
+    decodeHtmlEntities('Catten &amp; Mamma &ouml; &eacute; &#233;'),
+    'Catten & Mamma ö é é',
+  );
+
   console.log('decodeHtmlEntities tests passed');
 }
 

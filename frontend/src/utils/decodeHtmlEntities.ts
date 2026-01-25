@@ -1,5 +1,6 @@
 /**
- * Decode HTML entities for display strings (e.g. &auml;, &ouml;, &aring; → ä, ö, å).
+ * Decode HTML entities for display strings (e.g. &auml;, &ouml;, &aring;, &eacute; → ä, ö, å, é).
+ * Supports common Latin accents (é, à, è, ê, ë, í, ñ) and German/Nordic characters.
  *
  * Use for album titles, breadcrumbs, subalbum labels, descriptions, etc.
  * Must run **before** BBCode parsing when used with parseBBCode so that
@@ -26,6 +27,20 @@ const NAMED_ENTITIES: [string, string][] = [
   ['&szlig;', 'ß'],
   ['&aring;', 'å'],
   ['&Aring;', 'Å'],
+  ['&agrave;', 'à'],
+  ['&Agrave;', 'À'],
+  ['&eacute;', 'é'],
+  ['&Eacute;', 'É'],
+  ['&egrave;', 'è'],
+  ['&Egrave;', 'È'],
+  ['&ecirc;', 'ê'],
+  ['&Ecirc;', 'Ê'],
+  ['&euml;', 'ë'],
+  ['&Euml;', 'Ë'],
+  ['&iacute;', 'í'],
+  ['&Iacute;', 'Í'],
+  ['&ntilde;', 'ñ'],
+  ['&Ntilde;', 'Ñ'],
 ];
 
 const MAX_ITERATIONS = 10;

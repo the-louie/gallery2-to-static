@@ -1,5 +1,239 @@
 # TODO
 
+## Reclaim memory for images not currently shown
+
+**Status:** Pending
+**Priority:** High
+**Complexity:** Medium–High
+**Estimated Time:** 4–6 hours
+
+### Description
+The site uses large amounts of RAM (~3GB) when browsing because image data for albums that are no longer on screen (or that were loaded for another album) is kept in memory. We need a way to reclaim memory for images that are not currently visible or needed for the active album/view.
+
+### Requirements
+
+#### Investigation Tasks
+- Profile where memory is held: ImageGrid/ImageThumbnail components, image preloading, lightbox, caches (e.g. useImagePreload, any URL or blob caching), React state/store for album data and image lists
+- Determine whether the main cost is decoded image bitmaps (img elements / Image objects), cached fetch responses, retained album JSON, or virtualized list off-screen DOM
+- Review existing virtualization (e.g. VirtualGrid, react-virtuoso) and whether it unmounts or only hides off-screen items
+- Check for global or long-lived caches (search index, album data, image URLs) that hold references to image data or large structures
+
+#### Implementation Tasks
+- Unmount or release resources for images that leave the viewport (e.g. when navigating to another album, or when images scroll out of view in a virtualized list)
+- Avoid retaining full-size or decoded image data for albums the user has left; rely on re-fetch or re-decode when returning to an album if acceptable
+- Consider revokable object URLs for blobs if used, and revoke when an image is no longer displayed
+- Ensure virtualized lists actually unmount off-screen items (or use a bounded cache size) so the browser can garbage-collect image decodes
+- Optionally cap the number of preloaded or decoded images (e.g. for lightbox) and drop oldest when over limit
+- Document any tradeoff (e.g. brief re-load when returning to an album) and ensure UX remains acceptable
+
+### Deliverable
+Measurable reduction in RAM usage when browsing (e.g. navigating between albums, scrolling large grids) without unacceptable regression in perceived performance; memory for images not currently needed is reclaimed.
+
+### Testing Requirements
+- Verify memory drops (or stays stable) after navigating away from an album with many images
+- Verify memory behavior when scrolling through a large image grid (virtualized)
+- No broken display when returning to a previously visited album (reload or re-fetch is acceptable if documented)
+- Optional: add memory or performance notes to docs
+
+### Technical Notes
+- Browsers retain decoded image data for `<img>` elements and canvas until the element is removed and no references remain; unmounting components that hold images is necessary for GC.
+- Preloading (e.g. preload next/prev in lightbox) should be bounded or tied to current view to avoid unbounded growth.
+- If album or image data is cached in context/state, consider evicting or limiting cache size for albums the user is not viewing.
+
+---
+
+## Cancel all in-flight image GETs when navigating
+
+**Status:** Pending
+**Priority:** High
+**Complexity:** Medium
+**Estimated Time:** 2–4 hours
+
+### Description
+When the user navigates away (e.g. changes route from one album to another, or from album to root), every in-flight image HTTP GET request must be canceled. Today, requests triggered by the previous view can still complete after navigation, consuming bandwidth and memory and potentially updating state for unmounted components. All image fetches (thumbnails, full-size, preloads, lightbox next/prev) must be tied to an AbortController (or equivalent) that is aborted on navigation so the browser stops the requests and releases resources.
+
+### Requirements
+
+#### Investigation Tasks
+- Find every code path that fetches images: native `<img src>`, `fetch()` for images or blobs, preload hooks (e.g. useImagePreload, useProgressiveImage preload), lightbox full-size or adjacent-image preload, any central image-loading utility.
+- For `<img src>`: identify whether any custom loading uses fetch + object URL; if so, ensure that fetch uses a signal. For img-only loading, canceling is limited (browser may not abort img), but any explicit fetch() used for images must accept and use an AbortSignal.
+- Determine where “navigation” can be observed: route change (React Router), album id change, or a single navigation context that can provide an AbortSignal to all image-loading code for the current “page” or “album view”.
+
+#### Implementation Tasks
+- Introduce a per-view or per-route AbortController (e.g. in a context or in the component tree for the album/image view) that is aborted when the user navigates away (e.g. in a React Router cleanup or when albumId/route params change).
+- Pass the corresponding AbortSignal into all image fetches (fetch(..., { signal }), and any preload or load helpers that use fetch). Ensure preload queues or in-flight requests are cleared/aborted when the signal fires.
+- Where image loading is done only via `<img src>` (no fetch), document that behavior; prefer switching to fetch + object URL with signal where feasible so those GETs can be canceled, or ensure at least unmount removes the img so the browser can discard the request where it supports that.
+- Add tests: after navigating away, assert no completed image requests from the previous view (e.g. via mock fetch or network instrumentation), and no state updates from aborted requests.
+
+### Deliverable
+On navigation, all in-flight image GETs for the previous view are canceled (aborted). No requests from the previous album/view complete after the user has left; bandwidth and memory from those requests are not retained.
+
+### Testing Requirements
+- Navigate from an album with many thumbnails loading to another route; verify (e.g. Network tab or mock) that previous requests are aborted/canceled.
+- No console errors or React state-update-after-unmount from aborted fetches; error handlers must treat AbortError as a normal cancellation.
+- Returning to an album still loads images correctly (new requests with a new signal).
+
+### Technical Notes
+- Use `AbortController.abort()` and pass `controller.signal` to `fetch()` options. On navigation, call `controller.abort()` and create a new controller for the new view.
+- React Strict Mode may double-mount; ensure abort logic does not cancel the “current” view’s requests prematurely.
+- Related to “Reclaim memory for images not currently shown”: canceling GETs reduces in-flight work and helps avoid retaining response data for the previous view.
+
+---
+
+## Show total descendant image count for non-root albums (backend)
+
+**Status:** Pending
+**Priority:** Medium
+**Complexity:** Medium
+**Estimated Time:** 2–4 hours
+
+### Description
+Non-root albums should display the total number of images that are descendants (direct or nested in subalbums). This count must be computed during backend export and written into each album’s JSON so the frontend can show it (e.g. “Size: 40 items (38136 images total)” or similar). Root album may be excluded or treated differently if desired.
+
+### Requirements
+
+#### Investigation Tasks
+- Confirm where album metadata is emitted: `backend/index.ts` builds `AlbumMetadata` and writes `{ metadata, children }` per album file (e.g. `data/{albumId}.json`)
+- Review `backend/types.ts` `AlbumMetadata` interface and add an optional field (e.g. `totalDescendantImageCount?: number`) for the new value
+- Determine traversal: backend already has `computeAlbumsWithImageDescendants` and child filtering; add or reuse a function that counts all `GalleryPhotoItem` descendants for a given album (respecting `ignoreSet` and albums-with-images filtering)
+- Decide whether root album JSON also gets the count or only non-root; document choice
+
+#### Implementation Tasks (backend)
+- Add a function (e.g. `computeDescendantImageCount(albumId, sql, ignoreSet)`) that recursively counts all `GalleryPhotoItem` items in the album subtree, respecting blacklist and existing “albums with image descendants” logic
+- For each album written (or only when `albumId !== rootId`), compute the count and set it on `metadata` (e.g. `metadata.totalDescendantImageCount = count`)
+- Extend `AlbumMetadata` in `backend/types.ts` with the new field; ensure frontend types (if shared or mirrored) are updated
+- Add tests for the count (e.g. album with only direct photos, album with nested albums, blacklisted subtree)
+
+#### Implementation Tasks (frontend)
+- Read the new metadata field from album JSON / `useAlbumData` metadata
+- Display the total descendant image count wherever album metadata is shown (e.g. AlbumDetail header, AlbumCard, RootAlbumListBlock meta) for non-root albums; follow existing “Size: X items” pattern or add “X images total” as appropriate
+
+### Deliverable
+- Backend: each non-root (or all) album JSON includes a correct `totalDescendantImageCount` (or chosen name) in metadata.
+- Frontend: non-root albums show the total number of descendant images in the UI.
+
+### Testing Requirements
+- Backend: unit or integration test that export produces the new field and value matches manual count for a small fixture
+- Frontend: metadata section shows the count when present; no regression when field is missing (optional field)
+
+### Technical Notes
+- Counting must respect `ignoreSet` (blacklisted albums and their descendants are excluded).
+- Reuse existing SQL/child fetching and filtering so the count matches what is actually exported (e.g. same as `albumsWithImageDescendants` and `ignoreSet`).
+- Design doc (e.g. `docs/dev-notes/2026-01-25-1200_original_design_analyzis_1.md`) references “Size: 40 items (38136 items total)” for root; similar semantics for non-root “X images (Y total)” if desired.
+
+---
+
+## Investigate: album 338910 / image 395090 page loads no images
+
+**Status:** Pending
+**Priority:** High
+**Complexity:** Low–Medium
+**Estimated Time:** 1–2 hours
+
+### Description
+The URL `http://localhost:5173/#/album/338910/image/395090` does not load or display any images. Album data in `data/338910.json` is valid: it has `children` array with `GalleryPhotoItem` entries including item id 395090 (and others). The image detail view or grid on this album page should show the album's images and open the specified image; currently neither the grid nor the image appears to load.
+
+### Requirements
+
+#### Investigation Tasks
+- Reproduce: open `/#/album/338910/image/395090` and confirm no images load (grid empty or image viewer blank).
+- Trace route handling: how does the app resolve `albumId=338910` and `imageId=395090`? Check `App.tsx` routes and any route params used for album/detail views.
+- Trace data loading: confirm `data/338910.json` is fetched and that `children` (including 395090) are exposed to the album view (e.g. via `useAlbumData`, metadata, or similar).
+- Check filtering: ensure no filter excludes `GalleryPhotoItem` or this album's children (e.g. by type or id).
+- Check image URL resolution: `children[].urlPath` in 338910.json uses paths like `dreamhack/dreamhack_summer_07/crewbilder/hulth/onsdag/___img_3817.jpg`; verify base URL or asset path is applied so `<img src="...">` or preload receives a valid URL.
+- If the view is "album with lightbox opened to image 395090", verify the lightbox receives the correct list of image items and the index for 395090; confirm no off-by-one or id-vs-index mismatch.
+
+#### Implementation Tasks (after root cause)
+- Fix the identified cause (routing, data loading, filtering, URL construction, or lightbox list/index).
+- Ensure `/#/album/338910` (without image id) also shows the grid; ensure `/#/album/338910/image/395090` shows the same grid and opens the image 395090 in the viewer.
+
+### Deliverable
+`/#/album/338910` and `/#/album/338910/image/395090` both show the album's images; the latter opens image 395090 in the viewer.
+
+### Testing Requirements
+- Manual: load `/#/album/338910/image/395090` and confirm images appear and the specified image is focused in the viewer.
+- No regression on other album/image URLs.
+
+### Technical Notes
+- Image data lives in album JSON `data/338910.json` under `children`; there is no separate `data/395090.json`. Item id 395090 is the first child in that file.
+- Reference: `data/338910.json` (album Onsdag; children include 395090, 395094, 395099, etc., all `GalleryPhotoItem` with `urlPath`).
+
+---
+
+## Fix image URL path: album 534881 and ___ prefix (wrong path)
+
+**Status:** Pending
+**Priority:** High
+**Complexity:** Medium
+**Estimated Time:** 2–4 hours
+
+### Description
+Album 534881 (and possibly others) have image URLs that point to the wrong path. Example: the first image links to `https://lanbilder.se/the_enigma/enigma_09/___20090418-img_1720.jpg` but the true/correct asset path is `the_enigma/enigma_09/20090418-img_1720.jpg` (no `___` before the filename). In `data/534881.json`, `children[].urlPath` and `metadata.highlightImageUrl` use filenames like `___20090418-img_1719.jpg`; the backend builds these with `getLinkTarget(cleanedTitle, rawPath)` in `backend/legacyPaths.ts`, which adds `uipathcomponent + '___' + pathcomponent` when the cleaned title and pathComponent differ (e.g. empty title → `'' + '___' + '20090418-IMG_1720.jpg'` → `___20090418-img_1720.jpg`). The actual exported or served files are named without the `___` prefix, so the emitted urlPath does not match the real asset path and images 404 or fail to load.
+
+### Requirements
+
+#### Investigation Tasks
+- Confirm on production or static export: are image files stored as `20090418-img_1720.jpg` or as `___20090418-img_1720.jpg`? If the former, urlPath must not include `___` for these cases.
+- Review `backend/legacyPaths.ts` `getLinkTarget` and `getThumbTarget`: they add `___` + pathcomponent when uipathcomponent and pathcomponent differ. Determine whether the static export (or Gallery 2 migration) writes files using this convention or the simpler pathcomponent-only name.
+- Find all call sites that use getLinkTarget/getThumbTarget to build urlPath or highlightImageUrl (e.g. `backend/index.ts` when building child urlPath and album highlightImageUrl).
+- Scan other album JSONs for urlPath/highlightImageUrl containing `___` in the filename and list affected albums.
+
+#### Implementation Tasks
+- Align URL output with actual file layout. Option A: change backend so urlPath (and thumb URL when applicable) uses the actual exported filename—e.g. when the file on disk is `20090418-img_1720.jpg`, emit `.../20090418-img_1720.jpg` (no `___`). Option B: if the export pipeline is intended to write `___...` filenames, fix the export so it does, and ensure the server serves from that path. Choose one convention and make backend and export consistent.
+- If Option A: adjust getLinkTarget (and getThumbTarget) or the callers so that the emitted path matches the file that is actually exported/served (e.g. use pathcomponent-based filename when that is what exists, and reserve `___` only where the export actually produces such filenames). Update tests in `legacyPaths.test.ts` and any export tests; document the convention.
+- Regenerate or fix album JSON for 534881 (and any other affected albums) so urlPath and highlightImageUrl point to the correct asset paths.
+
+### Deliverable
+Image URLs for album 534881 (and all affected albums) resolve correctly. No `___` in the path when the actual file is named without it; or, if `___` is kept, the exported files and server paths match the emitted urlPath.
+
+### Testing Requirements
+- Open album 534881 and confirm the first image (and others) load (e.g. `/album/534881` and image detail).
+- Backend/export: after change, urlPath values point to existing files in the build output (or match the chosen naming convention).
+- No regression for albums that already work (e.g. those that use the `___` form and are exported that way).
+
+### Technical Notes
+- `data/534881.json`: `pathComponent` e.g. `theenigma/enigma09/20090418-IMG_1720.jpg`, `urlPath` e.g. `the_enigma/enigma_09/___20090418-img_1720.jpg`; `highlightImageUrl` same pattern. True path per user: `the_enigma/enigma_09/20090418-img_1720.jpg`.
+- `backend/legacyPaths.ts`: getLinkTarget(uipathcomponent, pathcomponent); when title is empty, uipathcomponent is '' and output becomes `___` + pathcomponent (lowercased, .jpg.jpg fixed).
+- Backend builds urlPath in `backend/index.ts` via getLinkTarget(cleanedTitle, rawPath); dir comes from uipath (breadcrumb-style path). Ensure any change preserves correct directory segment and only fixes the filename part to match exported assets.
+
+---
+
+## Verify frontend loads images AVIF-first everywhere
+
+**Status:** Pending
+**Priority:** Medium
+**Complexity:** Low
+**Estimated Time:** 1–2 hours
+
+### Description
+Confirm whether the frontend attempts to load all images as AVIF first (with fallback to WebP then original). The codebase has `getBestFormat()` in `frontend/src/utils/imageFormat.ts` (AVIF → WebP → original) and `getImageUrlWithFormat()` in `frontend/src/utils/imageUrl.ts`; `useProgressiveImage` uses them for thumbnail and full-image URLs. Ensure every image load path (grid thumbnails, full-size, lightbox, album highlights, hero/cover images) goes through format detection and uses the best format so we consistently prefer AVIF when supported.
+
+### Requirements
+
+#### Investigation Tasks
+- Trace all places that set image `src` or trigger image load: ImageThumbnail, useProgressiveImage consumers, lightbox/full-size viewer, album highlight images, RootAlbumListBlock or AlbumCard thumbnails, any direct `getImageUrl()` calls without format.
+- For each path, determine whether it uses `getBestFormat()` + `getImageUrlWithFormat(..., format)` or equivalent (e.g. useProgressiveImage), or if it uses `getImageUrl()` only (original format).
+- Document which code paths are AVIF-first and which are not.
+
+#### Implementation Tasks (if gaps found)
+- Use format detection and format-specific URLs for any image load that currently uses original only (e.g. ensure thumbnails and full-size in lightbox use the same AVIF-first logic).
+- Optionally add a short note in docs (e.g. architecture or user-guides) that the app prefers AVIF then WebP then original for all user-facing images.
+
+### Deliverable
+All image loads that should prefer modern formats go through AVIF-first (then WebP, then original) where the backend serves those variants; any exception documented.
+
+### Testing Requirements
+- In a browser that supports AVIF, confirm thumbnails and full-size images load .avif URLs (e.g. via Network tab or existing tests).
+- Existing tests in `useProgressiveImage.test.ts` and `imageFormat.test.ts` already cover getBestFormat and AVIF; no regression.
+
+### Technical Notes
+- `frontend/src/utils/imageFormat.ts`: `getBestFormat()`, `detectAVIFSupportAsync()`, format support cache.
+- `frontend/src/utils/imageUrl.ts`: `getImageUrlWithFormat(image, useThumbnail, format)`.
+- `frontend/src/hooks/useProgressiveImage.ts`: uses getBestFormat and getImageUrlWithFormat for thumbnail and full image.
+- Backend/export may need to emit or serve .avif/.webp variants for this to have effect; investigation is frontend-only unless missing asset handling is found.
+
+---
+
 ## Implement Per-Album Theme Configuration
 
 **Status:** Pending
