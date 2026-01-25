@@ -298,3 +298,20 @@ export function getAlbumThumbnailUrl(
 
   return null;
 }
+
+/**
+ * Get album highlight image URL for use as block background.
+ * Returns a full URL only when album.highlightImageUrl is set (non-empty); does not use
+ * thumbnailUrlPath or thumbnailPathComponent. For use where the requirement is explicitly
+ * the highlight image (e.g. RootAlbumListBlock background).
+ *
+ * @param album - Album with optional highlightImageUrl
+ * @returns Full image URL, or null if highlightImageUrl is missing or empty
+ */
+export function getAlbumHighlightImageUrl(album: Album): string | null {
+  if (!album.highlightImageUrl || album.highlightImageUrl.length === 0) {
+    return null;
+  }
+  const baseUrl = getImageBaseUrl();
+  return `${baseUrl}/${ensureNoLeadingSlash(album.highlightImageUrl)}`;
+}

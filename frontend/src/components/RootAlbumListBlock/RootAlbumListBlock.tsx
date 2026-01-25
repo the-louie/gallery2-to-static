@@ -7,6 +7,9 @@
  * in a 2-column grid layout; when more exist, "... And much more" is shown below the list.
  * Two-column layout (album left, subalbums right); stacks on narrow viewports.
  *
+ * Block background uses the album highlight image when present (faded, blurred layer); when
+ * no highlight image is available the block uses the gradient fallback only.
+ *
  * Size and Views are omitted (not in backend); see dateUtils for note.
  *
  * @module frontend/src/components/RootAlbumListBlock
@@ -17,7 +20,7 @@ import { Link } from 'react-router-dom';
 import { parseBBCodeDecoded, extractUrlFromBBCode } from '@/utils/bbcode';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { formatAlbumDate } from '@/utils/dateUtils';
-import { getAlbumThumbnailUrl } from '@/utils/imageUrl';
+import { getAlbumHighlightImageUrl } from '@/utils/imageUrl';
 import { sortItems } from '@/utils/sorting';
 import type { Album } from '@/types';
 import './RootAlbumListBlock.css';
@@ -68,10 +71,10 @@ export function RootAlbumListBlock({
   const hasMoreSubalbums = subalbums.length > 6;
 
   const linkTo = `/album/${album.id}`;
-  const highlightImageUrl = getAlbumThumbnailUrl(album);
+  const highlightImageUrl = getAlbumHighlightImageUrl(album);
   const safeBgUrl =
     highlightImageUrl != null
-      ? `url("${String(highlightImageUrl).replace(/"/g, '\\"')}")`
+      ? `url("${highlightImageUrl.replace(/"/g, '\\"')}")`
       : undefined;
 
   return (

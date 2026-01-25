@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { getImageUrl, getImageUrlWithFormat, getAlbumThumbnailUrl } from './imageUrl';
+import { getImageUrl, getImageUrlWithFormat, getAlbumThumbnailUrl, getAlbumHighlightImageUrl } from './imageUrl';
 import type { Image, Album } from '../types';
 import * as imageConfig from './imageConfig';
 
@@ -389,6 +389,69 @@ describe('imageUrl utilities', () => {
       vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
       const url = getAlbumThumbnailUrl(albumHighlightOnly);
       expect(url).toBe('/images/internationella/hackers_at_large_2001/gea/image.jpg');
+    });
+  });
+
+  describe('getAlbumHighlightImageUrl', () => {
+    const mockAlbum: Album = {
+      id: 1,
+      type: 'GalleryAlbumItem',
+      hasChildren: true,
+      title: 'Test Album',
+      description: null,
+      pathComponent: 'test-album',
+      timestamp: null,
+      width: null,
+      height: null,
+      thumb_width: null,
+      thumb_height: null,
+      thumbnailPathComponent: 'test-album/thumb.jpg',
+    };
+
+    it('returns null when highlightImageUrl is missing', () => {
+      const url = getAlbumHighlightImageUrl(mockAlbum);
+      expect(url).toBeNull();
+    });
+
+    it('returns null when highlightImageUrl is empty string', () => {
+      const album: Album = { ...mockAlbum, highlightImageUrl: '' };
+      const url = getAlbumHighlightImageUrl(album);
+      expect(url).toBeNull();
+    });
+
+    it('returns full URL when highlightImageUrl is set', () => {
+      const album: Album = {
+        ...mockAlbum,
+        highlightImageUrl: 'internationella/gea/image.jpg',
+      };
+      vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
+      const url = getAlbumHighlightImageUrl(album);
+      expect(url).toBe('/images/internationella/gea/image.jpg');
+    });
+
+    it('does not use thumbnailPathComponent or thumbnailUrlPath', () => {
+      const albumWithThumbOnly: Album = {
+        ...mockAlbum,
+        thumbnailPathComponent: 'album/thumb.jpg',
+        thumbnailUrlPath: 'legacy/thumb.jpg',
+        highlightImageUrl: undefined,
+      };
+      const url = getAlbumHighlightImageUrl(albumWithThumbOnly);
+      expect(url).toBeNull();
+    });
+
+    it('uses base URL from config', () => {
+      const album: Album = { ...mockAlbum, highlightImageUrl: 'path/to/highlight.jpg' };
+      vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('https://cdn.example.com');
+      const url = getAlbumHighlightImageUrl(album);
+      expect(url).toBe('https://cdn.example.com/path/to/highlight.jpg');
+    });
+
+    it('strips leading slash from highlightImageUrl', () => {
+      const album: Album = { ...mockAlbum, highlightImageUrl: '/path/highlight.jpg' };
+      vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
+      const url = getAlbumHighlightImageUrl(album);
+      expect(url).toBe('/images/path/highlight.jpg');
     });
   });
 });

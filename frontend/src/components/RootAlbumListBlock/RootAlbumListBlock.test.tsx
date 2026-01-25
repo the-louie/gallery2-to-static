@@ -236,6 +236,46 @@ describe('RootAlbumListBlock', () => {
     });
   });
 
+  describe('Highlight image background', () => {
+    it('does not render background layer when album has no highlightImageUrl', () => {
+      const albumNoHighlight: Album = {
+        ...baseAlbum,
+        highlightImageUrl: undefined,
+        thumbnailPathComponent: undefined,
+        thumbnailUrlPath: undefined,
+      } as Album;
+      const { container } = render(<RootAlbumListBlock album={albumNoHighlight} subalbums={[]} />);
+      const bg = container.querySelector('.root-album-list-block-bg');
+      expect(bg).not.toBeInTheDocument();
+    });
+
+    it('renders background layer when album has highlightImageUrl', () => {
+      const albumWithHighlight: Album = {
+        ...baseAlbum,
+        id: 99,
+        highlightImageUrl: 'path/to/highlight.jpg',
+      } as Album;
+      const { container } = render(<RootAlbumListBlock album={albumWithHighlight} subalbums={[]} />);
+      const bg = container.querySelector('.root-album-list-block-bg');
+      expect(bg).toBeInTheDocument();
+      expect(bg).toHaveAttribute('role', 'presentation');
+      expect(bg).toHaveAttribute('aria-hidden', 'true');
+      expect((bg as HTMLElement).style.backgroundImage).toContain('path/to/highlight.jpg');
+    });
+
+    it('does not render highlight background when album has only thumbnail path and no highlightImageUrl', () => {
+      const albumThumbOnly: Album = {
+        ...baseAlbum,
+        thumbnailPathComponent: 'album/thumb.jpg',
+        thumbnailUrlPath: undefined,
+        highlightImageUrl: undefined,
+      } as Album;
+      const { container } = render(<RootAlbumListBlock album={albumThumbOnly} subalbums={[]} />);
+      const bg = container.querySelector('.root-album-list-block-bg');
+      expect(bg).not.toBeInTheDocument();
+    });
+  });
+
   describe('Security - HTML Injection Prevention', () => {
     it('escapes HTML entities in titles (React default escaping)', () => {
       const albumWithScript: Album = {
