@@ -3,8 +3,8 @@
  *
  * Renders a single root-level album as a rich block: album title (bold), description,
  * optional website link from summary/description, metadata (Date, Owner), and "Subalbums:" list.
- * The Subalbums section shows at most the latest 6 subalbums (by timestamp descending, nulls last)
- * in a 2-column grid layout; when more exist, "... And much more" is shown below the list.
+ * The Subalbums section shows at most the latest 10 subalbums (by timestamp descending, nulls last)
+ * in a 2-column grid layout; when more exist, "...and more!" is shown at the bottom right of the block.
  * Two-column layout (album left, subalbums right); stacks on narrow viewports.
  *
  * Block background uses the album highlight image when present (faded, blurred layer); when
@@ -24,6 +24,8 @@ import { getAlbumHighlightImageUrl } from '@/utils/imageUrl';
 import { sortItems } from '@/utils/sorting';
 import type { Album } from '@/types';
 import './RootAlbumListBlock.css';
+
+const ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT = 10;
 
 export interface RootAlbumListBlockProps {
   /** The root-level album to display. */
@@ -65,10 +67,10 @@ export function RootAlbumListBlock({
   const showSubalbums = subalbums.length > 0;
 
   const displaySubalbums = useMemo(
-    () => sortItems([...subalbums], 'date-desc').slice(0, 6),
+    () => sortItems([...subalbums], 'date-desc').slice(0, ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT),
     [subalbums],
   );
-  const hasMoreSubalbums = subalbums.length > 6;
+  const hasMoreSubalbums = subalbums.length > ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT;
 
   const linkTo = `/album/${album.id}`;
   const highlightImageUrl = getAlbumHighlightImageUrl(album);
@@ -157,7 +159,7 @@ export function RootAlbumListBlock({
             </ul>
             {hasMoreSubalbums && (
               <span className="root-album-list-block-subalbums-more">
-                ... And much more
+                ...and more!
               </span>
             )}
           </section>

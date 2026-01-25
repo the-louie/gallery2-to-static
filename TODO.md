@@ -181,41 +181,6 @@ The sub-album wrapper in the root album (and any child-album list using the same
 
 ---
 
-## Root album subalbums: limit 10, "...and more!" at bottom right (Frontend)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 20–30 minutes
-
-### Description
-In the **root album list** (component `RootAlbumListBlock`), the **Subalbums** section currently shows at most **6** subalbum links (by date-desc), and when more exist displays **"... And much more"** below the list. This task: (1) **raise the limit** from 6 to **10** subalbums; (2) **move** the overflow indicator text to the **bottom right** of the subalbums block (instead of directly under the list); (3) **reword** the text from "... And much more" to **"...and more!"** (lowercase "and", exclamation).
-
-### Requirements
-
-#### Scope
-- **Frontend only.** `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx` (limit constant, slice count, hasMore condition, visible text), `RootAlbumListBlock.css` (positioning of `.root-album-list-block-subalbums-more` so it sits at bottom right of `.root-album-list-block-subalbums`). Tests in `RootAlbumListBlock.test.tsx` that assert on the limit (6 vs 10) or on the exact string "... And much more" must be updated.
-- **Limit 10.** Display at most 10 subalbums (same ordering: date-desc, nulls last). Use a named constant (e.g. `ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT = 10`) so the limit is configurable in one place. `hasMoreSubalbums` should be true when `subalbums.length > 10`.
-- **Bottom right.** The "...and more!" element (`.root-album-list-block-subalbums-more`) must appear at the **bottom right** of the subalbums block. Implement by making the subalbums container a flex column with the list growing and the "more" row at the end aligned to the right (e.g. `margin-top: auto`, `align-self: flex-end`, or equivalent). Ensure the block does not rely on a fixed height for the "more" row if that would break layout; adjust CSS variables (e.g. `--root-album-subalbums-list-height` from 3 to 10 rows if still used) if they assume 6 items.
-- **Text.** Replace the visible string from "... And much more" to "...and more!" (exactly: three dots, lowercase "and", space, "more", exclamation).
-
-#### Implementation Tasks
-- In `RootAlbumListBlock.tsx`: introduce `ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT = 10` (or similar); change `slice(0, 6)` to `slice(0, ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT)`; change `hasMoreSubalbums = subalbums.length > 6` to `> ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT`; change the rendered text from "... And much more" to "...and more!". Update the file-top comment that says "at most the latest 6 subalbums" and "... And much more" to reflect 10 and "...and more!".
-- In `RootAlbumListBlock.css`: give `.root-album-list-block-subalbums` a flex layout (e.g. `display: flex; flex-direction: column;`) so the list takes space and the "more" row can sit at the bottom; style `.root-album-list-block-subalbums-more` so it appears at bottom right (e.g. `margin-top: auto; align-self: flex-end;` or `text-align: right` on a wrapper). Adjust `--root-album-subalbums-list-height` and related variables if they assume 3 visible rows (6 items in 2 columns); update to 10 items (5 rows) if min-height is still used, or remove fixed min-height if layout works without it.
-- In `RootAlbumListBlock.test.tsx`: update tests that assume 6 subalbums (e.g. "shows only 6 subalbum links and '... And much more' when >6 subalbums") to use 10 and the new text "...and more!"; update assertions that check for absence of "... And much more" when ≤6 to use threshold 10 and string "...and more!".
-
-### Deliverable
-Root album subalbums section shows up to 10 subalbum links; when more than 10 exist, "...and more!" appears at the bottom right of the subalbums block. Tests updated for limit 10 and new copy.
-
-### Testing Requirements
-- Manual: Root album with more than 10 subalbums shows 10 links and "...and more!" at bottom right of the subalbums box; with ≤10 subalbums no "...and more!".
-- Unit: RootAlbumListBlock tests assert 10 displayed links when >10 subalbums, new text "...and more!", and no overflow text when ≤10 subalbums.
-
-### Technical Notes
-- Reference: `RootAlbumListBlock.tsx` (lines 66–70 for limit/hasMore, line 159 for text); `RootAlbumListBlock.css` (`.root-album-list-block-subalbums`, `.root-album-list-block-subalbums-more`, `:root` variables for list height); `RootAlbumListBlock.test.tsx` (tests "shows all 6...", "shows only 6...", "... And much more").
-
----
-
  The header should not appear as a distinct "bar" on top of the page. Prefer: (1) **Background:** Use the same background as the page (e.g. transparent so the layout’s gradient or `--color-background-primary` shows through), or extend the layout gradient into the header area so there is no color step. (2) **Border:** Remove the header’s `border-bottom` or replace it with a very subtle separator (e.g. same color as background with a slight tone difference, or a soft shadow) so the transition to main content is gradual rather than a hard line.
  Remove or soften `.layout-header`’s `border-bottom` (remove it, or use a very light border/shadow that doesn’t read as a strong line).
 ---

@@ -101,7 +101,7 @@ describe('RootAlbumListBlock', () => {
     expect(subLink).toHaveAttribute('href', '/album/10');
   });
 
-  it('shows all subalbum links and no "... And much more" when ≤6 subalbums', () => {
+  it('shows all subalbum links and no "...and more!" when ≤10 subalbums', () => {
     const sub1: Album = { ...mockAlbumWithChildren, type: 'GalleryAlbumItem', id: 10, title: 'Parent Album', timestamp: 1609459200 } as Album;
     const sub2: Album = { ...mockAlbum, type: 'GalleryAlbumItem', id: 11, title: 'Sub A', timestamp: 1609459100 } as Album;
     const sub3: Album = { ...mockAlbum, type: 'GalleryAlbumItem', id: 12, title: 'Sub B', timestamp: 1609459000 } as Album;
@@ -110,49 +110,51 @@ describe('RootAlbumListBlock', () => {
     expect(screen.getByRole('link', { name: 'Parent Album' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Sub A' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Sub B' })).toBeInTheDocument();
-    expect(screen.queryByText(/\.\.\. And much more/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('...and more!')).not.toBeInTheDocument();
   });
 
-  it('shows all 6 subalbum links and no "... And much more" when exactly 6 subalbums', () => {
+  it('shows all 10 subalbum links and no "...and more!" when exactly 10 subalbums', () => {
     const subs: Album[] = [
-      makeSub(10, 'Parent Album', 1609459200),
-      makeSub(11, 'Sub A', 1609459100),
-      makeSub(12, 'Sub B', 1609459000),
-      makeSub(13, 'Sub C', 1609458900),
-      makeSub(14, 'Sub D', 1609458800),
-      makeSub(15, 'Sub E', 1609458700),
+      makeSub(10, 'Sub 1', 1609459200),
+      makeSub(11, 'Sub 2', 1609459100),
+      makeSub(12, 'Sub 3', 1609459000),
+      makeSub(13, 'Sub 4', 1609458900),
+      makeSub(14, 'Sub 5', 1609458800),
+      makeSub(15, 'Sub 6', 1609458700),
+      makeSub(16, 'Sub 7', 1609458600),
+      makeSub(17, 'Sub 8', 1609458500),
+      makeSub(18, 'Sub 9', 1609458400),
+      makeSub(19, 'Sub 10', 1609458300),
     ];
     render(<RootAlbumListBlock album={baseAlbum} subalbums={subs} />);
     expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Parent Album' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Sub A' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Sub B' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Sub C' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Sub D' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Sub E' })).toBeInTheDocument();
-    expect(screen.queryByText(/\.\.\. And much more/i)).not.toBeInTheDocument();
+    for (let i = 1; i <= 10; i++) {
+      expect(screen.getByRole('link', { name: `Sub ${i}` })).toBeInTheDocument();
+    }
+    expect(screen.queryByText('...and more!')).not.toBeInTheDocument();
   });
 
-  it('shows only 6 subalbum links and "... And much more" when >6 subalbums', () => {
+  it('shows only 10 subalbum links and "...and more!" when >10 subalbums', () => {
     const subs: Album[] = [
-      makeSub(10, 'Parent Album', 1609459200),
-      makeSub(11, 'Sub A', 1609459100),
-      makeSub(12, 'Sub B', 1609459000),
-      makeSub(13, 'Sub C', 1609458900),
-      makeSub(14, 'Sub D', 1609458800),
-      makeSub(15, 'Sub E', 1609458700),
-      makeSub(16, 'Sub F', 1609458600),
+      makeSub(10, 'Sub 1', 1609459200),
+      makeSub(11, 'Sub 2', 1609459100),
+      makeSub(12, 'Sub 3', 1609459000),
+      makeSub(13, 'Sub 4', 1609458900),
+      makeSub(14, 'Sub 5', 1609458800),
+      makeSub(15, 'Sub 6', 1609458700),
+      makeSub(16, 'Sub 7', 1609458600),
+      makeSub(17, 'Sub 8', 1609458500),
+      makeSub(18, 'Sub 9', 1609458400),
+      makeSub(19, 'Sub 10', 1609458300),
+      makeSub(20, 'Sub 11', 1609458200),
     ];
     render(<RootAlbumListBlock album={baseAlbum} subalbums={subs} />);
     expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Parent Album' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Sub A' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Sub B' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Sub C' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Sub D' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Sub E' })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Sub F' })).not.toBeInTheDocument();
-    expect(screen.getByText(/\.\.\. And much more/i)).toBeInTheDocument();
+    for (let i = 1; i <= 10; i++) {
+      expect(screen.getByRole('link', { name: `Sub ${i}` })).toBeInTheDocument();
+    }
+    expect(screen.queryByRole('link', { name: 'Sub 11' })).not.toBeInTheDocument();
+    expect(screen.getByText('...and more!')).toBeInTheDocument();
   });
 
   it('renders BBCode-formatted subalbum title', () => {

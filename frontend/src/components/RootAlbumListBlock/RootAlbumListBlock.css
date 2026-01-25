@@ -2,20 +2,20 @@
  * RootAlbumListBlock component styles
  *
  * Two-column layout (album block left, subalbums right). Stacks on narrow viewports.
- * Subalbums section displays up to 6 items in a 2-column grid layout.
+ * Subalbums section displays up to 10 items in a 2-column grid layout.
  * Reuses theme variables from AlbumDetail / AlbumCard.
  *
  * @module frontend/src/components/RootAlbumListBlock
  */
 
-/* Height calculation variables for 6 items in 2-column grid (3 rows) */
+/* Height calculation variables for 10 items in 2-column grid (5 rows) */
 :root {
   --root-album-subalbum-item-height: 2.75rem;
   --root-album-subalbum-gap: 0.5rem;
   --root-album-subalbums-list-padding: 2px;
   --root-album-subalbums-title-margin-bottom: 0.5rem;
   --root-album-subalbums-more-margin-top: 0.5rem;
-  --root-album-subalbums-list-height: calc((var(--root-album-subalbum-item-height) * 3) + (var(--root-album-subalbum-gap) * 2) + (var(--root-album-subalbums-list-padding) * 2));
+  --root-album-subalbums-list-height: calc((var(--root-album-subalbum-item-height) * 5) + (var(--root-album-subalbum-gap) * 4) + (var(--root-album-subalbums-list-padding) * 2));
   --root-album-subalbums-more-height: calc(var(--root-album-subalbums-more-margin-top) + 1.5rem);
   --root-album-subalbums-section-padding: 2rem; /* Desktop: 1rem top + 1rem bottom */
   --root-album-subalbums-section-padding-mobile: 1.5rem; /* Mobile: 0.75rem top + 0.75rem bottom */
@@ -183,10 +183,12 @@
   color: var(--album-detail-title-color, #333333);
 }
 
-/* Subalbums section: snazzy pill-style links, subtle container */
+/* Subalbums section: snazzy pill-style links, subtle container; flex column so "...and more!" sits at bottom right */
 .root-album-list-block-subalbums {
   flex-shrink: 0;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
   background-color: var(--color-background-secondary, #f5f5f5);
   border: 1px solid var(--color-border, #e0e0e0);
   border-radius: var(--radius-md, 8px);
@@ -264,7 +266,8 @@
 
 .root-album-list-block-subalbums-more {
   display: block;
-  margin-top: var(--root-album-subalbums-more-margin-top);
+  margin-top: auto;
+  align-self: flex-end;
   font-size: 0.875rem;
   color: var(--album-detail-text-muted, var(--color-text-muted));
   opacity: 0.85;
