@@ -29,46 +29,6 @@ Two parts: (1) **Backend:** Strip BBCode from album titles in emitted JSON so `t
 
 ---
 
-## Replace "Gallery Administrator" with "The Louie" in ownerName (Backend Extraction)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 30–45 minutes
-
-### Description
-During backend extraction, any `ownerName` value that equals the literal string `"Gallery Administrator"` (from the Gallery 2 database) must be replaced with `"The Louie"` before being written to the emitted JSON. This applies to both album metadata (`metadata.ownerName`) and child items (`children[].ownerName`).
-
-### Requirements
-
-#### Scope
-- **Backend only.** All places that set or pass through `ownerName` during export must apply the replacement.
-- **Exact match.** Replace only when `ownerName === "Gallery Administrator"`. Do not change other owner names or null/undefined.
-- **Output.** Emitted album JSON files and any other output that includes `ownerName` must show "The Louie" instead of "Gallery Administrator" where that value came from the database.
-
-#### Implementation Options
-- **Option A:** Normalize in `backend/sqlUtils.ts` where `ownerName` is read from the database (e.g. in `getAlbumInfo` and in the `getChildren` mapping). Use a small helper (e.g. `normalizeOwnerDisplayName(name)` or inline check) so all consumers receive the normalized value.
-- **Option B:** Normalize in `backend/index.ts` when assigning `metadata.ownerName` and when building or writing child data that includes `ownerName`. Ensures all write paths apply the replacement.
-- Prefer a single place (e.g. one helper used in sqlUtils) to avoid duplication and keep behavior consistent.
-
-#### Implementation Tasks
-- Add a normalization step or helper that maps `"Gallery Administrator"` → `"The Louie"` and leaves other values unchanged.
-- Apply it wherever `ownerName` is set on album metadata or on child objects during extraction.
-- Ensure null/undefined ownerName is not replaced (only the string `"Gallery Administrator"`).
-
-### Deliverable
-Backend extraction no longer emits `ownerName: "Gallery Administrator"`; those entries show `ownerName: "The Louie"` in the generated JSON. All other owner names and null/undefined remain unchanged.
-
-### Testing Requirements
-- Run extraction (or unit tests if added) and confirm generated album JSON has "The Louie" for items that previously had "Gallery Administrator".
-- Confirm other owner names and missing ownerName are unchanged.
-
-### Technical Notes
-- No frontend or type changes required if the replacement is done before JSON is written.
-- Use a constant for the literal `"Gallery Administrator"` (and optionally for `"The Louie"`) to keep the code maintainable.
-
----
-
 ## Limit root album child-album descriptions to 20 words (Backend Extraction)
 
 **Status:** Pending

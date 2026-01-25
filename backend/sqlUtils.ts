@@ -1,6 +1,7 @@
 import type mysql from 'mysql2/promise'
 import type { Child, Config, AlbumMetadata } from './types'
 import { stripBBCode } from './bbcode'
+import { normalizeOwnerDisplayName } from './ownerDisplayName'
 
 export default (connection: mysql.Connection, config: Config) => {
     const SQL_GET_CHILDREN = `
@@ -110,7 +111,8 @@ export default (connection: mysql.Connection, config: Config) => {
                     throw new Error('Invalid hasChildren field type in query result row');
                 }
                 const hasChildren = typeof child.hasChildren === 'number' ? child.hasChildren !== 0 : child.hasChildren;
-                const ownerName = child.ownerName == null ? null : (typeof child.ownerName === 'string' ? child.ownerName : null);
+                const rawOwnerName = child.ownerName == null ? null : (typeof child.ownerName === 'string' ? child.ownerName : null);
+                const ownerName = normalizeOwnerDisplayName(rawOwnerName);
                 const summary = child.summary == null ? null : (typeof child.summary === 'string' ? child.summary : null);
                 const title = child.title != null ? stripBBCode(String(child.title)) : null;
                 const { ownerId: _omit, ...rest } = child;
@@ -159,7 +161,7 @@ export default (connection: mysql.Connection, config: Config) => {
                 albumTitle: row.title != null ? stripBBCode(row.title) : null,
                 albumDescription: row.description ?? null,
                 albumTimestamp: row.timestamp ?? null,
-                ownerName: row.ownerName == null ? null : (typeof row.ownerName === 'string' ? row.ownerName : null)
+                ownerName: normalizeOwnerDisplayName(row.ownerName == null ? null : (typeof row.ownerName === 'string' ? row.ownerName : null))
             };
         }
     }

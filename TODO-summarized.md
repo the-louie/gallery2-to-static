@@ -4,7 +4,6 @@
 - Album titles and descriptions: BBCode (Backend + Frontend) - Medium - 1–2 hours - Backend: strip BBCode from titles; Frontend: render BBCode in descriptions (RootAlbumListBlock, AlbumDetail)
 
 ## Pending Tasks
-- Replace "Gallery Administrator" with "The Louie" in ownerName (Backend) - Low - 30–45 min - During backend extraction, replace ownerName "Gallery Administrator" with "The Louie" in metadata and children
 - Limit root album child-album descriptions to 20 words - Low - 30–45 min - In root album JSON only, truncate child album description to 20 words and append ellipsis if longer
 - Exclude albums with no image descendant from extraction - Medium - 1–1.5 hours - Backend: do not emit JSON or list in children for albums that have no photo in subtree (recursive)
 - Subalbum wrapper 50% width, max-width 800px below 1200px - Low - 20–30 min - Frontend: subalbum wrapper div 50% parent width and max-width 800px on viewports below 1200px
@@ -21,8 +20,8 @@
 
 ## Summary
 
-**Total Tasks:** 13
-**Pending:** 12
+**Total Tasks:** 12
+**Pending:** 11
 **Partial:** 1
 **In Progress:** 0
 **Completed:** 0
