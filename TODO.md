@@ -250,41 +250,6 @@ Layout header has no `<nav>`, and the site name is not an `<h1>`. The only `<h1>
 
 ---
 
-## Move gallery-order dropdown to the right of theme dropdown and style similarly (Frontend)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 15–20 minutes
-
-### Description
-In the layout header (`.layout-header-actions`), the **gallery-order** dropdown (SortDropdown, used for album/sort order) should be placed **immediately to the right** of the **theme** dropdown (ThemeDropdown). Both dropdowns should be **styled similarly** so they share the same visual appearance (border, border-radius, padding, font size/weight, focus outline, hover behavior) and read as a single control group.
-
-### Requirements
-
-#### Scope
-- **Frontend only.** `frontend/src/components/Layout/Layout.tsx` (order of components in the header), and the CSS for `ThemeDropdown` and `SortDropdown` (or shared header-control styles in `Layout.css`).
-- **Order.** In the header actions container, ensure the DOM order is: SearchBar (or other elements as present), then ThemeDropdown, then SortDropdown (gallery-order), so the sort dropdown is to the right of the theme dropdown. If they are already in this order, confirm and leave as-is; otherwise reorder.
-- **Styling.** Make both dropdowns look consistent: same border (e.g. 1px solid, same color variable), same border-radius (e.g. `var(--radius-md, 8px)`), similar padding (e.g. 0.5rem 0.75rem), same font-size (e.g. 0.875rem) and font-weight (e.g. 500), same min-height (e.g. 44px for touch targets), and matching focus outline and hover states. Prefer reusing the same CSS custom properties (e.g. a shared set like `--header-dropdown-border`, `--header-dropdown-bg`) for both, or align ThemeDropdown and SortDropdown to use identical values.
-
-#### Implementation Tasks
-- In `Layout.tsx`, verify or set the order of `ThemeDropdown` and `SortDropdown` within `.layout-header-actions` so that SortDropdown appears to the right of ThemeDropdown.
-- In `ThemeDropdown.css` and `SortDropdown.css` (or in a shared block in `Layout.css`), align styles: use the same border, border-radius, padding, font-size, font-weight, min-height, and matching :hover / :focus rules. If ThemeDropdown uses `--theme-switcher-*` and SortDropdown uses `--sort-dropdown-*`, either map both to the same underlying values or introduce a small set of shared variables (e.g. in `themes.css`) and use them for both components.
-- Optionally wrap both in a container (e.g. a div with class `layout-header-dropdowns`) and apply a small gap between them (e.g. 0.5rem) so they appear as a paired group.
-- Check responsive behavior: on narrow viewports, ensure both dropdowns remain usable and do not overflow (flex-wrap or order as needed).
-
-### Deliverable
-The gallery-order (Sort) dropdown is positioned to the right of the theme dropdown in the layout header, and both dropdowns share the same visual styling (border, radius, padding, font, focus, hover) so they look like a consistent control group.
-
-### Testing Requirements
-- Manual: Load the app and confirm in the header that the theme dropdown and the sort (gallery-order) dropdown appear next to each other with the sort to the right of the theme, and that both have matching appearance.
-- Unit/integration: If Layout or header tests assert on order or presence of dropdowns, update as needed.
-
-### Technical Notes
-- Reference: `frontend/src/components/Layout/Layout.tsx` (`.layout-header-actions`; `ThemeDropdown`, `SortDropdown`), `ThemeDropdown.css`, `SortDropdown.css`, `Layout.css`, `themes.css` (for shared variables).
-
----
-
  The header should not appear as a distinct "bar" on top of the page. Prefer: (1) **Background:** Use the same background as the page (e.g. transparent so the layout’s gradient or `--color-background-primary` shows through), or extend the layout gradient into the header area so there is no color step. (2) **Border:** Remove the header’s `border-bottom` or replace it with a very subtle separator (e.g. same color as background with a slight tone difference, or a soft shadow) so the transition to main content is gradual rather than a hard line.
  Remove or soften `.layout-header`’s `border-bottom` (remove it, or use a very light border/shadow that doesn’t read as a strong line).
 ---

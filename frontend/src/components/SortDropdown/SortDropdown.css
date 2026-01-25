@@ -13,17 +13,18 @@
  * - Interactive area is at least 44x44px (touch target size)
  */
 
+/* Styled to match ThemeDropdown in header (shared --theme-switcher-* vars) */
 .sort-dropdown {
   display: inline-block;
   padding: 0.5rem 2rem 0.5rem 0.75rem;
-  border: 1px solid var(--sort-dropdown-border, #e0e0e0);
+  border: 1px solid var(--theme-switcher-border, var(--sort-dropdown-border, #e0e0e0));
   border-radius: var(--radius-md, 8px);
-  background: var(--sort-dropdown-bg, #fff);
+  background: var(--theme-switcher-bg, var(--sort-dropdown-bg, #fff));
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.5rem center;
   background-size: 12px;
-  color: var(--sort-dropdown-color, #333);
+  color: var(--theme-switcher-color, var(--sort-dropdown-color, #333));
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -40,12 +41,12 @@
 }
 
 .sort-dropdown:hover {
-  background-color: var(--sort-dropdown-bg-hover, #f0f0f0);
-  border-color: var(--sort-dropdown-border-hover, #cccccc);
+  background-color: var(--theme-switcher-bg-hover, var(--sort-dropdown-bg-hover, #f0f0f0));
+  border-color: var(--theme-switcher-border-hover, var(--sort-dropdown-border-hover, #ccc));
 }
 
 .sort-dropdown:focus {
-  outline: 2px solid var(--sort-dropdown-focus, var(--color-focus));
+  outline: 2px solid var(--theme-switcher-focus, var(--sort-dropdown-focus, var(--color-focus)));
   outline-offset: 2px;
 }
 
@@ -54,12 +55,12 @@
 }
 
 .sort-dropdown:focus-visible {
-  outline: 2px solid var(--sort-dropdown-focus, var(--color-focus));
+  outline: 2px solid var(--theme-switcher-focus, var(--sort-dropdown-focus, var(--color-focus)));
   outline-offset: 2px;
 }
 
 .sort-dropdown:active {
-  background-color: var(--sort-dropdown-bg-active, #e8e8e8);
+  background-color: var(--theme-switcher-bg-hover, var(--sort-dropdown-bg-active, #e8e8e8));
 }
 
 /* Option styles */
