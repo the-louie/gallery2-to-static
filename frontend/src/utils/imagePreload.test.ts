@@ -8,6 +8,10 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { preloadImage, preloadImages } from './imagePreload';
 import { resetImageCache, getImageCache } from './imageCache';
 
+vi.mock('./fetchImageAsObjectUrl', () => ({
+  fetchImageAsObjectUrl: vi.fn(),
+}));
+
 describe('imagePreload', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -105,6 +109,53 @@ describe('imagePreload', () => {
 
       await expect(preloadPromise).resolves.toBeUndefined();
       expect(cache.has(url)).toBe(true);
+    });
+
+    it('with signal: rejects with AbortError when signal aborted and does not add to cache', async () => {
+      const { fetchImageAsObjectUrl } = await import('./fetchImageAsObjectUrl');
+      const controller = new AbortController();
+      vi.mocked(fetchImageAsObjectUrl).mockImplementation(
+        () =>
+          new Promise((_, reject) => {
+            controller.abort();
+            reject(new DOMException('Aborted', 'AbortError'));
+          }),
+      );
+
+      const url = '/images/aborted.jpg';
+      const cache = getImageCache();
+
+      await expect(preloadImage(url, { signal: controller.signal })).rejects.toMatchObject({
+        name: 'AbortError',
+      });
+
+      expect(cache.has(url)).toBe(false);
+    });
+
+    it('with signal: uses fetch and resolves when load succeeds', async () => {
+      const { fetchImageAsObjectUrl } = await import('./fetchImageAsObjectUrl');
+      const controller = new AbortController();
+      const objectUrl = 'blob:http://localhost/abc';
+      vi.mocked(fetchImageAsObjectUrl).mockResolvedValue(objectUrl);
+
+      const mockImage = {
+        onload: null as (() => void) | null,
+        onerror: null as (() => void) | null,
+        src: '',
+      };
+      global.Image = vi.fn(() => mockImage as unknown as HTMLImageElement) as unknown as typeof Image;
+
+      const url = '/images/fetched.jpg';
+      const p = preloadImage(url, { signal: controller.signal });
+
+      await Promise.resolve();
+      if (mockImage.onload) {
+        mockImage.onload();
+      }
+
+      await expect(p).resolves.toBeUndefined();
+      expect(fetchImageAsObjectUrl).toHaveBeenCalledWith(url, controller.signal);
+      expect(getImageCache().has(url)).toBe(true);
     });
   });
 

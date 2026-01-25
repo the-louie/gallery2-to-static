@@ -1,41 +1,8 @@
 /**
  * Progressive Image Loading Hook
  *
- * Manages progressive image loading with blur-up technique. Loads thumbnail first,
- * then transitions to full-resolution image. Supports format detection and fallback.
- *
- * ## Features
- *
- * - Loads thumbnail image first (for blur-up effect)
- * - Loads full-resolution image in background
- * - Smooth transition from thumbnail to full image
- * - Format detection and fallback (AVIF → WebP → Original)
- * - Error handling for both thumbnail and full image
- * - State management for loading progress
- *
- * ## Usage
- *
- * ```tsx
- * import { useProgressiveImage } from '@/hooks/useProgressiveImage';
- *
- * function MyComponent({ image }: { image: Image }) {
- *   const {
- *     thumbnailUrl,
- *     fullImageUrl,
- *     state,
- *     hasError,
- *   } = useProgressiveImage(image);
- *
- *   return (
- *     <div>
- *       <img src={thumbnailUrl} className="blurred" />
- *       {state === 'full-loaded' && (
- *         <img src={fullImageUrl} className="fade-in" />
- *       )}
- *     </div>
- *   );
- * }
- * ```
+ * Loads thumbnail then full image; uses fetch + AbortSignal so in-flight GETs
+ * are canceled on navigation. Object URLs are revoked on abort or cleanup.
  *
  * @module frontend/src/hooks/useProgressiveImage
  */
@@ -45,6 +12,8 @@ import type { Image } from '@/types';
 import { getImageUrl, getImageUrlWithFormat } from '@/utils/imageUrl';
 import { getBestFormat } from '@/utils/imageFormat';
 import { getImageCache } from '@/utils/imageCache';
+import { fetchImageAsObjectUrl } from '@/utils/fetchImageAsObjectUrl';
+import { useViewAbortSignal } from '@/contexts/ViewAbortContext';
 
 /**
  * Progressive loading state
@@ -90,6 +59,7 @@ export function useProgressiveImage(
   image: Image | null,
   useThumbnail: boolean = true,
 ): UseProgressiveImageReturn {
+  const signal = useViewAbortSignal();
   const [state, setState] = useState<ProgressiveImageState>('thumbnail');
   const [hasError, setHasError] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -99,6 +69,8 @@ export function useProgressiveImage(
 
   const thumbnailImgRef = useRef<HTMLImageElement | null>(null);
   const fullImgRef = useRef<HTMLImageElement | null>(null);
+  const thumbnailObjectUrlRef = useRef<string | null>(null);
+  const fullObjectUrlRef = useRef<string | null>(null);
   const isMountedRef = useRef(true);
   const formatDetectionDoneRef = useRef(false);
   const currentImageIdRef = useRef<number | null>(null);
@@ -121,32 +93,23 @@ export function useProgressiveImage(
     setHasError(false);
     setError(null);
 
-    // Generate thumbnail URL immediately
-    const thumbUrl = getImageUrl(image, true);
-    setThumbnailUrl(thumbUrl);
+    const thumbRequestUrl = getImageUrl(image, true);
+    setThumbnailUrl(thumbRequestUrl);
 
-    // Detect best format asynchronously
     getBestFormat()
       .then((bestFormat) => {
-        // Check if this callback is still for the current image
-        if (!isMountedRef.current || currentImageIdRef.current !== imageId) {
+        if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
           return;
         }
-
         formatDetectionDoneRef.current = true;
         setFormat(bestFormat);
-
-        // Generate full image URL with best format
         const fullUrl = getImageUrlWithFormat(image, false, bestFormat);
         setFullImageUrl(fullUrl);
       })
       .catch((err) => {
-        // Check if this callback is still for the current image
-        if (!isMountedRef.current || currentImageIdRef.current !== imageId) {
+        if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
           return;
         }
-
-        // If format detection fails, use original format
         formatDetectionDoneRef.current = true;
         setFormat('original');
         const fullUrl = getImageUrl(image, false);
@@ -156,75 +119,104 @@ export function useProgressiveImage(
     return () => {
       isMountedRef.current = false;
       currentImageIdRef.current = null;
-      // Clean up image references
       if (thumbnailImgRef.current) {
-        thumbnailImgRef.current.onload = null;
-        thumbnailImgRef.current.onerror = null;
-        thumbnailImgRef.current = null;
+        thumbnailImgRef.current.src = '';
       }
       if (fullImgRef.current) {
-        fullImgRef.current.onload = null;
-        fullImgRef.current.onerror = null;
-        fullImgRef.current = null;
+        fullImgRef.current.src = '';
       }
+      if (thumbnailObjectUrlRef.current) {
+        URL.revokeObjectURL(thumbnailObjectUrlRef.current);
+        thumbnailObjectUrlRef.current = null;
+      }
+      if (fullObjectUrlRef.current) {
+        URL.revokeObjectURL(fullObjectUrlRef.current);
+        fullObjectUrlRef.current = null;
+      }
+      thumbnailImgRef.current = null;
+      fullImgRef.current = null;
     };
-  }, [image?.id, image?.pathComponent, image?.urlPath]);
+  }, [image?.id, image?.pathComponent, image?.urlPath, signal]);
 
-  // Load thumbnail image (or skip if useThumbnail is false)
+  // Load thumbnail (fetch + object URL when signal provided)
   useEffect(() => {
     if (!image || !thumbnailUrl || state !== 'thumbnail') {
       return;
     }
 
     const imageId = image.id;
+    const cache = getImageCache();
 
-    // If not using thumbnail, skip directly to full image loading
     if (!useThumbnail) {
-      if (currentImageIdRef.current === imageId) {
+      if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
         setState('thumbnail-loaded');
       }
       return;
     }
 
-    // Check cache first
-    const cache = getImageCache();
     const cachedThumbnail = cache.get(thumbnailUrl);
     if (cachedThumbnail) {
-      // Thumbnail is cached, update state immediately
-      if (currentImageIdRef.current === imageId && isMountedRef.current) {
+      if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
         setState('thumbnail-loaded');
       }
       return;
     }
 
-    // Thumbnail not in cache, load it
-    const img = new Image();
-    thumbnailImgRef.current = img;
+    fetchImageAsObjectUrl(thumbnailUrl, signal)
+      .then((objectUrl) => {
+        if (signal.aborted || !isMountedRef.current || currentImageIdRef.current !== imageId) {
+          URL.revokeObjectURL(objectUrl);
+          return;
+        }
+        thumbnailObjectUrlRef.current = objectUrl;
+        const img = new Image();
+        thumbnailImgRef.current = img;
+        img.onload = () => {
+          if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
+            if (signal.aborted && thumbnailObjectUrlRef.current) {
+              URL.revokeObjectURL(thumbnailObjectUrlRef.current);
+              thumbnailObjectUrlRef.current = null;
+              img.src = '';
+            }
+            return;
+          }
+          cache.set(thumbnailUrl, img);
+          setThumbnailUrl(objectUrl);
+          setState('thumbnail-loaded');
+        };
+        img.onerror = () => {
+          if (thumbnailObjectUrlRef.current) {
+            URL.revokeObjectURL(thumbnailObjectUrlRef.current);
+            thumbnailObjectUrlRef.current = null;
+          }
+          img.src = '';
+          if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
+            setState('thumbnail-loaded');
+          }
+        };
+        img.src = objectUrl;
+      })
+      .catch((err) => {
+        if (err?.name === 'AbortError') {
+          return;
+        }
+        if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
+          setState('thumbnail-loaded');
+        }
+      });
 
-    img.onload = () => {
-      // Check if this callback is still for the current image
-      if (!isMountedRef.current || currentImageIdRef.current !== imageId) {
-        return;
+    return () => {
+      if (thumbnailImgRef.current) {
+        thumbnailImgRef.current.src = '';
       }
-      // Store in cache after successful load
-      cache.set(thumbnailUrl, img);
-      setState('thumbnail-loaded');
-    };
-
-    img.onerror = () => {
-      // Check if this callback is still for the current image
-      if (!isMountedRef.current || currentImageIdRef.current !== imageId) {
-        return;
+      if (thumbnailObjectUrlRef.current) {
+        URL.revokeObjectURL(thumbnailObjectUrlRef.current);
+        thumbnailObjectUrlRef.current = null;
       }
-      // If thumbnail fails, continue to full image loading
-      // This allows graceful degradation
-      setState('thumbnail-loaded');
     };
+  }, [image, useThumbnail, thumbnailUrl, state, signal]);
 
-    img.src = thumbnailUrl;
-  }, [image, useThumbnail, thumbnailUrl, state]);
-
-  // Load full image when thumbnail is loaded and format is detected
+  // Load full image (fetch + object URL)
   useEffect(() => {
     if (
       !image ||
@@ -237,12 +229,9 @@ export function useProgressiveImage(
 
     const imageId = image.id;
     const cache = getImageCache();
-
-    // Check cache first
     const cachedFullImage = cache.get(fullImageUrl);
     if (cachedFullImage) {
-      // Full image is cached, update state immediately
-      if (currentImageIdRef.current === imageId && isMountedRef.current) {
+      if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
         setState('full-loaded');
         setHasError(false);
         setError(null);
@@ -250,87 +239,124 @@ export function useProgressiveImage(
       return;
     }
 
-    // Full image not in cache, load it
-    const img = new Image();
-    fullImgRef.current = img;
-
-    img.onload = () => {
-      // Check if this callback is still for the current image
-      if (!isMountedRef.current || currentImageIdRef.current !== imageId) {
-        return;
-      }
-      // Store in cache after successful load
-      cache.set(fullImageUrl, img);
-      setState('full-loaded');
-      setHasError(false);
-      setError(null);
-    };
-
-    img.onerror = () => {
-      // Check if this callback is still for the current image
-      if (!isMountedRef.current || currentImageIdRef.current !== imageId) {
-        return;
-      }
-
-      // Try fallback to original format if format variant failed
-      if (format !== 'original') {
-        const originalUrl = getImageUrl(image, false);
-
-        // Check cache for original format
-        const cachedOriginal = cache.get(originalUrl);
-        if (cachedOriginal) {
-          // Original format is cached, use it
-          if (currentImageIdRef.current === imageId && isMountedRef.current) {
-            setFullImageUrl(originalUrl);
-            setFormat('original');
-            setState('full-loaded');
-            setHasError(false);
-            setError(null);
-          }
+    fetchImageAsObjectUrl(fullImageUrl, signal)
+      .then((objectUrl) => {
+        if (signal.aborted || !isMountedRef.current || currentImageIdRef.current !== imageId) {
+          URL.revokeObjectURL(objectUrl);
           return;
         }
-
-        // Original format not in cache, load it
-        const fallbackImg = new Image();
-        fullImgRef.current = fallbackImg;
-
-        fallbackImg.onload = () => {
-          // Check if this callback is still for the current image
-          if (!isMountedRef.current || currentImageIdRef.current !== imageId) {
+        fullObjectUrlRef.current = objectUrl;
+        const img = new Image();
+        fullImgRef.current = img;
+        img.onload = () => {
+          if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
+            if (signal.aborted && fullObjectUrlRef.current) {
+              URL.revokeObjectURL(fullObjectUrlRef.current);
+              fullObjectUrlRef.current = null;
+              img.src = '';
+            }
             return;
           }
-          // Store in cache after successful load
-          cache.set(originalUrl, fallbackImg);
-          setFullImageUrl(originalUrl);
-          setFormat('original');
+          cache.set(fullImageUrl, img);
+          setFullImageUrl(objectUrl);
           setState('full-loaded');
           setHasError(false);
           setError(null);
         };
-
-        fallbackImg.onerror = () => {
-          // Check if this callback is still for the current image
-          if (!isMountedRef.current || currentImageIdRef.current !== imageId) {
+        img.onerror = () => {
+          if (fullObjectUrlRef.current) {
+            URL.revokeObjectURL(fullObjectUrlRef.current);
+            fullObjectUrlRef.current = null;
+          }
+          img.src = '';
+          if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
             return;
           }
+          if (format !== 'original') {
+            const originalUrl = getImageUrl(image, false);
+            const cachedOriginal = cache.get(originalUrl);
+            if (cachedOriginal) {
+              setFullImageUrl(originalUrl);
+              setFormat('original');
+              setState('full-loaded');
+              setHasError(false);
+              setError(null);
+              return;
+            }
+            fetchImageAsObjectUrl(originalUrl, signal)
+              .then((fallbackObjectUrl) => {
+                if (signal.aborted || !isMountedRef.current || currentImageIdRef.current !== imageId) {
+                  URL.revokeObjectURL(fallbackObjectUrl);
+                  return;
+                }
+                fullObjectUrlRef.current = fallbackObjectUrl;
+                const fallbackImg = new Image();
+                fullImgRef.current = fallbackImg;
+                fallbackImg.onload = () => {
+                  if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
+                    if (signal.aborted) {
+                      if (fullObjectUrlRef.current) {
+                        URL.revokeObjectURL(fullObjectUrlRef.current);
+                        fullObjectUrlRef.current = null;
+                      }
+                      fallbackImg.src = '';
+                    }
+                    return;
+                  }
+                  cache.set(originalUrl, fallbackImg);
+                  setFullImageUrl(fallbackObjectUrl);
+                  setFormat('original');
+                  setState('full-loaded');
+                  setHasError(false);
+                  setError(null);
+                };
+                fallbackImg.onerror = () => {
+                  URL.revokeObjectURL(fallbackObjectUrl);
+                  fallbackImg.src = '';
+                  if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
+                    setState('error');
+                    setHasError(true);
+                    setError('Failed to load image');
+                  }
+                };
+                fallbackImg.src = fallbackObjectUrl;
+              })
+              .catch((fallbackErr) => {
+                if (fallbackErr?.name === 'AbortError') return;
+                if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
+                  setState('error');
+                  setHasError(true);
+                  setError('Failed to load image');
+                }
+              });
+          } else {
+            setState('error');
+            setHasError(true);
+            setError('Failed to load image');
+          }
+        };
+        img.src = objectUrl;
+      })
+      .catch((err) => {
+        if (err?.name === 'AbortError') return;
+        if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
           setState('error');
           setHasError(true);
           setError('Failed to load image');
-        };
+        }
+      });
 
-        fallbackImg.src = originalUrl;
-      } else {
-        // Original format also failed
-        setState('error');
-        setHasError(true);
-        setError('Failed to load image');
+    return () => {
+      if (fullImgRef.current) {
+        fullImgRef.current.src = '';
+      }
+      if (fullObjectUrlRef.current) {
+        URL.revokeObjectURL(fullObjectUrlRef.current);
+        fullObjectUrlRef.current = null;
       }
     };
+  }, [image, fullImageUrl, state, format, signal]);
 
-    img.src = fullImageUrl;
-  }, [image, fullImageUrl, state, format]);
-
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       isMountedRef.current = false;

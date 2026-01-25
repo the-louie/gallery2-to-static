@@ -28,3 +28,12 @@ export type {
   FilterContextValue,
   FilterProviderProps,
 } from './FilterContext';
+
+// View abort context (navigation-scoped AbortSignal)
+export {
+  ViewAbortContext,
+  ViewAbortProvider,
+  useViewAbortSignal,
+} from './ViewAbortContext';
+
+export type { ViewAbortContextValue, ViewAbortProviderProps } from './ViewAbortContext';

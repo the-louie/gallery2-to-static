@@ -202,7 +202,8 @@ export class ImageCache {
   }
 
   /**
-   * Remove an image from the cache
+   * Remove an image from the cache.
+   * Revokes object URLs (blob:) when evicting to avoid leaks.
    *
    * @param url - Image URL to remove
    * @returns True if entry was removed, false if not found
@@ -212,9 +213,13 @@ export class ImageCache {
       return false;
     }
 
+    const entry = this.cache.get(url);
+    if (entry?.image?.src?.startsWith?.('blob:')) {
+      URL.revokeObjectURL(entry.image.src);
+    }
+
     const removed = this.cache.delete(url);
     if (removed) {
-      // Remove from LRU order
       const index = this.lruOrder.indexOf(url);
       if (index !== -1) {
         this.lruOrder.splice(index, 1);
@@ -225,11 +230,15 @@ export class ImageCache {
   }
 
   /**
-   * Clear all entries from the cache
-   *
-   * Resets statistics if stats are enabled.
+   * Clear all entries from the cache.
+   * Revokes any object URLs (blob:) before clearing.
    */
   clear(): void {
+    for (const [, entry] of this.cache) {
+      if (entry?.image?.src?.startsWith?.('blob:')) {
+        URL.revokeObjectURL(entry.image.src);
+      }
+    }
     this.cache.clear();
     this.lruOrder = [];
     if (this.config.enableStats) {

@@ -4,12 +4,25 @@
  * @module frontend/src/hooks/useImagePreload
  */
 
+import React from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
+import { ViewAbortProvider } from '@/contexts/ViewAbortContext';
 import { useImagePreload } from './useImagePreload';
 import type { Image } from '@/types';
 import * as imagePreload from '@/utils/imagePreload';
 import * as imageUrl from '@/utils/imageUrl';
+
+function createWrapper() {
+  return function Wrapper({ children }: { children: React.ReactNode }) {
+    return (
+      <MemoryRouter initialEntries={['/']}>
+        <ViewAbortProvider>{children}</ViewAbortProvider>
+      </MemoryRouter>
+    );
+  };
+}
 
 describe('useImagePreload', () => {
   const mockImages: Image[] = [
@@ -67,41 +80,63 @@ describe('useImagePreload', () => {
   });
 
   it('preloads next and previous images for middle image', async () => {
-    renderHook(() => useImagePreload(mockImages[1], mockImages));
+    renderHook(() => useImagePreload(mockImages[1], mockImages), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(imagePreload.preloadImage).toHaveBeenCalledTimes(2);
-      expect(imagePreload.preloadImage).toHaveBeenCalledWith('/images/album/image1.jpg');
-      expect(imagePreload.preloadImage).toHaveBeenCalledWith('/images/album/image3.jpg');
+      expect(imagePreload.preloadImage).toHaveBeenCalledWith(
+        '/images/album/image1.jpg',
+        expect.objectContaining({ signal: expect.any(Object) }),
+      );
+      expect(imagePreload.preloadImage).toHaveBeenCalledWith(
+        '/images/album/image3.jpg',
+        expect.objectContaining({ signal: expect.any(Object) }),
+      );
     });
   });
 
   it('preloads only next image for first image', async () => {
-    renderHook(() => useImagePreload(mockImages[0], mockImages));
+    renderHook(() => useImagePreload(mockImages[0], mockImages), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(imagePreload.preloadImage).toHaveBeenCalledTimes(1);
-      expect(imagePreload.preloadImage).toHaveBeenCalledWith('/images/album/image2.jpg');
+      expect(imagePreload.preloadImage).toHaveBeenCalledWith(
+        '/images/album/image2.jpg',
+        expect.objectContaining({ signal: expect.any(Object) }),
+      );
     });
   });
 
   it('preloads only previous image for last image', async () => {
-    renderHook(() => useImagePreload(mockImages[2], mockImages));
+    renderHook(() => useImagePreload(mockImages[2], mockImages), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(imagePreload.preloadImage).toHaveBeenCalledTimes(1);
-      expect(imagePreload.preloadImage).toHaveBeenCalledWith('/images/album/image2.jpg');
+      expect(imagePreload.preloadImage).toHaveBeenCalledWith(
+        '/images/album/image2.jpg',
+        expect.objectContaining({ signal: expect.any(Object) }),
+      );
     });
   });
 
   it('does not preload for single image', () => {
-    renderHook(() => useImagePreload(mockImages[0], [mockImages[0]]));
+    renderHook(() => useImagePreload(mockImages[0], [mockImages[0]]), {
+      wrapper: createWrapper(),
+    });
 
     expect(imagePreload.preloadImage).not.toHaveBeenCalled();
   });
 
   it('does not preload when current image is null', () => {
-    renderHook(() => useImagePreload(null, mockImages));
+    renderHook(() => useImagePreload(null, mockImages), {
+      wrapper: createWrapper(),
+    });
 
     expect(imagePreload.preloadImage).not.toHaveBeenCalled();
   });
@@ -111,7 +146,9 @@ describe('useImagePreload', () => {
       ...mockImages[0],
       id: 999,
     };
-    renderHook(() => useImagePreload(imageNotInContext, mockImages));
+    renderHook(() => useImagePreload(imageNotInContext, mockImages), {
+      wrapper: createWrapper(),
+    });
 
     expect(imagePreload.preloadImage).not.toHaveBeenCalled();
   });
@@ -121,6 +158,7 @@ describe('useImagePreload', () => {
       ({ image, context }) => useImagePreload(image, context),
       {
         initialProps: { image: mockImages[0], context: mockImages },
+        wrapper: createWrapper(),
       },
     );
 
@@ -140,8 +178,9 @@ describe('useImagePreload', () => {
   it('handles preload errors gracefully', async () => {
     vi.spyOn(imagePreload, 'preloadImage').mockRejectedValue(new Error('Preload failed'));
 
-    // Should not throw
-    renderHook(() => useImagePreload(mockImages[1], mockImages));
+    renderHook(() => useImagePreload(mockImages[1], mockImages), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(imagePreload.preloadImage).toHaveBeenCalled();
@@ -149,16 +188,16 @@ describe('useImagePreload', () => {
   });
 
   it('cleans up on unmount', async () => {
-    const { unmount } = renderHook(() => useImagePreload(mockImages[1], mockImages));
+    const { unmount } = renderHook(() => useImagePreload(mockImages[1], mockImages), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(imagePreload.preloadImage).toHaveBeenCalled();
     });
 
-    // Unmount should not throw
     unmount();
 
-    // Verify preload was called (cleanup doesn't prevent the call, just error handling)
     expect(imagePreload.preloadImage).toHaveBeenCalled();
   });
 });

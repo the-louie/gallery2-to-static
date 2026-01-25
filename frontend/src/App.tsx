@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import { PageLoader } from './components/PageLoader';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { FilterProvider } from './contexts/FilterContext';
+import { ViewAbortProvider } from './contexts/ViewAbortContext';
 import { useWebVitals } from './hooks/useWebVitals';
 
 // Lazy load page components for code splitting
@@ -39,9 +40,10 @@ function App() {
   return (
     <FilterProvider>
       <OfflineIndicator />
-      <Layout>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
+      <ViewAbortProvider>
+        <Layout>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/album/:albumId/image/:imageId" element={<ImageDetailPage />} />
@@ -49,9 +51,10 @@ function App() {
             <Route path="/image/:id" element={<ImageDetailPage />} />
             <Route path="/not-found" element={<NotFoundPage />} />
             <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
-      </Layout>
+            </Routes>
+          </Suspense>
+        </Layout>
+      </ViewAbortProvider>
     </FilterProvider>
   );
 }
