@@ -36,22 +36,6 @@
   color: var(--album-detail-text-muted, var(--color-text-muted));
 }
 
-.root-album-list-view-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.root-album-list-view-title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--album-detail-title-color, #333333);
-}
-
 .root-album-list-view-list {
   margin: 0;
   padding: 0;

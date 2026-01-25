@@ -137,9 +137,6 @@ export function RootAlbumListView({
             )}
           </div>
         )}
-        <div className="root-album-list-view-header">
-          <h2 className="root-album-list-view-title">Albums</h2>
-        </div>
         <ul className="root-album-list-view-list">
           {albums.map((album) => (
             <li key={album.id}>

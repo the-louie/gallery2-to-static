@@ -95,7 +95,6 @@ describe('RootAlbumListView', () => {
 
     renderWithProviders(<RootAlbumListView albumId={7} />);
     expect(screen.getByRole('region', { name: /root albums/i })).toBeInTheDocument();
-    expect(screen.getByText(/Albums/)).toBeInTheDocument();
     expect(screen.getByText('Test Album')).toBeInTheDocument();
     expect(screen.getByText('Parent Album')).toBeInTheDocument();
   });
@@ -166,7 +165,6 @@ describe('RootAlbumListView', () => {
     });
 
     renderWithProviders(<RootAlbumListView albumId={7} />);
-    expect(screen.getByText(/Albums/)).toBeInTheDocument();
     expect(screen.getByText('Test Album')).toBeInTheDocument();
   });
 });

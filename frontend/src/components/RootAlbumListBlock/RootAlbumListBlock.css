@@ -46,8 +46,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: blur(12px);
-  opacity: 0.45;
+  filter: blur(6px);
   pointer-events: none;
 }
 
@@ -196,7 +195,8 @@
 
 @media (min-width: 768px) {
   .root-album-list-block-subalbums {
-    width: 320px;
+    width: 50%;
+    max-width: 650px;
   }
 }
 

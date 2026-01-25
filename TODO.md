@@ -271,6 +271,41 @@ The sub-album wrapper in the root album (and any child-album list using the same
 
 ---
 
+## Root album subalbums: limit 10, "...and more!" at bottom right (Frontend)
+
+**Status:** Pending
+**Priority:** Low
+**Complexity:** Low
+**Estimated Time:** 20–30 minutes
+
+### Description
+In the **root album list** (component `RootAlbumListBlock`), the **Subalbums** section currently shows at most **6** subalbum links (by date-desc), and when more exist displays **"... And much more"** below the list. This task: (1) **raise the limit** from 6 to **10** subalbums; (2) **move** the overflow indicator text to the **bottom right** of the subalbums block (instead of directly under the list); (3) **reword** the text from "... And much more" to **"...and more!"** (lowercase "and", exclamation).
+
+### Requirements
+
+#### Scope
+- **Frontend only.** `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx` (limit constant, slice count, hasMore condition, visible text), `RootAlbumListBlock.css` (positioning of `.root-album-list-block-subalbums-more` so it sits at bottom right of `.root-album-list-block-subalbums`). Tests in `RootAlbumListBlock.test.tsx` that assert on the limit (6 vs 10) or on the exact string "... And much more" must be updated.
+- **Limit 10.** Display at most 10 subalbums (same ordering: date-desc, nulls last). Use a named constant (e.g. `ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT = 10`) so the limit is configurable in one place. `hasMoreSubalbums` should be true when `subalbums.length > 10`.
+- **Bottom right.** The "...and more!" element (`.root-album-list-block-subalbums-more`) must appear at the **bottom right** of the subalbums block. Implement by making the subalbums container a flex column with the list growing and the "more" row at the end aligned to the right (e.g. `margin-top: auto`, `align-self: flex-end`, or equivalent). Ensure the block does not rely on a fixed height for the "more" row if that would break layout; adjust CSS variables (e.g. `--root-album-subalbums-list-height` from 3 to 10 rows if still used) if they assume 6 items.
+- **Text.** Replace the visible string from "... And much more" to "...and more!" (exactly: three dots, lowercase "and", space, "more", exclamation).
+
+#### Implementation Tasks
+- In `RootAlbumListBlock.tsx`: introduce `ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT = 10` (or similar); change `slice(0, 6)` to `slice(0, ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT)`; change `hasMoreSubalbums = subalbums.length > 6` to `> ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT`; change the rendered text from "... And much more" to "...and more!". Update the file-top comment that says "at most the latest 6 subalbums" and "... And much more" to reflect 10 and "...and more!".
+- In `RootAlbumListBlock.css`: give `.root-album-list-block-subalbums` a flex layout (e.g. `display: flex; flex-direction: column;`) so the list takes space and the "more" row can sit at the bottom; style `.root-album-list-block-subalbums-more` so it appears at bottom right (e.g. `margin-top: auto; align-self: flex-end;` or `text-align: right` on a wrapper). Adjust `--root-album-subalbums-list-height` and related variables if they assume 3 visible rows (6 items in 2 columns); update to 10 items (5 rows) if min-height is still used, or remove fixed min-height if layout works without it.
+- In `RootAlbumListBlock.test.tsx`: update tests that assume 6 subalbums (e.g. "shows only 6 subalbum links and '... And much more' when >6 subalbums") to use 10 and the new text "...and more!"; update assertions that check for absence of "... And much more" when ≤6 to use threshold 10 and string "...and more!".
+
+### Deliverable
+Root album subalbums section shows up to 10 subalbum links; when more than 10 exist, "...and more!" appears at the bottom right of the subalbums block. Tests updated for limit 10 and new copy.
+
+### Testing Requirements
+- Manual: Root album with more than 10 subalbums shows 10 links and "...and more!" at bottom right of the subalbums box; with ≤10 subalbums no "...and more!".
+- Unit: RootAlbumListBlock tests assert 10 displayed links when >10 subalbums, new text "...and more!", and no overflow text when ≤10 subalbums.
+
+### Technical Notes
+- Reference: `RootAlbumListBlock.tsx` (lines 66–70 for limit/hasMore, line 159 for text); `RootAlbumListBlock.css` (`.root-album-list-block-subalbums`, `.root-album-list-block-subalbums-more`, `:root` variables for list height); `RootAlbumListBlock.test.tsx` (tests "shows all 6...", "shows only 6...", "... And much more").
+
+---
+
 ## Remove root-album-list-view-header from the root album (Frontend)
 
 **Status:** Pending
@@ -304,26 +339,7 @@ The root album view no longer displays the header section or "Albums" title. The
 ### Technical Notes
 - Reference: `frontend/src/components/RootAlbumListView/RootAlbumListView.tsx` (header block around lines 119–121); `frontend/src/components/RootAlbumListView/RootAlbumListView.css` (`.root-album-list-view-header` and `.root-album-list-view-title`).
 
---- (from `metadata.highlightImageUrl` or from the child’s `highlightImageUrl` when shown in a parent’s list) should be used as the **background** of that article. The image must be **faded** (e.g. reduced opacity or overlay) and **slightly blurred** so that the text and links on top remain clearly visible and readable. When no highlight image is available, the block keeps its current appearance (no background image).
-
-**Scope:** Applies wherever `RootAlbumListBlock` is used: root album list (home) and any child-album list that uses the same component. The album prop already has (or can have) `highlightImageUrl`; use it to set a CSS background (or a pseudo-element / wrapper) with blur and fade.
-
-### Requirements
-
-#### Scope
-- **Faded and blurred.** Apply CSS so the background image is visually softened: e.g. `filter: blur(...)` and/or a semi-transparent overlay (or `background` with a gradient overlay, or lowered opacity on a background layer) so text and UI on top stay readable and accessible. Do not let the background overwhelm the content.
-
-#### Implementation Tasks
-- In `RootAlbumListBlock`, when the album has a `highlightImageUrl` (or equivalent), pass it to the article as an inline style (e.g. `backgroundImage: url(...)`) or via a CSS custom property (e.g. `--block-bg-image: url(...)`) so the stylesheet can use it. Build the full URL with the same base as other gallery images.
-- In `RootAlbumListBlock.css`, add rules for `.root-album-list-block` when it has a background image: e.g. `background-size: cover`, `background-position: center`, and apply blur (e.g. `filter: blur(6px)` on a pseudo-element or a dedicated background layer so only the background is blurred, not the text) and fading (e.g. overlay with `linear-gradient` or `rgba` overlay, or opacity on the image layer). Ensure text contrast and focus styles remain usable.
-- If the blur is applied via a separate layer (e.g. `::before` with background image + blur), keep the main content above it (z-index) and ensure the overlay does not block pointer events on links/buttons.
-- When `highlightImageUrl` is missing, do not set a background image; existing styles remain.
-
-### Deliverable
-
-
----
-- **Backend only.** Extraction logic in `backend/` that builds album metadata and child items (e.g. `backend/index.ts`, and any helper that sets `title` or `albumTitle`). Add a strip-BBCode step (or helper) and apply it wherever album titles are assigned to the output (metadata for each album file, and each child item’s title 
+---’s x when shown in a parent’s **Backend only.** Extraction logic in `backend/` that builds album metadata and child items (e.g. `backend/index.ts`, and any helper that sets `title` or `albumTitle`). Add a strip-BBCode step (or helper) and apply it wherever album titles are assigned to the output (metadata for each album file, and each child item’s title 
 - **Titles only.** Strip BBCode from album title fields only. Do not strip from description or summary unless a separate product decision says so; this task is only for titles so that all consumers of `title` / `albumTitle` get plain text.
 - **Stripping.** "Strip" means remove all BBCode tags (e.g. `[b]`, `[/b]`, `[i]`, `[color=red]`, `[tag=value]`, etc.) and output only the concatenated inner text. Optionally decode HTML entities first (e.g. `&auml;` → `ä`) then strip tags, so the stored title is readable plain text. Handle nested tags and malformed/unclosed tags (leave remaining text).
 
@@ -341,12 +357,7 @@ The root album view no longer displays the header section or "Albums" title. The
 - In `AlbumDetail.tsx`, replace the description output from `decodeHtmlEntities(album.description)` to `parseBBCodeDecoded(album.description)` (with existing guard for `album.description`). If summary is rendered as a separate paragraph with `decodeHtmlEntities(album.summary)`, change it to `parseBBCodeDecoded(album.summary)` for consistency if product wants summary to support BBCode too.
 - Update tests: In `RootAlbumListBlock.test.tsx`, add or adjust a test that expects description with BBCode (e.g. `[b]bold[/b]`) to render as formatted (e.g. `<strong>bold</strong>`). In `AlbumDetail.test.tsx`, update the test “does not parse BBCode in description or summary” to instead expect BBCode to be parsed (description and optionally summary show formatted content, not raw `[b]...[/b]`). Adjust any snapshot or text assertions that assume plain-text description.
 
-
-- Reference: (“does not parse BBCode in description or summary”).
-
----
-
-## Prioritize search by album context (Frontend)
+--- (“does not parse BBCode in description or summary”## Prioritize search by album context (Frontend)
 
 **Status:** Pending
 **Priority:** Medium
@@ -379,6 +390,111 @@ Search results are ordered so that children of the current album (when applicabl
 
 ### Technical Notes
 - `SearchIndexItem` has `parentId` (see `frontend/src/utils/searchIndex.ts`). Use `SearchIndex.getItem(id)` to walk the parent chain and classify each result. Root items have no parentId or parentId not in index; treat as “other”.
+---
+
+## Remove nav (Main navigation) and make root album intro title the only h1 (Frontend)
+
+**Status:** Pending
+**Priority:** Low
+**Complexity:** Low
+**Estimated Time:** 15–20 minutes
+
+### Description
+**Semantics:** The page must have exactly one `<h1>`. That single `<h1>` must be the **root album intro title** (`.root-album-list-view-intro-title`), i.e. the album name when the root album view shows intro metadata. **Layout:** Remove the **Main navigation** (`<nav aria-label="Main navigation">`) from the layout header. The site name (e.g. "Gallery 2 to Static") remains visible and linkable to home, but is no longer inside a `<nav>` and must **not** be an `<h1>` (use a different element or heading level so the only h1 on the page is the root album intro title when present).
+
+### Requirements
+
+#### Scope
+- **Frontend only.** `frontend/src/components/Layout/Layout.tsx` (and `Layout.css`), `frontend/src/components/RootAlbumListView/RootAlbumListView.tsx` (intro title). Layout tests (e.g. `Layout.test.tsx`) that assert on the nav or on the site name being in an `<h1>` must be updated.
+- **Remove nav.** Delete the `<nav aria-label="Main navigation">` wrapper from the layout header. Keep the site name and its link to `/` in the header (e.g. `<Link to="/">` with the site name inside), but do not wrap them in `<nav>`. Remove or repurpose any CSS that targeted the nav if it becomes dead.
+- **Single h1.** The layout header must **not** use `<h1>` for the site name. Use e.g. `<span>`, `<p>`, or a lower heading level (e.g. `<h2>` or no heading) so that the document has at most one `<h1>`. The **only** `<h1>` on the page must be the root album intro title (`.root-album-list-view-intro-title`) in `RootAlbumListView` when the intro is rendered (`hasIntro` true, i.e. when metadata has `albumTitle` or `albumDescription`). When the root album view has no intro (no album title/description), the page may have no `<h1>` or a single fallback per product choice; document the choice.
+
+#### Implementation Tasks
+- In `Layout.tsx`, remove the `<nav aria-label="Main navigation">` element; keep the site name and its `Link` to `/` in the header, and change the site name from `<h1 className="layout-title">` to a non-h1 element (e.g. `<span className="layout-title">`). In `RootAlbumListView`, ensure the intro title is the single `<h1>` when `hasIntro` is true (it already uses `<h1 className="root-album-list-view-intro-title">`).
+- In `Layout.css`, remove or adjust styles that targeted the nav; keep styles for the site name/link so the header looks unchanged aside from semantics.
+- Update `Layout.test.tsx`: remove or change assertions that expect `<nav aria-label="Main navigation">` or the site name in an `<h1>`.
+
+### Deliverable
+Layout header has no `<nav>`, and the site name is not an `<h1>`. The only `<h1>` on the page is the root album intro title when the root album view displays intro content; otherwise the page has no `<h1>` (or one agreed fallback). Layout tests updated.
+
+### Testing Requirements
+- Manual: Load root album view with intro; confirm one `<h1>` (the album name). Load layout-only or non-root pages; confirm no duplicate `<h1>` from the layout.
+- Unit: Layout tests no longer expect Main navigation or site name in `<h1>`; RootAlbumListView tests continue to expect the intro title in `<h1>` when intro is present.
+
+### Technical Notes
+- Reference: `Layout.tsx` (nav and `<h1 className="layout-title">` around lines 69–73); `RootAlbumListView.tsx` (`<h1 className="root-album-list-view-intro-title">` in intro block, around 129–136); `Layout.css`; `RootAlbumListView.css` (`.root-album-list-view-intro-title`).
+
+---
+
+## Move gallery-order dropdown to the right of theme dropdown and style similarly (Frontend)
+
+**Status:** Pending
+**Priority:** Low
+**Complexity:** Low
+**Estimated Time:** 15–20 minutes
+
+### Description
+In the layout header (`.layout-header-actions`), the **gallery-order** dropdown (SortDropdown, used for album/sort order) should be placed **immediately to the right** of the **theme** dropdown (ThemeDropdown). Both dropdowns should be **styled similarly** so they share the same visual appearance (border, border-radius, padding, font size/weight, focus outline, hover behavior) and read as a single control group.
+
+### Requirements
+
+#### Scope
+- **Frontend only.** `frontend/src/components/Layout/Layout.tsx` (order of components in the header), and the CSS for `ThemeDropdown` and `SortDropdown` (or shared header-control styles in `Layout.css`).
+- **Order.** In the header actions container, ensure the DOM order is: SearchBar (or other elements as present), then ThemeDropdown, then SortDropdown (gallery-order), so the sort dropdown is to the right of the theme dropdown. If they are already in this order, confirm and leave as-is; otherwise reorder.
+- **Styling.** Make both dropdowns look consistent: same border (e.g. 1px solid, same color variable), same border-radius (e.g. `var(--radius-md, 8px)`), similar padding (e.g. 0.5rem 0.75rem), same font-size (e.g. 0.875rem) and font-weight (e.g. 500), same min-height (e.g. 44px for touch targets), and matching focus outline and hover states. Prefer reusing the same CSS custom properties (e.g. a shared set like `--header-dropdown-border`, `--header-dropdown-bg`) for both, or align ThemeDropdown and SortDropdown to use identical values.
+
+#### Implementation Tasks
+- In `Layout.tsx`, verify or set the order of `ThemeDropdown` and `SortDropdown` within `.layout-header-actions` so that SortDropdown appears to the right of ThemeDropdown.
+- In `ThemeDropdown.css` and `SortDropdown.css` (or in a shared block in `Layout.css`), align styles: use the same border, border-radius, padding, font-size, font-weight, min-height, and matching :hover / :focus rules. If ThemeDropdown uses `--theme-switcher-*` and SortDropdown uses `--sort-dropdown-*`, either map both to the same underlying values or introduce a small set of shared variables (e.g. in `themes.css`) and use them for both components.
+- Optionally wrap both in a container (e.g. a div with class `layout-header-dropdowns`) and apply a small gap between them (e.g. 0.5rem) so they appear as a paired group.
+- Check responsive behavior: on narrow viewports, ensure both dropdowns remain usable and do not overflow (flex-wrap or order as needed).
+
+### Deliverable
+The gallery-order (Sort) dropdown is positioned to the right of the theme dropdown in the layout header, and both dropdowns share the same visual styling (border, radius, padding, font, focus, hover) so they look like a consistent control group.
+
+### Testing Requirements
+- Manual: Load the app and confirm in the header that the theme dropdown and the sort (gallery-order) dropdown appear next to each other with the sort to the right of the theme, and that both have matching appearance.
+- Unit/integration: If Layout or header tests assert on order or presence of dropdowns, update as needed.
+
+### Technical Notes
+- Reference: `frontend/src/components/Layout/Layout.tsx` (`.layout-header-actions`; `ThemeDropdown`, `SortDropdown`), `ThemeDropdown.css`, `SortDropdown.css`, `Layout.css`, `themes.css` (for shared variables).
+
+---
+
+## Make the header seamlessly integrate into the rest of the page (Frontend)
+
+**Status:** Pending
+**Priority:** Low
+**Complexity:** Low
+**Estimated Time:** 20–30 minutes
+
+### Description
+The **layout header** (`.layout-header`) currently reads as a separate bar: it has its own background (`--header-bg`) and a bottom border (`--header-border`) that visually separate it from the main content. This task is to make the header **seamlessly integrate** with the rest of the page so it feels like one continuous surface: same (or continuous) background as the page body, no hard separation line, and consistent horizontal alignment and spacing with the main content area.
+
+### Requirements
+
+#### Scope
+- **Frontend only.** `frontend/src/components/Layout/Layout.css` (header and, if needed, layout container) and optionally `frontend/src/styles/themes.css` if header-specific variables are changed or removed. No change to Layout.tsx structure unless necessary for styling (e.g. no new wrappers required if CSS-only).
+- **Visual continuity.** The header should not appear as a distinct "bar" on top of the page. Prefer: (1) **Background:** Use the same background as the page (e.g. transparent so the layout’s gradient or `--color-background-primary` shows through), or extend the layout gradient into the header area so there is no color step. (2) **Border:** Remove the header’s `border-bottom` or replace it with a very subtle separator (e.g. same color as background with a slight tone difference, or a soft shadow) so the transition to main content is gradual rather than a hard line.
+- **Alignment and padding.** Keep header content alignment consistent with the main content: same max-width (1200px) and horizontal padding as `.layout-main` so the header and main content visually line up. Ensure responsive padding (1rem / 1.5rem / 2rem) remains consistent between header and main at each breakpoint so the seamless look holds on mobile, tablet, and desktop.
+- **Accessibility and contrast.** After changes, ensure header text and interactive elements (site name, SearchBar, ThemeDropdown, SortDropdown) still meet contrast requirements and remain readable on the shared background.
+
+#### Implementation Tasks
+- In `Layout.css`, for `.layout-header`: set background to transparent or to the same gradient/color as `.layout` (e.g. `background: transparent` so the parent gradient shows, or reuse `var(--gradient-bg-start)` / `var(--color-background-primary)`). Remove or soften `.layout-header`’s `border-bottom` (remove it, or use a very light border/shadow that doesn’t read as a strong line).
+- If themes currently set `--header-bg` and `--header-border` specifically for the header, either stop using them for the header (so header inherits page look) or redefine them in `themes.css` so they match the page background and a minimal or no separator. Ensure light and dark themes both look coherent.
+- Verify horizontal padding and max-width of `.layout-header-content` match or align with `.layout-main` (both use max-width 1200px and similar padding); adjust if needed so the header and main content edges line up and the integration feels intentional.
+- Manually test in light and dark themes and at 768px / 1024px breakpoints; confirm header no longer reads as a separate bar and contrast remains sufficient.
+
+### Deliverable
+The layout header visually flows into the main content: no distinct background bar or hard border between header and page. Header and main share the same background (or continuous gradient), optional subtle separator only, and consistent horizontal alignment. Works in all themes and breakpoints.
+
+### Testing Requirements
+- Manual: Check root album, album detail, and search pages in light and dark themes; confirm the header blends into the page and text/controls remain readable. Check at mobile and desktop widths.
+- No new unit tests required unless the project already has layout visual regression tests; in that case update expectations for header background/border.
+
+### Technical Notes
+- Reference: `Layout.css` (`.layout-header` lines 64–68: `background`, `border-bottom`, `padding`; `.layout-header-content` max-width 1200px; `.layout` gradient 37–42); `themes.css` (`--header-bg`, `--header-border` per theme). The main content area uses `.layout-main` with padding and the same max-width 2400px (content can be narrower); alignment is typically governed by inner content max-width (e.g. 1200px) shared with header.
+
 ---
 
 ## Implement Per-Album Theme Configuration

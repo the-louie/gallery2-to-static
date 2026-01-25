@@ -91,7 +91,6 @@ describe('Root Album List View integration', () => {
     await waitFor(() => {
       expect(screen.getByRole('region', { name: /root albums/i })).toBeInTheDocument();
     });
-    expect(screen.getByText(/Albums/)).toBeInTheDocument();
   });
 
   it('nested /album/:id shows grid (Album grid region)', async () => {
