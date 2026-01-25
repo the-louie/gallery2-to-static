@@ -690,6 +690,172 @@
 }
 
 /* ============================================================================
+   Original Theme (Gallery 2 Classic)
+   ============================================================================ */
+
+[data-theme="original"] {
+  /* G2 Classic: docs/dev-notes/2026-01-25-1200_original_design_analyzis_1.md */
+  --gradient-bg-start: #ffffff;
+  --gradient-bg-end: #eeeeee;
+  --gradient-card-start: #ffffff;
+  --gradient-card-end: #eeeeee;
+  --gradient-cta-start: #6b8cb7;
+  --gradient-cta-end: #5a7aa3;
+
+  --color-primary: #6b8cb7;
+  --color-primary-hover: #f4560f;
+  --color-primary-active: #f9c190;
+  --color-primary-light: #e8eef5;
+  --color-primary-dark: #5a7aa3;
+
+  --color-secondary: #6b8cb7;
+  --color-secondary-hover: #f4560f;
+  --color-secondary-active: #f9c190;
+
+  --color-accent: #f4560f;
+  --color-accent-hover: #e04d0d;
+
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #eeeeee;
+  --color-background-tertiary: #e7e7e7;
+
+  --color-text-primary: #333333;
+  --color-text-secondary: #888888;
+  --color-text-tertiary: #888888;
+  --color-text-inverse: #ffffff;
+  --color-text-muted: rgba(51, 51, 51, 0.85);
+
+  --color-text: var(--color-text-primary);
+  --color-background: var(--color-background-primary);
+  --color-on-primary: #ffffff;
+  --color-hover: #e7e7e7;
+  --color-background-hover: #e7e7e7;
+
+  --color-border: #cccccc;
+  --color-border-light: #eeeeee;
+  --color-border-dark: #bbbbbb;
+
+  --color-focus: #0b6cff;
+  --color-focus-ring: #0b6cff;
+  --focus-color: var(--color-focus);
+
+  --color-error: #c62828;
+  --color-error-bg: #ffebee;
+  --color-error-text: #c62828;
+  --color-error-hover: #b71c1c;
+  --color-error-light: #ffebee;
+  --color-success: #2e7d32;
+  --color-success-bg: #e8f5e9;
+  --color-success-text: #2e7d32;
+  --color-warning: #e65100;
+  --color-warning-bg: #fff3e0;
+  --color-warning-text: #e65100;
+  --color-info: #1565c0;
+  --color-info-bg: #e3f2fd;
+  --color-info-text: #1565c0;
+
+  --color-gray-50: #ffffff;
+  --color-gray-100: #eeeeee;
+  --color-gray-200: #e7e7e7;
+  --color-gray-300: #cccccc;
+  --color-gray-400: #888888;
+  --color-gray-500: #666666;
+  --color-gray-600: #333333;
+
+  --skip-link-bg: #6b8cb7;
+  --skip-link-color: #ffffff;
+  --skip-link-focus: #ffffff;
+  --header-bg: #eeeeee;
+  --header-border: #cccccc;
+  --header-text: #333333;
+  --footer-bg: #eeeeee;
+  --footer-border: #cccccc;
+  --footer-text: #888888;
+
+  --album-card-bg: #ffffff;
+  --album-card-border: #cccccc;
+  --album-card-focus: #0b6cff;
+  --album-card-thumbnail-bg: #ffffff;
+  --album-card-placeholder-bg: #eeeeee;
+  --album-card-placeholder-text: #888888;
+  --album-card-title-color: #333333;
+
+  --album-grid-error-color: #c62828;
+  --album-grid-error-bg: #ffebee;
+  --album-grid-error-button-bg: #6b8cb7;
+  --album-grid-error-button-hover: #5a7aa3;
+  --album-grid-error-button-focus: #0b6cff;
+  --album-grid-empty-color: #888888;
+  --image-grid-error-color: #c62828;
+  --image-grid-error-bg: #ffebee;
+  --image-grid-error-button-bg: #6b8cb7;
+  --image-grid-error-button-hover: #5a7aa3;
+  --image-grid-error-button-focus: #0b6cff;
+  --image-grid-empty-color: #888888;
+
+  --image-bg: #ffffff;
+  --image-border: #cccccc;
+  --image-focus: #0b6cff;
+  --image-error-bg: #eeeeee;
+  --image-error-text: #888888;
+
+  --lightbox-focus: #0b6cff;
+
+  --breadcrumb-link-color: #6b8cb7;
+  --breadcrumb-link-hover-bg: #eeeeee;
+  --breadcrumb-link-hover-color: #f4560f;
+  --breadcrumb-link-focus: #0b6cff;
+  --breadcrumb-link-focus-bg: #e8eef5;
+  --breadcrumb-link-active-bg: #e8eef5;
+  --breadcrumb-current-color: #333333;
+  --breadcrumb-separator-color: #888888;
+  --breadcrumb-scrollbar-color: #cccccc;
+
+  --album-detail-back-button-bg: transparent;
+  --album-detail-back-button-border: currentColor;
+  --album-detail-back-button-color: #333333;
+  --album-detail-back-button-hover-bg: rgba(0, 0, 0, 0.06);
+  --album-detail-back-button-active-bg: rgba(0, 0, 0, 0.12);
+  --album-detail-title-color: #333333;
+  --album-detail-text-muted: rgba(51, 51, 51, 0.85);
+  --album-detail-error-button-bg: #6b8cb7;
+  --album-detail-error-button-hover: #5a7aa3;
+  --album-detail-error-button-focus: #0b6cff;
+  --album-detail-error-button-active: #4a6a93;
+
+  --skeleton-bg-1: #e7e7e7;
+  --skeleton-bg-2: #eeeeee;
+
+  --theme-switcher-bg: transparent;
+  --theme-switcher-border: #cccccc;
+  --theme-switcher-color: #333333;
+  --theme-switcher-bg-hover: #e7e7e7;
+  --theme-switcher-border-hover: #bbbbbb;
+  --theme-switcher-focus: #0b6cff;
+
+  --sort-dropdown-bg: #ffffff;
+  --sort-dropdown-border: #cccccc;
+  --sort-dropdown-color: #333333;
+  --sort-dropdown-bg-hover: #eeeeee;
+  --sort-dropdown-border-hover: #bbbbbb;
+  --sort-dropdown-bg-active: #e7e7e7;
+  --sort-dropdown-option-bg: #ffffff;
+  --sort-dropdown-option-color: #333333;
+  --sort-dropdown-focus: #0b6cff;
+  --sort-dropdown-arrow-color: #333333;
+
+  --search-highlight-bg: #ffc;
+  --search-highlight-text: #333333;
+  --search-highlight-bg-dark: #ffc;
+  --search-highlight-text-dark: #333333;
+}
+
+/* G2 Classic typography: body font per design analysis (base font-size 62.5% deferred to avoid rem layout impact) */
+[data-theme="original"] body {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+
+/* ============================================================================
    Theme Transitions
    ============================================================================ */
 
@@ -698,7 +864,7 @@
  *
  * Transitions are applied to color and background properties that change
  * between themes. This provides a smooth visual experience when switching
- * between light and dark themes.
+ * between light, dark, and original themes.
  *
  * The transitions respect the prefers-reduced-motion media query to ensure
  * accessibility for users who prefer reduced motion.
@@ -706,7 +872,8 @@
 
 :root,
 [data-theme="light"],
-[data-theme="dark"] {
+[data-theme="dark"],
+[data-theme="original"] {
   /* Transition properties for theme changes */
   transition:
     background-color 0.3s ease-in-out,
@@ -719,7 +886,8 @@
 @media (prefers-reduced-motion: reduce) {
   :root,
   [data-theme="light"],
-  [data-theme="dark"] {
+  [data-theme="dark"],
+  [data-theme="original"] {
     transition: none;
   }
 }
@@ -747,6 +915,7 @@ textarea,
   :root,
   [data-theme="light"],
   [data-theme="dark"],
+  [data-theme="original"],
   body,
   button,
   a,

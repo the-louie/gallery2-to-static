@@ -2,11 +2,11 @@
  * Theme Switcher Component
  *
  * @deprecated This component is deprecated. Use ThemeDropdown instead.
- * An accessible button that allows users to cycle through themes: light → dark → light
+ * An accessible button that cycles through themes: light → dark → original → light.
  *
  * ## Features
  *
- * - Two theme modes: light and dark
+ * - Cycles through light, dark, and original themes; ThemeDropdown is preferred for direct selection
  * - Accessible with proper ARIA attributes
  * - Keyboard navigable (Enter, Space)
  * - Visual icons for each mode
@@ -47,12 +47,21 @@ export interface ThemeSwitcherProps {
 }
 
 /**
- * Get the next theme in the cycle
+ * Get the next theme in the cycle (light → dark → original → light)
  * @param current - Current theme
  * @returns Next theme in cycle
  */
 function getNextTheme(current: Theme): Theme {
-  return current === 'light' ? 'dark' : 'light';
+  switch (current) {
+    case 'light':
+      return 'dark';
+    case 'dark':
+      return 'original';
+    case 'original':
+      return 'light';
+    default:
+      return 'light';
+  }
 }
 
 /**
@@ -65,7 +74,9 @@ function getAriaLabel(theme: Theme): string {
     case 'light':
       return 'Theme: Light mode. Click to switch to dark mode.';
     case 'dark':
-      return 'Theme: Dark mode. Click to switch to light mode.';
+      return 'Theme: Dark mode. Click to switch to original mode.';
+    case 'original':
+      return 'Theme: Original mode. Click to switch to light mode.';
     default:
       return 'Toggle theme';
   }
@@ -120,6 +131,28 @@ function MoonIcon(): React.ReactElement {
 }
 
 /**
+ * Classic/frame icon for Original (G2 Classic) theme
+ */
+function ClassicIcon(): React.ReactElement {
+  return (
+    <svg
+      className="theme-switcher-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <line x1="3" y1="9" x2="21" y2="9" />
+      <line x1="9" y1="21" x2="9" y2="9" />
+    </svg>
+  );
+}
+
+/**
  * Auto/System icon for system preference mode
  */
 function SystemIcon(): React.ReactElement {
@@ -145,7 +178,7 @@ function SystemIcon(): React.ReactElement {
  * Theme Switcher Component
  *
  * @deprecated Use ThemeDropdown instead. This component is kept for backward compatibility.
- * Button that cycles through themes: light → dark → light
+ * Button that cycles through themes: light → dark → original → light
  *
  * @param props - Component props
  * @returns Theme switcher button
@@ -169,6 +202,8 @@ export function ThemeSwitcher({ className }: ThemeSwitcherProps): React.ReactEle
         return <SunIcon />;
       case 'dark':
         return <MoonIcon />;
+      case 'original':
+        return <ClassicIcon />;
       default:
         return <SunIcon />;
     }

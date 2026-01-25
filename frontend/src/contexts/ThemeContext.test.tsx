@@ -91,6 +91,7 @@ describe('ThemeContext', () => {
       expect(result.current).toHaveProperty('availableThemes');
       expect(result.current).toHaveProperty('isDark');
       expect(result.current).toHaveProperty('isLight');
+      expect(result.current).toHaveProperty('isOriginal');
     });
 
     it('defaults to light theme', () => {
@@ -123,6 +124,14 @@ describe('ThemeContext', () => {
       });
 
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    });
+
+    it('applies original theme to root element', () => {
+      renderHook(() => useTheme(), {
+        wrapper: createWrapper('original'),
+      });
+
+      expect(document.documentElement.getAttribute('data-theme')).toBe('original');
     });
 
     it('persists theme to localStorage', () => {
@@ -172,6 +181,7 @@ describe('ThemeContext', () => {
       expect(result.current.availableThemes.length).toBeGreaterThan(0);
       expect(result.current.availableThemes.some((t) => t.name === 'light')).toBe(true);
       expect(result.current.availableThemes.some((t) => t.name === 'dark')).toBe(true);
+      expect(result.current.availableThemes.some((t) => t.name === 'original')).toBe(true);
     });
   });
 
@@ -203,6 +213,16 @@ describe('ThemeContext', () => {
 
       expect(result.current.isLight).toBe(true);
       expect(result.current.isDark).toBe(false);
+    });
+
+    it('isOriginal is true when theme is original', () => {
+      const { result } = renderHook(() => useTheme(), {
+        wrapper: createWrapper('original'),
+      });
+
+      expect(result.current.isOriginal).toBe(true);
+      expect(result.current.isDark).toBe(false);
+      expect(result.current.isLight).toBe(false);
     });
   });
 
@@ -376,8 +396,8 @@ describe('ThemeContext', () => {
         wrapper: createWrapper(),
       });
 
-      // Should always return a valid theme (light or dark)
-      expect(['light', 'dark']).toContain(result.current.theme);
+      // Should always return a valid theme (light, dark, or original)
+      expect(['light', 'dark', 'original']).toContain(result.current.theme);
 
       // Restore
       Object.defineProperty(window, 'localStorage', {

@@ -19,6 +19,9 @@
  * 2. Add corresponding CSS variables in themes.css using [data-theme="{name}"]
  * 3. The theme will automatically be available in the dropdown
  *
+ * The "original" theme implements the Gallery 2 Classic look; see
+ * docs/dev-notes/2026-01-25-1200_original_design_analyzis_1.md for the specification.
+ *
  * ## Usage
  *
  * ```tsx
@@ -59,6 +62,12 @@ export const THEME_REGISTRY: readonly ThemeDefinition[] = [
     displayName: 'Dark',
     description: 'Dark theme with dark colors',
     cssSelector: '[data-theme="dark"]',
+  },
+  {
+    name: 'original',
+    displayName: 'Original',
+    description: 'Gallery 2 Classic (lanbilder.se) style',
+    cssSelector: '[data-theme="original"]',
   },
 ] as const;
 

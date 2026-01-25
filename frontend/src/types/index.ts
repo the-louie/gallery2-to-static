@@ -174,8 +174,8 @@ export interface NavigationState {
  * - frontend/src/contexts/ThemeContext.tsx: Theme, ThemeContextValue
  * - frontend/src/config/themes.ts: ThemeName, ThemeDefinition
  *
- * The current theme system uses theme names (e.g., 'light', 'dark') instead of preferences.
- * ThemeContextValue provides: theme, setTheme, availableThemes, isDark, isLight
+ * The current theme system uses theme names (e.g., 'light', 'dark', 'original') instead of preferences.
+ * ThemeContextValue provides: theme, setTheme, availableThemes, isDark, isLight, isOriginal
  *
  * The old types below (ThemeMode, ThemeColors, ThemeConfig, ThemeState, ThemeSwitcherProps) were from
  * earlier designs and are not used in the current implementation. They are kept

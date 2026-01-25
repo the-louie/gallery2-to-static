@@ -99,6 +99,22 @@ describe('ThemeDropdown', () => {
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
 
+  it('shows Original theme option and selects it', async () => {
+    const user = userEvent.setup();
+
+    render(<ThemeDropdown />, { defaultTheme: 'light' });
+
+    const button = screen.getByRole('button');
+    await user.click(button);
+
+    const originalOption = screen.getByRole('option', { name: /original/i });
+    expect(originalOption).toBeInTheDocument();
+    await user.click(originalOption);
+
+    expect(document.documentElement.getAttribute('data-theme')).toBe('original');
+    expect(button).toHaveTextContent('Original');
+  });
+
   it('navigates options with arrow keys', async () => {
     const user = userEvent.setup();
 

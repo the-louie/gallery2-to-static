@@ -155,7 +155,7 @@ You should now see your gallery in the browser:
 - Click on albums to navigate into them
 - Click on images to view them in full-screen lightbox
 - Use the search bar to search for albums and images
-- Try the theme switcher to toggle between light and dark modes
+- Use the theme dropdown to choose light, dark, or original theme
 
 ## Verifying Installation
 

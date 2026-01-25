@@ -16,10 +16,15 @@ import {
 
 describe('Theme Registry', () => {
   describe('THEME_REGISTRY', () => {
-    it('contains at least light and dark themes', () => {
+    it('contains light, dark, and original themes', () => {
       const themeNames = THEME_REGISTRY.map((theme) => theme.name);
       expect(themeNames).toContain('light');
       expect(themeNames).toContain('dark');
+      expect(themeNames).toContain('original');
+    });
+
+    it('has exactly three themes', () => {
+      expect(THEME_REGISTRY.length).toBe(3);
     });
 
     it('has unique theme names', () => {
@@ -65,6 +70,13 @@ describe('Theme Registry', () => {
       expect(darkTheme?.displayName).toBe('Dark');
     });
 
+    it('returns theme definition for original theme', () => {
+      const originalTheme = getTheme('original');
+      expect(originalTheme).toBeDefined();
+      expect(originalTheme?.name).toBe('original');
+      expect(originalTheme?.displayName).toBe('Original');
+    });
+
     it('returns undefined for invalid theme name', () => {
       const invalidTheme = getTheme('invalid');
       expect(invalidTheme).toBeUndefined();
@@ -108,6 +120,7 @@ describe('Theme Registry', () => {
     it('returns true for valid theme names', () => {
       expect(isValidTheme('light')).toBe(true);
       expect(isValidTheme('dark')).toBe(true);
+      expect(isValidTheme('original')).toBe(true);
     });
 
     it('returns false for invalid theme names', () => {

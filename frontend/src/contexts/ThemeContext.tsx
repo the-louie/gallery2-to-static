@@ -6,7 +6,7 @@
  *
  * ## Features
  *
- * - Multiple theme support (light, dark, and extensible for future themes)
+ * - Multiple theme support (light, dark, original, and extensible for future themes)
  * - localStorage persistence of user theme selection
  * - Automatic migration from old preference-based system
  * - Robust error handling with graceful fallbacks
@@ -108,6 +108,8 @@ export interface ThemeContextValue {
   isDark: boolean;
   /** Convenience property: true if current theme is light */
   isLight: boolean;
+  /** Convenience property: true if current theme is original (G2 Classic) */
+  isOriginal: boolean;
 }
 
 /**
@@ -123,6 +125,7 @@ const defaultContextValue: ThemeContextValue = {
   availableThemes: getAllThemes(),
   isDark: false,
   isLight: true,
+  isOriginal: false,
 };
 
 /**
@@ -153,7 +156,7 @@ function applyTheme(theme: ThemeName): void {
   if (typeof document !== 'undefined' && document.documentElement) {
     try {
       // Apply theme via data-theme attribute
-      // Light theme uses [data-theme="light"], dark uses [data-theme="dark"]
+      // [data-theme="light"], [data-theme="dark"], or [data-theme="original"]
       document.documentElement.setAttribute('data-theme', theme);
     } catch (error) {
       // Handle edge cases where attribute manipulation fails
@@ -360,6 +363,7 @@ export function ThemeProvider({
       availableThemes,
       isDark: validatedTheme === 'dark',
       isLight: validatedTheme === 'light',
+      isOriginal: validatedTheme === 'original',
     }),
     [validatedTheme, setTheme, availableThemes]
   );
