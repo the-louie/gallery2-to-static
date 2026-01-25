@@ -49,7 +49,6 @@ const findFirstPhoto = (children: Child[]): Child | null => {
  * @param uipath Current UI path array for URL construction
  * @param pathComponent Current path component array for URL construction
  * @param ignoreSet Set of album IDs to ignore
- * @param config Configuration object
  * @returns Object with photo and its uipath/pathComponent for URL building, or null if none found
  */
 async function findFirstPhotoRecursive(
@@ -58,7 +57,6 @@ async function findFirstPhotoRecursive(
     uipath: Array<string>,
     pathComponent: Array<string>,
     ignoreSet: Set<number>,
-    config: Config,
 ): Promise<{ photo: Child; uipath: Array<string>; pathComponent: Array<string> } | null> {
     const children = await sql.getChildren(albumId);
     const filtered = children.filter(
@@ -85,7 +83,6 @@ async function findFirstPhotoRecursive(
                 uipath.concat([title]),
                 pathComponent.concat([child.pathComponent]),
                 ignoreSet,
-                config,
             );
             if (result) {
                 return result;
@@ -105,7 +102,6 @@ async function findFirstPhotoRecursive(
  * @param uipath Current UI path array
  * @param pathComponent Current path component array
  * @param ignoreSet Set of album IDs to ignore
- * @param config Configuration object
  * @returns Highlight image URL string, or null if no image found
  */
 async function resolveHighlightImageUrl(
@@ -114,7 +110,6 @@ async function resolveHighlightImageUrl(
     uipath: Array<string>,
     pathComponent: Array<string>,
     ignoreSet: Set<number>,
-    config: Config,
 ): Promise<string | null> {
     try {
         const result = await findFirstPhotoRecursive(
@@ -123,7 +118,6 @@ async function resolveHighlightImageUrl(
             uipath,
             pathComponent,
             ignoreSet,
-            config,
         );
         
         if (!result) {
@@ -264,7 +258,6 @@ const main = async (
                               albumUipath,
                               childPathComponent,
                               ignoreSet,
-                              config,
                           )
                         : null;
                     const highlightSpread =
@@ -345,7 +338,6 @@ const main = async (
             uipath,
             pathComponent,
             ignoreSet,
-            config,
         );
         
         if (highlightImageUrl !== null) {

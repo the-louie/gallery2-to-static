@@ -1,5 +1,8 @@
 # TODO Summarized
 
+## Partial Tasks
+- Album titles and descriptions: BBCode (Backend + Frontend) - Medium - 1–2 hours - Backend: strip BBCode from titles; Frontend: render BBCode in descriptions (RootAlbumListBlock, AlbumDetail)
+
 ## Pending Tasks
 - Prioritize search by album context (Frontend) - Medium - 1–2 hours - Sort search results so direct children of context album first, then descendants, then rest of site; context from URL param
 - Fix URL path: Nordic chars (å ä ö) → a, a, o in backend (Bug) - Medium - 45–60 min - Backend URL paths: do not decode entities to Unicode; map å→a, ä→a, ö→o so paths are e.g. martin_ojes not martin_ouml;jes
@@ -9,7 +12,6 @@
 - Subalbum wrapper 50% width, max-width 800px below 1200px - Low - 20–30 min - Frontend: subalbum wrapper div 50% parent width and max-width 800px on viewports below 1200px
 - Remove "Subalbums:" title from sub-album wrapper in root album - Low - 10–15 min - Frontend: remove root-album-list-block-subalbums-title element and text; keep list and aria-label
 - Remove root-album-list-view-header from the root album (Frontend) - Low - 10–15 min - Frontend: remove root-album-list-view-header block and "Albums" heading from RootAlbumListView
-- Highlight image as faded/blurred background on article.root-album-list-block (Frontend) - Low - 30–45 min - Frontend: use highlightImageUrl as faded/blurred background on RootAlbumListBlock
 - Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
 
 ---
@@ -17,9 +19,9 @@
 ## Summary
 
 **Total Tasks:** 10
-**Pending:** 10
-**Partial:** 0
+**Pending:** 9
+**Partial:** 1
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** ~11.5–13.5 hours
+**Estimated Total Time:** ~11–13 hours

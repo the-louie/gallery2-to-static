@@ -2,6 +2,33 @@
 
 ---
 
+## Album titles and descriptions: BBCode (Backend + Frontend) (Partial)
+
+**Status:** Partial
+**Priority:** Medium
+**Complexity:** Medium
+**Estimated Time:** 1–2 hours
+
+### Description
+Two parts: (1) **Backend:** Strip BBCode from album titles in emitted JSON so `title` / `albumTitle` are plain text. (2) **Frontend:** Render BBCode in album descriptions in RootAlbumListBlock and AlbumDetail (parse and display formatting/links).
+
+### Requirements (in progress)
+
+#### Scope
+- **Backend only (titles).** Extraction logic in `backend/` that builds album metadata and child items (e.g. `backend/index.ts`, and any helper that sets `title` or `albumTitle`). Add a strip-BBCode step (or helper) and apply it wherever album titles are assigned to the output (metadata for each album file, and each child item’s title).
+- **Titles only.** Strip BBCode from album title fields only. Do not strip from description or summary unless a separate product decision says so; this task is only for titles so that all consumers of `title` / `albumTitle` get plain text.
+- **Stripping.** "Strip" means remove all BBCode tags (e.g. `[b]`, `[/b]`, `[i]`, `[color=red]`, `[tag=value]`, etc.) and output only the concatenated inner text. Optionally decode HTML entities first (e.g. `&auml;` → `ä`) then strip tags, so the stored title is readable plain text. Handle nested tags and malformed/unclosed tags (leave remaining text).
+- **Frontend (descriptions).** **Album descriptions** must support **BBCode rendering** in two places: (1) in the **root album list** (each album block’s description in `RootAlbumListBlock`), and (2) in the **actual album view** (the album description in `AlbumDetail`). Today both locations render the description as plain text (HTML entities decoded only). Required: parse and render BBCode (e.g. `[b]`, `[i]`, `[color=…]`, `[url=…]`) using the same parsing pipeline (e.g. `parseBBCodeDecoded`).
+
+#### Implementation Tasks
+- Add a backend helper that strips BBCode to plain text, e.g. `stripBBCode(title: string): string` (in a shared place). It should remove `[tag]`, `[/tag]`, and `[tag=value]` and return the inner text only. Align with the same tag set the frontend parser knows (b, i, u, s, color, size, url, etc.). Optionally decode HTML entities before or after stripping.
+- Apply the helper wherever album titles are set during extraction: (1) when building `metadata.albumTitle` for each album file; (2) when building each child object’s `title` (for GalleryAlbumItem and any other type that has a title). Ensure root album and all child albums and nested extraction paths use the stripped title.
+- In `RootAlbumListBlock.tsx`, replace the description output from `decodeHtmlEntities(album.description!)` to `parseBBCodeDecoded(album.description!)` (with null/empty guard: only render the paragraph when description is non-empty; pass trimmed string to the parser). Ensure `extractUrlFromBBCode` for the "website" link still receives raw summary/description if that behavior is separate.
+- In `AlbumDetail.tsx`, replace the description output from `decodeHtmlEntities(album.description)` to `parseBBCodeDecoded(album.description)` (with existing guard for `album.description`). If summary is rendered with `decodeHtmlEntities(album.summary)`, change to `parseBBCodeDecoded(album.summary)` for consistency if product wants summary to support BBCode too.
+- Update tests: In `RootAlbumListBlock.test.tsx`, add or adjust a test that expects description with BBCode to render as formatted. In `AlbumDetail.test.tsx`, update the test "does not parse BBCode in description or summary" to instead expect BBCode to be parsed. Adjust any snapshot or text assertions that assume plain-text description.
+
+---
+
 ## Replace "Gallery Administrator" with "The Louie" in ownerName (Backend Extraction)
 
 **Status:** Pending
@@ -277,25 +304,13 @@ The root album view no longer displays the header section or "Albums" title. The
 ### Technical Notes
 - Reference: `frontend/src/components/RootAlbumListView/RootAlbumListView.tsx` (header block around lines 119–121); `frontend/src/components/RootAlbumListView/RootAlbumListView.css` (`.root-album-list-view-header` and `.root-album-list-view-title`).
 
----
-
-## Highlight image as faded/blurred background on article.root-album-list-block (Frontend)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low–Medium
-**Estimated Time:** 30–45 minutes
-
-### Description
-In the **root album list** and the **child-album list**, each album block is rendered as an **article** with class **`.root-album-list-block`** (see `RootAlbumListBlock`). The **highlighted image** for that album (from `metadata.highlightImageUrl` or from the child’s `highlightImageUrl` when shown in a parent’s list) should be used as the **background** of that article. The image must be **faded** (e.g. reduced opacity or overlay) and **slightly blurred** so that the text and links on top remain clearly visible and readable. When no highlight image is available, the block keeps its current appearance (no background image).
+--- (from `metadata.highlightImageUrl` or from the child’s `highlightImageUrl` when shown in a parent’s list) should be used as the **background** of that article. The image must be **faded** (e.g. reduced opacity or overlay) and **slightly blurred** so that the text and links on top remain clearly visible and readable. When no highlight image is available, the block keeps its current appearance (no background image).
 
 **Scope:** Applies wherever `RootAlbumListBlock` is used: root album list (home) and any child-album list that uses the same component. The album prop already has (or can have) `highlightImageUrl`; use it to set a CSS background (or a pseudo-element / wrapper) with blur and fade.
 
 ### Requirements
 
 #### Scope
-- **Frontend only.** Component `RootAlbumListBlock` and its CSS (`RootAlbumListBlock.css`); optionally `imageUrl`/`getImageBaseUrl` to build the full image URL for the background.
-- **Target element.** The **article** with class `root-album-list-block` (or an inner wrapper that covers the block) gets the background image when `album.highlightImageUrl`` or `album.metadata?.highlightImageUrl` is present. Use the same image base URL as for other images (e.g. `getImageBaseUrl()` + highlightImageUrl).
 - **Faded and blurred.** Apply CSS so the background image is visually softened: e.g. `filter: blur(...)` and/or a semi-transparent overlay (or `background` with a gradient overlay, or lowered opacity on a background layer) so text and UI on top stay readable and accessible. Do not let the background overwhelm the content.
 
 #### Implementation Tasks
@@ -305,16 +320,7 @@ In the **root album list** and the **child-album list**, each album block is ren
 - When `highlightImageUrl` is missing, do not set a background image; existing styles remain.
 
 ### Deliverable
-Each album block (article.root-album-list-block) in the root album list and in child-album lists shows the album’s highlight image as a faded, blurred background when available. Text and links on top remain clearly visible. Blocks without a highlight image look unchanged.
 
-### Testing Requirements
-- Visually verify on the root album list and on an album page that shows child albums: blocks with a highlight image show it as a soft background; text is readable.
-- Confirm blocks without highlightImageUrl are unchanged.
-- Check accessibility (focus, contrast) and that links/buttons are still clickable.
-
-### Technical Notes
-- Blur on a pseudo-element or a dedicated div (with the background image) keeps the main content sharp; applying `filter: blur()` on the whole article would blur the text, so avoid that.
-- Overlay can be e.g. `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.4))` or theme-aware overlay so it works in light and dark mode.
 
 ---
 - **Backend only.** Extraction logic in `backend/` that builds album metadata and child items (e.g. `backend/index.ts`, and any helper that sets `title` or `albumTitle`). Add a strip-BBCode step (or helper) and apply it wherever album titles are assigned to the output (metadata for each album file, and each child item’s title 
