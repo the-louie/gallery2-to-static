@@ -200,6 +200,14 @@
   }
 }
 
+/* Below 1200px: subalbum column 50% width, max-width 800px */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .root-album-list-block-subalbums {
+    width: 50%;
+    max-width: 800px;
+  }
+}
+
 .root-album-list-block-subalbums-list {
   margin: 0;
   padding: var(--root-album-subalbums-list-padding);

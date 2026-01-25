@@ -110,43 +110,7 @@ Albums that have no image descendant (and are not the root) are excluded from ex
 
 ---
 
-## Subalbum wrapper: 50% width and max-width 800px below 1200px (Frontend CSS)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 20–30 minutes
-
-### Description
-On viewports **below 1200px**, the subalbum wrapper div (the element that wraps the subalbums section, e.g. the right column in the root album list block layout) should take up **50% of the parent width** and have **max-width: 800px**. This applies to the frontend layout where album blocks and their subalbums are shown (e.g. `RootAlbumListBlock` and its CSS). Above 1200px, existing layout rules remain unchanged unless otherwise specified.
-
-### Requirements
-
-#### Scope
-- **Frontend only.** CSS (and optional layout adjustments) in the relevant component(s), e.g. `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.css`.
-- **Breakpoint.** Use `1200px` as the breakpoint: below 1200px apply the new rules; at 1200px and above do not apply them (or remove them via a media query `min-width: 1200px` if they were applied in a max-width query).
-- **Target element.** The “subalbum wrapper” is the div (or element) that wraps the subalbums list/section (e.g. the container with class such as `root-album-list-block-subalbums` or the column that contains it). Ensure the correct element receives `width: 50%` and `max-width: 800px` within the media query.
-
-#### Implementation Tasks
-- Add a media query for viewports below 1200px (e.g. `@media (max-width: 1199px)` or `(max-width: 1200px)` per project convention).
-- In that media query, target the subalbum wrapper div and set `width: 50%` (of parent) and `max-width: 800px`.
-- Verify the parent layout allows the 50% width to take effect (e.g. flex/grid on parent). Adjust parent or wrapper if needed so the subalbum section does not overflow or break the layout.
-- Check behavior at 1200px and just above/below to avoid gaps or double application.
-
-### Deliverable
-On viewports &lt; 1200px, the subalbum wrapper has width 50% of its parent and max-width 800px. Layout remains correct and readable.
-
-### Testing Requirements
-- Manually test at several widths below 1200px (e.g. 1100px, 800px, 600px) and confirm the subalbum section width and max-width behavior.
-- Confirm at 1200px and above the layout is unchanged.
-
-### Technical Notes
-- Use CSS custom properties for 1200px and 800px if the project uses them for breakpoints/sizing; otherwise use literal values.
-- Ensure no conflicting width rules in the same breakpoint override the intended behavior.
-
----
-
- The header should not appear as a distinct "bar" on top of the page. Prefer: (1) **Background:** Use the same background as the page (e.g. transparent so the layout’s gradient or `--color-background-primary` shows through), or extend the layout gradient into the header area so there is no color step. (2) **Border:** Remove the header’s `border-bottom` or replace it with a very subtle separator (e.g. same color as background with a slight tone difference, or a soft shadow) so the transition to main content is gradual rather than a hard line.
+ The “” The header should not appear as a distinct "bar" on top of the page. Prefer: (1) **Background:** Use the same background as the page (e.g. transparent so the layout’s gradient or `--color-background-primary` shows through), or extend the layout gradient into the header area so there is no color step. (2) **Border:** Remove the header’s `border-bottom` or replace it with a very subtle separator (e.g. same color as background with a slight tone difference, or a soft shadow) so the transition to main content is gradual rather than a hard line.
  Remove or soften `.layout-header`’s `border-bottom` (remove it, or use a very light border/shadow that doesn’t read as a strong line).
 ---
 
