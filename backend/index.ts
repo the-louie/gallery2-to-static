@@ -94,6 +94,40 @@ async function findFirstPhotoRecursive(
 }
 
 /**
+ * Computes the set of album IDs (in the subtree rooted at albumId) that have at least one
+ * image descendant (GalleryPhotoItem in the album or any sub-album, recursively).
+ * Respects ignoreSet: blacklisted albums are not recursed into.
+ * @param albumId Album ID to traverse from
+ * @param sql SQL utilities instance
+ * @param ignoreSet Set of album IDs to ignore
+ * @returns Set of album IDs that have at least one image descendant
+ */
+async function computeAlbumsWithImageDescendants(
+    albumId: number,
+    sql: ReturnType<typeof sqlUtils>,
+    ignoreSet: Set<number>,
+): Promise<Set<number>> {
+    const children = await sql.getChildren(albumId);
+    const filtered = children.filter(
+        (c) => c.type !== 'GalleryAlbumItem' || !isBlacklisted(c.id, ignoreSet),
+    );
+    const result = new Set<number>();
+    if (findFirstPhoto(filtered) !== null) {
+        result.add(albumId);
+    }
+    for (const child of filtered) {
+        if (child.type === 'GalleryAlbumItem' && child.hasChildren && child.pathComponent) {
+            const childSet = await computeAlbumsWithImageDescendants(child.id, sql, ignoreSet);
+            if (childSet.size > 0) {
+                result.add(albumId);
+                childSet.forEach((id) => result.add(id));
+            }
+        }
+    }
+    return result;
+}
+
+/**
  * Resolves the highlight image URL for an album.
  * Since highlightId is not available in the database schema, this function
  * uses recursive first-image fallback only.
@@ -188,10 +222,14 @@ const main = async (
     ignoreSet: Set<number>,
     breadcrumbAncestors: BreadcrumbItem[] = [],
     config: Config,
+    albumsWithImageDescendants: Set<number>,
 ) => {
     const children = await sql.getChildren(root);
+    // Exclude child albums that are blacklisted or have no image descendant.
     const filtered = children.filter(
-        (c) => c.type !== 'GalleryAlbumItem' || !isBlacklisted(c.id, ignoreSet),
+        (c) =>
+            c.type !== 'GalleryAlbumItem' ||
+            (!isBlacklisted(c.id, ignoreSet) && albumsWithImageDescendants.has(c.id)),
     );
     if (filtered.length > 0) {
         const albumInfo = await sql.getAlbumInfo(root);
@@ -223,6 +261,7 @@ const main = async (
                         ignoreSet,
                         breadcrumbPath,
                         config,
+                        albumsWithImageDescendants,
                     ),
                 );
             }
@@ -413,7 +452,8 @@ let connection: mysql.Connection | null = null;
         const searchIndex = new Map<number, SearchIndexItem>();
         
         const thumbPrefix = config.thumbPrefix ?? 't__';
-        await main(sql, rootId, [], [''], dataDir, searchIndex, thumbPrefix, ignoreSet, [], config);
+        const albumsWithImageDescendants = await computeAlbumsWithImageDescendants(rootId, sql, ignoreSet);
+        await main(sql, rootId, [], [''], dataDir, searchIndex, thumbPrefix, ignoreSet, [], config, albumsWithImageDescendants);
         
         // Generate search index file
         try {
