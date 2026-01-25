@@ -29,43 +29,6 @@ Two parts: (1) **Backend:** Strip BBCode from album titles in emitted JSON so `t
 
 ---
 
-## Limit root album child-album descriptions to 20 words (Backend Extraction)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 30–45 minutes
-
-### Description
-During backend extraction, when building the **root album** JSON file, limit the `description` field for each **child album** (GalleryAlbumItem) in the root's `children` array to at most 20 words. If a child album's description has more than 20 words, truncate it to the first 20 words and append an ellipsis (e.g. `"..."`). Descriptions of 20 words or fewer remain unchanged. This applies only to the root album's emitted `children`; other albums' children and metadata descriptions are not modified.
-
-### Requirements
-
-#### Scope
-- **Root album only.** Apply truncation only when emitting the album JSON for the configured root album (the top-level album, e.g. `rootId`).
-- **Child albums only.** Only truncate `description` on items where `type === 'GalleryAlbumItem'`. Do not change descriptions on photos (GalleryPhotoItem) or on album metadata.
-- **Word count.** Use a simple word boundary (e.g. split on whitespace). Exactly 20 words; if there are more, take the first 20 and append `"..."`.
-- **Null/empty.** If `description` is null, undefined, or empty, leave it unchanged (no ellipsis).
-
-#### Implementation Tasks
-- Add a helper (e.g. `truncateDescriptionToWords(text: string, maxWords: number): string`) that returns the first `maxWords` words and appends `"..."` only when the input has more than `maxWords` words.
-- In `backend/index.ts`, when building the root album's output (e.g. `processedChildrenWithThumbnails` or immediately before writing the root album JSON), detect that the current album is the root (e.g. by passing `rootAlbumId` into `main` and comparing `root === rootAlbumId`).
-- For the root album only, map over the final children array and for each child with `type === 'GalleryAlbumItem'` and a non-empty `description`, replace `description` with `truncateDescriptionToWords(description, 20)`.
-
-### Deliverable
-The root album JSON file's `children` array has no child album with a `description` longer than 20 words plus ellipsis. All other albums and fields are unchanged.
-
-### Testing Requirements
-- Run extraction and confirm the root album JSON has truncated descriptions (≤ 20 words + `"..."`) for child albums that originally had longer descriptions.
-- Confirm non-root album JSON files and photo children are unchanged.
-- Confirm descriptions that are already ≤ 20 words are not modified (no extra ellipsis).
-
-### Technical Notes
-- Use a constant for the word limit (e.g. `ROOT_ALBUM_CHILD_DESCRIPTION_MAX_WORDS = 20`) for maintainability.
-- Ellipsis character: use `"..."` (three full stops) unless the project prefers a single Unicode ellipsis character (`\u2026`).
-
----
-
  The "" The header should not appear as a distinct "bar" on top of the page. Prefer: (1) **Background:** Use the same background as the page (e.g. transparent so the layout's gradient or `--color-background-primary` shows through), or extend the layout gradient into the header area so there is no color step. (2) **Border:** Remove the header's `border-bottom` or replace it with a very subtle separator (e.g. same color as background with a slight tone difference, or a soft shadow) so the transition to main content is gradual rather than a hard line.
  Remove or soften `.layout-header`'s `border-bottom` (remove it, or use a very light border/shadow that doesn't read as a strong line).
 ---

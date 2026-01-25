@@ -31,6 +31,20 @@ function isBlacklisted(id: number, set: Set<number>): boolean {
     return set.has(id);
 }
 
+const ROOT_ALBUM_CHILD_DESCRIPTION_MAX_WORDS = 20;
+
+/**
+ * Truncates text to at most maxWords words; if longer, returns first maxWords words joined by space plus "...".
+ * Caller must not pass null/undefined/empty (leave those unchanged).
+ */
+function truncateDescriptionToWords(text: string, maxWords: number): string {
+    const words = text.trim().split(/\s+/).filter((w) => w.length > 0);
+    if (words.length <= maxWords) {
+        return text;
+    }
+    return words.slice(0, maxWords).join(' ') + '...';
+}
+
 /**
  * Finds the first photo (GalleryPhotoItem) in a children array.
  * @param children Array of child items (albums and photos)
@@ -222,6 +236,7 @@ const main = async (
     ignoreSet: Set<number>,
     breadcrumbAncestors: BreadcrumbItem[] = [],
     config: Config,
+    rootAlbumId: number,
     albumsWithImageDescendants: Set<number>,
 ) => {
     const children = await sql.getChildren(root);
@@ -261,6 +276,7 @@ const main = async (
                         ignoreSet,
                         breadcrumbPath,
                         config,
+                        rootAlbumId,
                         albumsWithImageDescendants,
                     ),
                 );
@@ -361,6 +377,26 @@ const main = async (
             }
         }
 
+        const childrenForFile =
+            root === rootAlbumId
+                ? processedChildrenWithThumbnails.map((child) => {
+                      if (
+                          child.type === 'GalleryAlbumItem' &&
+                          child.description != null &&
+                          child.description.trim().length > 0
+                      ) {
+                          return {
+                              ...child,
+                              description: truncateDescriptionToWords(
+                                  child.description,
+                                  ROOT_ALBUM_CHILD_DESCRIPTION_MAX_WORDS,
+                              ),
+                          };
+                      }
+                      return child;
+                  })
+                : processedChildrenWithThumbnails;
+
         const metadata: AlbumMetadata = {
             albumId: albumInfo.albumId,
             albumTitle: albumInfo.albumTitle,
@@ -383,7 +419,7 @@ const main = async (
             metadata.highlightImageUrl = highlightImageUrl;
         }
         
-        const albumFile: AlbumFile = { metadata, children: processedChildrenWithThumbnails };
+        const albumFile: AlbumFile = { metadata, children: childrenForFile };
         const filePath = path.join(dataDir, `${root}.json`);
         try {
             await fs.writeFile(
@@ -453,7 +489,7 @@ let connection: mysql.Connection | null = null;
         
         const thumbPrefix = config.thumbPrefix ?? 't__';
         const albumsWithImageDescendants = await computeAlbumsWithImageDescendants(rootId, sql, ignoreSet);
-        await main(sql, rootId, [], [''], dataDir, searchIndex, thumbPrefix, ignoreSet, [], config, albumsWithImageDescendants);
+        await main(sql, rootId, [], [''], dataDir, searchIndex, thumbPrefix, ignoreSet, [], config, rootId, albumsWithImageDescendants);
         
         // Generate search index file
         try {
