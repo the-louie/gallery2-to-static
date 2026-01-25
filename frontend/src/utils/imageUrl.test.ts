@@ -129,6 +129,15 @@ describe('imageUrl utilities', () => {
       expect(getImageUrl(imageNoUrlPath, false)).toBe('/images/album/photo.jpg');
       expect(getImageUrl(imageNoUrlPath, true)).toBe('/images/album/t__photo.jpg');
     });
+
+    it('uses urlPath without ___ when backend emits pathcomponent-only filename', () => {
+      const imageWithUrlPath: Image = {
+        ...mockImage,
+        pathComponent: 'theenigma/enigma09/20090418-IMG_1720.jpg',
+        urlPath: 'the_enigma/enigma_09/20090418-img_1720.jpg',
+      };
+      expect(getImageUrl(imageWithUrlPath, false)).toBe('/images/the_enigma/enigma_09/20090418-img_1720.jpg');
+    });
   });
 
   describe('getImageUrlWithFormat', () => {

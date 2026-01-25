@@ -123,44 +123,6 @@ Non-root albums should display the total number of images that are descendants (
 
 ---
 
-## Fix image URL path: album 534881 and ___ prefix (wrong path)
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Medium
-**Estimated Time:** 2–4 hours
-
-### Description
-Album 534881 (and possibly others) have image URLs that point to the wrong path. Example: the first image links to `https://lanbilder.se/the_enigma/enigma_09/___20090418-img_1720.jpg` but the true/correct asset path is `the_enigma/enigma_09/20090418-img_1720.jpg` (no `___` before the filename). In `data/534881.json`, `children[].urlPath` and `metadata.highlightImageUrl` use filenames like `___20090418-img_1719.jpg`; the backend builds these with `getLinkTarget(cleanedTitle, rawPath)` in `backend/legacyPaths.ts`, which adds `uipathcomponent + '___' + pathcomponent` when the cleaned title and pathComponent differ (e.g. empty title → `'' + '___' + '20090418-IMG_1720.jpg'` → `___20090418-img_1720.jpg`). The actual exported or served files are named without the `___` prefix, so the emitted urlPath does not match the real asset path and images 404 or fail to load.
-
-### Requirements
-
-#### Investigation Tasks
-- Confirm on production or static export: are image files stored as `20090418-img_1720.jpg` or as `___20090418-img_1720.jpg`? If the former, urlPath must not include `___` for these cases.
-- Review `backend/legacyPaths.ts` `getLinkTarget` and `getThumbTarget`: they add `___` + pathcomponent when uipathcomponent and pathcomponent differ. Determine whether the static export (or Gallery 2 migration) writes files using this convention or the simpler pathcomponent-only name.
-- Find all call sites that use getLinkTarget/getThumbTarget to build urlPath or highlightImageUrl (e.g. `backend/index.ts` when building child urlPath and album highlightImageUrl).
-- Scan other album JSONs for urlPath/highlightImageUrl containing `___` in the filename and list affected albums.
-
-#### Implementation Tasks
-- Align URL output with actual file layout. Option A: change backend so urlPath (and thumb URL when applicable) uses the actual exported filename—e.g. when the file on disk is `20090418-img_1720.jpg`, emit `.../20090418-img_1720.jpg` (no `___`). Option B: if the export pipeline is intended to write `___...` filenames, fix the export so it does, and ensure the server serves from that path. Choose one convention and make backend and export consistent.
-- If Option A: adjust getLinkTarget (and getThumbTarget) or the callers so that the emitted path matches the file that is actually exported/served (e.g. use pathcomponent-based filename when that is what exists, and reserve `___` only where the export actually produces such filenames). Update tests in `legacyPaths.test.ts` and any export tests; document the convention.
-- Regenerate or fix album JSON for 534881 (and any other affected albums) so urlPath and highlightImageUrl point to the correct asset paths.
-
-### Deliverable
-Image URLs for album 534881 (and all affected albums) resolve correctly. No `___` in the path when the actual file is named without it; or, if `___` is kept, the exported files and server paths match the emitted urlPath.
-
-### Testing Requirements
-- Open album 534881 and confirm the first image (and others) load (e.g. `/album/534881` and image detail).
-- Backend/export: after change, urlPath values point to existing files in the build output (or match the chosen naming convention).
-- No regression for albums that already work (e.g. those that use the `___` form and are exported that way).
-
-### Technical Notes
-- `data/534881.json`: `pathComponent` e.g. `theenigma/enigma09/20090418-IMG_1720.jpg`, `urlPath` e.g. `the_enigma/enigma_09/___20090418-img_1720.jpg`; `highlightImageUrl` same pattern. True path per user: `the_enigma/enigma_09/20090418-img_1720.jpg`.
-- `backend/legacyPaths.ts`: getLinkTarget(uipathcomponent, pathcomponent); when title is empty, uipathcomponent is '' and output becomes `___` + pathcomponent (lowercased, .jpg.jpg fixed).
-- Backend builds urlPath in `backend/index.ts` via getLinkTarget(cleanedTitle, rawPath); dir comes from uipath (breadcrumb-style path). Ensure any change preserves correct directory segment and only fixes the filename part to match exported assets.
-
----
-
 ## Verify frontend loads images AVIF-first everywhere
 
 **Status:** Pending
