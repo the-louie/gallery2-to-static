@@ -250,6 +250,26 @@ const main = async (
         const processedChildrenWithThumbnails = await Promise.all(
             processedChildren.map(async (child) => {
                 if (child.type === 'GalleryAlbumItem') {
+                    const albumTitle = cleanup_uipathcomponent(
+                        child.title ?? child.pathComponent ?? '',
+                    );
+                    const albumUipath = uipath.concat([albumTitle]);
+                    const childPathComponent = child.pathComponent
+                        ? pathComponent.concat([child.pathComponent])
+                        : pathComponent;
+                    const highlightImageUrl = child.pathComponent
+                        ? await resolveHighlightImageUrl(
+                              child.id,
+                              sql,
+                              albumUipath,
+                              childPathComponent,
+                              ignoreSet,
+                              config,
+                          )
+                        : null;
+                    const highlightSpread =
+                        highlightImageUrl !== null ? { highlightImageUrl } : {};
+
                     const albumChildren = await sql.getChildren(child.id);
                     const firstPhoto = findFirstPhoto(albumChildren);
                     if (firstPhoto) {
@@ -264,10 +284,6 @@ const main = async (
                             pathComponent: photoPathComponent,
                         };
                         const thumbnailInfo = extractThumbnailInfo(processedFirstPhoto);
-                        const albumTitle = cleanup_uipathcomponent(
-                            child.title ?? child.pathComponent ?? '',
-                        );
-                        const albumUipath = uipath.concat([albumTitle]);
                         const cleanedTitle = cleanup_uipathcomponent(
                             firstPhoto.title ?? firstPhoto.pathComponent ?? '',
                         );
@@ -281,8 +297,14 @@ const main = async (
                         const thumbnailUrlPath = dir
                             ? `${dir}/${thumbFilename}`
                             : thumbFilename;
-                        return { ...child, ...thumbnailInfo, thumbnailUrlPath };
+                        return {
+                            ...child,
+                            ...thumbnailInfo,
+                            thumbnailUrlPath,
+                            ...highlightSpread,
+                        };
                     }
+                    return { ...child, ...highlightSpread };
                 }
                 return child;
             }),

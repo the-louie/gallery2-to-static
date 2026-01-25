@@ -43,6 +43,11 @@ export interface Child {
      */
     thumbnailHeight?: number | null;
     /**
+     * Highlight image URL for album children (same as metadata.highlightImageUrl for that album).
+     * Only present for albums (GalleryAlbumItem) when a highlight can be resolved. Enables parent to display it in child-album lists.
+     */
+    highlightImageUrl?: string | null;
+    /**
      * Owner display name resolved from Item.ownerId → User (fullName or userName). Null when user missing or ownerId invalid.
      */
     ownerName?: string | null;
