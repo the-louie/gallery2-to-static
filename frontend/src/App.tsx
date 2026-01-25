@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import { PageLoader } from './components/PageLoader';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { FilterProvider } from './contexts/FilterContext';
+import { ImageConfigProvider } from './contexts/ImageConfigContext';
 import { ViewAbortProvider } from './contexts/ViewAbortContext';
 import { useWebVitals } from './hooks/useWebVitals';
 
@@ -39,22 +40,24 @@ function App() {
 
   return (
     <FilterProvider>
-      <OfflineIndicator />
-      <ViewAbortProvider>
-        <Layout>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/search" element={<SearchResultsPage />} />
-            <Route path="/album/:albumId/image/:imageId" element={<ImageDetailPage />} />
-            <Route path="/album/:id" element={<AlbumDetailPage />} />
-            <Route path="/image/:id" element={<ImageDetailPage />} />
-            <Route path="/not-found" element={<NotFoundPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </Suspense>
-        </Layout>
-      </ViewAbortProvider>
+      <ImageConfigProvider>
+        <OfflineIndicator />
+        <ViewAbortProvider>
+          <Layout>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/search" element={<SearchResultsPage />} />
+                <Route path="/album/:albumId/image/:imageId" element={<ImageDetailPage />} />
+                <Route path="/album/:id" element={<AlbumDetailPage />} />
+                <Route path="/image/:id" element={<ImageDetailPage />} />
+                <Route path="/not-found" element={<NotFoundPage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Suspense>
+          </Layout>
+        </ViewAbortProvider>
+      </ImageConfigProvider>
     </FilterProvider>
   );
 }

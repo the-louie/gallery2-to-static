@@ -51,7 +51,7 @@ export interface ImageConfig {
  * Default base URL for images
  * Note: No trailing slash - trailing slashes are added during URL construction
  */
-const DEFAULT_BASE_URL = '/images';
+export const DEFAULT_BASE_URL = '/images';
 
 /**
  * Cached configuration value
@@ -152,7 +152,7 @@ function isValidImageConfig(data: unknown): data is ImageConfig {
  * // Returns: "/images" or configured value
  * ```
  */
-async function loadImageConfig(): Promise<string> {
+export async function loadImageConfig(): Promise<string> {
   // If already cached, return cached value
   if (cachedBaseUrl !== null) {
     return cachedBaseUrl;

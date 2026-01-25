@@ -24,6 +24,7 @@ import { formatAlbumDate } from '@/utils/dateUtils';
 import { getAlbumHighlightImageUrl, getAlbumThumbnailUrl } from '@/utils/imageUrl';
 import { sortItems } from '@/utils/sorting';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useImageBaseUrl } from '@/contexts/ImageConfigContext';
 import type { Album } from '@/types';
 import './RootAlbumListBlock.css';
 
@@ -67,6 +68,7 @@ export function RootAlbumListBlock({
   const showOwner = Boolean(album.ownerName?.trim());
   const showDescription = Boolean(album.description?.trim());
   const { isOriginal } = useTheme();
+  const baseUrl = useImageBaseUrl();
   const showSubalbums = subalbums.length > 0;
 
   const displaySubalbums = useMemo(() => {
@@ -80,8 +82,8 @@ export function RootAlbumListBlock({
     !isOriginal && subalbums.length > ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT;
 
   const linkTo = `/album/${album.id}`;
-  const highlightImageUrl = getAlbumHighlightImageUrl(album);
-  const thumbnailUrl = getAlbumThumbnailUrl(album);
+  const highlightImageUrl = getAlbumHighlightImageUrl(album, baseUrl);
+  const thumbnailUrl = getAlbumThumbnailUrl(album, undefined, baseUrl);
   const safeBgUrl =
     highlightImageUrl != null
       ? `url("${highlightImageUrl.replace(/"/g, '\\"')}")`

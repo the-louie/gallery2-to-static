@@ -66,8 +66,9 @@ function constructThumbnailUrl(
   pathComponent: string | null,
   thumbPrefix: string = DEFAULT_THUMB_PREFIX,
   format: 'webp' | 'avif' | 'original' = 'original',
+  baseUrlOverride?: string | null,
 ): string {
-  const baseUrl = getImageBaseUrl();
+  const baseUrl = baseUrlOverride ?? getImageBaseUrl();
 
   if (!pathComponent) {
     return baseUrl;
@@ -145,8 +146,9 @@ function replaceExtension(
 function constructFullImageUrl(
   pathComponent: string | null,
   format: 'webp' | 'avif' | 'original' = 'original',
+  baseUrlOverride?: string | null,
 ): string {
-  const baseUrl = getImageBaseUrl();
+  const baseUrl = baseUrlOverride ?? getImageBaseUrl();
 
   if (!pathComponent) {
     return baseUrl;
@@ -189,15 +191,16 @@ export function getImageUrl(
   image: Image,
   useThumbnail: boolean = false,
   thumbPrefix?: string,
+  baseUrlOverride?: string | null,
 ): string {
   const path = image.urlPath ?? image.pathComponent;
   const prefix = thumbPrefix ?? DEFAULT_THUMB_PREFIX;
 
   if (useThumbnail) {
-    return constructThumbnailUrl(path, prefix);
+    return constructThumbnailUrl(path, prefix, 'original', baseUrlOverride);
   }
 
-  return constructFullImageUrl(path);
+  return constructFullImageUrl(path, 'original', baseUrlOverride);
 }
 
 /**
@@ -234,15 +237,16 @@ export function getImageUrlWithFormat(
   useThumbnail: boolean = false,
   format: 'webp' | 'avif' | 'original' = 'original',
   thumbPrefix?: string,
+  baseUrlOverride?: string | null,
 ): string {
   const path = image.urlPath ?? image.pathComponent;
   const prefix = thumbPrefix ?? DEFAULT_THUMB_PREFIX;
 
   if (useThumbnail) {
-    return constructThumbnailUrl(path, prefix, format);
+    return constructThumbnailUrl(path, prefix, format, baseUrlOverride);
   }
 
-  return constructFullImageUrl(path, format);
+  return constructFullImageUrl(path, format, baseUrlOverride);
 }
 
 /**
@@ -280,20 +284,20 @@ export function getImageUrlWithFormat(
 export function getAlbumThumbnailUrl(
   album: Album,
   thumbPrefix?: string,
+  baseUrlOverride?: string | null,
 ): string | null {
+  const baseUrl = baseUrlOverride ?? getImageBaseUrl();
   if (album.thumbnailUrlPath && album.thumbnailUrlPath.length > 0) {
-    const baseUrl = getImageBaseUrl();
     return `${baseUrl}/${ensureNoLeadingSlash(album.thumbnailUrlPath)}`;
   }
 
   const pathComponent = album.thumbnailPathComponent;
   if (pathComponent) {
     const prefix = thumbPrefix ?? DEFAULT_THUMB_PREFIX;
-    return constructThumbnailUrl(pathComponent, prefix);
+    return constructThumbnailUrl(pathComponent, prefix, 'original', baseUrl);
   }
 
   if (album.highlightImageUrl && album.highlightImageUrl.length > 0) {
-    const baseUrl = getImageBaseUrl();
     return `${baseUrl}/${ensureNoLeadingSlash(album.highlightImageUrl)}`;
   }
 
@@ -309,10 +313,13 @@ export function getAlbumThumbnailUrl(
  * @param album - Album with optional highlightImageUrl
  * @returns Full image URL, or null if highlightImageUrl is missing or empty
  */
-export function getAlbumHighlightImageUrl(album: Album): string | null {
+export function getAlbumHighlightImageUrl(
+  album: Album,
+  baseUrlOverride?: string | null,
+): string | null {
   if (!album.highlightImageUrl || album.highlightImageUrl.length === 0) {
     return null;
   }
-  const baseUrl = getImageBaseUrl();
+  const baseUrl = baseUrlOverride ?? getImageBaseUrl();
   return `${baseUrl}/${ensureNoLeadingSlash(album.highlightImageUrl)}`;
 }
