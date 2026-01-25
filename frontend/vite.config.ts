@@ -1,15 +1,63 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { visualizer } from 'rollup-plugin-visualizer';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+/** Serve project-root data/ at /data/ in dev so album JSON (e.g. /data/338910.json) loads without copying to public. */
+function serveDataPlugin() {
+  const dataDir = path.resolve(__dirname, '..', 'data');
+  return {
+    name: 'serve-data',
+    apply: 'serve',
+    configureServer(server: { middlewares: { use: (path: string, handler: (req: unknown, res: unknown, next: () => void) => void) => void } }) {
+      server.middlewares.use('/data', (req: { url?: string; method?: string }, res: { setHeader: (n: string, v: string) => void }, next: () => void) => {
+        if (req.method !== 'GET' || !req.url) {
+          next();
+          return;
+        }
+        const rawPath = req.url.split('?')[0];
+        const afterData = rawPath.startsWith('/data') ? rawPath.slice('/data'.length) || '/' : rawPath;
+        let segment: string;
+        try {
+          segment = decodeURIComponent(afterData).replace(/^\//, '').trim() || '';
+        } catch {
+          next();
+          return;
+        }
+        if (segment.includes('..')) {
+          next();
+          return;
+        }
+        const filePath = path.join(dataDir, segment);
+        const resolved = path.resolve(filePath);
+        if (!resolved.startsWith(path.resolve(dataDir)) || !resolved.endsWith('.json')) {
+          next();
+          return;
+        }
+        fs.stat(filePath, (err, stat) => {
+          if (err || !stat?.isFile()) {
+            next();
+            return;
+          }
+          res.setHeader('Content-Type', 'application/json');
+          const stream = fs.createReadStream(filePath);
+          stream.on('error', next);
+          stream.pipe(res as NodeJS.WritableStream);
+        });
+      });
+    },
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
+    serveDataPlugin(),
     visualizer({
       filename: './dist/stats.html',
       open: false,

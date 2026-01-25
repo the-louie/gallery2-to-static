@@ -123,43 +123,6 @@ Non-root albums should display the total number of images that are descendants (
 
 ---
 
-## Investigate: album 338910 / image 395090 page loads no images
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Low–Medium
-**Estimated Time:** 1–2 hours
-
-### Description
-The URL `http://localhost:5173/#/album/338910/image/395090` does not load or display any images. Album data in `data/338910.json` is valid: it has `children` array with `GalleryPhotoItem` entries including item id 395090 (and others). The image detail view or grid on this album page should show the album's images and open the specified image; currently neither the grid nor the image appears to load.
-
-### Requirements
-
-#### Investigation Tasks
-- Reproduce: open `/#/album/338910/image/395090` and confirm no images load (grid empty or image viewer blank).
-- Trace route handling: how does the app resolve `albumId=338910` and `imageId=395090`? Check `App.tsx` routes and any route params used for album/detail views.
-- Trace data loading: confirm `data/338910.json` is fetched and that `children` (including 395090) are exposed to the album view (e.g. via `useAlbumData`, metadata, or similar).
-- Check filtering: ensure no filter excludes `GalleryPhotoItem` or this album's children (e.g. by type or id).
-- Check image URL resolution: `children[].urlPath` in 338910.json uses paths like `dreamhack/dreamhack_summer_07/crewbilder/hulth/onsdag/___img_3817.jpg`; verify base URL or asset path is applied so `<img src="...">` or preload receives a valid URL.
-- If the view is "album with lightbox opened to image 395090", verify the lightbox receives the correct list of image items and the index for 395090; confirm no off-by-one or id-vs-index mismatch.
-
-#### Implementation Tasks (after root cause)
-- Fix the identified cause (routing, data loading, filtering, URL construction, or lightbox list/index).
-- Ensure `/#/album/338910` (without image id) also shows the grid; ensure `/#/album/338910/image/395090` shows the same grid and opens the image 395090 in the viewer.
-
-### Deliverable
-`/#/album/338910` and `/#/album/338910/image/395090` both show the album's images; the latter opens image 395090 in the viewer.
-
-### Testing Requirements
-- Manual: load `/#/album/338910/image/395090` and confirm images appear and the specified image is focused in the viewer.
-- No regression on other album/image URLs.
-
-### Technical Notes
-- Image data lives in album JSON `data/338910.json` under `children`; there is no separate `data/395090.json`. Item id 395090 is the first child in that file.
-- Reference: `data/338910.json` (album Onsdag; children include 395090, 395094, 395099, etc., all `GalleryPhotoItem` with `urlPath`).
-
----
-
 ## Fix image URL path: album 534881 and ___ prefix (wrong path)
 
 **Status:** Pending

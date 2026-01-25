@@ -105,7 +105,7 @@ This guide helps you resolve common issues when using Gallery 2 to Static.
 - Incorrect file paths
 
 **Solutions**:
-1. **Development**: Verify files are in `frontend/public/data/` or accessible via Vite config
+1. **Development**: The dev server serves project-root `data/` at `/data/` (Vite plugin in `vite.config.ts`). Ensure the project has a `data/` directory with the JSON files; no copy to `frontend/public/data/` is needed.
 2. **Production**: Verify files are in `dist/data/` directory
 3. Check Network tab in browser DevTools to see actual request URLs
 4. Verify file naming: `{id}.json` format

@@ -65,9 +65,9 @@ You can navigate the gallery in several ways:
 
 The frontend expects JSON files to be in the `/data/` directory (relative to the frontend root when served).
 
-**Development**: Files should be at `frontend/public/data/` or accessible via the Vite server configuration.
+**Development**: The Vite dev server serves the project-root `data/` directory at `/data/` via the `serve-data` plugin (see `vite.config.ts`), so album JSON files do not need to be copied into `frontend/public/data/`.
 
-**Production**: Files should be in the `dist/data/` directory after building.
+**Production**: Files should be in the `dist/data/` directory after building (e.g. copy project `data/` into `dist/data/`).
 
 ### File Naming
 
