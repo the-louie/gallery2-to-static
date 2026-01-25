@@ -216,43 +216,6 @@ Root album subalbums section shows up to 10 subalbum links; when more than 10 ex
 
 ---
 
-## Remove root-album-list-view-header from the root album (Frontend)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 10–15 minutes
-
-### Description
-On the **root album** view (home page that lists root-level albums), the **`root-album-list-view-header`** block is currently rendered above the list of album blocks. It wraps an **"Albums"** heading (`<h2 className="root-album-list-view-title">Albums</h2>`). This header div and its contents must be **removed** so the root album list shows only the list of album blocks (the `<ul className="root-album-list-view-list">` and its items) with no visible "Albums" title or header wrapper above it.
-
-### Requirements
-
-#### Scope
-- **Frontend only.** Component `RootAlbumListView` (`frontend/src/components/RootAlbumListView/RootAlbumListView.tsx`) and its styles (`RootAlbumListView.css`). Any tests that assert on the header or "Albums" heading in the root album view must be updated.
-- **Element to remove.** The `<div className="root-album-list-view-header">` and everything inside it (the `<h2 className="root-album-list-view-title">Albums</h2>`). Delete this block from the JSX so the view goes directly from the outer `root-album-list-view` div to the `<ul className="root-album-list-view-list">`.
-- **CSS.** Remove the `.root-album-list-view-header` and `.root-album-list-view-title` rule blocks from `RootAlbumListView.css` to avoid dead code. Adjust `.root-album-list-view` gap/layout if it relied on the header; the list should still have appropriate spacing.
-- **Accessibility.** The region already has `aria-label="Root albums"` on the parent `root-album-list-view` div; no replacement heading is required for screen readers.
-
-#### Implementation Tasks
-- In `RootAlbumListView.tsx`, remove the entire `<div className="root-album-list-view-header">…</div>` block (the header and the `<h2 className="root-album-list-view-title">Albums</h2>` inside it).
-- In `RootAlbumListView.css`, remove the `.root-album-list-view-header` and `.root-album-list-view-title` rule blocks.
-- Update or remove tests that expect "Albums" heading or the header element in the root album list view (e.g. in `RootAlbumListView.test.tsx` or wherever the root album view is tested).
-
-### Deliverable
-The root album view no longer displays the header section or "Albums" title. The list of album blocks (RootAlbumListBlock items) starts directly under the root-album-list-view container. Region remains labeled for accessibility.
-
-### Testing Requirements
-- Manual: Load the home / root album page; confirm no "Albums" heading or header block appears and the album list is still visible and correctly spaced.
-- Unit: Tests no longer assert on the header or "Albums" text; they still confirm the list of albums renders.
-
-### Technical Notes
-- Reference: `frontend/src/components/RootAlbumListView/RootAlbumListView.tsx` (header block around lines 119–121); `frontend/src/components/RootAlbumListView/RootAlbumListView.css` (`.root-album-list-view-header` and `.root-album-list-view-title`).
-
-
----
-
-
 ## Remove nav (Main navigation) and make root album intro title the only h1 (Frontend)
 
 **Status:** Pending
@@ -360,22 +323,8 @@ The layout header visually flows into the main content: no distinct background b
 
 “Martin Öjes” and “Nässlan” rather than “Martin &ouml;jes” or “N&auml;sslan”.
 
-- **Frontend only.** All display paths that render **album titles**, **subalbum titles**, **breadcrumb item titles**, and any other user-visible text that may contain HTML entities must decode them before (or when) rendering. Primary suspects: `frontend/src/utils/decodeHtmlEntities.ts` (ensure it covers all entities that appear in the data, e.g. `&aring;` / `&Aring;` for å/Å if missing); components that show titles: `RootAlbumListBlock` (main album title, subalbum link text), `AlbumDetail` (page title), `RootAlbumListView` (intro title from metadata), `Breadcrumbs` (item titles), `AlbumCard` (grid titles), `SearchResultsPage`, `Lightbox` (image/album text). The pipeline is usually `parseBBCodeDecoded(title)` which already calls `decodeHtmlEntities` internally; if entities still appear, either some paths bypass it or `decodeHtmlEntities` is missing entity definitions.
-- **Audit display paths.** For every place that renders `album.title`, `sub.title`, `metadata.albumTitle`, `item.title` (breadcrumb), or similar: ensure the string is passed through `decodeHtmlEntities` before display, or through `parseBBCodeDecoded` (which delegates to `decodeHtmlEntities` then BBCode). If any path uses raw `title` or only BBCode parsing without prior decode, add `decodeHtmlEntities` (or use `parseBBCodeDecoded` consistently).
-- **Extend decodeHtmlEntities if needed.** Current `decodeHtmlEntities.ts` includes `&auml;`, `&ouml;`, `&uuml;`, `&Auml;`, `&Ouml;`, `&Uuml;`, `&szlig;`, etc. If the backend or Gallery 2 data uses other named entities (e.g. `&aring;`, `&Aring;` for å/Å, or others found when checking the referenced pages), add them to the `NAMED_ENTITIES` list so they decode correctly. Numeric entities `&#123;` and `&#x7B;` are already handled.
-- **Verify in browser.** After changes, confirm on: root list (`/#/`) that subalbum titles show decoded characters; album pages `/#/album/549842`, `/#/album/41488`, `/#/album/41187` that album title (and breadcrumbs, child album titles) show decoded. Check both light and dark theme if applicable.
 
-#### Implementation Tasks
-- List every component and prop that displays a title or label derived from album/subalbum/metadata: RootAlbumListBlock (album.title, sub.title), AlbumDetail (album.title), RootAlbumListView (metadata.albumTitle), Breadcrumbs (item.title), AlbumCard (album.title), SearchResultsPage (album/image titles), Lightbox (image titles). Confirm each path uses `parseBBCodeDecoded(...)` or explicitly `decodeHtmlEntities(...)` before render.
-- In `decodeHtmlEntities.ts`, add any missing named entities that appear in real data (e.g. `&aring;` → å, `&Aring;` → Å). Optionally add a test case with a string containing those entities and assert the output is the decoded character.
-- If a display path is found that does not decode (e.g. a fallback or secondary title that bypasses parseBBCodeDecoded), fix it by applying decode (or parseBBCodeDecoded) to that string.
-- Manual test: load `http://localhost:5173/#/` and the three album URLs above; confirm no raw `&...;` sequences in subalbum or album titles and breadcrumbs.
 
-### Deliverable
-No raw HTML entities visible in album titles, subalbum titles, breadcrumb titles, or other displayed labels. Characters such as ö, ä, å display correctly. Verified on root list and album pages 549842, 41488, 41187.
-
-### Testing Requirements
-- Manual: Root page subalbum titles and album detail pages (549842, 41488, 41187) show decoded text; no `&ouml;`, `&auml;`, `&aring;` etc. in the UI.
 “”
 ## Implement Per-Album Theme Configuration
 
