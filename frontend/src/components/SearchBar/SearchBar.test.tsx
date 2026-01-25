@@ -117,6 +117,51 @@ describe('SearchBar', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/search?q=test');
   });
 
+  it('includes album param in search URL when on album page', async () => {
+    mockLocation.pathname = '/album/123';
+    mockLocation.search = '';
+    const user = userEvent.setup({ delay: null });
+    renderSearchBar({ debounceDelay: 300 });
+
+    const input = screen.getByRole('searchbox');
+    await user.type(input, 'foo');
+    await user.keyboard('{Enter}');
+
+    expect(mockNavigate).toHaveBeenCalledWith('/search?q=foo&album=123');
+
+    mockLocation.pathname = '/';
+  });
+
+  it('includes album param when on album image page', async () => {
+    mockLocation.pathname = '/album/456/image/789';
+    mockLocation.search = '';
+    const user = userEvent.setup({ delay: null });
+    renderSearchBar({ debounceDelay: 300 });
+
+    const input = screen.getByRole('searchbox');
+    await user.type(input, 'bar');
+    await user.keyboard('{Enter}');
+
+    expect(mockNavigate).toHaveBeenCalledWith('/search?q=bar&album=456');
+
+    mockLocation.pathname = '/';
+  });
+
+  it('does not include album param when on home', async () => {
+    mockLocation.pathname = '/';
+    mockLocation.search = '';
+    const user = userEvent.setup({ delay: null });
+    renderSearchBar({ debounceDelay: 300 });
+
+    const input = screen.getByRole('searchbox');
+    await user.type(input, 'baz');
+    await user.keyboard('{Enter}');
+
+    expect(mockNavigate).toHaveBeenCalledWith('/search?q=baz');
+
+    mockLocation.pathname = '/';
+  });
+
   it('clears search on Escape key', async () => {
     const user = userEvent.setup({ delay: null });
     renderSearchBar();

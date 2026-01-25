@@ -29,14 +29,15 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { SearchIndex, type SearchResult } from '../utils/searchIndex';
+import { sortSearchResultsByContextTier } from '../utils/searchContextSort';
 import { findRootAlbumId } from '../utils/dataLoader';
 
 /**
  * Return type for useSearch hook
  */
 export interface UseSearchReturn {
-  /** Execute search with given query */
-  search: (query: string) => void;
+  /** Execute search with given query; optional contextAlbumId orders results by tier (children first, then descendants, then rest) */
+  search: (query: string, contextAlbumId?: number) => void;
   /** Current search results */
   results: SearchResult[];
   /** Always false - index is pre-built and only loaded (kept for API compatibility) */
@@ -121,10 +122,10 @@ export function useSearch(): UseSearchReturn {
   }, []);
 
   /**
-   * Execute search with given query
+   * Execute search with given query; optionally pass contextAlbumId to order results by tier (from ?album= URL param).
    */
   const search = useCallback(
-    async (searchQuery: string) => {
+    async (searchQuery: string, contextAlbumId?: number) => {
       if (!isMountedRef.current) {
         return;
       }
@@ -139,9 +140,11 @@ export function useSearch(): UseSearchReturn {
       }
 
       const normalizedQuery = searchQuery.trim().toLowerCase();
+      const cacheKey =
+        normalizedQuery + '\0' + (contextAlbumId ?? '');
 
       // Check cache first
-      const cachedResults = resultsCacheRef.current.get(normalizedQuery);
+      const cachedResults = resultsCacheRef.current.get(cacheKey);
       if (cachedResults !== undefined) {
         if (isMountedRef.current) {
           setResults(cachedResults);
@@ -162,10 +165,18 @@ export function useSearch(): UseSearchReturn {
         }
 
         const index = getSearchIndex();
-        const searchResults = index.search(searchQuery);
+        let searchResults = index.search(searchQuery);
+
+        if (contextAlbumId != null) {
+          searchResults = sortSearchResultsByContextTier(
+            searchResults,
+            contextAlbumId,
+            (id) => index.getItem(id),
+          );
+        }
 
         // Cache results
-        resultsCacheRef.current.set(normalizedQuery, searchResults);
+        resultsCacheRef.current.set(cacheKey, searchResults);
 
         if (isMountedRef.current) {
           setResults(searchResults);

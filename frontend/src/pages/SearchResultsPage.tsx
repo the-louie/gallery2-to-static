@@ -51,18 +51,20 @@ function buildFullPath(item: SearchIndexItem): string {
 export function SearchResultsPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { search, results, isLoading, query, error } =
-    useSearch();
+  const { search, results, isLoading, error } = useSearch();
 
-  // Get query from URL params
+  // Get query and optional context album from URL params
   const urlQuery = searchParams.get('q') || '';
+  const urlAlbum = searchParams.get('album');
+  const contextAlbumId =
+    urlAlbum != null && /^\d+$/.test(urlAlbum)
+      ? parseInt(urlAlbum, 10)
+      : undefined;
 
-  // Perform search when URL query changes
+  // Perform search when URL query or context album changes
   useEffect(() => {
-    if (urlQuery !== query) {
-      search(urlQuery);
-    }
-  }, [urlQuery, search, query]);
+    search(urlQuery, contextAlbumId);
+  }, [urlQuery, contextAlbumId, search]);
 
   // Separate albums and images from results
   const albums = useMemo(() => {

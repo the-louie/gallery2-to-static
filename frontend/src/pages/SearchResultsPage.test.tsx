@@ -204,7 +204,29 @@ describe('SearchResultsPage', () => {
   it('calls search with URL query parameter', () => {
     render(<SearchResultsPage />);
 
-    expect(mockSearch).toHaveBeenCalledWith('test');
+    expect(mockSearch).toHaveBeenCalledWith('test', undefined);
+  });
+
+  it('calls search with query and context album when album param present', () => {
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams('?q=term&album=123'),
+      vi.fn(),
+    ]);
+
+    render(<SearchResultsPage />);
+
+    expect(mockSearch).toHaveBeenCalledWith('term', 123);
+  });
+
+  it('calls search without context album when album param absent', () => {
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams('?q=term'),
+      vi.fn(),
+    ]);
+
+    render(<SearchResultsPage />);
+
+    expect(mockSearch).toHaveBeenCalledWith('term', undefined);
   });
 
   it('displays path above link for albums with ancestors', () => {

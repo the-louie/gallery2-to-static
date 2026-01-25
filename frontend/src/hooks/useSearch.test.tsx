@@ -144,4 +144,72 @@ describe('useSearch', () => {
 
     expect(result.current.getItemCount()).toBe(42);
   });
+
+  it('uses cache key that includes contextAlbumId so same query with different context is cached separately', async () => {
+    vi.mocked(mockSearchIndex.getItemCount).mockReturnValue(10);
+    const resultsA = [
+      {
+        item: { id: 1, type: 'GalleryAlbumItem' as const, title: 'A', pathComponent: 'a' },
+        score: 10,
+        matchedInTitle: true,
+        matchedInDescription: false,
+      },
+    ];
+    vi.mocked(mockSearchIndex.search).mockReturnValue(resultsA);
+
+    const { result } = renderHook(() => useSearch());
+
+    result.current.search('x');
+    await waitFor(() => {
+      expect(result.current.results).toEqual(resultsA);
+    });
+
+    const resultsB = [
+      {
+        item: { id: 2, type: 'GalleryAlbumItem' as const, title: 'B', pathComponent: 'b' },
+        score: 10,
+        matchedInTitle: true,
+        matchedInDescription: false,
+      },
+    ];
+    vi.mocked(mockSearchIndex.search).mockReturnValue(resultsB);
+
+    result.current.search('x', 100);
+
+    await waitFor(() => {
+      expect(result.current.results).toEqual(resultsB);
+    });
+    expect(mockSearchIndex.search).toHaveBeenCalledTimes(2);
+  });
+
+  it('orders results by context tier when contextAlbumId is provided', async () => {
+    vi.mocked(mockSearchIndex.getItemCount).mockReturnValue(10);
+    const child = {
+      item: { id: 201, type: 'GalleryAlbumItem' as const, title: 'Child', pathComponent: 'child', parentId: 100 },
+      score: 5,
+      matchedInTitle: true,
+      matchedInDescription: false,
+    };
+    const other = {
+      item: { id: 301, type: 'GalleryAlbumItem' as const, title: 'Other', pathComponent: 'other', parentId: 999 },
+      score: 10,
+      matchedInTitle: true,
+      matchedInDescription: false,
+    };
+    vi.mocked(mockSearchIndex.search).mockReturnValue([other, child]);
+    vi.mocked(mockSearchIndex.getItem).mockImplementation((id: number) => {
+      if (id === 999) return { id: 999, type: 'GalleryAlbumItem', title: 'X', pathComponent: 'x', parentId: undefined };
+      return undefined;
+    });
+
+    const { result } = renderHook(() => useSearch());
+
+    result.current.search('t', 100);
+
+    await waitFor(() => {
+      expect(result.current.results.length).toBe(2);
+      expect(result.current.results[0].item.id).toBe(201);
+      expect(result.current.results[1].item.id).toBe(301);
+    });
+  });
 });

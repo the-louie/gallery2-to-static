@@ -113,13 +113,17 @@ export function SearchBar({
   const inputRef = useRef<HTMLInputElement>(null);
 
   /**
-   * Navigate to search results page
+   * Navigate to search results page; when on an album route, include &album=id for context ordering.
    */
   const performSearch = useCallback(
     (searchQuery: string) => {
       const trimmedQuery = searchQuery.trim();
       if (trimmedQuery.length > 0) {
-        navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+        const m = location.pathname.match(/^\/album\/(\d+)/);
+        const albumId = m ? m[1] : undefined;
+        navigate(
+          `/search?q=${encodeURIComponent(trimmedQuery)}${albumId != null ? `&album=${albumId}` : ''}`,
+        );
       } else {
         // Clear search - navigate away from search page if on it
         if (location.pathname === '/search') {
