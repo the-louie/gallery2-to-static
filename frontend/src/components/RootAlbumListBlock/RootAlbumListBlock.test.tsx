@@ -78,6 +78,21 @@ describe('RootAlbumListBlock', () => {
     expect(strong).toHaveTextContent('bold');
   });
 
+  it('renders [url] in description as link', () => {
+    const albumWithUrlInDesc: Album = {
+      ...baseAlbum,
+      id: 31,
+      description: 'See [url=https://example.com]example[/url] for more.',
+    } as Album;
+    const { container } = render(<RootAlbumListBlock album={albumWithUrlInDesc} subalbums={[]} />);
+    const descPara = container.querySelector('.root-album-list-block-description');
+    expect(descPara).toBeInTheDocument();
+    const link = descPara?.querySelector('a');
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', 'https://example.com');
+    expect(link).toHaveTextContent('example');
+  });
+
   it('hides owner when null or empty', () => {
     render(<RootAlbumListBlock album={baseAlbum} subalbums={[]} />);
     expect(screen.queryByText('Owner')).not.toBeInTheDocument();

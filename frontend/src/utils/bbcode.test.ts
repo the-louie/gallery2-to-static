@@ -76,6 +76,41 @@ describe('parseBBCode', () => {
       expect(strong).toBeInTheDocument();
       expect(strong?.textContent).toBe('Bold text');
     });
+
+    it('parses [url=https://example.com]Text[/url] as anchor', () => {
+      const result = parseBBCode('[url=https://example.com]Example link[/url]');
+      const { container } = render(<>{result}</>);
+      const a = container.querySelector('a');
+      expect(a).toBeInTheDocument();
+      expect(a).toHaveAttribute('href', 'https://example.com');
+      expect(a).toHaveAttribute('target', '_blank');
+      expect(a).toHaveAttribute('rel', 'noopener noreferrer');
+      expect(a).toHaveTextContent('Example link');
+    });
+
+    it('parses [url]https://example.com[/url] as anchor with URL as text', () => {
+      const result = parseBBCode('[url]https://example.com[/url]');
+      const { container } = render(<>{result}</>);
+      const a = container.querySelector('a');
+      expect(a).toBeInTheDocument();
+      expect(a).toHaveAttribute('href', 'https://example.com');
+      expect(a).toHaveTextContent('https://example.com');
+    });
+
+    it('does not create anchor for javascript: URL', () => {
+      const result = parseBBCode('[url=javascript:alert(1)]Click[/url]');
+      const { container } = render(<>{result}</>);
+      const a = container.querySelector('a');
+      expect(a).not.toBeInTheDocument();
+      expect(container.textContent).toContain('Click');
+    });
+
+    it('does not create anchor for data: URL', () => {
+      const result = parseBBCode('[url=data:text/html,foo]Data[/url]');
+      const { container } = render(<>{result}</>);
+      const a = container.querySelector('a');
+      expect(a).not.toBeInTheDocument();
+    });
   });
 
   describe('Nested tags', () => {

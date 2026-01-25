@@ -1041,6 +1041,37 @@ describe('AlbumDetail', () => {
         expect(summaryStrong).toHaveTextContent('Summary');
       });
     });
+
+    it('renders [url] in description as link', async () => {
+      const albumWithUrl: Album = {
+        ...mockAlbum,
+        type: 'GalleryAlbumItem',
+        title: 'Test',
+        description: 'Link: [url=https://site.org]Site[/url]',
+        summary: null,
+      } as Album;
+
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: null,
+        refetch: vi.fn(),
+      });
+
+      const { container } = render(
+        <AlbumDetail albumId={7} album={albumWithUrl} />,
+      );
+
+      await waitFor(() => {
+        const descEl = container.querySelector('.album-detail-description');
+        expect(descEl).toBeInTheDocument();
+        const link = descEl?.querySelector('a');
+        expect(link).toBeInTheDocument();
+        expect(link).toHaveAttribute('href', 'https://site.org');
+        expect(link).toHaveTextContent('Site');
+      });
+    });
   });
 
   describe('HTML Entity Decoding', () => {

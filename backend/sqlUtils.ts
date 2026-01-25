@@ -1,6 +1,7 @@
 import type mysql from 'mysql2/promise'
 import type { Child, Config, AlbumMetadata } from './types'
 import { stripBBCode } from './bbcode'
+import { decodeHtmlEntities } from './decodeHtmlEntities'
 import { normalizeOwnerDisplayName } from './ownerDisplayName'
 
 export default (connection: mysql.Connection, config: Config) => {
@@ -114,7 +115,7 @@ export default (connection: mysql.Connection, config: Config) => {
                 const rawOwnerName = child.ownerName == null ? null : (typeof child.ownerName === 'string' ? child.ownerName : null);
                 const ownerName = normalizeOwnerDisplayName(rawOwnerName);
                 const summary = child.summary == null ? null : (typeof child.summary === 'string' ? child.summary : null);
-                const title = child.title != null ? stripBBCode(String(child.title)) : null;
+                const title = child.title != null ? stripBBCode(decodeHtmlEntities(String(child.title))) : null;
                 const { ownerId: _omit, ...rest } = child;
                 if ('ownerid' in rest) delete rest['ownerid'];
                 return { ...rest, title, hasChildren, ownerName, summary } as unknown as Child;
@@ -142,7 +143,7 @@ export default (connection: mysql.Connection, config: Config) => {
             }
             return {
                 id: row.id,
-                title: row.title != null ? stripBBCode(row.title) : null,
+                title: row.title != null ? stripBBCode(decodeHtmlEntities(row.title)) : null,
                 description: row.description ?? null,
                 timestamp: row.timestamp ?? null
             };
@@ -158,7 +159,7 @@ export default (connection: mysql.Connection, config: Config) => {
             }
             return {
                 albumId: row.id,
-                albumTitle: row.title != null ? stripBBCode(row.title) : null,
+                albumTitle: row.title != null ? stripBBCode(decodeHtmlEntities(row.title)) : null,
                 albumDescription: row.description ?? null,
                 albumTimestamp: row.timestamp ?? null,
                 ownerName: normalizeOwnerDisplayName(row.ownerName == null ? null : (typeof row.ownerName === 'string' ? row.ownerName : null))

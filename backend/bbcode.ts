@@ -1,7 +1,9 @@
 /**
  * BBCode stripping for album title fields.
  * Used so emitted JSON (metadata.albumTitle, children titles, index.json, search index)
- * contains plain text only. Description and summary are not passed here.
+ * contains plain text only. Call sites (sqlUtils) decode HTML entities first, then
+ * call stripBBCode, so stored titles are readable (e.g. Nässlan not N&auml;sslan).
+ * Description and summary are not processed here.
  *
  * Removes all [...] segments (opening, closing, and [tag=value]) and returns
  * the concatenated inner text. Nested or malformed tags leave remaining text;

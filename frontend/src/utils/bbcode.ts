@@ -2,8 +2,9 @@
  * BBCode Parser Utility
  *
  * Parses BBCode tags in text and converts them to React elements with proper
- * sanitization to prevent XSS attacks. Supports common formatting tags:
- * [b], [i], [u], [s], [color], [size]
+ * sanitization to prevent XSS attacks. Supports: [b], [i], [u], [s], [color], [size],
+ * [url=...] and [url]...[/url] (http/https only). parseBBCodeDecoded is used for
+ * descriptions/summaries; extractUrlFromBBCode remains for the standalone website link.
  *
  * @module frontend/src/utils/bbcode
  */
@@ -136,6 +137,12 @@ const TAG_CONFIGS: Record<string, TagConfig> = {
       return value;
     },
   },
+  url: {
+    name: 'url',
+    element: 'a',
+    requiresClosing: true,
+    supportsAttributes: true,
+  },
 };
 
 /**
@@ -143,6 +150,9 @@ const TAG_CONFIGS: Record<string, TagConfig> = {
  */
 const parseCache = new Map<string, CachedResult>();
 const DEFAULT_CACHE_SIZE = 1000;
+
+/** Only http and https URLs are allowed for [url] and extractUrlFromBBCode. */
+const URL_SCHEME_REGEX = /^https?:\/\//i;
 
 /**
  * Clear the parse cache
@@ -206,15 +216,28 @@ function parseAttribute(tagContent: string, tagName: string): Record<string, str
   }
 
   const equalIndex = tagContent.indexOf('=');
+  // [tag=value] yields tagContent "value" when there's no space (parseTag splits on first =)
   if (equalIndex === -1) {
+    const bare = tagContent.trim();
+    if (tagName === 'url' && bare && URL_SCHEME_REGEX.test(bare)) {
+      return { href: bare };
+    }
+    if (tagName === 'color') {
+      const sanitized = sanitizeStyleValue('color', bare);
+      if (sanitized !== null) return { color: sanitized };
+    }
+    if (tagName === 'size') {
+      const sanitized = sanitizeStyleValue('font-size', bare);
+      if (sanitized !== null) return { size: sanitized };
+    }
     return null;
   }
 
   const attrName = tagContent.substring(0, equalIndex).trim().toLowerCase();
   const attrValue = tagContent.substring(equalIndex + 1).trim();
 
-  // Remove quotes if present
-  const cleanValue = attrValue.replace(/^["']|["']$/g, '');
+  // Strip optional leading/trailing quote characters (one or more each side)
+  const cleanValue = attrValue.replace(/^["']+|["']+$/g, '');
 
   // Validate attribute
   if (attrName === 'color' || attrName === 'size') {
@@ -223,6 +246,12 @@ function parseAttribute(tagContent: string, tagName: string): Record<string, str
       return null; // Invalid attribute value
     }
     return { [attrName]: sanitized };
+  }
+  if ((attrName === 'url' || attrName === 'href') && tagName === 'url') {
+    if (!URL_SCHEME_REGEX.test(cleanValue)) {
+      return null;
+    }
+    return { href: cleanValue };
   }
 
   return null;
@@ -248,13 +277,19 @@ function parseTag(tagText: string): { name: string; isClosing: boolean; attribut
     return null; // Unknown closing tag
   }
 
-  // Parse opening tag
+  // Parse opening tag: [tag=value] or [tag value] or [tag]
   const spaceIndex = content.indexOf(' ');
+  const eqIndex = content.indexOf('=');
   let tagName: string;
   let attrString = '';
 
   if (spaceIndex === -1) {
-    tagName = content.toLowerCase();
+    if (eqIndex !== -1) {
+      tagName = content.substring(0, eqIndex).toLowerCase();
+      attrString = content.substring(eqIndex + 1).trim();
+    } else {
+      tagName = content.toLowerCase();
+    }
   } else {
     tagName = content.substring(0, spaceIndex).toLowerCase();
     attrString = content.substring(spaceIndex + 1).trim();
@@ -378,6 +413,27 @@ function parseBBCodeInternal(text: string): React.ReactNode {
           // Recursively parse content
           const contentElements = parseBBCodeInternal(content);
 
+          // [url] and [url=href]: build anchor only when href is http/https
+          if (tagMatch.name === 'url') {
+            const contentAsHref = content.trim().replace(/^["']+|["']+$/g, '');
+            const href =
+              tagMatch.attributes?.href ??
+              (URL_SCHEME_REGEX.test(contentAsHref) ? contentAsHref : null);
+            if (href === null) {
+              result.push(escapeHtml(tagText));
+              result.push(contentElements);
+            } else {
+              const anchor = React.createElement(
+                'a',
+                { href, target: '_blank', rel: 'noopener noreferrer' },
+                contentElements,
+              );
+              result.push(anchor);
+            }
+            i = closingTagEnd;
+            continue;
+          }
+
           // Build React element
           const config = TAG_CONFIGS[tagMatch.name];
           const props: Record<string, string | React.CSSProperties> = {};
@@ -441,8 +497,6 @@ export interface ExtractedUrl {
   label?: string;
 }
 
-const URL_SCHEME_REGEX = /^https?:\/\//i;
-
 /**
  * Extract the first [url=...]...[/url] or [url]...[/url] from text.
  * Returns the URL and optional label for use as a standalone link in the root album list.
@@ -467,7 +521,7 @@ export function extractUrlFromBBCode(text: string): ExtractedUrl | null {
   // [url=URL]label[/url]
   const attrMatch = trimmed.match(/\[url=([^\]]+)\]([\s\S]*?)\[\/url\]/i);
   if (attrMatch) {
-    const rawUrl = attrMatch[1].trim().replace(/^["']|["']$/g, '');
+    const rawUrl = attrMatch[1].trim().replace(/^["']+|["']+$/g, '');
     const label = attrMatch[2].trim();
     if (!URL_SCHEME_REGEX.test(rawUrl)) return null;
     return { url: rawUrl, label: label || undefined };
@@ -476,7 +530,7 @@ export function extractUrlFromBBCode(text: string): ExtractedUrl | null {
   // [url]URL[/url]
   const simpleMatch = trimmed.match(/\[url\]([\s\S]*?)\[\/url\]/i);
   if (simpleMatch) {
-    const rawUrl = simpleMatch[1].trim();
+    const rawUrl = simpleMatch[1].trim().replace(/^["']+|["']+$/g, '');
     if (!URL_SCHEME_REGEX.test(rawUrl)) return null;
     return { url: rawUrl, label: rawUrl || undefined };
   }
