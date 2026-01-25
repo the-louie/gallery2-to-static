@@ -11,17 +11,16 @@
 - Root album subalbums: limit 10, "...and more!" at bottom right (Frontend) - Low - 20–30 min - Raise subalbums display limit from 6 to 10; move overflow text to bottom right of block; reword to "...and more!"
 - Remove nav (Main navigation) and make root album intro title the only h1 (Frontend) - Low - 15–20 min - Remove Layout nav; demote layout site name from h1; ensure only h1 is root-album-list-view-intro-title when shown
 - Move gallery-order dropdown right of theme dropdown and style similarly (Frontend) - Low - 15–20 min - Layout header: place SortDropdown to the right of ThemeDropdown; style both dropdowns identically (border, radius, padding, focus)
-- Make header seamlessly integrate into the rest of the page (Frontend) - Low - 20–30 min - Header same/continuous background as page, remove or soften border; align padding/max-width with main
 - Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
 
 ---
 
 ## Summary
 
-**Total Tasks:** 10
-**Pending:** 9
+**Total Tasks:** 9
+**Pending:** 8
 **Partial:** 1
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** ~10.5–12.5 hours
+**Estimated Total Time:** ~10–12 hours

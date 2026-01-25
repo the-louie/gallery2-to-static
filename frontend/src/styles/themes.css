@@ -30,7 +30,8 @@
  * - Use --color-background-* for surfaces; --color-primary / --color-accent for CTAs and links.
  *
  * Color usage guidelines:
- * - Backgrounds: --color-background-primary, --color-background-secondary, --header-bg, --footer-bg.
+ * - Backgrounds: --color-background-primary, --color-background-secondary, --footer-bg. Header uses
+ *   transparent background (inherits page gradient); --header-bg/--header-border kept for reference.
  * - Surfaces / cards: --album-card-bg, --image-bg; gradients use --gradient-bg-*, --gradient-card-*.
  * - Accents / CTAs: --color-primary, --color-accent; buttons use --gradient-cta-* where applicable.
  * - Text: --color-text-primary, --color-text-secondary, --color-text-muted, --color-text-inverse.

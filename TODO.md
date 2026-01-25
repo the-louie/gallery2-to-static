@@ -285,40 +285,8 @@ The gallery-order (Sort) dropdown is positioned to the right of the theme dropdo
 
 ---
 
-## Make the header seamlessly integrate into the rest of the page (Frontend)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 20–30 minutes
-
-### Description
-The **layout header** (`.layout-header`) currently reads as a separate bar: it has its own background (`--header-bg`) and a bottom border (`--header-border`) that visually separate it from the main content. This task is to make the header **seamlessly integrate** with the rest of the page so it feels like one continuous surface: same (or continuous) background as the page body, no hard separation line, and consistent horizontal alignment and spacing with the main content area.
-
-### Requirements
-
-#### Scope
-- **Frontend only.** `frontend/src/components/Layout/Layout.css` (header and, if needed, layout container) and optionally `frontend/src/styles/themes.css` if header-specific variables are changed or removed. No change to Layout.tsx structure unless necessary for styling (e.g. no new wrappers required if CSS-only).
-- **Visual continuity.** The header should not appear as a distinct "bar" on top of the page. Prefer: (1) **Background:** Use the same background as the page (e.g. transparent so the layout’s gradient or `--color-background-primary` shows through), or extend the layout gradient into the header area so there is no color step. (2) **Border:** Remove the header’s `border-bottom` or replace it with a very subtle separator (e.g. same color as background with a slight tone difference, or a soft shadow) so the transition to main content is gradual rather than a hard line.
-- **Alignment and padding.** Keep header content alignment consistent with the main content: same max-width (1200px) and horizontal padding as `.layout-main` so the header and main content visually line up. Ensure responsive padding (1rem / 1.5rem / 2rem) remains consistent between header and main at each breakpoint so the seamless look holds on mobile, tablet, and desktop.
-- **Accessibility and contrast.** After changes, ensure header text and interactive elements (site name, SearchBar, ThemeDropdown, SortDropdown) still meet contrast requirements and remain readable on the shared background.
-
-#### Implementation Tasks
-- In `Layout.css`, for `.layout-header`: set background to transparent or to the same gradient/color as `.layout` (e.g. `background: transparent` so the parent gradient shows, or reuse `var(--gradient-bg-start)` / `var(--color-background-primary)`). Remove or soften `.layout-header`’s `border-bottom` (remove it, or use a very light border/shadow that doesn’t read as a strong line).
-- If themes currently set `--header-bg` and `--header-border` specifically for the header, either stop using them for the header (so header inherits page look) or redefine them in `themes.css` so they match the page background and a minimal or no separator. Ensure light and dark themes both look coherent.
-- Verify horizontal padding and max-width of `.layout-header-content` match or align with `.layout-main` (both use max-width 1200px and similar padding); adjust if needed so the header and main content edges line up and the integration feels intentional.
-- Manually test in light and dark themes and at 768px / 1024px breakpoints; confirm header no longer reads as a separate bar and contrast remains sufficient.
-
-### Deliverable
-The layout header visually flows into the main content: no distinct background bar or hard border between header and page. Header and main share the same background (or continuous gradient), optional subtle separator only, and consistent horizontal alignment. Works in all themes and breakpoints.
-
-### Testing Requirements
-- Manual: Check root album, album detail, and search pages in light and dark themes; confirm the header blends into the page and text/controls remain readable. Check at mobile and desktop widths.
-- No new unit tests required unless the project already has layout visual regression tests; in that case update expectations for header background/border.
-
-### Technical Notes
-- Reference: `Layout.css` (`.layout-header` lines 64–68: `background`, `border-bottom`, `padding`; `.layout-header-content` max-width 1200px; `.layout` gradient 37–42); `themes.css` (`--header-bg`, `--header-border` per theme). The main content area uses `.layout-main` with padding and the same max-width 2400px (content can be narrower); alignment is typically governed by inner content max-width (e.g. 1200px) shared with header.
-
+ The header should not appear as a distinct "bar" on top of the page. Prefer: (1) **Background:** Use the same background as the page (e.g. transparent so the layout’s gradient or `--color-background-primary` shows through), or extend the layout gradient into the header area so there is no color step. (2) **Border:** Remove the header’s `border-bottom` or replace it with a very subtle separator (e.g. same color as background with a slight tone difference, or a soft shadow) so the transition to main content is gradual rather than a hard line.
+ Remove or soften `.layout-header`’s `border-bottom` (remove it, or use a very light border/shadow that doesn’t read as a strong line).
 ---
 
 “Martin Öjes” and “Nässlan” rather than “Martin &ouml;jes” or “N&auml;sslan”.
