@@ -479,39 +479,6 @@ All album titles in the emitted album JSON (metadata and children) are plain tex
 
 - Reference: (“does not parse BBCode in description or summary”).
 
-## Clear search field on navigation (Frontend)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 15–25 minutes
-
-### Description
-When the user **navigates** to a different route (e.g. from the search results page to home, from home to an album, or from one album to another via links or browser back/forward), the **search field** in the header (the SearchBar input) should be **cleared**. Today the input can retain the previous search query after navigation, which is confusing: the user may see a filled search box while viewing an album or the home page. Required behavior: on any route change (location/pathname change), clear the search input so the field is empty unless the user is on the search results page with a `?q=...` query, in which case the field can show that query (sync from URL on search page is acceptable; clearing when leaving the search page is required).
-
-### Requirements
-
-#### Scope
-- **Frontend only.** Component `SearchBar` (and optionally Layout if state is lifted). The search field is in `frontend/src/components/SearchBar/SearchBar.tsx`; it uses `useState` for `localQuery` and `query`, and `useLocation()` from React Router.
-- **When to clear.** Clear the search input (both display value and internal state) when the user navigates to a route other than the search results page (e.g. pathname !== '/search'). When navigating to `/search?q=...`, the input may be synced from the `q` parameter (current or new behavior). When navigating away from `/search` (to `/`, `/album/123`, etc.), the input must be cleared.
-- **How.** Use a `useEffect` in SearchBar that depends on `location.pathname` (and optionally `location.search`). When `location.pathname` is not `/search`, call the same logic as "clear" (set localQuery and query to '', cancel debounce timer). When `location.pathname === '/search'`, optionally initialize or sync the input from the `q` URL parameter so the field reflects the current search.
-
-#### Implementation Tasks
-- In `SearchBar.tsx`, add a `useEffect` that runs when `location` (or `location.pathname`) changes. If `location.pathname !== '/search'`, clear the search field: clear debounce timer, set `setLocalQuery('')`, set `setQuery('')`. Do not navigate (avoid redirect loop); only clear the input.
-- If the search page is opened with `/search?q=term`, ensure the input shows "term" (either by reading `q` on mount and when location changes to /search, or by existing logic). If there is no existing sync from URL to input on the search page, consider adding it so that when the user lands on /search?q=xyz the field shows "xyz". Priority: clearing on navigate-away is required; syncing to URL on /search is optional but improves consistency.
-- Update or add a test in `SearchBar.test.tsx`: simulate a route change (e.g. change `location.pathname` from `/search` to `/` or `/album/1`) and assert the input value is cleared.
-
-### Deliverable
-Navigating to any route other than the search results page clears the search field. When on the search results page with a query in the URL, the field may show that query; when leaving the search page, the field is empty.
-
-### Testing Requirements
-- Manual: From search results, click a link to home or an album; confirm the search input is empty. From home, type in search and navigate to an album without submitting; confirm behavior (optional: clear on any pathname change when not on /search).
-- Unit: SearchBar test that after a pathname change away from /search, the input value is empty (may require wrapping in Router and mocking or wrapping location).
-
-### Technical Notes
-- SearchBar already has `useLocation()` and clear logic (`handleClear`). Reuse the same state resets and timer cancel; avoid calling `performSearch('')` from the effect when clearing on route change if that would trigger a navigate('/') while already on another route (no-op or one-time). Prefer only resetting `localQuery` and `query` and clearing the debounce timer.
-- Reference: `frontend/src/components/SearchBar/SearchBar.tsx` (state: localQuery, query; useLocation, performSearch, handleClear).
-
 ---
 
 ## Prioritize search results by current album context (Frontend)

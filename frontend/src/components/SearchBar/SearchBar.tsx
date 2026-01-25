@@ -209,7 +209,7 @@ export function SearchBar({
     };
   }, []);
 
-  // Sync with URL query param if on search page
+  // Sync with URL query param on search page; clear search field when navigating away from /search
   useEffect(() => {
     if (location.pathname === '/search') {
       const urlParams = new URLSearchParams(location.search);
@@ -221,6 +221,13 @@ export function SearchBar({
         }
         return prevLocalQuery;
       });
+    } else {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+      setLocalQuery('');
+      setQuery('');
     }
   }, [location.pathname, location.search]);
 

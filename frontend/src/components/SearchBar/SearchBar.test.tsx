@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event';
 import { SearchBar } from './SearchBar';
 import { BrowserRouter } from 'react-router-dom';
 
-// Mock useNavigate and useLocation
+// Mock useNavigate and useLocation (mockLocation is mutable for tests that simulate route change)
 const mockNavigate = vi.fn();
 const mockLocation = { pathname: '/', search: '' };
 vi.mock('react-router-dom', async () => {
@@ -144,5 +144,31 @@ describe('SearchBar', () => {
 
     const form = screen.getByRole('search');
     expect(form).toHaveClass('search-bar', 'custom-class');
+  });
+
+  it('clears input when navigating away from /search', async () => {
+    vi.useRealTimers();
+    mockLocation.pathname = '/search';
+    mockLocation.search = '?q=foo';
+
+    const { rerender } = renderSearchBar();
+
+    await waitFor(() => {
+      expect(screen.getByRole('searchbox')).toHaveValue('foo');
+    });
+
+    mockLocation.pathname = '/';
+    mockLocation.search = '';
+    rerender(
+      <BrowserRouter>
+        <SearchBar />
+      </BrowserRouter>,
+    );
+
+    expect(screen.getByRole('searchbox')).toHaveValue('');
+
+    mockLocation.pathname = '/';
+    mockLocation.search = '';
+    vi.useFakeTimers();
   });
 });
