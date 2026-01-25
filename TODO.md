@@ -315,40 +315,6 @@ The root album view shows the root album’s title at the top and, when present,
 
 ---
 
-## .layout-main and .home-page max-width 2400px (Frontend CSS)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 15–20 minutes
-
-### Description
-Add **max-width: 2400px** to the CSS classes **`.layout-main`** and **`.home-page`** so that on very wide viewports the main content and home page do not stretch beyond 2400px. This keeps the layout readable on ultrawide or large monitors. Both selectors should have the same max-width applied (e.g. in `frontend/src/components/Layout/Layout.css` for `.layout-main` and `frontend/src/pages/HomePage.css` for `.home-page`, or in a shared place if the project groups such rules).
-
-### Requirements
-
-#### Scope
-- **Frontend only.** CSS changes only; no TypeScript or component structure changes unless needed to apply the class.
-- **Selectors.** Precisely: `.layout-main` (Layout component main content wrapper) and `.home-page` (HomePage root wrapper). Each must have `max-width: 2400px`.
-- **Centering (optional).** If the content should be centered when the viewport is wider than 2400px, add `margin-left: auto; margin-right: auto;` to the same rule(s), or follow existing project pattern for centering constrained-width containers.
-
-#### Implementation Tasks
-- In the stylesheet(s) where `.layout-main` is defined (e.g. `Layout.css`), add `max-width: 2400px`. Add horizontal auto margins if centering is desired.
-- In the stylesheet(s) where `.home-page` is defined (e.g. `HomePage.css`), add `max-width: 2400px`. Add horizontal auto margins if centering is desired.
-- Ensure no other rules (e.g. min-width or width: 100%) contradict the max-width. Confirm both elements still fill available width up to 2400px on smaller viewports.
-
-### Deliverable
-`.layout-main` and `.home-page` each have `max-width: 2400px` in CSS. On viewports wider than 2400px, content does not exceed 2400px (and is centered if that was implemented).
-
-### Testing Requirements
-- Visually check at viewport widths above 2400px (e.g. 2560px, 3840px) that main and home content are capped at 2400px.
-- Confirm layout is unchanged below 2400px (full width up to the limit).
-
-### Technical Notes
-- Use a CSS custom property (e.g. `--layout-max-width: 2400px`) if the project standardizes layout widths; otherwise use the literal `2400px`.
-
----
-
 ## Highlight image as faded/blurred background on article.root-album-list-block (Frontend)
 
 **Status:** Pending
