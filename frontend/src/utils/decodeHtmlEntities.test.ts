@@ -73,6 +73,12 @@ describe('decodeHtmlEntities', () => {
     expect(decodeHtmlEntities('&szlig;')).toBe('ß');
   });
 
+  it('decodes &aring; and &Aring; (Nordic å/Å)', () => {
+    expect(decodeHtmlEntities('&aring;')).toBe('å');
+    expect(decodeHtmlEntities('&Aring;')).toBe('Å');
+    expect(decodeHtmlEntities('G&aring;rd')).toBe('Gård');
+  });
+
   it('handles empty &#; (no digits) as no-op', () => {
     expect(decodeHtmlEntities('&#;')).toBe('&#;');
   });

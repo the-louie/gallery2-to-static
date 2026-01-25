@@ -1,5 +1,5 @@
 /**
- * Decode HTML entities for display strings.
+ * Decode HTML entities for display strings (e.g. &auml;, &ouml;, &aring; → ä, ö, å).
  *
  * Use for album titles, breadcrumbs, subalbum labels, descriptions, etc.
  * Must run **before** BBCode parsing when used with parseBBCode so that
@@ -24,6 +24,8 @@ const NAMED_ENTITIES: [string, string][] = [
   ['&Ouml;', 'Ö'],
   ['&Uuml;', 'Ü'],
   ['&szlig;', 'ß'],
+  ['&aring;', 'å'],
+  ['&Aring;', 'Å'],
 ];
 
 const MAX_ITERATIONS = 10;

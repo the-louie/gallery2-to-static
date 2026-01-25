@@ -13,17 +13,16 @@
 - Remove nav (Main navigation) and make root album intro title the only h1 (Frontend) - Low - 15–20 min - Remove Layout nav; demote layout site name from h1; ensure only h1 is root-album-list-view-intro-title when shown
 - Move gallery-order dropdown right of theme dropdown and style similarly (Frontend) - Low - 15–20 min - Layout header: place SortDropdown to the right of ThemeDropdown; style both dropdowns identically (border, radius, padding, focus)
 - Make header seamlessly integrate into the rest of the page (Frontend) - Low - 20–30 min - Header same/continuous background as page, remove or soften border; align padding/max-width with main
-- Fix un-decoded HTML entities in titles and labels (Frontend Bug) - Low–Medium - 45–60 min - Decode HTML entities in subalbum/album titles and labels; extend decodeHtmlEntities if needed; verify on root and album pages 549842, 41488, 41187
 - Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
 
 ---
 
 ## Summary
 
-**Total Tasks:** 12
-**Pending:** 11
+**Total Tasks:** 11
+**Pending:** 10
 **Partial:** 1
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** ~12–14 hours
+**Estimated Total Time:** ~11–13 hours

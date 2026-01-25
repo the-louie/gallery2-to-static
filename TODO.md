@@ -358,19 +358,8 @@ The layout header visually flows into the main content: no distinct background b
 
 ---
 
-## Fix un-decoded HTML entities in titles and labels (Frontend Bug)
+“Martin Öjes” and “Nässlan” rather than “Martin &ouml;jes” or “N&auml;sslan”.
 
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Low–Medium
-**Estimated Time:** 45–60 minutes
-
-### Description
-**Bug:** Several places in the UI still show **raw HTML entities** (e.g. `&ouml;`, `&auml;`, `&aring;`) instead of the decoded characters (ö, ä, å). Observed: **subalbum titles** on the root album list (e.g. on `http://localhost:5173/#/`), and **album titles** on album detail pages (e.g. `http://localhost:5173/#/album/549842`, `/album/41488`, `/album/41187`). Titles and labels that contain Nordic or other named/numeric entities must be decoded for display so users see “Martin Öjes” and “Nässlan” rather than “Martin &ouml;jes” or “N&auml;sslan”.
-
-### Requirements
-
-#### Scope
 - **Frontend only.** All display paths that render **album titles**, **subalbum titles**, **breadcrumb item titles**, and any other user-visible text that may contain HTML entities must decode them before (or when) rendering. Primary suspects: `frontend/src/utils/decodeHtmlEntities.ts` (ensure it covers all entities that appear in the data, e.g. `&aring;` / `&Aring;` for å/Å if missing); components that show titles: `RootAlbumListBlock` (main album title, subalbum link text), `AlbumDetail` (page title), `RootAlbumListView` (intro title from metadata), `Breadcrumbs` (item titles), `AlbumCard` (grid titles), `SearchResultsPage`, `Lightbox` (image/album text). The pipeline is usually `parseBBCodeDecoded(title)` which already calls `decodeHtmlEntities` internally; if entities still appear, either some paths bypass it or `decodeHtmlEntities` is missing entity definitions.
 - **Audit display paths.** For every place that renders `album.title`, `sub.title`, `metadata.albumTitle`, `item.title` (breadcrumb), or similar: ensure the string is passed through `decodeHtmlEntities` before display, or through `parseBBCodeDecoded` (which delegates to `decodeHtmlEntities` then BBCode). If any path uses raw `title` or only BBCode parsing without prior decode, add `decodeHtmlEntities` (or use `parseBBCodeDecoded` consistently).
 - **Extend decodeHtmlEntities if needed.** Current `decodeHtmlEntities.ts` includes `&auml;`, `&ouml;`, `&uuml;`, `&Auml;`, `&Ouml;`, `&Uuml;`, `&szlig;`, etc. If the backend or Gallery 2 data uses other named entities (e.g. `&aring;`, `&Aring;` for å/Å, or others found when checking the referenced pages), add them to the `NAMED_ENTITIES` list so they decode correctly. Numeric entities `&#123;` and `&#x7B;` are already handled.
@@ -387,13 +376,7 @@ No raw HTML entities visible in album titles, subalbum titles, breadcrumb titles
 
 ### Testing Requirements
 - Manual: Root page subalbum titles and album detail pages (549842, 41488, 41187) show decoded text; no `&ouml;`, `&auml;`, `&aring;` etc. in the UI.
-- Unit: Existing tests that assert decoded titles (e.g. RootAlbumListBlock “decodes HTML entities in subalbum titles”) still pass; add or extend tests for any new entities added to decodeHtmlEntities.
-
-### Technical Notes
-- `parseBBCodeDecoded` in `frontend/src/utils/bbcode.ts` already calls `decodeHtmlEntities(text)` before parsing; so any path that uses `parseBBCodeDecoded(title)` should decode. If entities still appear, either the title string is not going through that path (e.g. different data source or key), or the entity is not in the `NAMED_ENTITIES` list (e.g. `&aring;`). Reference: `decodeHtmlEntities.ts` (NAMED_ENTITIES), `bbcode.ts` (parseBBCodeDecoded), `RootAlbumListBlock.tsx` (parsedTitle, sub.title), `AlbumDetail.tsx` (parsedTitle), `RootAlbumListView.tsx` (introTitle), `Breadcrumbs.tsx` (item.title), `AlbumCard.tsx` (parsedTitle).
-
----
-
+“”
 ## Implement Per-Album Theme Configuration
 
 **Status:** Pending
