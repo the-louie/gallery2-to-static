@@ -5,8 +5,7 @@
  * (title, description, summary, owner name when present), child albums, and
  * child images. Handles navigation, empty states, and integrates with React Router.
  *
- * The album title supports BBCode formatting (e.g., [b]bold[/b], [i]italic[/i]).
- * Only the title field supports BBCode; description and summary are rendered as plain text.
+ * The album title, description, and summary support BBCode formatting (e.g., [b]bold[/b], [i]italic[/i]).
  *
  * Section headers display controls (sort dropdown for images section) without duplicate titles or descriptions.
  *
@@ -350,12 +349,12 @@ export function AlbumDetail({
           )}
           {!isRootAlbum && showDescription && album.description && (
             <p className="album-detail-description">
-              {decodeHtmlEntities(album.description)}
+              {parseBBCodeDecoded(album.description.trim())}
             </p>
           )}
           {typeof album.summary === 'string' && album.summary.trim() && (
             <p className="album-detail-summary">
-              {decodeHtmlEntities(album.summary.trim())}
+              {parseBBCodeDecoded(album.summary.trim())}
             </p>
           )}
           {typeof album.ownerName === 'string' && album.ownerName.trim() && (

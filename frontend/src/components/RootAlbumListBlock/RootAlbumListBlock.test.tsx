@@ -62,6 +62,22 @@ describe('RootAlbumListBlock', () => {
     expect(screen.getByText('Test description')).toBeInTheDocument();
   });
 
+  it('renders BBCode in description', () => {
+    const albumWithBBCodeDesc: Album = {
+      ...baseAlbum,
+      id: 30,
+      description: '[b]bold[/b] text',
+    } as Album;
+    const { container } = render(<RootAlbumListBlock album={albumWithBBCodeDesc} subalbums={[]} />);
+    expect(screen.getByText('bold')).toBeInTheDocument();
+    expect(screen.getByText(' text')).toBeInTheDocument();
+    const descPara = container.querySelector('.root-album-list-block-description');
+    expect(descPara).toBeInTheDocument();
+    const strong = descPara?.querySelector('strong');
+    expect(strong).toBeInTheDocument();
+    expect(strong).toHaveTextContent('bold');
+  });
+
   it('hides owner when null or empty', () => {
     render(<RootAlbumListBlock album={baseAlbum} subalbums={[]} />);
     expect(screen.queryByText('Owner')).not.toBeInTheDocument();

@@ -1002,7 +1002,7 @@ describe('AlbumDetail', () => {
       });
     });
 
-    it('does not parse BBCode in description or summary', async () => {
+    it('parses BBCode in description and summary', async () => {
       const albumWithBBCode: Album = {
         ...mockAlbum,
         type: 'GalleryAlbumItem',
@@ -1024,15 +1024,21 @@ describe('AlbumDetail', () => {
       );
 
       await waitFor(() => {
-        // Title should have parsed BBCode (main header uses h2.album-detail-title; use non-root albumId)
         const titleStrong = container.querySelector('h2.album-detail-title strong');
         expect(titleStrong).toBeInTheDocument();
+        expect(titleStrong).toHaveTextContent('Title');
 
-        // Description and summary should have literal [b] tags
-        const description = screen.getByText('[b]Description[/b]');
-        expect(description).toBeInTheDocument();
-        const summary = screen.getByText('[b]Summary[/b]');
-        expect(summary).toBeInTheDocument();
+        const descEl = container.querySelector('.album-detail-description');
+        expect(descEl).toBeInTheDocument();
+        const descStrong = descEl?.querySelector('strong');
+        expect(descStrong).toBeInTheDocument();
+        expect(descStrong).toHaveTextContent('Description');
+
+        const summaryEl = container.querySelector('.album-detail-summary');
+        expect(summaryEl).toBeInTheDocument();
+        const summaryStrong = summaryEl?.querySelector('strong');
+        expect(summaryStrong).toBeInTheDocument();
+        expect(summaryStrong).toHaveTextContent('Summary');
       });
     });
   });

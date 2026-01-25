@@ -17,6 +17,7 @@ import { Link } from 'react-router-dom';
 import { parseBBCodeDecoded, extractUrlFromBBCode } from '@/utils/bbcode';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { formatAlbumDate } from '@/utils/dateUtils';
+import { getAlbumThumbnailUrl } from '@/utils/imageUrl';
 import { sortItems } from '@/utils/sorting';
 import type { Album } from '@/types';
 import './RootAlbumListBlock.css';
@@ -67,12 +68,25 @@ export function RootAlbumListBlock({
   const hasMoreSubalbums = subalbums.length > 6;
 
   const linkTo = `/album/${album.id}`;
+  const highlightImageUrl = getAlbumThumbnailUrl(album);
+  const safeBgUrl =
+    highlightImageUrl != null
+      ? `url("${String(highlightImageUrl).replace(/"/g, '\\"')}")`
+      : undefined;
 
   return (
     <article
       className={className ? `root-album-list-block ${className}` : 'root-album-list-block'}
       aria-labelledby={`root-album-title-${album.id}`}
     >
+      {highlightImageUrl != null && (
+        <div
+          className="root-album-list-block-bg"
+          role="presentation"
+          aria-hidden="true"
+          style={{ backgroundImage: safeBgUrl }}
+        />
+      )}
       <div className="root-album-list-block-inner">
         <section className="root-album-list-block-main" aria-label="Album info">
           <div className="root-album-list-block-content">
@@ -87,7 +101,7 @@ export function RootAlbumListBlock({
             </h2>
             {showDescription && (
               <p className="root-album-list-block-description">
-                {decodeHtmlEntities(album.description!)}
+                {parseBBCodeDecoded(album.description!.trim())}
               </p>
             )}
             {extUrl && (
