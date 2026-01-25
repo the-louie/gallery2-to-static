@@ -90,13 +90,13 @@ describe('RootAlbumListBlock', () => {
 
   it('hides Subalbums section when subalbums empty', () => {
     render(<RootAlbumListBlock album={baseAlbum} subalbums={[]} />);
-    expect(screen.queryByText(/Subalbums:/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Subalbums' })).not.toBeInTheDocument();
   });
 
   it('shows Subalbums section with links when subalbums present', () => {
     const sub: Album = { ...mockAlbumWithChildren, type: 'GalleryAlbumItem' } as Album;
     render(<RootAlbumListBlock album={baseAlbum} subalbums={[sub]} />);
-    expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Subalbums' })).toBeInTheDocument();
     const subLink = screen.getByRole('link', { name: 'Parent Album' });
     expect(subLink).toHaveAttribute('href', '/album/10');
   });
@@ -106,7 +106,7 @@ describe('RootAlbumListBlock', () => {
     const sub2: Album = { ...mockAlbum, type: 'GalleryAlbumItem', id: 11, title: 'Sub A', timestamp: 1609459100 } as Album;
     const sub3: Album = { ...mockAlbum, type: 'GalleryAlbumItem', id: 12, title: 'Sub B', timestamp: 1609459000 } as Album;
     render(<RootAlbumListBlock album={baseAlbum} subalbums={[sub1, sub2, sub3]} />);
-    expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Subalbums' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Parent Album' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Sub A' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Sub B' })).toBeInTheDocument();
@@ -127,7 +127,7 @@ describe('RootAlbumListBlock', () => {
       makeSub(19, 'Sub 10', 1609458300),
     ];
     render(<RootAlbumListBlock album={baseAlbum} subalbums={subs} />);
-    expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Subalbums' })).toBeInTheDocument();
     for (let i = 1; i <= 10; i++) {
       expect(screen.getByRole('link', { name: `Sub ${i}` })).toBeInTheDocument();
     }
@@ -149,7 +149,7 @@ describe('RootAlbumListBlock', () => {
       makeSub(20, 'Sub 11', 1609458200),
     ];
     render(<RootAlbumListBlock album={baseAlbum} subalbums={subs} />);
-    expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Subalbums' })).toBeInTheDocument();
     for (let i = 1; i <= 10; i++) {
       expect(screen.getByRole('link', { name: `Sub ${i}` })).toBeInTheDocument();
     }
@@ -165,7 +165,7 @@ describe('RootAlbumListBlock', () => {
       title: '[b]Bold Subalbum[/b]',
     } as Album;
     const { container } = render(<RootAlbumListBlock album={baseAlbum} subalbums={[sub]} />);
-    expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Subalbums' })).toBeInTheDocument();
     expect(screen.getByText('Bold Subalbum')).toBeInTheDocument();
     const link = screen.getByRole('link', { name: 'Bold Subalbum' });
     expect(link).toHaveAttribute('href', '/album/42');

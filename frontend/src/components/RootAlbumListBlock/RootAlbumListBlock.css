@@ -13,15 +13,13 @@
   --root-album-subalbum-item-height: 2.75rem;
   --root-album-subalbum-gap: 0.5rem;
   --root-album-subalbums-list-padding: 2px;
-  --root-album-subalbums-title-margin-bottom: 0.5rem;
   --root-album-subalbums-more-margin-top: 0.5rem;
   --root-album-subalbums-list-height: calc((var(--root-album-subalbum-item-height) * 5) + (var(--root-album-subalbum-gap) * 4) + (var(--root-album-subalbums-list-padding) * 2));
   --root-album-subalbums-more-height: calc(var(--root-album-subalbums-more-margin-top) + 1.5rem);
   --root-album-subalbums-section-padding: 2rem; /* Desktop: 1rem top + 1rem bottom */
   --root-album-subalbums-section-padding-mobile: 1.5rem; /* Mobile: 0.75rem top + 0.75rem bottom */
-  --root-album-subalbums-title-height: calc(1rem + var(--root-album-subalbums-title-margin-bottom));
-  --root-album-subalbums-section-max-height: calc(var(--root-album-subalbums-section-padding) + var(--root-album-subalbums-title-height) + var(--root-album-subalbums-list-height) + var(--root-album-subalbums-more-height));
-  --root-album-subalbums-section-max-height-mobile: calc(var(--root-album-subalbums-section-padding-mobile) + var(--root-album-subalbums-title-height) + var(--root-album-subalbums-list-height) + var(--root-album-subalbums-more-height));
+  --root-album-subalbums-section-max-height: calc(var(--root-album-subalbums-section-padding) + var(--root-album-subalbums-list-height) + var(--root-album-subalbums-more-height));
+  --root-album-subalbums-section-max-height-mobile: calc(var(--root-album-subalbums-section-padding-mobile) + var(--root-album-subalbums-list-height) + var(--root-album-subalbums-more-height));
 }
 
 .root-album-list-block {
@@ -200,13 +198,6 @@
     width: 50%;
     max-width: 650px;
   }
-}
-
-.root-album-list-block-subalbums-title {
-  margin: 0 0 var(--root-album-subalbums-title-margin-bottom) 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--album-detail-title-color, #333333);
 }
 
 .root-album-list-block-subalbums-list {

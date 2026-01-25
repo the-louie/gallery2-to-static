@@ -110,7 +110,7 @@ describe('Root Album List View integration', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument();
+      expect(screen.getByRole('region', { name: 'Subalbums' })).toBeInTheDocument();
     });
 
     const subLink = screen.getByRole('link', { name: 'Parent Album' });

@@ -2,7 +2,7 @@
  * RootAlbumListBlock Component
  *
  * Renders a single root-level album as a rich block: album title (bold), description,
- * optional website link from summary/description, metadata (Date, Owner), and "Subalbums:" list.
+ * optional website link from summary/description, metadata (Date, Owner), and subalbums list.
  * The Subalbums section shows at most the latest 10 subalbums (by timestamp descending, nulls last)
  * in a 2-column grid layout; when more exist, "...and more!" is shown at the bottom right of the block.
  * Two-column layout (album left, subalbums right); stacks on narrow viewports.
@@ -142,9 +142,9 @@ export function RootAlbumListBlock({
         {showSubalbums && (
           <section
             className="root-album-list-block-subalbums"
+            role="region"
             aria-label="Subalbums"
           >
-            <h3 className="root-album-list-block-subalbums-title">Subalbums:</h3>
             <ul className="root-album-list-block-subalbums-list">
               {displaySubalbums.map((sub) => (
                 <li key={sub.id}>

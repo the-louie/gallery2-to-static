@@ -7,17 +7,16 @@
 - Limit root album child-album descriptions to 20 words - Low - 30–45 min - In root album JSON only, truncate child album description to 20 words and append ellipsis if longer
 - Exclude albums with no image descendant from extraction - Medium - 1–1.5 hours - Backend: do not emit JSON or list in children for albums that have no photo in subtree (recursive)
 - Subalbum wrapper 50% width, max-width 800px below 1200px - Low - 20–30 min - Frontend: subalbum wrapper div 50% parent width and max-width 800px on viewports below 1200px
-- Remove "Subalbums:" title from sub-album wrapper in root album - Low - 10–15 min - Frontend: remove root-album-list-block-subalbums-title element and text; keep list and aria-label
 - Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
 
 ---
 
 ## Summary
 
-**Total Tasks:** 6
-**Pending:** 5
+**Total Tasks:** 5
+**Pending:** 4
 **Partial:** 1
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** ~8.5–10.5 hours
+**Estimated Total Time:** ~8–10 hours

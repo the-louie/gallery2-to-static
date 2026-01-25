@@ -146,41 +146,6 @@ On viewports &lt; 1200px, the subalbum wrapper has width 50% of its parent and m
 
 ---
 
-## Remove "Subalbums:" title from sub-album wrapper in root album (Frontend)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 10–15 minutes
-
-### Description
-In the **root album list** (and wherever `RootAlbumListBlock` is used), the **sub-album wrapper** section currently shows a heading **"Subalbums:"** above the list of sub-album links. This heading (the element with class **`root-album-list-block-subalbums-title`**) and its text must be **removed**. The sub-album list (the links and optional "... And much more") remains; only the title element is removed so the section has no visible "Subalbums:" label.
-
-### Requirements
-
-#### Scope
-- **Frontend only.** Component `RootAlbumListBlock` (`frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx`) and its styles (`RootAlbumListBlock.css`). Tests in `RootAlbumListBlock.test.tsx` that assert on "Subalbums:" must be updated.
-- **Element to remove.** The `<h3 className="root-album-list-block-subalbums-title">Subalbums:</h3>` (or equivalent) inside the subalbums section. Remove the element entirely from the JSX.
-- **CSS.** Remove or leave unused the `.root-album-list-block-subalbums-title` rule(s) in `RootAlbumListBlock.css`. Removing the rule avoids dead code; leaving it has no visual effect once the element is gone. Prefer removing the rule and any CSS variables that only served this heading (e.g. `--root-album-subalbums-title-margin-bottom` if only used for the title).
-- **Accessibility.** The subalbums section already has `aria-label="Subalbums"` on the section; screen-reader users still get context. No replacement visible heading is required.
-
-#### Implementation Tasks
-- In `RootAlbumListBlock.tsx`, delete the line that renders the heading, e.g. `<h3 className="root-album-list-block-subalbums-title">Subalbums:</h3>`.
-- In `RootAlbumListBlock.css`, remove the `.root-album-list-block-subalbums-title` rule block. If `:root` or other rules reference variables used only for the title (e.g. title margin affecting section height calculations), update or remove those so layout/height calculations stay correct. The component uses CSS variables for subalbums list height; verify min-height / layout still look correct without the title.
-- In `RootAlbumListBlock.test.tsx`, remove or update tests that expect "Subalbums:" text (e.g. `expect(screen.getByText(/Subalbums:/i)).toBeInTheDocument()`). Replace with assertions that the subalbums section and links are present without asserting on the heading text.
-
-### Deliverable
-The sub-album wrapper in the root album (and any child-album list using the same component) no longer displays a "Subalbums:" title. The list of sub-album links and "... And much more" (when applicable) remain. Section remains accessible via `aria-label`.
-
-### Testing Requirements
-- Manual: Open root album list and an album page that shows child albums; confirm no "Subalbums:" heading appears and the link list is still present and usable.
-- Unit: RootAlbumListBlock tests no longer expect "Subalbums:" in the document; tests still confirm subalbums section and links render when subalbums are provided.
-
-### Technical Notes
-- Reference: `RootAlbumListBlock.tsx` (subalbums section around lines 137–147, heading at 142); `RootAlbumListBlock.css` (`.root-album-list-block-subalbums-title` around 202, and `:root` variables such as `--root-album-subalbums-title-height` if used); `RootAlbumListBlock.test.tsx` (multiple expectations for /Subalbums:/i).
-
----
-
  The header should not appear as a distinct "bar" on top of the page. Prefer: (1) **Background:** Use the same background as the page (e.g. transparent so the layout’s gradient or `--color-background-primary` shows through), or extend the layout gradient into the header area so there is no color step. (2) **Border:** Remove the header’s `border-bottom` or replace it with a very subtle separator (e.g. same color as background with a slight tone difference, or a soft shadow) so the transition to main content is gradual rather than a hard line.
  Remove or soften `.layout-header`’s `border-bottom` (remove it, or use a very light border/shadow that doesn’t read as a strong line).
 ---
