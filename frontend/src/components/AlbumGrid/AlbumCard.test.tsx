@@ -28,6 +28,20 @@ describe('AlbumCard', () => {
       expect(screen.getByText('Untitled Album')).toBeInTheDocument();
     });
 
+    it('shows total descendant image count when present', () => {
+      const albumWithCount: Album = {
+        ...mockAlbum,
+        totalDescendantImageCount: 25,
+      };
+      render(<AlbumCard album={albumWithCount} />);
+      expect(screen.getByText('25 images')).toBeInTheDocument();
+    });
+
+    it('does not show images count when totalDescendantImageCount is missing', () => {
+      render(<AlbumCard album={mockAlbum} />);
+      expect(screen.queryByText(/\d+ images/)).not.toBeInTheDocument();
+    });
+
     it('applies custom className', () => {
       const { container } = render(
         <AlbumCard album={mockAlbum} className="custom-class" />,

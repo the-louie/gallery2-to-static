@@ -30,6 +30,7 @@ export function albumFromMetadata(m: AlbumMetadata): Album {
     thumb_height: null,
     ownerName: m.ownerName,
     summary: null,
+    totalDescendantImageCount: m.totalDescendantImageCount ?? undefined,
   } as Album;
 }
 

@@ -115,6 +115,9 @@ function AlbumCardComponent({
       </div>
       <div className="album-card-content">
         <h3 className="album-card-title">{parsedTitle}</h3>
+        {album.totalDescendantImageCount != null && (
+          <p className="album-card-images-total">{album.totalDescendantImageCount} images</p>
+        )}
       </div>
     </article>
   );

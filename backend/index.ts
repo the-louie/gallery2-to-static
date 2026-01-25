@@ -5,6 +5,7 @@ import sqlUtils from './sqlUtils'
 import { Config, Child, AlbumFile, BreadcrumbItem, AlbumMetadata } from './types'
 import { cleanup_uipathcomponent } from './cleanupUipath'
 import { getLinkTarget, getThumbTarget } from './legacyPaths'
+import { computeAllDescendantImageCounts } from './descendantImageCount'
 
 /**
  * Build a Set of album IDs to ignore from config.ignoreAlbums.
@@ -238,6 +239,7 @@ const main = async (
     config: Config,
     rootAlbumId: number,
     albumsWithImageDescendants: Set<number>,
+    descendantImageCounts: Map<number, number>,
 ) => {
     const children = await sql.getChildren(root);
     // Exclude child albums that are blacklisted or have no image descendant.
@@ -278,6 +280,7 @@ const main = async (
                         config,
                         rootAlbumId,
                         albumsWithImageDescendants,
+                        descendantImageCounts,
                     ),
                 );
             }
@@ -317,6 +320,9 @@ const main = async (
                         : null;
                     const highlightSpread =
                         highlightImageUrl !== null ? { highlightImageUrl } : {};
+                    const totalCount = descendantImageCounts.get(child.id);
+                    const countSpread =
+                        totalCount !== undefined ? { totalDescendantImageCount: totalCount } : {};
 
                     const albumChildren = await sql.getChildren(child.id);
                     const firstPhoto = findFirstPhoto(albumChildren);
@@ -350,9 +356,10 @@ const main = async (
                             ...thumbnailInfo,
                             thumbnailUrlPath,
                             ...highlightSpread,
+                            ...countSpread,
                         };
                     }
-                    return { ...child, ...highlightSpread };
+                    return { ...child, ...highlightSpread, ...countSpread };
                 }
                 return child;
             }),
@@ -418,7 +425,14 @@ const main = async (
         if (highlightImageUrl !== null) {
             metadata.highlightImageUrl = highlightImageUrl;
         }
-        
+        // Total descendant image count for non-root albums (root omitted; frontend shows for non-root only).
+        if (root !== rootAlbumId) {
+            const count = descendantImageCounts.get(root);
+            if (count !== undefined) {
+                metadata.totalDescendantImageCount = count;
+            }
+        }
+
         const albumFile: AlbumFile = { metadata, children: childrenForFile };
         const filePath = path.join(dataDir, `${root}.json`);
         try {
@@ -489,7 +503,13 @@ let connection: mysql.Connection | null = null;
         
         const thumbPrefix = config.thumbPrefix ?? 't__';
         const albumsWithImageDescendants = await computeAlbumsWithImageDescendants(rootId, sql, ignoreSet);
-        await main(sql, rootId, [], [''], dataDir, searchIndex, thumbPrefix, ignoreSet, [], config, rootId, albumsWithImageDescendants);
+        const descendantImageCounts = await computeAllDescendantImageCounts(
+            rootId,
+            (id) => sql.getChildren(id),
+            ignoreSet,
+            albumsWithImageDescendants,
+        );
+        await main(sql, rootId, [], [''], dataDir, searchIndex, thumbPrefix, ignoreSet, [], config, rootId, albumsWithImageDescendants, descendantImageCounts);
         
         // Generate search index file
         try {

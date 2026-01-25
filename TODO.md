@@ -57,7 +57,7 @@ When the user navigates away (e.g. changes route from one album to another, or f
 #### Investigation Tasks
 - Find every code path that fetches images: native `<img src>`, `fetch()` for images or blobs, preload hooks (e.g. useImagePreload, useProgressiveImage preload), lightbox full-size or adjacent-image preload, any central image-loading utility.
 - For `<img src>`: identify whether any custom loading uses fetch + object URL; if so, ensure that fetch uses a signal. For img-only loading, canceling is limited (browser may not abort img), but any explicit fetch() used for images must accept and use an AbortSignal.
-- Determine where “navigation” can be observed: route change (React Router), album id change, or a single navigation context that can provide an AbortSignal to all image-loading code for the current “page” or “album view”.
+- Determine where "navigation" can be observed: route change (React Router), album id change, or a single navigation context that can provide an AbortSignal to all image-loading code for the current "page" or "album view".
 
 #### Implementation Tasks
 - Introduce a per-view or per-route AbortController (e.g. in a context or in the component tree for the album/image view) that is aborted when the user navigates away (e.g. in a React Router cleanup or when albumId/route params change).
@@ -75,51 +75,8 @@ On navigation, all in-flight image GETs for the previous view are canceled (abor
 
 ### Technical Notes
 - Use `AbortController.abort()` and pass `controller.signal` to `fetch()` options. On navigation, call `controller.abort()` and create a new controller for the new view.
-- React Strict Mode may double-mount; ensure abort logic does not cancel the “current” view’s requests prematurely.
-- Related to “Reclaim memory for images not currently shown”: canceling GETs reduces in-flight work and helps avoid retaining response data for the previous view.
-
----
-
-## Show total descendant image count for non-root albums (backend)
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Medium
-**Estimated Time:** 2–4 hours
-
-### Description
-Non-root albums should display the total number of images that are descendants (direct or nested in subalbums). This count must be computed during backend export and written into each album’s JSON so the frontend can show it (e.g. “Size: 40 items (38136 images total)” or similar). Root album may be excluded or treated differently if desired.
-
-### Requirements
-
-#### Investigation Tasks
-- Confirm where album metadata is emitted: `backend/index.ts` builds `AlbumMetadata` and writes `{ metadata, children }` per album file (e.g. `data/{albumId}.json`)
-- Review `backend/types.ts` `AlbumMetadata` interface and add an optional field (e.g. `totalDescendantImageCount?: number`) for the new value
-- Determine traversal: backend already has `computeAlbumsWithImageDescendants` and child filtering; add or reuse a function that counts all `GalleryPhotoItem` descendants for a given album (respecting `ignoreSet` and albums-with-images filtering)
-- Decide whether root album JSON also gets the count or only non-root; document choice
-
-#### Implementation Tasks (backend)
-- Add a function (e.g. `computeDescendantImageCount(albumId, sql, ignoreSet)`) that recursively counts all `GalleryPhotoItem` items in the album subtree, respecting blacklist and existing “albums with image descendants” logic
-- For each album written (or only when `albumId !== rootId`), compute the count and set it on `metadata` (e.g. `metadata.totalDescendantImageCount = count`)
-- Extend `AlbumMetadata` in `backend/types.ts` with the new field; ensure frontend types (if shared or mirrored) are updated
-- Add tests for the count (e.g. album with only direct photos, album with nested albums, blacklisted subtree)
-
-#### Implementation Tasks (frontend)
-- Read the new metadata field from album JSON / `useAlbumData` metadata
-- Display the total descendant image count wherever album metadata is shown (e.g. AlbumDetail header, AlbumCard, RootAlbumListBlock meta) for non-root albums; follow existing “Size: X items” pattern or add “X images total” as appropriate
-
-### Deliverable
-- Backend: each non-root (or all) album JSON includes a correct `totalDescendantImageCount` (or chosen name) in metadata.
-- Frontend: non-root albums show the total number of descendant images in the UI.
-
-### Testing Requirements
-- Backend: unit or integration test that export produces the new field and value matches manual count for a small fixture
-- Frontend: metadata section shows the count when present; no regression when field is missing (optional field)
-
-### Technical Notes
-- Counting must respect `ignoreSet` (blacklisted albums and their descendants are excluded).
-- Reuse existing SQL/child fetching and filtering so the count matches what is actually exported (e.g. same as `albumsWithImageDescendants` and `ignoreSet`).
-- Design doc (e.g. `docs/dev-notes/2026-01-25-1200_original_design_analyzis_1.md`) references “Size: 40 items (38136 items total)” for root; similar semantics for non-root “X images (Y total)” if desired.
+- React Strict Mode may double-mount; ensure abort logic does not cancel the "current" view's requests prematurely.
+- Related to "Reclaim memory for images not currently shown": canceling GETs reduces in-flight work and helps avoid retaining response data for the previous view.
 
 ---
 

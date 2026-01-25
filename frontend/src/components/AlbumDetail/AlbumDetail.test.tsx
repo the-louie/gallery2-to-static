@@ -831,6 +831,86 @@ describe('AlbumDetail', () => {
       expect(screen.getByRole('region', { name: 'Images' })).toBeInTheDocument();
     });
 
+    it('shows total descendant image count when metadata has totalDescendantImageCount and not root', () => {
+      mockUseSiteMetadata.mockReturnValue({
+        siteName: null,
+        rootAlbumId: 7,
+        isLoading: false,
+        error: null,
+      });
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 10,
+          albumTitle: 'Photos',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+          breadcrumbPath: [{ id: 7, title: 'Home', path: '/' }, { id: 10, title: 'Photos', path: '/album/10' }],
+          totalDescendantImageCount: 42,
+        },
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={10} />);
+      expect(screen.getByText('42 images total')).toBeInTheDocument();
+    });
+
+    it('does not show total descendant image count when at root album', () => {
+      mockUseSiteMetadata.mockReturnValue({
+        siteName: null,
+        rootAlbumId: 7,
+        isLoading: false,
+        error: null,
+      });
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 7,
+          albumTitle: 'Root',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+          breadcrumbPath: [{ id: 7, title: 'Home', path: '/' }],
+          totalDescendantImageCount: 100,
+        },
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={7} />);
+      expect(screen.queryByText(/images total/)).not.toBeInTheDocument();
+    });
+
+    it('does not show total descendant image count when metadata field is missing', () => {
+      mockUseSiteMetadata.mockReturnValue({
+        siteName: null,
+        rootAlbumId: 7,
+        isLoading: false,
+        error: null,
+      });
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: {
+          albumId: 10,
+          albumTitle: 'Photos',
+          albumDescription: null,
+          albumTimestamp: null,
+          ownerName: null,
+          breadcrumbPath: [],
+        },
+        refetch: vi.fn(),
+      });
+
+      render(<AlbumDetail albumId={10} />);
+      expect(screen.queryByText(/images total/)).not.toBeInTheDocument();
+    });
+
     it('does not render summary or owner when null or empty', () => {
       mockUseAlbumData.mockReturnValue({
         data: mockChildren,

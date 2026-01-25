@@ -362,6 +362,11 @@ export function AlbumDetail({
               Owner: {decodeHtmlEntities(album.ownerName.trim())}
             </p>
           )}
+          {!isRootAlbum && metadata?.totalDescendantImageCount != null && (
+            <p className="album-detail-images-total">
+              {metadata.totalDescendantImageCount} images total
+            </p>
+          )}
         </div>
       )}
 

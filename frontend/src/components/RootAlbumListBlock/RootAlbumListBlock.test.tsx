@@ -188,6 +188,22 @@ describe('RootAlbumListBlock', () => {
     expect(list?.querySelector('strong')).toHaveTextContent('Bold Subalbum');
   });
 
+  it('shows Images meta row when album has totalDescendantImageCount', () => {
+    const albumWithCount: Album = {
+      ...baseAlbum,
+      id: 15,
+      totalDescendantImageCount: 100,
+    } as Album;
+    render(<RootAlbumListBlock album={albumWithCount} subalbums={[]} />);
+    expect(screen.getByText('Images')).toBeInTheDocument();
+    expect(screen.getByText('100')).toBeInTheDocument();
+  });
+
+  it('does not show Images meta row when totalDescendantImageCount is missing', () => {
+    render(<RootAlbumListBlock album={baseAlbum} subalbums={[]} />);
+    expect(screen.queryByText('Images')).not.toBeInTheDocument();
+  });
+
   it('shows Website link when summary has [url=...]...[/url]', () => {
     const withUrl: Album = {
       ...baseAlbum,

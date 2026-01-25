@@ -48,6 +48,11 @@ export interface Child {
      */
     highlightImageUrl?: string | null;
     /**
+     * Total number of GalleryPhotoItem descendants in this album's subtree (exported tree only).
+     * Only present for albums (GalleryAlbumItem). Omitted for root in metadata; present on child albums in parent's children.
+     */
+    totalDescendantImageCount?: number | null;
+    /**
      * Owner display name resolved from Item.ownerId → User (fullName or userName). Null when user missing or ownerId invalid.
      */
     ownerName?: string | null;
@@ -87,6 +92,11 @@ export interface AlbumMetadata {
      * Omitted when no image can be found.
      */
     highlightImageUrl?: string | null;
+    /**
+     * Total number of GalleryPhotoItem descendants in this album's subtree (exported tree only).
+     * Omitted for root album; set for non-root albums so frontend can show "X images total".
+     */
+    totalDescendantImageCount?: number | null;
 }
 
 /**
