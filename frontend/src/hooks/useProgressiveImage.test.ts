@@ -100,6 +100,8 @@ describe('useProgressiveImage', () => {
       expect(result.current.state).toBe('error');
       expect(result.current.hasError).toBe(true);
       expect(result.current.error).toBe('No image provided');
+      expect(result.current.thumbnailUrl).toBe('');
+      expect(result.current.fullImageUrl).toBe('');
     });
   });
 
@@ -231,6 +233,37 @@ describe('useProgressiveImage', () => {
       await waitFor(() => {
         expect(result.current.fullImageUrl).toBe('/images/test-album/test-photo.jpg');
       });
+    });
+
+    it('keeps thumbnailUrl and fullImageUrl as server URLs after load (never blob)', async () => {
+      const { result } = renderHook(() => useProgressiveImage(mockImage), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.fullImageUrl).toBeTruthy();
+      });
+
+      if (mockImageElement.onload) {
+        mockImageElement.onload();
+      }
+
+      await waitFor(() => {
+        expect(result.current.state).toBe('thumbnail-loaded');
+      });
+
+      if (mockImageElement.onload) {
+        mockImageElement.onload();
+      }
+
+      await waitFor(() => {
+        expect(result.current.state).toBe('full-loaded');
+      });
+
+      expect(result.current.thumbnailUrl).toBe('/images/test-album/t__test-photo.jpg');
+      expect(result.current.fullImageUrl).toBe('/images/test-album/test-photo.jpg');
+      expect(result.current.thumbnailUrl).not.toMatch(/^blob:/);
+      expect(result.current.fullImageUrl).not.toMatch(/^blob:/);
     });
   });
 

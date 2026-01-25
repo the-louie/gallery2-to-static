@@ -735,6 +735,7 @@ The frontend supports configurable image base URLs, allowing images to be served
 
 **URL Construction:**
 - The app loads only the image URLs as provided in the data JSON (original format); no format variants (AVIF/WebP) are requested.
+- Images are displayed using direct server URLs in `<img src>` to avoid blob URL security restrictions in some environments; progressive loading still uses fetch + cache for load detection.
 - Image URLs are constructed by combining the configured base URL with the `pathComponent` from image data
 - Base URL is normalized (trailing slashes removed) during configuration loading
 - Supports both absolute URLs (`https://cdn.example.com`) and relative paths (`/gallery-images`)

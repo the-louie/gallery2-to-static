@@ -3,6 +3,9 @@
  *
  * Loads thumbnail then full image; uses fetch + AbortSignal so in-flight GETs
  * are canceled on navigation. Object URLs are revoked on abort or cleanup.
+ * Displayed thumbnailUrl and fullImageUrl are kept as server URLs (from getImageUrl);
+ * fetch + object URL are used only for caching and load detection, not for img src,
+ * to avoid blob URL security restrictions in some environments.
  *
  * @module frontend/src/hooks/useProgressiveImage
  */
@@ -78,6 +81,8 @@ export function useProgressiveImage(
       setState('error');
       setHasError(true);
       setError('No image provided');
+      setThumbnailUrl('');
+      setFullImageUrl('');
       currentImageIdRef.current = null;
       return;
     }
@@ -159,7 +164,6 @@ export function useProgressiveImage(
             return;
           }
           cache.set(thumbnailUrl, img);
-          setThumbnailUrl(objectUrl);
           setState('thumbnail-loaded');
         };
         img.onerror = () => {
@@ -231,7 +235,6 @@ export function useProgressiveImage(
             return;
           }
           cache.set(fullImageUrl, img);
-          setFullImageUrl(objectUrl);
           setState('full-loaded');
           setHasError(false);
           setError(null);

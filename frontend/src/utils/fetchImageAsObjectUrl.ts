@@ -12,6 +12,8 @@
  * Fetches an image and returns an object URL for the blob.
  * Rejects with AbortError when signal is aborted.
  * Caller must call URL.revokeObjectURL(url) when the URL is no longer needed.
+ * Callers should not use the returned URL as the only display URL if the document
+ * restricts blob: (e.g. use server URL for img src).
  *
  * @param url - Image URL to fetch
  * @param signal - AbortSignal to cancel the request (e.g. view navigation)
