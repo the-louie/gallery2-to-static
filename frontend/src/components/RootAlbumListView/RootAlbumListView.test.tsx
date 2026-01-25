@@ -113,4 +113,60 @@ describe('RootAlbumListView', () => {
     // SortDropdown is now in Layout header, not in this component
     expect(screen.getByText('Test Album')).toBeInTheDocument();
   });
+
+  it('shows intro block with title and description when metadata provided', () => {
+    mockUseAlbumData.mockReturnValue({
+      data: mockAlbums as Child[],
+      metadata: {
+        albumId: 7,
+        albumTitle: 'My Gallery',
+        albumDescription: 'Welcome to the gallery.',
+        albumTimestamp: null,
+        ownerName: null,
+      },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    renderWithProviders(<RootAlbumListView albumId={7} />);
+    expect(screen.getByText('My Gallery')).toBeInTheDocument();
+    expect(screen.getByText('Welcome to the gallery.')).toBeInTheDocument();
+    expect(screen.getByText('Test Album')).toBeInTheDocument();
+  });
+
+  it('shows intro with title only when metadata has no description', () => {
+    mockUseAlbumData.mockReturnValue({
+      data: mockAlbums as Child[],
+      metadata: {
+        albumId: 7,
+        albumTitle: 'Gallery Home',
+        albumDescription: null,
+        albumTimestamp: null,
+        ownerName: null,
+      },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    renderWithProviders(<RootAlbumListView albumId={7} />);
+    expect(screen.getByText('Gallery Home')).toBeInTheDocument();
+    expect(screen.queryByText('Welcome to the gallery.')).not.toBeInTheDocument();
+    expect(screen.getByText('Test Album')).toBeInTheDocument();
+  });
+
+  it('does not show intro when metadata is null', () => {
+    mockUseAlbumData.mockReturnValue({
+      data: mockAlbums as Child[],
+      metadata: null,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    renderWithProviders(<RootAlbumListView albumId={7} />);
+    expect(screen.getByText(/Albums/)).toBeInTheDocument();
+    expect(screen.getByText('Test Album')).toBeInTheDocument();
+  });
 });

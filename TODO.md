@@ -279,42 +279,6 @@ The root album view no longer displays the header section or "Albums" title. The
 
 ---
 
-## Add root album description below album title on root album view (Frontend)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 20–30 minutes
-
-### Description
-On the **root album** view (home page), the root album’s **description** must be shown **below the root album title**. Today the root album list view (`RootAlbumListView`) may show only the list of child album blocks; there is no dedicated block for the root album’s own title and description. Required behavior: at the top of the root album view, display the **root album title** and, when present, the **root album description** (e.g. `metadata.albumDescription`) below it. Then show the existing list of album blocks. This gives the home page an intro section (title + description) for the root album before the list of its children.
-
-### Requirements
-
-#### Scope
-- **Frontend only.** Component `RootAlbumListView` (`frontend/src/components/RootAlbumListView/RootAlbumListView.tsx`). The hook `useAlbumData(albumId)` already returns `metadata: AlbumMetadata | null`; `AlbumMetadata` has `albumTitle` and `albumDescription`. Use this metadata to render the title and description. Add CSS in `RootAlbumListView.css` for the new intro/header block (e.g. `.root-album-list-view-intro` or similar).
-- **Placement.** The root album title and description appear at the top of the root album view, above the `<ul className="root-album-list-view-list">`. If the “root-album-list-view-header” (with “Albums” heading) is removed per the separate TODO, this title + description can take the place of a leading block; if the header remains temporarily, place title + description above it or integrate appropriately.
-- **Content.** Title: use `metadata?.albumTitle` (or fallback like “Albums” or empty when missing). Description: render only when `metadata?.albumDescription` is non-empty; use `parseBBCodeDecoded(metadata.albumDescription)` (same as other album descriptions). “”). Ensure safe handling of null/undefined.
-- **Accessibility.** Use a logical heading level for the title (e.g. `<h1>` or `<h2>`) so the page has a clear top-level heading; describe the region if needed (e.g. `aria-label` on a wrapper).
-
-#### Implementation Tasks
-- In `RootAlbumListView`, destructure or use `metadata` from `useAlbumData(albumId)` (the hook already returns it). When `metadata` is present, render a block at the top with the root album title (e.g. `<h1>` or `<h2>`) and, when `metadata.albumDescription` is non-empty, a paragraph or div with the description below the title.
-- Style the block in `RootAlbumListView.css` (e.g. spacing below title and description, margin below the block before the list). Reuse or align with existing typography variables (e.g. `--album-detail-title-color`, `--album-detail-text-muted`) for consistency.
-- Use `parseBBCodeDecoded(metadata.albumDescription)` for description (same as RootAlbumListBlock and AlbumDetail). Handle empty/metadata null so the block does not render an empty title when metadata is missing (optional: hide the whole intro when no metadata, or show only when title or description exists).
-- Add or update tests so that when the root album has metadata with title and description, the view shows the title and description above the list; when description is empty, only the title is shown (or the intro is omitted if both are empty, per product choice).
-
-### Deliverable
-The root album view shows the root album’s title at the top and, when present, the root album’s description below the title, followed by the list of child album blocks. Description is decoded (and optionally BBCode-rendered). Layout and accessibility are preserved.
-
-### Testing Requirements
-- Manual: Load the home page with a root album that has both title and description in its JSON; confirm title and description appear at the top. Test with root album that has no description; confirm only title (or no intro) as designed.
-- Unit: RootAlbumListView (or HomePage) test asserts that when metadata contains albumTitle and albumDescription, both are rendered in the document above the list.
-
-### Technical Notes
-- `useAlbumData` returns `{ data, metadata, ... }`; `metadata` is `AlbumMetadata` with `albumTitle`, `albumDescription`. See `backend/types.ts` and `frontend/src/hooks/useAlbumData.ts`. Reference: `frontend/src/components/RootAlbumListView/RootAlbumListView.tsx` (add intro block after the opening div, before the list).
-
----
-
 ## Highlight image as faded/blurred background on article.root-album-list-block (Frontend)
 
 **Status:** Pending

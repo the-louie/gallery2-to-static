@@ -9,7 +9,6 @@
 - Subalbum wrapper 50% width, max-width 800px below 1200px - Low - 20–30 min - Frontend: subalbum wrapper div 50% parent width and max-width 800px on viewports below 1200px
 - Remove "Subalbums:" title from sub-album wrapper in root album - Low - 10–15 min - Frontend: remove root-album-list-block-subalbums-title element and text; keep list and aria-label
 - Remove root-album-list-view-header from the root album (Frontend) - Low - 10–15 min - Frontend: remove root-album-list-view-header block and "Albums" heading from RootAlbumListView
-- Add root album description below album title on root album view - Low - 20–30 min - Frontend: show root album title + description (from metadata) at top of RootAlbumListView above the list
 - Highlight image as faded/blurred background on article.root-album-list-block (Frontend) - Low - 30–45 min - Frontend: use highlightImageUrl as faded/blurred background on RootAlbumListBlock
 - Implement Per-Album Theme Configuration - Medium - 4-5 hours - Implement per-album theme configuration system with JSON file for human editing
 
@@ -17,10 +16,10 @@
 
 ## Summary
 
-**Total Tasks:** 11
-**Pending:** 11
+**Total Tasks:** 10
+**Pending:** 10
 **Partial:** 0
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** ~12–14.5 hours
+**Estimated Total Time:** ~11.5–13.5 hours

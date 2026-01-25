@@ -21,6 +21,8 @@ import { useSubalbumsMap } from '@/hooks/useSubalbumsMap';
 import { AlbumGridSkeleton } from '@/components/AlbumGrid/AlbumGridSkeleton';
 import { AlbumGridEmpty } from '@/components/AlbumGrid/AlbumGridEmpty';
 import { RootAlbumListBlock } from '@/components/RootAlbumListBlock';
+import { parseBBCodeDecoded } from '@/utils/bbcode';
+import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import type { Album, Child } from '@/types';
 import { isAlbum } from '@/types';
 import './RootAlbumListView.css';
@@ -45,7 +47,7 @@ export function RootAlbumListView({
   onAlbumClick,
   className,
 }: RootAlbumListViewProps) {
-  const { data, isLoading, error, refetch } = useAlbumData(albumId);
+  const { data, metadata, isLoading, error, refetch } = useAlbumData(albumId);
   const { criteria } = useFilter();
   const { option: sortOption } = useSort('albums');
 
@@ -108,6 +110,15 @@ export function RootAlbumListView({
     );
   }
 
+  const hasIntro =
+    metadata &&
+    (Boolean(metadata.albumTitle?.trim()) || Boolean(metadata.albumDescription?.trim()));
+  const introTitle =
+    metadata?.albumTitle?.trim() != null && metadata.albumTitle.trim() !== ''
+      ? parseBBCodeDecoded(metadata.albumTitle.trim())
+      : 'Albums';
+  const introDescription = metadata?.albumDescription?.trim() ?? '';
+
   return (
     <ErrorBoundary>
       <div
@@ -116,6 +127,16 @@ export function RootAlbumListView({
         aria-label="Root albums"
         aria-busy={subalbumsLoading}
       >
+        {hasIntro && (
+          <div className="root-album-list-view-intro" aria-label="Root album">
+            <h1 className="root-album-list-view-intro-title">{introTitle}</h1>
+            {introDescription !== '' && (
+              <p className="root-album-list-view-intro-description">
+                {decodeHtmlEntities(introDescription)}
+              </p>
+            )}
+          </div>
+        )}
         <div className="root-album-list-view-header">
           <h2 className="root-album-list-view-title">Albums</h2>
         </div>
