@@ -131,9 +131,8 @@ describe('Layout', () => {
       </Layout>,
     );
 
-    const title = screen.getByRole('heading', { level: 1 });
+    const title = screen.getByText('Gallery 2 to Static');
     expect(title).toBeInTheDocument();
-    expect(title).toHaveTextContent('Gallery 2 to Static');
     expect(title).toHaveClass('layout-title');
   });
 

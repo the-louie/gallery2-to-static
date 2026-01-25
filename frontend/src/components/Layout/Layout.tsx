@@ -66,11 +66,9 @@ export function Layout({ children, className }: LayoutProps) {
       </a>
       <header className="layout-header">
         <div className="layout-header-content">
-          <nav aria-label="Main navigation">
-            <Link to="/" className="layout-title-link" aria-label="Go to home page">
-              <h1 className="layout-title">{siteName || 'Gallery 2 to Static'}</h1>
-            </Link>
-          </nav>
+          <Link to="/" className="layout-title-link" aria-label="Go to home page">
+            <span className="layout-title">{siteName || 'Gallery 2 to Static'}</span>
+          </Link>
           <div className="layout-header-actions">
             <SearchBar />
             <ThemeDropdown />

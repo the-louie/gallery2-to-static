@@ -194,24 +194,14 @@ describe('App', () => {
   });
 
   describe('Accessibility', () => {
-    it('has proper heading structure', () => {
+    it('has home link and site name in header', () => {
       vi.mocked(findRootAlbumId).mockResolvedValue(7);
 
       render(<App />, { initialEntries: ['/'] });
 
-      // Check for main heading in Layout
-      const mainHeading = screen.getByRole('heading', { level: 1 });
-      expect(mainHeading).toHaveTextContent('Gallery 2 to Static');
-    });
-
-    it('has navigation landmark', () => {
-      vi.mocked(findRootAlbumId).mockResolvedValue(7);
-
-      render(<App />, { initialEntries: ['/'] });
-
-      // Check for navigation landmark
-      const nav = screen.getByRole('navigation', { name: /main navigation/i });
-      expect(nav).toBeInTheDocument();
+      const homeLink = screen.getByRole('link', { name: /go to home page/i });
+      expect(homeLink).toBeInTheDocument();
+      expect(screen.getByText('Gallery 2 to Static')).toBeInTheDocument();
     });
   });
 });

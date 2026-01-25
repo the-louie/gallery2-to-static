@@ -216,40 +216,6 @@ Root album subalbums section shows up to 10 subalbum links; when more than 10 ex
 
 ---
 
-## Remove nav (Main navigation) and make root album intro title the only h1 (Frontend)
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Low
-**Estimated Time:** 15–20 minutes
-
-### Description
-**Semantics:** The page must have exactly one `<h1>`. That single `<h1>` must be the **root album intro title** (`.root-album-list-view-intro-title`), i.e. the album name when the root album view shows intro metadata. **Layout:** Remove the **Main navigation** (`<nav aria-label="Main navigation">`) from the layout header. The site name (e.g. "Gallery 2 to Static") remains visible and linkable to home, but is no longer inside a `<nav>` and must **not** be an `<h1>` (use a different element or heading level so the only h1 on the page is the root album intro title when present).
-
-### Requirements
-
-#### Scope
-- **Frontend only.** `frontend/src/components/Layout/Layout.tsx` (and `Layout.css`), `frontend/src/components/RootAlbumListView/RootAlbumListView.tsx` (intro title). Layout tests (e.g. `Layout.test.tsx`) that assert on the nav or on the site name being in an `<h1>` must be updated.
-- **Remove nav.** Delete the `<nav aria-label="Main navigation">` wrapper from the layout header. Keep the site name and its link to `/` in the header (e.g. `<Link to="/">` with the site name inside), but do not wrap them in `<nav>`. Remove or repurpose any CSS that targeted the nav if it becomes dead.
-- **Single h1.** The layout header must **not** use `<h1>` for the site name. Use e.g. `<span>`, `<p>`, or a lower heading level (e.g. `<h2>` or no heading) so that the document has at most one `<h1>`. The **only** `<h1>` on the page must be the root album intro title (`.root-album-list-view-intro-title`) in `RootAlbumListView` when the intro is rendered (`hasIntro` true, i.e. when metadata has `albumTitle` or `albumDescription`). When the root album view has no intro (no album title/description), the page may have no `<h1>` or a single fallback per product choice; document the choice.
-
-#### Implementation Tasks
-- In `Layout.tsx`, remove the `<nav aria-label="Main navigation">` element; keep the site name and its `Link` to `/` in the header, and change the site name from `<h1 className="layout-title">` to a non-h1 element (e.g. `<span className="layout-title">`). In `RootAlbumListView`, ensure the intro title is the single `<h1>` when `hasIntro` is true (it already uses `<h1 className="root-album-list-view-intro-title">`).
-- In `Layout.css`, remove or adjust styles that targeted the nav; keep styles for the site name/link so the header looks unchanged aside from semantics.
-- Update `Layout.test.tsx`: remove or change assertions that expect `<nav aria-label="Main navigation">` or the site name in an `<h1>`.
-
-### Deliverable
-Layout header has no `<nav>`, and the site name is not an `<h1>`. The only `<h1>` on the page is the root album intro title when the root album view displays intro content; otherwise the page has no `<h1>` (or one agreed fallback). Layout tests updated.
-
-### Testing Requirements
-- Manual: Load root album view with intro; confirm one `<h1>` (the album name). Load layout-only or non-root pages; confirm no duplicate `<h1>` from the layout.
-- Unit: Layout tests no longer expect Main navigation or site name in `<h1>`; RootAlbumListView tests continue to expect the intro title in `<h1>` when intro is present.
-
-### Technical Notes
-- Reference: `Layout.tsx` (nav and `<h1 className="layout-title">` around lines 69–73); `RootAlbumListView.tsx` (`<h1 className="root-album-list-view-intro-title">` in intro block, around 129–136); `Layout.css`; `RootAlbumListView.css` (`.root-album-list-view-intro-title`).
-
----
-
  The header should not appear as a distinct "bar" on top of the page. Prefer: (1) **Background:** Use the same background as the page (e.g. transparent so the layout’s gradient or `--color-background-primary` shows through), or extend the layout gradient into the header area so there is no color step. (2) **Border:** Remove the header’s `border-bottom` or replace it with a very subtle separator (e.g. same color as background with a slight tone difference, or a soft shadow) so the transition to main content is gradual rather than a hard line.
  Remove or soften `.layout-header`’s `border-bottom` (remove it, or use a very light border/shadow that doesn’t read as a strong line).
 ---
