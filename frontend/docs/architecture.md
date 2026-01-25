@@ -22,6 +22,7 @@ For related information, see:
 - [Component Architecture](#component-architecture)
 - [Routing Architecture](#routing-architecture)
 - [State Management Architecture](#state-management-architecture)
+- [Memory and Caching](#memory-and-caching)
 - [Integration Points](#integration-points)
 - [Future Enhancement Support](#future-enhancement-support)
 
@@ -659,6 +660,15 @@ flowchart TD
     D --> I[UI State]
     E --> J[Album/Image Data]
 ```
+
+## Memory and Caching
+
+To limit RAM usage when browsing large galleries:
+
+- **Virtualization:** ImageGrid and AlbumGrid use VirtuosoGrid with window scrolling. Only visible items (plus overscan) are mounted; off-screen image and album cells are unmounted so the browser can reclaim decoded image data.
+- **Image cache:** A singleton LRU image cache (default max 50 entries) holds decoded images. The cache is cleared when the user navigates away from the current view (route or album change), so the previous view’s images can be garbage-collected. Returning to an album may trigger re-load of images.
+- **Album data cache:** Album JSON is cached in memory with no size limit. Optional LRU or size-based eviction can be added later if needed (see dataLoader.ts).
+- **Lightbox preload:** useImagePreload only preloads prev/next images (bounded); there is no unbounded preload queue.
 
 ## Integration Points
 

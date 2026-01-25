@@ -1,47 +1,5 @@
 # TODO
 
-## Reclaim memory for images not currently shown
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Medium–High
-**Estimated Time:** 4–6 hours
-
-### Description
-The site uses large amounts of RAM (~3GB) when browsing because image data for albums that are no longer on screen (or that were loaded for another album) is kept in memory. We need a way to reclaim memory for images that are not currently visible or needed for the active album/view.
-
-### Requirements
-
-#### Investigation Tasks
-- Profile where memory is held: ImageGrid/ImageThumbnail components, image preloading, lightbox, caches (e.g. useImagePreload, any URL or blob caching), React state/store for album data and image lists
-- Determine whether the main cost is decoded image bitmaps (img elements / Image objects), cached fetch responses, retained album JSON, or virtualized list off-screen DOM
-- Review existing virtualization (e.g. VirtualGrid, react-virtuoso) and whether it unmounts or only hides off-screen items
-- Check for global or long-lived caches (search index, album data, image URLs) that hold references to image data or large structures
-
-#### Implementation Tasks
-- Unmount or release resources for images that leave the viewport (e.g. when navigating to another album, or when images scroll out of view in a virtualized list)
-- Avoid retaining full-size or decoded image data for albums the user has left; rely on re-fetch or re-decode when returning to an album if acceptable
-- Consider revokable object URLs for blobs if used, and revoke when an image is no longer displayed
-- Ensure virtualized lists actually unmount off-screen items (or use a bounded cache size) so the browser can garbage-collect image decodes
-- Optionally cap the number of preloaded or decoded images (e.g. for lightbox) and drop oldest when over limit
-- Document any tradeoff (e.g. brief re-load when returning to an album) and ensure UX remains acceptable
-
-### Deliverable
-Measurable reduction in RAM usage when browsing (e.g. navigating between albums, scrolling large grids) without unacceptable regression in perceived performance; memory for images not currently needed is reclaimed.
-
-### Testing Requirements
-- Verify memory drops (or stays stable) after navigating away from an album with many images
-- Verify memory behavior when scrolling through a large image grid (virtualized)
-- No broken display when returning to a previously visited album (reload or re-fetch is acceptable if documented)
-- Optional: add memory or performance notes to docs
-
-### Technical Notes
-- Browsers retain decoded image data for `<img>` elements and canvas until the element is removed and no references remain; unmounting components that hold images is necessary for GC.
-- Preloading (e.g. preload next/prev in lightbox) should be bounded or tied to current view to avoid unbounded growth.
-- If album or image data is cached in context/state, consider evicting or limiting cache size for albums the user is not viewing.
-
----
-
 ## Cancel all in-flight image GETs when navigating
 
 **Status:** Pending

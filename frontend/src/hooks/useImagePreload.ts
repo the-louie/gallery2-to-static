@@ -6,10 +6,11 @@
  *
  * ## Features
  *
- * - Preloads next and previous images automatically
+ * - Preloads next and previous images only (bounded; no unbounded preload queue)
  * - Handles edge cases (first/last image)
  * - Cleans up on unmount or image change
  * - Error handling for failed preloads
+ * - Image cache may be cleared on navigation (see Layout); returning to an album may re-load images
  *
  * ## Usage
  *

@@ -49,20 +49,17 @@ vi.mock('@/hooks/useSort', () => ({
   })),
 }));
 
-// Mock react-virtuoso
+// Mock react-virtuoso VirtuosoGrid (used by VirtualGrid)
 vi.mock('react-virtuoso', () => ({
-  Virtuoso: ({ itemContent, totalCount, ...props }: any) => {
-    const items = Array.from({ length: totalCount }, (_, i) => i);
-    return (
-      <div data-testid="virtuoso-container" {...props}>
-        {items.map((index) => (
-          <div key={index} data-item-index={index}>
-            {itemContent(index)}
-          </div>
-        ))}
-      </div>
-    );
-  },
+  VirtuosoGrid: ({ data, itemContent, ...props }: any) => (
+    <div data-testid="virtuoso-grid-container" {...props}>
+      {(data || []).map((item: any, index: number) => (
+        <div key={index} data-item-index={index}>
+          {itemContent(index, item, undefined)}
+        </div>
+      ))}
+    </div>
+  ),
 }));
 
 describe('AlbumGrid', () => {

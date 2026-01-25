@@ -13,6 +13,11 @@
  * - Configurable cache size limits
  * - Automatic cleanup of evicted entries
  *
+ * ## Lifecycle
+ *
+ * Cache is cleared on navigation away from album/image view (see Layout effect).
+ * Returning to an album may trigger re-load of images.
+ *
  * ## Usage
  *
  * ```typescript

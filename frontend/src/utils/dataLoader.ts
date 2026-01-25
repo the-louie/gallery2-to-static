@@ -96,7 +96,8 @@ export class NotFoundError extends DataLoadError {
  * - No size limit: Static JSON files are typically small and limited in number
  * - No expiration: Data doesn't change during application lifetime
  * - Cache persists for application lifetime
- * - If memory becomes an issue, consider implementing LRU eviction or size limits
+ * - Cache is unbounded; optional LRU or size-based eviction can be added later
+ *   if the user visits many albums and memory becomes an issue.
  */
 const cache = new Map<string, AlbumFile>();
 

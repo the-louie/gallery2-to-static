@@ -1,8 +1,10 @@
-import React, { useCallback, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { ThemeDropdown } from '../ThemeDropdown';
+import { getImageCache } from '@/utils/imageCache';
 import { SearchBar } from '../SearchBar';
 import { SortDropdown } from '../SortDropdown';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useSiteMetadata } from '@/hooks/useSiteMetadata';
 import { useSort } from '@/hooks/useSort';
 import './Layout.css';
@@ -37,7 +39,20 @@ export interface LayoutProps {
  */
 export function Layout({ children, className }: LayoutProps) {
   const { siteName } = useSiteMetadata();
+  const { isOriginal } = useTheme();
   const { option: sortOption, setOption: setSortOption } = useSort('albums');
+  const location = useLocation();
+  const isInitialMount = useRef(true);
+
+  // Clear image cache on navigation so previous view's decoded images can be GC'd (Phase 3).
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    getImageCache().clear();
+  }, [location.pathname, location.key]);
+
   const handleSkipClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     const mainContent = document.getElementById('main-content');
@@ -66,22 +81,58 @@ export function Layout({ children, className }: LayoutProps) {
       </a>
       <header className="layout-header">
         <div className="layout-header-content">
-          <Link to="/" className="layout-title-link" aria-label="Go to home page">
+          {isOriginal ? (
             <span className="layout-title">{siteName || 'Gallery 2 to Static'}</span>
-          </Link>
+          ) : (
+            <Link to="/" className="layout-title-link" aria-label="Go to home page">
+              <span className="layout-title">{siteName || 'Gallery 2 to Static'}</span>
+            </Link>
+          )}
           <div className="layout-header-actions">
-            <SearchBar />
+            {!isOriginal && <SearchBar />}
             <ThemeDropdown />
-            <SortDropdown
-              currentOption={sortOption}
-              onOptionChange={setSortOption}
-            />
+            {!isOriginal && (
+              <SortDropdown
+                currentOption={sortOption}
+                onOptionChange={setSortOption}
+              />
+            )}
           </div>
         </div>
       </header>
-      <main id="main-content" className="layout-main" tabIndex={-1}>
-        {children}
-      </main>
+      {isOriginal ? (
+        <div className="layout-body layout-body-with-sidebar">
+          <aside className="layout-sidebar" aria-label="Gallery navigation">
+            <div className="layout-sidebar-block">
+              <h2 className="layout-sidebar-title">Search the Gallery</h2>
+              <div className="layout-sidebar-search">
+                <SearchBar />
+              </div>
+              <Link to="/search" className="layout-sidebar-link">
+                Advanced Search
+              </Link>
+            </div>
+            <div className="layout-sidebar-block">
+              <a href="#rss" className="layout-sidebar-link layout-sidebar-link-icon">
+                RSS Feed for this Album
+              </a>
+              <a href="#slideshow" className="layout-sidebar-link layout-sidebar-link-icon">
+                View Slideshow
+              </a>
+              <a href="#slideshow-fullscreen" className="layout-sidebar-link layout-sidebar-link-icon">
+                View Slideshow (Fullscreen)
+              </a>
+            </div>
+          </aside>
+          <main id="main-content" className="layout-main" tabIndex={-1}>
+            {children}
+          </main>
+        </div>
+      ) : (
+        <main id="main-content" className="layout-main" tabIndex={-1}>
+          {children}
+        </main>
+      )}
       <footer className="layout-footer">
         <div className="layout-footer-content">
           <p>&copy; 2026 the_louie</p>

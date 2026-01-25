@@ -1,16 +1,19 @@
 /**
  * VirtualGrid Component
  *
- * A responsive grid wrapper component that renders all items in a grid layout.
- * The container grows to fit all children and scrolls with the page.
+ * A responsive virtualized grid that mounts only visible (and overscan) items so
+ * the browser can reclaim decoded image data for off-screen items. Uses
+ * react-virtuoso VirtuosoGrid with window scrolling; column breakpoints match
+ * existing layout (1/2/4/5 columns by width).
  *
- * Scroll position tracking is supported via the onScroll callback, but scroll
+ * Scroll position tracking is supported via the onScroll callback; scroll
  * restoration is handled by React Router and the browser's native scroll restoration.
  *
  * @module frontend/src/components/VirtualGrid
  */
 
-import React, { useMemo, useEffect, useRef, useState } from 'react';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
+import { VirtuosoGrid } from 'react-virtuoso';
 import './VirtualGrid.css';
 
 /**
@@ -29,8 +32,6 @@ export interface VirtualGridProps<T> {
   'aria-label'?: string;
   /** Optional callback when scroll position changes */
   onScroll?: (scrollTop: number) => void;
-  /** Optional item height (for fixed height items) */
-  itemHeight?: number;
   /** Optional gap between items */
   gap?: number;
 }
@@ -54,8 +55,9 @@ function calculateColumns(width: number): number {
 /**
  * VirtualGrid component
  *
- * Provides responsive grid layouts that grow to fit all children.
- * Renders all items directly, allowing the container to expand and scroll with the page.
+ * Virtualized grid: only visible and overscan items are mounted so off-screen
+ * image/album cells can be unmounted and garbage-collected. Uses VirtuosoGrid
+ * with useWindowScroll so the page document scrolls; column count is responsive.
  *
  * @param props - Component props
  * @returns React component
@@ -67,56 +69,49 @@ export function VirtualGrid<T>({
   role = 'region',
   'aria-label': ariaLabel,
   onScroll,
-  itemHeight,
   gap = 16,
 }: VirtualGridProps<T>) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== 'undefined' ? window.innerWidth : 1024,
   );
 
   const columns = useMemo(() => calculateColumns(windowWidth), [windowWidth]);
 
-  const totalRows = useMemo(() => {
-    if (items.length === 0) return 0;
-    return Math.ceil(items.length / columns);
-  }, [items.length, columns]);
-
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const handleResize = () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         setWindowWidth(window.innerWidth);
         timeoutId = null;
       }, 150);
     };
-
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      if (timeoutId) clearTimeout(timeoutId);
     };
   }, []);
 
-  // Handle page scroll for scroll position tracking
   useEffect(() => {
     if (!onScroll) return;
-
     const handlePageScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollTop = window.pageYOffset ?? document.documentElement.scrollTop;
       onScroll(scrollTop);
     };
-
     window.addEventListener('scroll', handlePageScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handlePageScroll);
-    };
+    return () => window.removeEventListener('scroll', handlePageScroll);
   }, [onScroll]);
+
+  const itemContent = useCallback(
+    (index: number, item: T) => renderItem(item, index),
+    [renderItem],
+  );
+
+  const listClassName = useMemo(
+    () => `virtual-grid-list virtual-grid-cols-${columns}`,
+    [columns],
+  );
 
   if (items.length === 0) {
     return (
@@ -124,7 +119,6 @@ export function VirtualGrid<T>({
         className={className ? `virtual-grid ${className}` : 'virtual-grid'}
         role={role}
         aria-label={ariaLabel}
-        ref={containerRef}
       />
     );
   }
@@ -134,34 +128,21 @@ export function VirtualGrid<T>({
       className={className ? `virtual-grid virtual-grid-grid ${className}` : 'virtual-grid virtual-grid-grid'}
       role={role}
       aria-label={ariaLabel}
-      ref={containerRef}
+      style={{ ['--virtual-grid-gap' as string]: `${gap}px` }}
     >
-      {Array.from({ length: totalRows }, (_, rowIndex) => {
-        const startIndex = rowIndex * columns;
-        const rowItems = items.slice(startIndex, startIndex + columns);
-
-        return (
-          <div
-            key={rowIndex}
-            className="virtual-grid-row"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: `repeat(${columns}, 1fr)`,
-              gap: `${gap}px`,
-            }}
-            data-item-index={rowIndex}
-          >
-            {rowItems.map((item, colIndex) => {
-              const itemIndex = startIndex + colIndex;
-              return (
-                <div key={itemIndex} data-item-index={itemIndex}>
-                  {renderItem(item, itemIndex)}
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
+      <VirtuosoGrid<T>
+        data={items}
+        itemContent={itemContent}
+        useWindowScroll
+        listClassName={listClassName}
+        overscan={200}
+        increaseViewportBy={{ top: 400, bottom: 400 }}
+        computeItemKey={(index, item) => {
+          const key = (item as { id?: unknown })?.id;
+          return key != null ? String(key) : String(index);
+        }}
+        style={{ minHeight: 400 }}
+      />
     </div>
   );
 }

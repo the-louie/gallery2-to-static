@@ -1,28 +1,47 @@
 /**
  * VirtualGrid Component Styles
  *
- * Styles for the virtual scrolling grid container.
+ * Virtualized grid using VirtuosoGrid; list uses CSS grid with responsive columns.
  * Works with existing theme variables and maintains responsive design compatibility.
  */
 
 .virtual-grid {
   width: 100%;
-  /* Remove fixed height to allow container to grow to fit all children */
   min-height: 400px;
 }
 
 .virtual-grid-grid {
-  display: flex;
-  flex-direction: column;
+  display: block;
 }
 
-.virtual-grid-row {
+/* VirtuosoGrid list container: CSS grid layout (gap from --virtual-grid-gap, default 16px) */
+.virtual-grid-list {
+  display: grid;
+  gap: var(--virtual-grid-gap, 16px);
   width: 100%;
+  box-sizing: border-box;
 }
 
-/* Ensure items maintain their aspect ratios */
-.virtual-grid-row > div {
+.virtual-grid-cols-1 {
+  grid-template-columns: repeat(1, 1fr);
+}
+
+.virtual-grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.virtual-grid-cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.virtual-grid-cols-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+/* Grid items (VirtuosoGrid item wrapper) */
+.virtual-grid-list > div {
   width: 100%;
+  min-height: 0;
 }
 
 /* Loading states */
