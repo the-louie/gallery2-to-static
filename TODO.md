@@ -40,52 +40,6 @@ Theme selector dropdown and Gallery order dropdown appear in a single horizontal
 
 ---
 
-## Add highlightThumbnailUrlPath to Album Children (highlightImageId / first-descendant)
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Medium
-**Estimated Time:** 2–3 hours
-
-### Description
-Add `highlightThumbnailUrlPath` to child objects that are albums (`GalleryAlbumItem`) in album JSON, using the same URL path convention as existing `thumbnailUrlPath`. The thumbnail source must be: (1) the image designated by `highlightImageId` in the database when present, or (2) when no highlight image is set, the first descendant image found by repeatedly taking the first child until an image (`GalleryPhotoItem`) is reached—that image's thumbnail is then used as the highlight thumbnail for the album (and conceptually for ancestors when resolving recursively).
-
-### Context
-- Album children currently have `thumbnailUrlPath` (from the first direct photo in the album via `findFirstPhoto`) and `highlightImageUrl` (full-size URL from recursive first-image fallback; no `highlightImageId` in schema today).
-- Goal: `highlightThumbnailUrlPath` on album children should be the thumbnail version of the same image used for highlight (either highlight-image or first-descendant image), so parent lists can show a consistent thumbnail.
-
-### Requirements
-
-#### Implementation Tasks
-- In `backend/index.ts`, when building album child entries (`GalleryAlbumItem`) in `processedChildrenWithThumbnails`:
-  - Resolve the "highlight image" for the album: if the database exposes a `highlightImageId` (or equivalent) for the album, load that photo and use it; otherwise resolve "first descendant image" by traversing: get children of the album, take the first child; if it is an album, recurse into it (first child again); repeat until the first child is a `GalleryPhotoItem`, then use that image.
-  - From that resolved image, compute the thumbnail URL path with the same convention as current `thumbnailUrlPath` (same `uipath`/dir and `getThumbTarget(cleanedTitle, rawPath, thumbPrefix)`).
-  - Add `highlightThumbnailUrlPath` to the album child object. If no highlight image can be resolved (empty album or no images in subtree), omit the field or set per existing convention.
-- Add optional `highlightThumbnailUrlPath?: string | null` to `Child` in `backend/types.ts` for album children if not already present from the image-children todo, and document it.
-- If `highlightImageId` is not yet in the schema: either add a DB/schema prerequisite to the todo or implement the first-descendant traversal first and add highlightImageId support when the column exists.
-
-#### Behavior Summary
-- **highlightImageId available:** use that photo's thumbnail for `highlightThumbnailUrlPath`.
-- **No highlightImageId:** use first-descendant image (first child; if album, first child of that album; repeat until image); use that image's thumbnail for `highlightThumbnailUrlPath`.
-- Path format: same as existing `thumbnailUrlPath` (directory + `getThumbTarget` filename).
-
-### Deliverable
-Album JSON children of type `GalleryAlbumItem` include `highlightThumbnailUrlPath` when a highlight image (or first-descendant image) can be resolved; backend types updated; behavior unchanged when no image is found.
-
-### Testing Requirements
-- Album with `highlightImageId` set: `highlightThumbnailUrlPath` matches the thumbnail URL of that photo.
-- Album without `highlightImageId`, with direct photos: same as current behavior (first photo's thumbnail); optionally assert `highlightThumbnailUrlPath` equals current `thumbnailUrlPath` where applicable.
-- Album without `highlightImageId` and no direct photos but subalbums: traverse to first descendant image; assert `highlightThumbnailUrlPath` is the thumbnail of that image.
-- Album with no images in subtree: no `highlightThumbnailUrlPath` or null.
-- Confirm existing `highlightImageUrl` and current `thumbnailUrlPath` semantics remain correct.
-
-### Technical Notes
-- Current code uses `findFirstPhoto(albumChildren)` for album thumbnail; first-descendant logic extends this by recursing into child albums when the first child is an album.
-- Reuse existing path helpers: `getThumbTarget`, `cleanup_uipathcomponent`, and the same directory construction used for `thumbnailUrlPath`. The UI path for the thumbnail is the album's `uipath` (and the resolved photo's pathComponent for building the full path to the image).
-- If the Gallery 2 schema does not yet have `highlightImageId`, document that in the todo or implement only the first-descendant path until the column is added.
-
----
-
 ## Implement Per-Album Theme Configuration
 
 **Status:** Pending

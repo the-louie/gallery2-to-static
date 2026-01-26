@@ -178,6 +178,10 @@ function validateChildArray(data: unknown): data is Child[] {
       !('thumbnailUrlPath' in child) ||
       child.thumbnailUrlPath === null ||
       typeof child.thumbnailUrlPath === 'string';
+    const highlightThumbnailUrlPathOk =
+      !('highlightThumbnailUrlPath' in child) ||
+      child.highlightThumbnailUrlPath === null ||
+      typeof child.highlightThumbnailUrlPath === 'string';
     return (
       typeof child.id === 'number' &&
       typeof child.type === 'string' &&
@@ -193,7 +197,8 @@ function validateChildArray(data: unknown): data is Child[] {
       ownerNameOk &&
       summaryOk &&
       urlPathOk &&
-      thumbnailUrlPathOk
+      thumbnailUrlPathOk &&
+      highlightThumbnailUrlPathOk
     );
   });
 }

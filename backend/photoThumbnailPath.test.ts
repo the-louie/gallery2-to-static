@@ -1,7 +1,7 @@
 /**
- * Unit tests for photo child highlightThumbnailUrlPath computation.
- * Verifies the same formula used in index.ts (processedChildrenWithThumbnails)
- * for GalleryPhotoItem: uipath-based dir + getThumbTarget(cleanedTitle, rawPath, thumbPrefix).
+ * Unit tests for highlightThumbnailUrlPath computation.
+ * - GalleryPhotoItem: uipath-based dir + getThumbTarget(cleanedTitle, rawPath, thumbPrefix).
+ * - GalleryAlbumItem: same formula applied to findFirstPhotoRecursive result (first-descendant image).
  */
 
 import assert from 'assert';
@@ -9,6 +9,29 @@ import { cleanup_uipathcomponent } from './cleanupUipath';
 import { getThumbTarget } from './legacyPaths';
 
 const THUMB_PREFIX = 't__';
+
+/** Synthetic findFirstPhotoRecursive result for testing album-child highlight thumb formula. */
+interface FirstPhotoResult {
+    photo: { pathComponent: string; title?: string | null };
+    uipath: string[];
+}
+
+/**
+ * Computes highlightThumbnailUrlPath for album child from a findFirstPhotoRecursive-like result.
+ * Same formula as buildHighlightThumbnailUrlPathFromResult in index.ts (dir + getThumbTarget).
+ */
+function computeAlbumChildHighlightThumbnailUrlPath(
+    result: FirstPhotoResult,
+    thumbPrefix: string,
+): string | null {
+    const { photo, uipath: photoUipath } = result;
+    if (!photo.pathComponent) return null;
+    const cleanedTitle = cleanup_uipathcomponent(photo.title ?? photo.pathComponent ?? '');
+    const rawPath = photo.pathComponent;
+    const dir = photoUipath.slice(1).join('/');
+    const thumbFilename = getThumbTarget(cleanedTitle, rawPath, thumbPrefix);
+    return dir ? `${dir}/${thumbFilename}` : thumbFilename;
+}
 
 /**
  * Computes highlightThumbnailUrlPath for a photo child (same logic as backend/index.ts).
@@ -69,6 +92,33 @@ function run(): void {
     const expectedThumb = getThumbTarget('my_image', 'IMG_001.jpg', THUMB_PREFIX);
     assert.strictEqual(result2, `a/b/${expectedThumb}`);
     assert.ok(result2.includes('___'), 'thumb filename includes ___ when title differs');
+
+    // Album-child highlight thumb: same formula from synthetic findFirstPhotoRecursive result
+    const albumHighlightResult: FirstPhotoResult = {
+        photo: { pathComponent: 'p000335.jpg', title: 'p000335.jpg' },
+        uipath: ['', 'dreamhack', 'dreamhack_97', 'martin_ojes'],
+    };
+    const albumThumb = computeAlbumChildHighlightThumbnailUrlPath(albumHighlightResult, THUMB_PREFIX);
+    assert.strictEqual(albumThumb, 'dreamhack/dreamhack_97/martin_ojes/' + getThumbTarget('p000335.jpg', 'p000335.jpg', THUMB_PREFIX));
+    assert.ok(albumThumb !== null && albumThumb.includes(THUMB_PREFIX));
+
+    // Album-child: empty pathComponent returns null (no highlight)
+    assert.strictEqual(
+        computeAlbumChildHighlightThumbnailUrlPath(
+            { photo: { pathComponent: '' }, uipath: ['', 'a'] },
+            THUMB_PREFIX,
+        ),
+        null,
+    );
+
+    // When resolved photo is first direct photo, highlightThumbnailUrlPath equals thumbnailUrlPath (same dir + getThumbTarget)
+    const firstPhotoResult: FirstPhotoResult = {
+        photo: { pathComponent: 'img.jpg', title: 'Image' },
+        uipath: ['', 'album1', 'subalbum'],
+    };
+    const highlightThumb = computeAlbumChildHighlightThumbnailUrlPath(firstPhotoResult, THUMB_PREFIX);
+    const sameAsThumbUrlPath = 'album1/subalbum/' + getThumbTarget('image', 'img.jpg', THUMB_PREFIX);
+    assert.strictEqual(highlightThumb, sameAsThumbUrlPath);
 
     console.log('photoThumbnailPath tests passed');
 }

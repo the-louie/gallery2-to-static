@@ -252,10 +252,10 @@ export function getImageUrlWithFormat(
 /**
  * Get album thumbnail URL for an Album object
  *
- * Uses, in order: thumbnailUrlPath (legacy), thumbnailPathComponent (built with thumb prefix),
- * then highlightImageUrl (full image path from backend). Returns null if none are set.
+ * Fallback order: thumbnailUrlPath (legacy), highlightThumbnailUrlPath (thumbnail of highlight image),
+ * thumbnailPathComponent (built with thumb prefix), highlightImageUrl (full image path). Returns null if none are set.
  *
- * @param album - Album with optional thumbnailUrlPath, thumbnailPathComponent, or highlightImageUrl
+ * @param album - Album with optional thumbnailUrlPath, highlightThumbnailUrlPath, thumbnailPathComponent, or highlightImageUrl
  * @param thumbPrefix - Optional thumbnail prefix override (defaults to "t__")
  * @returns Thumbnail URL path, or null if no thumbnail path available
  *
@@ -289,6 +289,10 @@ export function getAlbumThumbnailUrl(
   const baseUrl = baseUrlOverride ?? getImageBaseUrl();
   if (album.thumbnailUrlPath && album.thumbnailUrlPath.length > 0) {
     return `${baseUrl}/${ensureNoLeadingSlash(album.thumbnailUrlPath)}`;
+  }
+
+  if (album.highlightThumbnailUrlPath && album.highlightThumbnailUrlPath.length > 0) {
+    return `${baseUrl}/${ensureNoLeadingSlash(album.highlightThumbnailUrlPath)}`;
   }
 
   const pathComponent = album.thumbnailPathComponent;

@@ -399,6 +399,67 @@ describe('imageUrl utilities', () => {
       const url = getAlbumThumbnailUrl(albumHighlightOnly);
       expect(url).toBe('/images/internationella/hackers_at_large_2001/gea/image.jpg');
     });
+
+    it('returns URL from highlightThumbnailUrlPath when thumbnailUrlPath is missing', () => {
+      const albumWithHighlightThumb: Album = {
+        ...mockAlbum,
+        thumbnailUrlPath: undefined,
+        thumbnailPathComponent: undefined,
+        highlightThumbnailUrlPath: 'album/subalbum/t__highlight_thumb.jpg',
+        highlightImageUrl: undefined,
+      };
+      vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
+      const url = getAlbumThumbnailUrl(albumWithHighlightThumb);
+      expect(url).toBe('/images/album/subalbum/t__highlight_thumb.jpg');
+    });
+
+    it('prefers thumbnailUrlPath over highlightThumbnailUrlPath when both set', () => {
+      const albumBoth: Album = {
+        ...mockAlbum,
+        thumbnailUrlPath: 'legacy/t__first_photo.jpg',
+        highlightThumbnailUrlPath: 'album/t__highlight_thumb.jpg',
+      };
+      vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
+      const url = getAlbumThumbnailUrl(albumBoth);
+      expect(url).toBe('/images/legacy/t__first_photo.jpg');
+    });
+
+    it('falls back to thumbnailPathComponent when highlightThumbnailUrlPath is null', () => {
+      const albumNullHighlightThumb: Album = {
+        ...mockAlbum,
+        thumbnailUrlPath: undefined,
+        highlightThumbnailUrlPath: null,
+        thumbnailPathComponent: 'album/thumb.jpg',
+      };
+      vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
+      const url = getAlbumThumbnailUrl(albumNullHighlightThumb);
+      expect(url).toBe('/images/album/t__thumb.jpg');
+    });
+
+    it('falls back to highlightImageUrl when highlightThumbnailUrlPath is empty', () => {
+      const albumEmptyHighlightThumb: Album = {
+        ...mockAlbum,
+        thumbnailUrlPath: undefined,
+        thumbnailPathComponent: undefined,
+        highlightThumbnailUrlPath: '',
+        highlightImageUrl: 'path/full_image.jpg',
+      };
+      vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
+      const url = getAlbumThumbnailUrl(albumEmptyHighlightThumb);
+      expect(url).toBe('/images/path/full_image.jpg');
+    });
+
+    it('strips leading slash from highlightThumbnailUrlPath', () => {
+      const albumLeadSlash: Album = {
+        ...mockAlbum,
+        thumbnailUrlPath: undefined,
+        thumbnailPathComponent: undefined,
+        highlightThumbnailUrlPath: '/album/t__thumb.jpg',
+      };
+      vi.spyOn(imageConfig, 'getImageBaseUrl').mockReturnValue('/images');
+      const url = getAlbumThumbnailUrl(albumLeadSlash);
+      expect(url).toBe('/images/album/t__thumb.jpg');
+    });
   });
 
   describe('getAlbumHighlightImageUrl', () => {

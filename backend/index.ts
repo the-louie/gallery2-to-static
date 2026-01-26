@@ -192,6 +192,39 @@ async function resolveHighlightImageUrl(
     }
 }
 
+type FirstPhotoResult = { photo: Child; uipath: Array<string>; pathComponent: Array<string> };
+
+/**
+ * Builds the full-size highlight image URL from a findFirstPhotoRecursive result.
+ * Single source of truth for the formula: cleanup title, getLinkTarget, dir from result.uipath.
+ */
+function buildHighlightImageUrlFromResult(result: FirstPhotoResult): string | null {
+    const { photo, uipath: photoUipath } = result;
+    if (!photo.pathComponent) return null;
+    const cleanedTitle = cleanup_uipathcomponent(photo.title ?? photo.pathComponent ?? '');
+    const rawPath = photo.pathComponent;
+    const dir = photoUipath.slice(1).join('/');
+    const linkFilename = getLinkTarget(cleanedTitle, rawPath);
+    return dir ? `${dir}/${linkFilename}` : linkFilename;
+}
+
+/**
+ * Builds the thumbnail URL path for the highlight image from a findFirstPhotoRecursive result.
+ * Same dir convention as thumbnailUrlPath; uses getThumbTarget(cleanedTitle, rawPath, thumbPrefix).
+ */
+function buildHighlightThumbnailUrlPathFromResult(
+    result: FirstPhotoResult,
+    thumbPrefix: string,
+): string | null {
+    const { photo, uipath: photoUipath } = result;
+    if (!photo.pathComponent) return null;
+    const cleanedTitle = cleanup_uipathcomponent(photo.title ?? photo.pathComponent ?? '');
+    const rawPath = photo.pathComponent;
+    const dir = photoUipath.slice(1).join('/');
+    const thumbFilename = getThumbTarget(cleanedTitle, rawPath, thumbPrefix);
+    return dir ? `${dir}/${thumbFilename}` : thumbFilename;
+}
+
 /**
  * Extracts thumbnail information from a photo.
  * @param photo The photo to extract thumbnail info from
@@ -309,17 +342,27 @@ const main = async (
                     const childPathComponent = child.pathComponent
                         ? pathComponent.concat([child.pathComponent])
                         : pathComponent;
-                    const highlightImageUrl = child.pathComponent
-                        ? await resolveHighlightImageUrl(
-                              child.id,
-                              sql,
-                              albumUipath,
-                              childPathComponent,
-                              ignoreSet,
-                          )
-                        : null;
-                    const highlightSpread =
-                        highlightImageUrl !== null ? { highlightImageUrl } : {};
+                    let highlightImageUrl: string | null = null;
+                    let highlightThumbnailUrlPath: string | null = null;
+                    if (child.pathComponent) {
+                        const highlightResult = await findFirstPhotoRecursive(
+                            child.id,
+                            sql,
+                            albumUipath,
+                            childPathComponent,
+                            ignoreSet,
+                        );
+                        if (highlightResult) {
+                            highlightImageUrl = buildHighlightImageUrlFromResult(highlightResult);
+                            highlightThumbnailUrlPath = buildHighlightThumbnailUrlPathFromResult(
+                                highlightResult,
+                                thumbPrefix,
+                            );
+                        }
+                    }
+                    const highlightSpread: { highlightImageUrl?: string; highlightThumbnailUrlPath?: string } = {};
+                    if (highlightImageUrl !== null) highlightSpread.highlightImageUrl = highlightImageUrl;
+                    if (highlightThumbnailUrlPath !== null) highlightSpread.highlightThumbnailUrlPath = highlightThumbnailUrlPath;
                     const totalCount = descendantImageCounts.get(child.id);
                     const countSpread =
                         totalCount !== undefined ? { totalDescendantImageCount: totalCount } : {};

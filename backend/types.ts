@@ -28,7 +28,9 @@ export interface Child {
      */
     thumbnailUrlPath?: string | null;
     /**
-     * Legacy thumbnail URL path for photo children (GalleryPhotoItem). Same convention as album thumbnailUrlPath (uipath-based dir + thumb filename from getThumbTarget). Present when backend emits legacy paths.
+     * Thumbnail URL path. For GalleryPhotoItem: legacy thumbnail path (uipath-based dir + thumb filename from getThumbTarget). Present when backend emits legacy paths.
+     * For GalleryAlbumItem: thumbnail URL path of the album's highlight image (first-descendant image until highlightImageId exists in schema); same path convention as thumbnailUrlPath. Omitted when no highlight image can be resolved.
+     * Note: Highlight image source is first-descendant traversal only until highlightImageId is available in the schema.
      */
     highlightThumbnailUrlPath?: string | null;
     /**
