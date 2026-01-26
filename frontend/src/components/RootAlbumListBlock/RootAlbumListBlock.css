@@ -84,6 +84,32 @@
   gap: 1rem;
 }
 
+.root-album-list-block-block-link {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.root-album-list-block-block-link:focus {
+  outline: 2px solid var(--color-focus, #0066cc);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.root-album-list-block-block-link:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.root-album-list-block-block-link:focus-visible {
+  outline: 2px solid var(--color-focus, #0066cc);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 4px);
+}
+
 .root-album-list-block-content {
   display: flex;
   flex-direction: column;
@@ -99,38 +125,8 @@
   color: var(--album-detail-title-color, #333333);
 }
 
-.root-album-list-block-title-link {
-  text-decoration: none;
+.root-album-list-block-title-text {
   color: inherit;
-}
-
-.root-album-list-block-title-link:hover {
-  text-decoration: none;
-  color: inherit;
-}
-
-.root-album-list-block-title-link:active {
-  color: inherit;
-}
-
-.root-album-list-block-title-link:visited {
-  color: inherit;
-}
-
-.root-album-list-block-title-link:focus {
-  outline: 2px solid var(--color-focus, #0066cc);
-  outline-offset: 2px;
-  border-radius: var(--radius-sm, 4px);
-}
-
-.root-album-list-block-title-link:focus:not(:focus-visible) {
-  outline: none;
-}
-
-.root-album-list-block-title-link:focus-visible {
-  outline: 2px solid var(--color-focus, #0066cc);
-  outline-offset: 2px;
-  border-radius: var(--radius-sm, 4px);
 }
 
 .root-album-list-block-description {
@@ -294,13 +290,15 @@
   }
 }
 
-/* G2 Classic: thumbnail left, content + subalbums right */
+/* G2 Classic */
 [data-theme="original"] .root-album-list-block {
-  display: flex;
+  min-height: 0;
+}
+
+[data-theme="original"] .root-album-list-block-block-link {
   flex-direction: row;
   align-items: flex-start;
   gap: 1rem;
-  min-height: 0;
 }
 
 [data-theme="original"] .root-album-list-block-inner {
@@ -311,22 +309,11 @@
 .root-album-list-block-thumb {
   flex-shrink: 0;
   width: 160px;
-}
-
-.root-album-list-block-thumb-link {
-  display: block;
   border: 1px solid var(--color-border);
   overflow: hidden;
-  text-decoration: none;
 }
 
-.root-album-list-block-thumb-link:focus {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
-/* G2 Classic: light grey wrapper around thumbnail */
-[data-theme="original"] .root-album-list-block-thumb-link {
+[data-theme="original"] .root-album-list-block-thumb {
   background: var(--color-background-secondary);
   padding: 4px;
   border: 1px solid var(--color-border);

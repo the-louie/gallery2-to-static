@@ -1,17 +1,16 @@
 /**
  * RootAlbumListBlock Component
  *
- * Renders a single root-level album as a rich block: album title (bold), description,
- * optional website link from summary/description, metadata (Date, Owner), and subalbums list.
- * The Subalbums section shows at most the latest 10 subalbums (by timestamp descending, nulls last)
- * in a 2-column grid layout; when more exist, "...and more!" is shown. When the current theme is
- * the default theme (original), all subalbums are shown and "...and more!" is omitted.
- * Two-column layout (album left, subalbums right); stacks on narrow viewports.
+ * Renders a single root-level album as a rich block. The block (title, description, metadata,
+ * and in original theme the thumb) is a single link to the album page; the optional event
+ * website link and the subalbums section are excluded so they keep their own behavior.
  *
- * Block background uses the album highlight image when present (faded, blurred layer); when
- * no highlight image is available the block uses the gradient fallback only.
+ * Contains: album title (bold), description, optional website link from summary/description,
+ * metadata (Date, Owner), and subalbums list. Subalbums show at most the latest 10 (by
+ * timestamp descending); when more exist, "...and more!" is shown. Original theme shows all
+ * subalbums. Two-column layout (album left, subalbums right); stacks on narrow viewports.
  *
- * Size and Views are omitted (not in backend); see dateUtils for note.
+ * Block background uses the album highlight image when present (faded, blurred layer).
  *
  * @module frontend/src/components/RootAlbumListBlock
  */
@@ -102,79 +101,77 @@ export function RootAlbumListBlock({
           style={{ backgroundImage: safeBgUrl }}
         />
       )}
-      {isOriginal && (
-        <div className="root-album-list-block-thumb">
-          <Link to={linkTo} className="root-album-list-block-thumb-link" aria-hidden="true" tabIndex={-1}>
-            {thumbnailUrl != null ? (
-              <img
-                src={thumbnailUrl}
-                alt=""
-                className="root-album-list-block-thumb-img"
-                width={160}
-                height={120}
-              />
-            ) : (
-              <span className="root-album-list-block-thumb-placeholder">No image</span>
-            )}
-          </Link>
-        </div>
-      )}
       <div className="root-album-list-block-inner">
-        <section className="root-album-list-block-main" aria-label="Album info">
-          <div className="root-album-list-block-content">
-            <h2 id={`root-album-title-${album.id}`} className="root-album-list-block-title">
-              {isOriginal && <span className="root-album-list-block-title-prefix">Album: </span>}
-              <Link
-                to={linkTo}
-                aria-label={`Open album: ${decodeHtmlEntities(album.title || 'Untitled')}`}
-                className="root-album-list-block-title-link"
+        <div className="root-album-list-block-main">
+          <Link
+            to={linkTo}
+            className="root-album-list-block-block-link"
+            aria-label={`Open album: ${decodeHtmlEntities(album.title || 'Untitled')}`}
+          >
+            {isOriginal && (
+              <div className="root-album-list-block-thumb">
+                {thumbnailUrl != null ? (
+                  <img
+                    src={thumbnailUrl}
+                    alt=""
+                    className="root-album-list-block-thumb-img"
+                    width={160}
+                    height={120}
+                  />
+                ) : (
+                  <span className="root-album-list-block-thumb-placeholder">No image</span>
+                )}
+              </div>
+            )}
+            <div className="root-album-list-block-content">
+              <h2 id={`root-album-title-${album.id}`} className="root-album-list-block-title">
+                {isOriginal && <span className="root-album-list-block-title-prefix">Album: </span>}
+                <span className="root-album-list-block-title-text">{parsedTitle}</span>
+              </h2>
+              {showDescription && (
+                <p className="root-album-list-block-description">
+                  {parseBBCodeDecoded(album.description!.trim())}
+                </p>
+              )}
+              <dl className="root-album-list-block-meta">
+                {dateStr && (
+                  <>
+                    <dt className="root-album-list-block-meta-dt">Date</dt>
+                    <dd className="root-album-list-block-meta-dd">{dateStr}</dd>
+                  </>
+                )}
+                {showOwner && (
+                  <>
+                    <dt className="root-album-list-block-meta-dt">Owner</dt>
+                    <dd className="root-album-list-block-meta-dd">
+                      {decodeHtmlEntities(album.ownerName!)}
+                    </dd>
+                  </>
+                )}
+                {album.totalDescendantImageCount != null && (
+                  <>
+                    <dt className="root-album-list-block-meta-dt">Images</dt>
+                    <dd className="root-album-list-block-meta-dd">
+                      {album.totalDescendantImageCount}
+                    </dd>
+                  </>
+                )}
+              </dl>
+            </div>
+          </Link>
+          {extUrl && (
+            <p className="root-album-list-block-website">
+              <a
+                href={extUrl.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="root-album-list-block-website-link"
               >
-                {parsedTitle}
-              </Link>
-            </h2>
-            {showDescription && (
-              <p className="root-album-list-block-description">
-                {parseBBCodeDecoded(album.description!.trim())}
-              </p>
-            )}
-            {extUrl && (
-              <p className="root-album-list-block-website">
-                <a
-                  href={extUrl.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="root-album-list-block-website-link"
-                >
-                  {decodeHtmlEntities(extUrl.label ?? extUrl.url)}
-                </a>
-              </p>
-            )}
-            <dl className="root-album-list-block-meta">
-              {dateStr && (
-                <>
-                  <dt className="root-album-list-block-meta-dt">Date</dt>
-                  <dd className="root-album-list-block-meta-dd">{dateStr}</dd>
-                </>
-              )}
-              {showOwner && (
-                <>
-                  <dt className="root-album-list-block-meta-dt">Owner</dt>
-                  <dd className="root-album-list-block-meta-dd">
-                    {decodeHtmlEntities(album.ownerName!)}
-                  </dd>
-                </>
-              )}
-              {album.totalDescendantImageCount != null && (
-                <>
-                  <dt className="root-album-list-block-meta-dt">Images</dt>
-                  <dd className="root-album-list-block-meta-dd">
-                    {album.totalDescendantImageCount}
-                  </dd>
-                </>
-              )}
-            </dl>
-          </div>
-        </section>
+                {decodeHtmlEntities(extUrl.label ?? extUrl.url)}
+              </a>
+            </p>
+          )}
+        </div>
         {showSubalbums && (
           <section
             className="root-album-list-block-subalbums"

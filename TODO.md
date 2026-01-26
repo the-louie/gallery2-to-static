@@ -11,7 +11,7 @@
 Increase the font size of the root album block title so that `h2.root-album-list-block-title` is twice as large as it is now. This applies to the album title heading on the root album page (each block showing a root-level album with title, description, subalbums).
 
 ### Context
-- Component: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx` — the title is rendered as `<h2 className="root-album-list-block-title">` with a link inside.
+- Component: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx` — the title is rendered as `<h2 className="root-album-list-block-title">` with a `<span className="root-album-list-block-title-text">` for the title text (the whole block is a single link to the album).
 - Styles: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.css` — `.root-album-list-block-title` currently uses `font-size: 1.25rem` (base). In a media query (e.g. narrower viewport), it is set to `font-size: 1.125rem`. “Twice as large” means double those values (e.g. 2.5rem and 2.25rem respectively), unless the design intent is to double only the base and scale the breakpoint proportionally.
 
 ### Requirements
@@ -33,49 +33,6 @@ Increase the font size of the root album block title so that `h2.root-album-list
 ---
 
  doesn’t “still shows doesn’t
-## Make Root Album List Block Entire Article Link to Album (With Exclusions)
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Low
-**Estimated Time:** 45–60 minutes
-
-### Description
-On the root album page, make the whole `article.root-album-list-block` act as a link to that album's page so that clicking anywhere on the block (title, description, metadata, background) navigates to `/album/{album.id}`. **Important exclusions:** (1) Any "link to homepage for the event" (the optional website link extracted from BBCode in summary/description, currently `.root-album-list-block-website-link`) must remain a separate control—clicks on it must open the external URL and must not navigate to the album. (2) The entire `section.root-album-list-block-subalbums` must be excluded: clicks on that section (including subalbum links and "...and more!") must not navigate to the parent album; subalbum links must continue to go to their respective `/album/{sub.id}` or stay as-is.
-
-### Context
-- Component: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx`. The block currently has a title link (`.root-album-list-block-title-link`) and, in original theme, a thumb link—both to the album. The rest of the block (description, metadata, background) is not clickable as a whole.
-- The "event homepage" link is rendered when `extUrl` is set (from `extractUrlFromBBCode(album.summary ?? album.description)`), in a paragraph with `.root-album-list-block-website-link` (external `href`, `target="_blank"`, `rel="noopener noreferrer"`).
-- The subalbums section (`.root-album-list-block-subalbums`) contains a list of links to child albums (`.root-album-list-block-subalbum-link`) and optionally "...and more!" text.
-- Goal: single large click target for "open this album" while keeping the website link and subalbums section as distinct click targets with their current behavior.
-
-### Requirements
-
-#### Implementation Tasks
-- In `RootAlbumListBlock.tsx`, implement "whole block links to album" with exclusions. Acceptable approaches (choose one that fits project patterns):
-  - **Link wrapper:** Wrap the parts of the article that should link to the album in a single `<Link to={linkTo}>` (or an anchor with equivalent routing). Do not wrap the website link paragraph or the `section.root-album-list-block-subalbums`; keep them as siblings (or outside the wrapper) so their links handle clicks.
-  - **Click handler:** Add a click handler on the article that navigates to `linkTo` when the click target is not inside `.root-album-list-block-website-link` or `.root-album-list-block-subalbums`; use `event.preventDefault()` / `event.stopPropagation()` only where needed so the website link and subalbum links work normally.
-- Ensure the optional "event homepage" link (`.root-album-list-block-website-link`) always opens the external URL and never triggers navigation to the album page.
-- Ensure the entire subalbums section (`.root-album-list-block-subalbums`) is excluded: clicks on subalbum links go to the subalbum; no part of that section should trigger navigation to the parent album.
-- Preserve accessibility: avoid nested links; if using a wrapper link, ensure it does not contain another `<a>` or `<Link>` (so exclude website link and subalbums from the wrapper). If using a click handler, ensure keyboard accessibility (e.g. role and tabIndex if the article becomes focusable) and that focusable elements inside exclusions retain their behavior.
-- Preserve existing ARIA and semantics (e.g. `aria-labelledby`, `aria-label` on sections).
-
-### Deliverable
-On the root album view, clicking anywhere on `article.root-album-list-block` except the event website link and the subalbums section navigates to the album page; the website link and subalbums section keep their current behavior.
-
-### Testing Requirements
-- Click on block area (title, description, metadata, background/inner area not in exclusions) navigates to `/album/{album.id}`.
-- Click on "event homepage" / website link opens the external URL (same tab or new tab per current implementation); does not navigate to album.
-- Click on a subalbum link in `section.root-album-list-block-subalbums` navigates to that subalbum's page; does not navigate to the parent album.
-- No nested interactive elements (no link inside link); keyboard and screen reader behavior remain correct.
-- Update or add tests in `RootAlbumListBlock.test.tsx` as needed for the new behavior and exclusions.
-
-### Technical Notes
-- File: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx`. Styling in `RootAlbumListBlock.css` may need minor updates (e.g. cursor, hover) if the block or a wrapper becomes the clickable area.
-- The block has two main content regions: `.root-album-list-block-main` (album info) and `.root-album-list-block-subalbums`. The wrapper link or clickable area must include only the main section minus the website paragraph, and must exclude the subalbums section; the thumb link in original theme can remain or be merged into the same "block link" behavior so long as nested links are avoided.
-
----
-
 ## Place Gallery Order Dropdown to the Right of Theme Selector
 
 **Status:** Pending
