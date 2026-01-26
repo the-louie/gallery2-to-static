@@ -94,12 +94,12 @@ describe('ThemeContext', () => {
       expect(result.current).toHaveProperty('isOriginal');
     });
 
-    it('defaults to light theme', () => {
+    it('defaults to original theme', () => {
       const { result } = renderHook(() => useTheme(), {
         wrapper: createWrapper(),
       });
 
-      expect(result.current.theme).toBe('light');
+      expect(result.current.theme).toBe('original');
     });
 
     it('uses provided default theme', () => {
@@ -238,8 +238,8 @@ describe('ThemeContext', () => {
         wrapper: createWrapper(),
       });
 
-      // Should fall back to default (light)
-      expect(result.current.theme).toBe('light');
+      // Should fall back to default (original)
+      expect(result.current.theme).toBe('original');
 
       consoleSpy.mockRestore();
     });
@@ -292,17 +292,17 @@ describe('ThemeContext', () => {
       expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('dark');
     });
 
-    it('migrates from old preference system - system defaults to light', () => {
+    it('migrates from old preference system - system defaults to original', () => {
       localStorage.setItem('gallery-theme-preference', JSON.stringify('system'));
 
       const { result } = renderHook(() => useTheme(), {
         wrapper: createWrapper(),
       });
 
-      expect(result.current.theme).toBe('light');
+      expect(result.current.theme).toBe('original');
       expect(localStorage.getItem('gallery-theme-preference')).toBeNull();
       expect(localStorage.getItem('gallery-theme-migrated')).toBe('true');
-      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('light');
+      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('original');
     });
 
     it('does not migrate if already migrated', () => {
@@ -330,7 +330,7 @@ describe('ThemeContext', () => {
       });
 
       // Should fall back to default
-      expect(result.current.theme).toBe('light');
+      expect(result.current.theme).toBe('original');
       expect(localStorage.getItem('gallery-theme-preference')).toBeNull();
       expect(localStorage.getItem('gallery-theme-migrated')).toBe('true');
 
@@ -377,7 +377,7 @@ describe('ThemeContext', () => {
       });
 
       // Should fall back to default theme
-      expect(result.current.theme).toBe('light');
+      expect(result.current.theme).toBe('original');
 
       consoleSpy.mockRestore();
     });
@@ -535,7 +535,7 @@ describe('ThemeContext', () => {
       });
 
       // Should handle corrupted data gracefully
-      expect(result.current.theme).toBe('light');
+      expect(result.current.theme).toBe('original');
 
       // Now set valid data
       act(() => {

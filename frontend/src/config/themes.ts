@@ -79,7 +79,7 @@ export type ThemeName = (typeof THEME_REGISTRY)[number]['name'];
 /**
  * Default theme name
  */
-export const DEFAULT_THEME: ThemeName = 'light';
+export const DEFAULT_THEME: ThemeName = 'original';
 
 /**
  * Get theme definition by name

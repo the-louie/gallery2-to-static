@@ -208,6 +208,13 @@
   }
 }
 
+.root-album-list-block-subalbums-heading {
+  display: block;
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+}
+
 .root-album-list-block-subalbums-list {
   margin: 0;
   padding: var(--root-album-subalbums-list-padding);
@@ -285,4 +292,82 @@
   .root-album-list-block-subalbums {
     padding: 0.75rem;
   }
+}
+
+/* G2 Classic: thumbnail left, content + subalbums right */
+[data-theme="original"] .root-album-list-block {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1rem;
+  min-height: 0;
+}
+
+[data-theme="original"] .root-album-list-block-inner {
+  flex: 1;
+  min-width: 0;
+}
+
+.root-album-list-block-thumb {
+  flex-shrink: 0;
+  width: 160px;
+}
+
+.root-album-list-block-thumb-link {
+  display: block;
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.root-album-list-block-thumb-link:focus {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* G2 Classic: light grey wrapper around thumbnail */
+[data-theme="original"] .root-album-list-block-thumb-link {
+  background: var(--color-background-secondary);
+  padding: 4px;
+  border: 1px solid var(--color-border);
+}
+
+.root-album-list-block-thumb-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.root-album-list-block-thumb-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+  height: 120px;
+  background: var(--color-background-secondary);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+[data-theme="original"] .root-album-list-block-subalbums-list {
+  grid-template-columns: 1fr;
+}
+
+/* G2 Classic: subalbums section - no box, list on white */
+[data-theme="original"] .root-album-list-block-subalbums {
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+/* G2 Classic: subalbum links - bold, smaller font, compact line-height */
+[data-theme="original"] .root-album-list-block-subalbum-link {
+  font-weight: bold;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  padding: 0.15rem 0;
+  min-height: 0;
 }

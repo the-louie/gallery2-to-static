@@ -120,6 +120,57 @@
   color: var(--header-text, #333);
 }
 
+/* G2 Classic: two-column layout (sidebar + main) */
+.layout-body-with-sidebar {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.layout-sidebar {
+  flex-shrink: 0;
+  width: 160px;
+  padding: 1rem 0.75rem;
+  background: var(--color-background-primary);
+  border-right: 1px solid var(--color-border);
+}
+
+.layout-sidebar-block {
+  margin-bottom: 1rem;
+}
+
+.layout-sidebar-block:last-child {
+  margin-bottom: 0;
+}
+
+.layout-sidebar-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.layout-sidebar-search {
+  margin-bottom: 0.5rem;
+}
+
+.layout-sidebar-link {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 0.25rem 0;
+}
+
+.layout-sidebar-link:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+.layout-sidebar-link-icon {
+  padding-left: 0;
+}
+
 /* Main Content */
 .layout-main {
   flex: 1;

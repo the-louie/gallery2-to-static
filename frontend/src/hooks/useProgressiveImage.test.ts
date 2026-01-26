@@ -89,7 +89,7 @@ describe('useProgressiveImage', () => {
 
       expect(result.current.state).toBe('thumbnail');
       expect(result.current.hasError).toBe(false);
-      expect(result.current.thumbnailUrl).toBe('/images/test-album/t__test-photo.jpg');
+      expect(result.current.thumbnailUrl).toBe('');
     });
 
     it('handles null image', () => {
@@ -225,7 +225,7 @@ describe('useProgressiveImage', () => {
   });
 
   describe('image URL', () => {
-    it('uses original image URL from data for full image', async () => {
+    it('uses server URL for full image until full image is loaded', async () => {
       const { result } = renderHook(() => useProgressiveImage(mockImage), {
         wrapper: createWrapper(),
       });
@@ -235,7 +235,7 @@ describe('useProgressiveImage', () => {
       });
     });
 
-    it('keeps thumbnailUrl and fullImageUrl as server URLs after load (never blob)', async () => {
+    it('returns object URLs for display after load to avoid duplicate network request', async () => {
       const { result } = renderHook(() => useProgressiveImage(mockImage), {
         wrapper: createWrapper(),
       });
@@ -260,10 +260,8 @@ describe('useProgressiveImage', () => {
         expect(result.current.state).toBe('full-loaded');
       });
 
-      expect(result.current.thumbnailUrl).toBe('/images/test-album/t__test-photo.jpg');
-      expect(result.current.fullImageUrl).toBe('/images/test-album/test-photo.jpg');
-      expect(result.current.thumbnailUrl).not.toMatch(/^blob:/);
-      expect(result.current.fullImageUrl).not.toMatch(/^blob:/);
+      expect(result.current.thumbnailUrl).toMatch(/^blob:/);
+      expect(result.current.fullImageUrl).toMatch(/^blob:/);
     });
   });
 

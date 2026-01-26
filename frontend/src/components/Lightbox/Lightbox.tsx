@@ -367,6 +367,23 @@ export function Lightbox({
   const isFullLoaded = progressiveImage.state === 'full-loaded';
   const hasError = progressiveImage.hasError;
 
+  // Debug: log when image or progressive state changes (DEV only)
+  const debugLoggedRef = useRef<{ imageId: number | undefined; state: string }>({ imageId: undefined, state: '' });
+  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV && image) {
+    const prev = debugLoggedRef.current;
+    if (prev.imageId !== image.id || prev.state !== progressiveImage.state) {
+      debugLoggedRef.current = { imageId: image.id, state: progressiveImage.state };
+      console.log('[Lightbox]', {
+        imageId: image.id,
+        state: progressiveImage.state,
+        isFullLoaded,
+        hasError,
+        hasFullUrl: Boolean(progressiveImage.fullImageUrl),
+        fullUrlTail: progressiveImage.fullImageUrl?.slice(-50),
+      });
+    }
+  }
+
   // Reset DOM image load state when image changes
   useEffect(() => {
     if (image) {
@@ -779,13 +796,17 @@ export function Lightbox({
 
   // Handle full image load
   const handleFullImageLoad = useCallback(() => {
-    // DOM image has loaded - update local state for fade-in
+    if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
+      console.log('[Lightbox] full image onLoad fired');
+    }
     setDomFullImageLoaded(true);
   }, []);
 
   // Handle image error (fallback to error state)
   const handleImageError = useCallback(() => {
-    // Error handling is managed by progressive loading hook
+    if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
+      console.log('[Lightbox] image onError fired');
+    }
   }, []);
 
   // Handle backdrop click (close modal if clicking backdrop, not content)
@@ -966,18 +987,17 @@ export function Lightbox({
                   crossOrigin="anonymous"
                 />
               )}
-              {/* Full image (fades in when loaded) */}
+              {/* Full image (visible as soon as rendered; onLoad used only for optional fade) */}
               {isFullLoaded && progressiveImage.fullImageUrl && (
                 <img
                   ref={fullImgRef}
                   src={progressiveImage.fullImageUrl}
                   alt={altText}
-                  className={`lightbox-image lightbox-image-full ${!domFullImageLoaded ? 'lightbox-image-loading' : ''}`}
+                  className={`lightbox-image lightbox-image-full ${domFullImageLoaded ? 'lightbox-image-loaded' : ''}`}
                   onLoad={handleFullImageLoad}
                   onError={handleImageError}
                   loading="eager"
                   decoding="async"
-                  crossOrigin="anonymous"
                   style={{
                     transform: imageTransform,
                     transformOrigin: 'center center',

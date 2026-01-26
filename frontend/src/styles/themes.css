@@ -850,6 +850,31 @@
   --search-highlight-text-dark: #333333;
 }
 
+/* G2 Classic: no background image on root album blocks; solid white/light grey only */
+[data-theme="original"] .root-album-list-block-bg {
+  display: none;
+}
+
+[data-theme="original"] .root-album-list-block {
+  background: var(--color-background-primary);
+}
+
+/* G2 Classic: solid page background (no gradient) */
+[data-theme="original"] .layout {
+  background: var(--color-background-primary);
+}
+
+/* G2 Classic: top bar - white/light strip with border (site name + actions) */
+[data-theme="original"] .layout-header {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
+}
+
+/* G2 Classic: wider left sidebar */
+[data-theme="original"] .layout-sidebar {
+  width: 200px;
+}
+
 /* G2 Classic typography: body font per design analysis (base font-size 62.5% deferred to avoid rem layout impact) */
 [data-theme="original"] body {
   font-family: Verdana, Arial, Helvetica, sans-serif;

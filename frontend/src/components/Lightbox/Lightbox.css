@@ -325,16 +325,12 @@
   object-position: center;
 }
 
-/* Progressive loading: Full image (fades in when loaded) */
+/* Progressive loading: Full image (visible as soon as rendered for cross-origin reliability) */
 .lightbox-image-full {
   position: relative;
   z-index: 2;
-  opacity: 0;
-  transition: opacity 0.4s ease-in-out;
-}
-
-.lightbox-image-full:not(.lightbox-image-loading) {
   opacity: 1;
+  transition: opacity 0.4s ease-in-out;
 }
 
 /* Loading State */

@@ -19,7 +19,7 @@
  * ## Theme Selection
  *
  * Users can select from available themes defined in the theme registry.
- * The default theme is 'light'. Themes are applied via the data-theme attribute
+ * The default theme is 'original'. Themes are applied via the data-theme attribute
  * on the document element.
  *
  * ## Error Handling
@@ -36,7 +36,7 @@
  * The system automatically migrates from the old preference-based system:
  * - 'light' preference → 'light' theme
  * - 'dark' preference → 'dark' theme
- * - 'system' preference → 'light' theme (default)
+ * - 'system' preference → default theme (original)
  *
  * ## Usage
  *
@@ -173,8 +173,8 @@ function applyTheme(theme: ThemeName): void {
  * Migration rules:
  * - 'light' preference → 'light' theme
  * - 'dark' preference → 'dark' theme
- * - 'system' preference → 'light' theme (default)
- * - Invalid/corrupted data → 'light' theme (default)
+ * - 'system' preference → default theme (original)
+ * - Invalid/corrupted data → default theme (original)
  *
  * This function performs the migration synchronously and stores the result
  * in the new localStorage key, so useLocalStorage can read it immediately.
@@ -262,7 +262,7 @@ function migrateThemePreference(): boolean {
  *
  * @example
  * ```tsx
- * <ThemeProvider defaultTheme="light">
+ * <ThemeProvider defaultTheme="original">
  *   <App />
  * </ThemeProvider>
  * ```

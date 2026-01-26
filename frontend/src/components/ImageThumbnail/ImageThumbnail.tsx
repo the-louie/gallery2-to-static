@@ -267,13 +267,13 @@ function ImageThumbnailComponent({
               <div className="image-thumbnail-skeleton" />
             </div>
           )}
-          {/* Thumbnail image (blurred, always visible when loaded) */}
+          {/* Thumbnail image (blurred only until loaded; then sharp until/unless full image replaces it) */}
           {progressiveImage.thumbnailUrl && (
             <img
               ref={thumbnailImgRef}
               src={progressiveImage.thumbnailUrl}
               alt=""
-              className="image-thumbnail-image image-thumbnail-thumb"
+              className={`image-thumbnail-image image-thumbnail-thumb ${progressiveImage.state !== 'thumbnail' ? 'image-thumbnail-thumb-ready' : ''}`}
               onLoad={handleThumbnailLoad}
               onError={handleImageError}
               loading="lazy"

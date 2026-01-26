@@ -56,7 +56,7 @@
   opacity: 0;
 }
 
-/* Progressive loading: Thumbnail (blurred background) */
+/* Progressive loading: Thumbnail (blurred until loaded, then sharp) */
 .image-thumbnail-thumb {
   position: absolute;
   top: 0;
@@ -67,6 +67,11 @@
   transform: scale(1.05);
   z-index: 1;
   opacity: 1;
+}
+
+.image-thumbnail-thumb.image-thumbnail-thumb-ready {
+  filter: none;
+  transform: none;
 }
 
 /* Progressive loading: Full image (fades in when loaded) */

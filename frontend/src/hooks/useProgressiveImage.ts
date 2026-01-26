@@ -3,9 +3,9 @@
  *
  * Loads thumbnail then full image; uses fetch + AbortSignal so in-flight GETs
  * are canceled on navigation. Object URLs are revoked on abort or cleanup.
- * Displayed thumbnailUrl and fullImageUrl are kept as server URLs (from getImageUrl);
- * fetch + object URL are used only for caching and load detection, not for img src,
- * to avoid blob URL security restrictions in some environments.
+ * Returns object URLs for display when available so each image is only fetched
+ * once (no duplicate request from img src). Falls back to server URL when fetch
+ * fails (e.g. CORS) for either thumbnail or full image.
  *
  * @module frontend/src/hooks/useProgressiveImage
  */
@@ -36,9 +36,9 @@ export type ProgressiveImageState =
  * Return type for useProgressiveImage hook
  */
 export interface UseProgressiveImageReturn {
-  /** Thumbnail image URL */
+  /** Thumbnail image URL for display (object URL when loaded, else '' or server URL fallback) */
   thumbnailUrl: string;
-  /** Full image URL (original format from data) */
+  /** Full image URL for display (object URL when loaded, else server URL) */
   fullImageUrl: string;
   /** Current loading state */
   state: ProgressiveImageState;
@@ -69,6 +69,10 @@ export function useProgressiveImage(
   const [error, setError] = useState<string | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
   const [fullImageUrl, setFullImageUrl] = useState<string>('');
+  /** Display URL for thumbnail: object URL when loaded, else '' to avoid duplicate request */
+  const [displayThumbnailUrl, setDisplayThumbnailUrl] = useState<string>('');
+  /** Display URL for full image: object URL when loaded, else server URL (fallback) */
+  const [displayFullImageUrl, setDisplayFullImageUrl] = useState<string>('');
 
   const thumbnailImgRef = useRef<HTMLImageElement | null>(null);
   const fullImgRef = useRef<HTMLImageElement | null>(null);
@@ -76,6 +80,7 @@ export function useProgressiveImage(
   const fullObjectUrlRef = useRef<string | null>(null);
   const isMountedRef = useRef(true);
   const currentImageIdRef = useRef<number | null>(null);
+  const thumbnailTransitionDoneRef = useRef(false);
 
   // Reset state when image changes
   useEffect(() => {
@@ -85,31 +90,30 @@ export function useProgressiveImage(
       setError('No image provided');
       setThumbnailUrl('');
       setFullImageUrl('');
+      setDisplayThumbnailUrl('');
+      setDisplayFullImageUrl('');
       currentImageIdRef.current = null;
       return;
     }
 
     const imageId = image.id;
     currentImageIdRef.current = imageId;
+    thumbnailTransitionDoneRef.current = false;
     isMountedRef.current = true;
     setState('thumbnail');
     setHasError(false);
     setError(null);
+    setDisplayThumbnailUrl('');
+    setDisplayFullImageUrl('');
 
     const thumbRequestUrl = getImageUrl(image, true, undefined, baseUrl);
-    setThumbnailUrl(thumbRequestUrl);
     const fullUrl = getImageUrl(image, false, undefined, baseUrl);
+    setThumbnailUrl(thumbRequestUrl);
     setFullImageUrl(fullUrl);
 
     return () => {
       isMountedRef.current = false;
       currentImageIdRef.current = null;
-      if (thumbnailImgRef.current) {
-        thumbnailImgRef.current.src = '';
-      }
-      if (fullImgRef.current) {
-        fullImgRef.current.src = '';
-      }
       if (thumbnailObjectUrlRef.current) {
         URL.revokeObjectURL(thumbnailObjectUrlRef.current);
         thumbnailObjectUrlRef.current = null;
@@ -142,6 +146,7 @@ export function useProgressiveImage(
     const cachedThumbnail = cache.get(thumbnailUrl);
     if (cachedThumbnail) {
       if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
+        setDisplayThumbnailUrl(thumbnailUrl);
         setState('thumbnail-loaded');
       }
       return;
@@ -154,6 +159,13 @@ export function useProgressiveImage(
           return;
         }
         thumbnailObjectUrlRef.current = objectUrl;
+        if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
+          setDisplayThumbnailUrl(objectUrl);
+        } else {
+          URL.revokeObjectURL(objectUrl);
+          thumbnailObjectUrlRef.current = null;
+          return;
+        }
         const img = new Image();
         thumbnailImgRef.current = img;
         img.onload = () => {
@@ -161,10 +173,11 @@ export function useProgressiveImage(
             if (signal.aborted && thumbnailObjectUrlRef.current) {
               URL.revokeObjectURL(thumbnailObjectUrlRef.current);
               thumbnailObjectUrlRef.current = null;
-              img.src = '';
             }
             return;
           }
+          if (thumbnailTransitionDoneRef.current) return;
+          thumbnailTransitionDoneRef.current = true;
           cache.set(thumbnailUrl, img);
           setState('thumbnail-loaded');
         };
@@ -173,10 +186,10 @@ export function useProgressiveImage(
             URL.revokeObjectURL(thumbnailObjectUrlRef.current);
             thumbnailObjectUrlRef.current = null;
           }
-          img.src = '';
-          if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
-            setState('thumbnail-loaded');
-          }
+          if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) return;
+          if (thumbnailTransitionDoneRef.current) return;
+          thumbnailTransitionDoneRef.current = true;
+          setState('thumbnail-loaded');
         };
         img.src = objectUrl;
       })
@@ -185,18 +198,17 @@ export function useProgressiveImage(
           return;
         }
         if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
+          setDisplayThumbnailUrl(thumbnailUrl);
           setState('thumbnail-loaded');
         }
       });
 
     return () => {
-      if (thumbnailImgRef.current) {
-        thumbnailImgRef.current.src = '';
-      }
       if (thumbnailObjectUrlRef.current) {
         URL.revokeObjectURL(thumbnailObjectUrlRef.current);
         thumbnailObjectUrlRef.current = null;
       }
+      thumbnailImgRef.current = null;
     };
   }, [image?.id, image?.pathComponent, image?.urlPath, useThumbnail, thumbnailUrl, state, signal]);
 
@@ -211,6 +223,7 @@ export function useProgressiveImage(
     const cachedFullImage = cache.get(fullImageUrl);
     if (cachedFullImage) {
       if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
+        setDisplayFullImageUrl(fullImageUrl);
         setState('full-loaded');
         setHasError(false);
         setError(null);
@@ -225,6 +238,13 @@ export function useProgressiveImage(
           return;
         }
         fullObjectUrlRef.current = objectUrl;
+        if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
+          setDisplayFullImageUrl(objectUrl);
+        } else {
+          URL.revokeObjectURL(objectUrl);
+          fullObjectUrlRef.current = null;
+          return;
+        }
         const img = new Image();
         fullImgRef.current = img;
         img.onload = () => {
@@ -232,7 +252,6 @@ export function useProgressiveImage(
             if (signal.aborted && fullObjectUrlRef.current) {
               URL.revokeObjectURL(fullObjectUrlRef.current);
               fullObjectUrlRef.current = null;
-              img.src = '';
             }
             return;
           }
@@ -246,7 +265,6 @@ export function useProgressiveImage(
             URL.revokeObjectURL(fullObjectUrlRef.current);
             fullObjectUrlRef.current = null;
           }
-          img.src = '';
           if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
             setState('error');
             setHasError(true);
@@ -257,21 +275,22 @@ export function useProgressiveImage(
       })
       .catch((err) => {
         if (err?.name === 'AbortError') return;
+        // On fetch failure (e.g. CORS when loading from another origin), still show
+        // full image via server URL so the lightbox can render <img src={fullImageUrl}>.
         if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
-          setState('error');
-          setHasError(true);
-          setError('Failed to load image');
+          setDisplayFullImageUrl(fullImageUrl);
+          setState('full-loaded');
+          setHasError(false);
+          setError(null);
         }
       });
 
     return () => {
-      if (fullImgRef.current) {
-        fullImgRef.current.src = '';
-      }
       if (fullObjectUrlRef.current) {
         URL.revokeObjectURL(fullObjectUrlRef.current);
         fullObjectUrlRef.current = null;
       }
+      fullImgRef.current = null;
     };
   }, [image?.id, image?.pathComponent, image?.urlPath, fullImageUrl, state, signal]);
 
@@ -282,8 +301,8 @@ export function useProgressiveImage(
   }, []);
 
   return {
-    thumbnailUrl,
-    fullImageUrl,
+    thumbnailUrl: displayThumbnailUrl,
+    fullImageUrl: displayFullImageUrl || fullImageUrl,
     state,
     hasError,
     error,

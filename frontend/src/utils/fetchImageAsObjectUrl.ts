@@ -8,6 +8,8 @@
  * @module frontend/src/utils/fetchImageAsObjectUrl
  */
 
+const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV;
+
 /**
  * Fetches an image and returns an object URL for the blob.
  * Rejects with AbortError when signal is aborted.
@@ -24,9 +26,15 @@ export async function fetchImageAsObjectUrl(
   url: string,
   signal: AbortSignal,
 ): Promise<string> {
+  if (isDev) {
+    console.log('[fetchImageAsObjectUrl] GET', url.slice(-60));
+  }
   const response = await fetch(url, { signal });
 
   if (!response.ok) {
+    if (isDev) {
+      console.warn('[fetchImageAsObjectUrl] fail', response.status, response.statusText, url.slice(-60));
+    }
     throw new Error(`Image fetch failed: ${response.status} ${response.statusText}`);
   }
 
@@ -34,5 +42,9 @@ export async function fetchImageAsObjectUrl(
   if (signal.aborted) {
     throw new DOMException('Aborted', 'AbortError');
   }
-  return URL.createObjectURL(blob);
+  const objectUrl = URL.createObjectURL(blob);
+  if (isDev) {
+    console.log('[fetchImageAsObjectUrl] ok', url.slice(-60));
+  }
+  return objectUrl;
 }

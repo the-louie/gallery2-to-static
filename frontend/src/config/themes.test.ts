@@ -144,8 +144,8 @@ describe('Theme Registry', () => {
       expect(isValidTheme(DEFAULT_THEME)).toBe(true);
     });
 
-    it('is light theme', () => {
-      expect(DEFAULT_THEME).toBe('light');
+    it('is original theme', () => {
+      expect(DEFAULT_THEME).toBe('original');
     });
   });
 });
