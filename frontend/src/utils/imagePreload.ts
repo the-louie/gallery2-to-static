@@ -4,6 +4,8 @@
  * Provides functions to preload images for smooth navigation in the lightbox.
  * When an AbortSignal is provided, uses fetch + object URL so requests can be
  * canceled on navigation; otherwise uses Image + src for backward compatibility.
+ * Preload may fail for cross-origin blobs that are blocked; useProgressiveImage
+ * handles display via server URL fallback when blob fails at display time.
  * Integrates with the image cache.
  *
  * ## Features

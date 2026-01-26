@@ -71,50 +71,6 @@ Album 23390 and all parent albums in the breadcrumb show the apostrophe correctl
 
 ---
 
-## Fix Images Not Loading Due to Security (Blob) Restrictions
-
-**Status:** Pending
-**Priority:** High
-**Complexity:** Medium
-**Estimated Time:** 1–2 hours
-
-### Description
-Some images fail to load in the app with a browser security error. The console shows messages such as (Swedish): “Säkerhetsfel: Innehåll på http://localhost:5173/#/album/... får inte hämta data från blob:http://localhost:5173/...” (“Security error: Content on ... may not load data from blob:...”). The fetch of the image (via `fetchImageAsObjectUrl`) succeeds and a blob object URL is created, but when that blob URL is used (e.g. as `img` src in the Lightbox or grid), the browser blocks it for security reasons—commonly when the image was fetched cross-origin without proper CORS, producing an opaque blob that cannot be used in certain contexts.
-
-### Context
-- Image loading flow: `useProgressiveImage` (and possibly `imagePreload`) calls `fetchImageAsObjectUrl(url, signal)`, which uses `fetch(url)` then `URL.createObjectURL(blob)`. The returned blob URL is set as `displayThumbnailUrl` / `displayFullImageUrl` and used in `<img src={...}>`.
-- When the image URL is cross-origin (e.g. from `image-config.json` baseUrl such as `https://anbilder.se/` or `https://ilder.se/` while the app is on `http://localhost:5173`), and the server does not send CORS headers (e.g. `Access-Control-Allow-Origin`), the fetch can still succeed in some modes but the resulting blob is opaque. Using an opaque blob as `img.src` can trigger the “may not load data from blob” security error in some browsers or when the blob is later used in a restricted context.
-- Relevant files: `frontend/src/utils/fetchImageAsObjectUrl.ts`, `frontend/src/hooks/useProgressiveImage.ts`, `frontend/src/utils/imagePreload.ts`. The hook already falls back to the server URL in the `.catch` when fetch throws (e.g. network/CORS failure), but when fetch succeeds and an opaque blob is returned, the blob URL is still used and the security error occurs when the image is displayed.
-- Console evidence: `[fetchImageAsObjectUrl] GET` / `ok` for URLs like `ilder.se/...` and `anbilder.se/...`, followed by “Säkerhetsfel … får inte hämta data från blob:”.
-
-### Requirements
-
-#### Implementation Tasks
-- Investigate and fix the security-related image load failure so that images from cross-origin base URLs either load correctly or fail gracefully and fall back to the direct server URL.
-- Options to consider (choose or combine as appropriate):
-  1. **CORS:** Use `fetch(url, { mode: 'cors' })` and treat non-CORS or opaque responses as failure; then fall back to setting the display URL to the original server URL (so `<img src={serverUrl}>` loads directly and avoids blob). Document that for cross-origin image bases the server should send CORS headers if blob-based loading is desired.
-  2. **Fallback on blob load failure:** When the blob URL is set but the `<img>` (or `new Image()`) fails to load (onerror), treat as failure and set display URL to the server URL instead of leaving the blob or showing error state, so the image can still render via direct URL.
-  3. **Skip blob for cross-origin:** If the request URL’s origin differs from the document origin, do not use fetch+blob; use the server URL directly for `img.src` to avoid opaque-blob restrictions. This may require passing baseUrl or a “same-origin” flag into the hook/utils.
-- Ensure `useProgressiveImage` and any code using `fetchImageAsObjectUrl` still revoke object URLs on cleanup/abort and do not leak blob URLs.
-- Ensure existing fallback behavior (server URL when fetch fails) remains; extend it to cover “blob created but blocked when used” so the user still sees the image via direct URL where possible.
-- Update or add tests for the chosen fix (e.g. cross-origin fallback, blob-onerror fallback).
-
-### Deliverable
-Images that currently trigger “may not load data from blob” security errors either load correctly (e.g. via server URL when blob is blocked or CORS is missing) or fail gracefully with a clear fallback; no regression for same-origin or CORS-enabled image bases.
-
-### Testing Requirements
-- Run the app with a cross-origin image base URL (e.g. baseUrl pointing to another domain); open an album and lightbox. Confirm images load (either via blob when CORS is correct, or via direct server URL when blob is avoided/blocked).
-- Confirm console no longer shows “Säkerhetsfel … får inte hämta data från blob” for the previously failing images when a fix is applied.
-- Confirm same-origin image base (e.g. local static assets) still works with current behavior.
-- Unit tests: cover fetch failure → server URL fallback; optionally cover “cross-origin → use server URL” or “img onerror → fallback to server URL” if implemented.
-
-### Technical Notes
-- `fetchImageAsObjectUrl.ts` already documents: “Callers should not use the returned URL as the only display URL if the document restricts blob (e.g. use server URL for img src).”
-- In `useProgressiveImage`, thumbnail path already has an onerror that doesn’t set a broken blob as display URL; full image onerror sets error state—consider also setting `displayFullImageUrl` to `fullImageUrl` (server URL) in onerror so the image can still display.
-- Check whether `ImageConfigContext` / baseUrl is available where needed to implement “skip blob when cross-origin” or to build the server URL for fallback.
-
----
-
 ## Make Root Album List Block Entire Article Link to Album (With Exclusions)
 
 **Status:** Pending
@@ -123,21 +79,21 @@ Images that currently trigger “may not load data from blob” security errors 
 **Estimated Time:** 45–60 minutes
 
 ### Description
-On the root album page, make the whole `article.root-album-list-block` act as a link to that album’s page so that clicking anywhere on the block (title, description, metadata, background) navigates to `/album/{album.id}`. **Important exclusions:** (1) Any “link to homepage for the event” (the optional website link extracted from BBCode in summary/description, currently `.root-album-list-block-website-link`) must remain a separate control—clicks on it must open the external URL and must not navigate to the album. (2) The entire `section.root-album-list-block-subalbums` must be excluded: clicks on that section (including subalbum links and “…and more!”) must not navigate to the parent album; subalbum links must continue to go to their respective `/album/{sub.id}` or stay as-is.
+On the root album page, make the whole `article.root-album-list-block` act as a link to that album's page so that clicking anywhere on the block (title, description, metadata, background) navigates to `/album/{album.id}`. **Important exclusions:** (1) Any "link to homepage for the event" (the optional website link extracted from BBCode in summary/description, currently `.root-album-list-block-website-link`) must remain a separate control—clicks on it must open the external URL and must not navigate to the album. (2) The entire `section.root-album-list-block-subalbums` must be excluded: clicks on that section (including subalbum links and "...and more!") must not navigate to the parent album; subalbum links must continue to go to their respective `/album/{sub.id}` or stay as-is.
 
 ### Context
 - Component: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx`. The block currently has a title link (`.root-album-list-block-title-link`) and, in original theme, a thumb link—both to the album. The rest of the block (description, metadata, background) is not clickable as a whole.
-- The “event homepage” link is rendered when `extUrl` is set (from `extractUrlFromBBCode(album.summary ?? album.description)`), in a paragraph with `.root-album-list-block-website-link` (external `href`, `target="_blank"`, `rel="noopener noreferrer"`).
-- The subalbums section (`.root-album-list-block-subalbums`) contains a list of links to child albums (`.root-album-list-block-subalbum-link`) and optionally “…and more!” text.
-- Goal: single large click target for “open this album” while keeping the website link and subalbums section as distinct click targets with their current behavior.
+- The "event homepage" link is rendered when `extUrl` is set (from `extractUrlFromBBCode(album.summary ?? album.description)`), in a paragraph with `.root-album-list-block-website-link` (external `href`, `target="_blank"`, `rel="noopener noreferrer"`).
+- The subalbums section (`.root-album-list-block-subalbums`) contains a list of links to child albums (`.root-album-list-block-subalbum-link`) and optionally "...and more!" text.
+- Goal: single large click target for "open this album" while keeping the website link and subalbums section as distinct click targets with their current behavior.
 
 ### Requirements
 
 #### Implementation Tasks
-- In `RootAlbumListBlock.tsx`, implement “whole block links to album” with exclusions. Acceptable approaches (choose one that fits project patterns):
+- In `RootAlbumListBlock.tsx`, implement "whole block links to album" with exclusions. Acceptable approaches (choose one that fits project patterns):
   - **Link wrapper:** Wrap the parts of the article that should link to the album in a single `<Link to={linkTo}>` (or an anchor with equivalent routing). Do not wrap the website link paragraph or the `section.root-album-list-block-subalbums`; keep them as siblings (or outside the wrapper) so their links handle clicks.
   - **Click handler:** Add a click handler on the article that navigates to `linkTo` when the click target is not inside `.root-album-list-block-website-link` or `.root-album-list-block-subalbums`; use `event.preventDefault()` / `event.stopPropagation()` only where needed so the website link and subalbum links work normally.
-- Ensure the optional “event homepage” link (`.root-album-list-block-website-link`) always opens the external URL and never triggers navigation to the album page.
+- Ensure the optional "event homepage" link (`.root-album-list-block-website-link`) always opens the external URL and never triggers navigation to the album page.
 - Ensure the entire subalbums section (`.root-album-list-block-subalbums`) is excluded: clicks on subalbum links go to the subalbum; no part of that section should trigger navigation to the parent album.
 - Preserve accessibility: avoid nested links; if using a wrapper link, ensure it does not contain another `<a>` or `<Link>` (so exclude website link and subalbums from the wrapper). If using a click handler, ensure keyboard accessibility (e.g. role and tabIndex if the article becomes focusable) and that focusable elements inside exclusions retain their behavior.
 - Preserve existing ARIA and semantics (e.g. `aria-labelledby`, `aria-label` on sections).
@@ -147,14 +103,14 @@ On the root album view, clicking anywhere on `article.root-album-list-block` exc
 
 ### Testing Requirements
 - Click on block area (title, description, metadata, background/inner area not in exclusions) navigates to `/album/{album.id}`.
-- Click on “event homepage” / website link opens the external URL (same tab or new tab per current implementation); does not navigate to album.
-- Click on a subalbum link in `section.root-album-list-block-subalbums` navigates to that subalbum’s page; does not navigate to the parent album.
+- Click on "event homepage" / website link opens the external URL (same tab or new tab per current implementation); does not navigate to album.
+- Click on a subalbum link in `section.root-album-list-block-subalbums` navigates to that subalbum's page; does not navigate to the parent album.
 - No nested interactive elements (no link inside link); keyboard and screen reader behavior remain correct.
 - Update or add tests in `RootAlbumListBlock.test.tsx` as needed for the new behavior and exclusions.
 
 ### Technical Notes
 - File: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx`. Styling in `RootAlbumListBlock.css` may need minor updates (e.g. cursor, hover) if the block or a wrapper becomes the clickable area.
-- The block has two main content regions: `.root-album-list-block-main` (album info) and `.root-album-list-block-subalbums`. The wrapper link or clickable area must include only the main section minus the website paragraph, and must exclude the subalbums section; the thumb link in original theme can remain or be merged into the same “block link” behavior so long as nested links are avoided.
+- The block has two main content regions: `.root-album-list-block-main` (album info) and `.root-album-list-block-subalbums`. The wrapper link or clickable area must include only the main section minus the website paragraph, and must exclude the subalbums section; the thumb link in original theme can remain or be merged into the same "block link" behavior so long as nested links are avoided.
 
 ---
 

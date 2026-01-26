@@ -128,7 +128,7 @@ describe('useProgressiveImage', () => {
       });
     });
 
-    it('continues to full image loading even if thumbnail fails', async () => {
+    it('falls back to server URL when thumbnail blob fails (e.g. security)', async () => {
       const { result } = renderHook(() => useProgressiveImage(mockImage), {
         wrapper: createWrapper(),
       });
@@ -147,6 +147,7 @@ describe('useProgressiveImage', () => {
 
       await waitFor(() => {
         expect(result.current.state).toBe('thumbnail-loaded');
+        expect(result.current.thumbnailUrl).toBe('/images/test-album/t__test-photo.jpg');
       });
     });
 
@@ -195,7 +196,7 @@ describe('useProgressiveImage', () => {
       });
     });
 
-    it('sets error state when full image fails', async () => {
+    it('falls back to server URL when full image blob fails (e.g. security)', async () => {
       const { result } = renderHook(() => useProgressiveImage(mockImage), {
         wrapper: createWrapper(),
       });
@@ -217,9 +218,10 @@ describe('useProgressiveImage', () => {
       }
 
       await waitFor(() => {
-        expect(result.current.state).toBe('error');
-        expect(result.current.hasError).toBe(true);
-        expect(result.current.error).toBe('Failed to load image');
+        expect(result.current.state).toBe('full-loaded');
+        expect(result.current.hasError).toBe(false);
+        expect(result.current.error).toBe(null);
+        expect(result.current.fullImageUrl).toBe('/images/test-album/test-photo.jpg');
       });
     });
   });

@@ -51,8 +51,9 @@ export interface UseProgressiveImageReturn {
 /**
  * Hook for progressive image loading with blur-up
  *
- * Loads thumbnail first, then full-resolution image. Uses only the image URLs
- * as provided in the data (original format); no format variants (AVIF/WebP).
+ * Loads thumbnail first, then full-resolution image. When blob load fails (e.g.
+ * cross-origin security), falls back to server URL so the image still displays.
+ * Uses only the image URLs as provided in the data (original format); no format variants (AVIF/WebP).
  *
  * @param image - Image object to load
  * @param useThumbnail - Whether to use thumbnail (default: true for progressive loading)
@@ -186,9 +187,12 @@ export function useProgressiveImage(
             URL.revokeObjectURL(thumbnailObjectUrlRef.current);
             thumbnailObjectUrlRef.current = null;
           }
+          thumbnailImgRef.current = null;
           if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) return;
           if (thumbnailTransitionDoneRef.current) return;
           thumbnailTransitionDoneRef.current = true;
+          // Fallback to server URL when blob fails (e.g. cross-origin security) so the image still displays.
+          setDisplayThumbnailUrl(thumbnailUrl);
           setState('thumbnail-loaded');
         };
         img.src = objectUrl;
@@ -265,10 +269,13 @@ export function useProgressiveImage(
             URL.revokeObjectURL(fullObjectUrlRef.current);
             fullObjectUrlRef.current = null;
           }
+          fullImgRef.current = null;
           if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
-            setState('error');
-            setHasError(true);
-            setError('Failed to load image');
+            // Fallback to server URL when blob fails (e.g. cross-origin security) so the image still displays.
+            setDisplayFullImageUrl(fullImageUrl);
+            setState('full-loaded');
+            setHasError(false);
+            setError(null);
           }
         };
         img.src = objectUrl;

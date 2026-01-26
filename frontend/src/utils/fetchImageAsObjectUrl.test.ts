@@ -68,6 +68,21 @@ describe('fetchImageAsObjectUrl', () => {
     ).rejects.toThrow(/Image fetch failed/);
   });
 
+  it('rejects when response is opaque (e.g. cross-origin without CORS)', async () => {
+    global.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        type: 'opaque',
+        blob: () => Promise.resolve(new Blob()),
+      }),
+    ) as any;
+
+    const controller = new AbortController();
+    await expect(
+      fetchImageAsObjectUrl('https://other.example/img.jpg', controller.signal),
+    ).rejects.toThrow('Opaque response; cannot use as image');
+  });
+
   it('caller must revoke the returned URL', async () => {
     global.fetch = vi.fn(() =>
       Promise.resolve({
