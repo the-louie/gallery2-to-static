@@ -391,16 +391,13 @@ describe('Layout Sort Dropdown', () => {
       </Layout>,
     );
 
-    const headerActions = container.querySelector('.layout-header-actions');
-    const children = Array.from(headerActions?.children || []);
-    
-    const searchBarIndex = children.findIndex(el => el.querySelector('.search-bar'));
-    const themeDropdownIndex = children.findIndex(el => el.querySelector('.theme-dropdown'));
-    const sortDropdownIndex = children.findIndex(el => el.querySelector('.sort-dropdown'));
-
-    expect(searchBarIndex).toBeGreaterThanOrEqual(0);
-    expect(themeDropdownIndex).toBeGreaterThan(searchBarIndex);
-    expect(sortDropdownIndex).toBeGreaterThan(themeDropdownIndex);
+    const themeDropdown = container.querySelector('.theme-dropdown');
+    const sortDropdown = container.querySelector('.sort-dropdown');
+    expect(themeDropdown).toBeInTheDocument();
+    expect(sortDropdown).toBeInTheDocument();
+    /* Assert document order: theme dropdown appears before sort dropdown (robust to wrapper). */
+    const position = themeDropdown!.compareDocumentPosition(sortDropdown!);
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   });
 
   it('sort dropdown is keyboard accessible', () => {

@@ -90,13 +90,15 @@ export function Layout({ children, className }: LayoutProps) {
           )}
           <div className="layout-header-actions">
             {!isOriginal && <SearchBar />}
-            <ThemeDropdown />
-            {!isOriginal && (
-              <SortDropdown
-                currentOption={sortOption}
-                onOptionChange={setSortOption}
-              />
-            )}
+            <div className="layout-header-dropdowns">
+              <ThemeDropdown />
+              {!isOriginal && (
+                <SortDropdown
+                  currentOption={sortOption}
+                  onOptionChange={setSortOption}
+                />
+              )}
+            </div>
           </div>
         </div>
       </header>

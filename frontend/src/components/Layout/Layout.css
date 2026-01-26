@@ -88,6 +88,15 @@
   min-width: 0;
 }
 
+/* Keeps theme and sort dropdowns on one row; only the SearchBar vs dropdowns group wraps. */
+.layout-header-dropdowns {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
 .layout-title-link {
   text-decoration: none;
   color: inherit;
