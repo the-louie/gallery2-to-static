@@ -1,38 +1,5 @@
 # TODO
 
-## Make Root Album List Block Title (h2) Twice as Large
-
-**Status:** Pending
-**Priority:** Low
-**Complexity:** Trivial
-**Estimated Time:** 5–10 minutes
-
-### Description
-Increase the font size of the root album block title so that `h2.root-album-list-block-title` is twice as large as it is now. This applies to the album title heading on the root album page (each block showing a root-level album with title, description, subalbums).
-
-### Context
-- Component: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx` — the title is rendered as `<h2 className="root-album-list-block-title">` with a `<span className="root-album-list-block-title-text">` for the title text (the whole block is a single link to the album).
-- Styles: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.css` — `.root-album-list-block-title` currently uses `font-size: 1.25rem` (base). In a media query (e.g. narrower viewport), it is set to `font-size: 1.125rem`. “Twice as large” means double those values (e.g. 2.5rem and 2.25rem respectively), unless the design intent is to double only the base and scale the breakpoint proportionally.
-
-### Requirements
-
-#### Implementation Tasks
-- In `RootAlbumListBlock.css`, update `.root-album-list-block-title` font-size to double the current value(s). Current base: `1.25rem` → use `2.5rem`. If there is a media-query override (e.g. `1.125rem`), double it to `2.25rem` to keep hierarchy consistent.
-- Optionally adjust line-height, margin, or padding if the larger title affects layout (e.g. clipping, overlapping). No change to HTML or component logic.
-
-### Deliverable
-`h2.root-album-list-block-title` displays at twice the current font size on the root album page.
-
-### Testing Requirements
-- Visual check on root album view: title text is noticeably larger and readable; no layout break or overlap with description/subalbums.
-- If responsive breakpoints exist, confirm the doubled size is applied at all breakpoints where the title is styled.
-
-### Technical Notes
-- File: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.css`. Only CSS changes; no TypeScript/React changes required.
-
----
-
- doesn’t “still shows doesn’t
 ## Place Gallery Order Dropdown to the Right of Theme Selector
 
 **Status:** Pending
@@ -46,7 +13,7 @@ The Gallery order dropdown (SortDropdown) is currently placed below the theme se
 ### Context
 - In `Layout.tsx`, the header actions area (`.layout-header-actions`) contains, in order: SearchBar (when not original theme), ThemeDropdown, SortDropdown.
 - `.layout-header-actions` uses `display: flex`, `flex-wrap: wrap`, and `justify-content: flex-end`. When space is limited, the SortDropdown wraps to a new line and appears below the ThemeDropdown.
-- Layout test in `Layout.test.tsx` asserts “sort dropdown is positioned after theme dropdown” (DOM order); the requirement is to preserve that order but change visual placement so the two dropdowns are side-by-side (theme left, gallery order right).
+- Layout test in `Layout.test.tsx` asserts "sort dropdown is positioned after theme dropdown" (DOM order); the requirement is to preserve that order but change visual placement so the two dropdowns are side-by-side (theme left, gallery order right).
 
 ### Requirements
 
@@ -81,7 +48,7 @@ Theme selector dropdown and Gallery order dropdown appear in a single horizontal
 **Estimated Time:** 2–3 hours
 
 ### Description
-Add `highlightThumbnailUrlPath` to child objects that are albums (`GalleryAlbumItem`) in album JSON, using the same URL path convention as existing `thumbnailUrlPath`. The thumbnail source must be: (1) the image designated by `highlightImageId` in the database when present, or (2) when no highlight image is set, the first descendant image found by repeatedly taking the first child until an image (`GalleryPhotoItem`) is reached—that image’s thumbnail is then used as the highlight thumbnail for the album (and conceptually for ancestors when resolving recursively).
+Add `highlightThumbnailUrlPath` to child objects that are albums (`GalleryAlbumItem`) in album JSON, using the same URL path convention as existing `thumbnailUrlPath`. The thumbnail source must be: (1) the image designated by `highlightImageId` in the database when present, or (2) when no highlight image is set, the first descendant image found by repeatedly taking the first child until an image (`GalleryPhotoItem`) is reached—that image's thumbnail is then used as the highlight thumbnail for the album (and conceptually for ancestors when resolving recursively).
 
 ### Context
 - Album children currently have `thumbnailUrlPath` (from the first direct photo in the album via `findFirstPhoto`) and `highlightImageUrl` (full-size URL from recursive first-image fallback; no `highlightImageId` in schema today).
@@ -91,15 +58,15 @@ Add `highlightThumbnailUrlPath` to child objects that are albums (`GalleryAlbumI
 
 #### Implementation Tasks
 - In `backend/index.ts`, when building album child entries (`GalleryAlbumItem`) in `processedChildrenWithThumbnails`:
-  - Resolve the “highlight image” for the album: if the database exposes a `highlightImageId` (or equivalent) for the album, load that photo and use it; otherwise resolve “first descendant image” by traversing: get children of the album, take the first child; if it is an album, recurse into it (first child again); repeat until the first child is a `GalleryPhotoItem`, then use that image.
+  - Resolve the "highlight image" for the album: if the database exposes a `highlightImageId` (or equivalent) for the album, load that photo and use it; otherwise resolve "first descendant image" by traversing: get children of the album, take the first child; if it is an album, recurse into it (first child again); repeat until the first child is a `GalleryPhotoItem`, then use that image.
   - From that resolved image, compute the thumbnail URL path with the same convention as current `thumbnailUrlPath` (same `uipath`/dir and `getThumbTarget(cleanedTitle, rawPath, thumbPrefix)`).
   - Add `highlightThumbnailUrlPath` to the album child object. If no highlight image can be resolved (empty album or no images in subtree), omit the field or set per existing convention.
 - Add optional `highlightThumbnailUrlPath?: string | null` to `Child` in `backend/types.ts` for album children if not already present from the image-children todo, and document it.
 - If `highlightImageId` is not yet in the schema: either add a DB/schema prerequisite to the todo or implement the first-descendant traversal first and add highlightImageId support when the column exists.
 
 #### Behavior Summary
-- **highlightImageId available:** use that photo’s thumbnail for `highlightThumbnailUrlPath`.
-- **No highlightImageId:** use first-descendant image (first child; if album, first child of that album; repeat until image); use that image’s thumbnail for `highlightThumbnailUrlPath`.
+- **highlightImageId available:** use that photo's thumbnail for `highlightThumbnailUrlPath`.
+- **No highlightImageId:** use first-descendant image (first child; if album, first child of that album; repeat until image); use that image's thumbnail for `highlightThumbnailUrlPath`.
 - Path format: same as existing `thumbnailUrlPath` (directory + `getThumbTarget` filename).
 
 ### Deliverable
@@ -107,14 +74,14 @@ Album JSON children of type `GalleryAlbumItem` include `highlightThumbnailUrlPat
 
 ### Testing Requirements
 - Album with `highlightImageId` set: `highlightThumbnailUrlPath` matches the thumbnail URL of that photo.
-- Album without `highlightImageId`, with direct photos: same as current behavior (first photo’s thumbnail); optionally assert `highlightThumbnailUrlPath` equals current `thumbnailUrlPath` where applicable.
+- Album without `highlightImageId`, with direct photos: same as current behavior (first photo's thumbnail); optionally assert `highlightThumbnailUrlPath` equals current `thumbnailUrlPath` where applicable.
 - Album without `highlightImageId` and no direct photos but subalbums: traverse to first descendant image; assert `highlightThumbnailUrlPath` is the thumbnail of that image.
 - Album with no images in subtree: no `highlightThumbnailUrlPath` or null.
 - Confirm existing `highlightImageUrl` and current `thumbnailUrlPath` semantics remain correct.
 
 ### Technical Notes
 - Current code uses `findFirstPhoto(albumChildren)` for album thumbnail; first-descendant logic extends this by recursing into child albums when the first child is an album.
-- Reuse existing path helpers: `getThumbTarget`, `cleanup_uipathcomponent`, and the same directory construction used for `thumbnailUrlPath`. The UI path for the thumbnail is the album’s `uipath` (and the resolved photo’s pathComponent for building the full path to the image).
+- Reuse existing path helpers: `getThumbTarget`, `cleanup_uipathcomponent`, and the same directory construction used for `thumbnailUrlPath`. The UI path for the thumbnail is the album's `uipath` (and the resolved photo's pathComponent for building the full path to the image).
 - If the Gallery 2 schema does not yet have `highlightImageId`, document that in the todo or implement only the first-descendant path until the column is added.
 
 ---
