@@ -62,8 +62,18 @@ describe('decodeHtmlEntities', () => {
     expect(decodeHtmlEntities('&amp;amp;')).toBe('&');
   });
 
-  it('decodes &#039; as apostrophe', () => {
+  it('decodes &#039; and &#39; as apostrophe', () => {
     expect(decodeHtmlEntities('&#039;')).toBe("'");
+    expect(decodeHtmlEntities('&#39;')).toBe("'");
+  });
+
+  it('decodes DigitalChaos&#039;05 to DigitalChaos\'05', () => {
+    expect(decodeHtmlEntities('DigitalChaos&#039;05')).toBe("DigitalChaos'05");
+  });
+
+  it('decodes numeric entities without trailing semicolon', () => {
+    expect(decodeHtmlEntities('&#039')).toBe("'");
+    expect(decodeHtmlEntities('x&#39y')).toBe("x'y");
   });
 
   it('decodes &Auml;, &Ouml;, &Uuml;, &szlig;', () => {

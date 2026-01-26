@@ -2,6 +2,7 @@
  * Decode HTML entities for album title fields only.
  * Used so emitted JSON (metadata.albumTitle, children titles, index.json)
  * contains readable plain text (e.g. Nässlan not N&auml;sslan).
+ * Supports apostrophe entities &#039; and &#39;, and numeric without semicolon (e.g. &#039).
  * Do not use for description, summary, or path components.
  *
  * @module backend/decodeHtmlEntities
@@ -66,6 +67,10 @@ export function decodeHtmlEntities(str: string | null | undefined): string {
     );
     x = x.replace(/&#x([0-9a-fA-F]+);/g, (_, n) =>
       String.fromCharCode(parseInt(n, 16)),
+    );
+    // Numeric entities without trailing semicolon (e.g. &#039 at end of string)
+    x = x.replace(/&#(\d+)(?![0-9;])/g, (_, n) =>
+      String.fromCharCode(parseInt(n, 10)),
     );
     iterations++;
   } while (prev !== x && iterations < MAX_ITERATIONS);

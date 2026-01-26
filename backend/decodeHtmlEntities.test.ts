@@ -63,6 +63,14 @@ function run(): void {
     'Catten & Mamma ö é é',
   );
 
+  // Apostrophe entities (&#039; and &#39;) for album 23390 / parent titles
+  assert.strictEqual(decodeHtmlEntities('&#039;'), "'");
+  assert.strictEqual(decodeHtmlEntities('&#39;'), "'");
+  assert.strictEqual(decodeHtmlEntities('DigitalChaos&#039;05'), "DigitalChaos'05");
+  // Numeric without trailing semicolon
+  assert.strictEqual(decodeHtmlEntities('&#039'), "'");
+  assert.strictEqual(decodeHtmlEntities('x&#39y'), "x'y");
+
   console.log('decodeHtmlEntities tests passed');
 }
 

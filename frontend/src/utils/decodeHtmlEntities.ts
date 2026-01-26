@@ -1,6 +1,6 @@
 /**
  * Decode HTML entities for display strings (e.g. &auml;, &ouml;, &aring;, &eacute; → ä, ö, å, é).
- * Supports common Latin accents (é, à, è, ê, ë, í, ñ) and German/Nordic characters.
+ * Supports common Latin accents, apostrophe (&#039; / &#39;), and numeric without semicolon (e.g. &#039).
  *
  * Use for album titles, breadcrumbs, subalbum labels, descriptions, etc.
  * Must run **before** BBCode parsing when used with parseBBCode so that
@@ -70,6 +70,10 @@ export function decodeHtmlEntities(str: string | null | undefined): string {
     );
     x = x.replace(/&#x([0-9a-fA-F]+);/g, (_, n) =>
       String.fromCharCode(parseInt(n, 16)),
+    );
+    // Numeric entities without trailing semicolon (e.g. &#039 at end of string)
+    x = x.replace(/&#(\d+)(?![0-9;])/g, (_, n) =>
+      String.fromCharCode(parseInt(n, 10)),
     );
     iterations++;
   } while (prev !== x && iterations < MAX_ITERATIONS);

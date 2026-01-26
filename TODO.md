@@ -32,45 +32,7 @@ Increase the font size of the root album block title so that `h2.root-album-list
 
 ---
 
-## Fix HTML Entity &#039; Not Decoded in Album 23390 and Parent Titles
-
-**Status:** Pending
-**Priority:** Medium
-**Complexity:** Low
-**Estimated Time:** 45–60 minutes
-
-### Description
-Album 23390.json (and its parent albums in the breadcrumb, down to root) do not decode the HTML entity `&#039;` (apostrophe) correctly in the title. The entity appears literally in the UI instead of as a single quote (`'`)—e.g. "DigitalChaos&#039;05" instead of "DigitalChaos'05". The fix must ensure the apostrophe entity is decoded in the current album title and in every breadcrumb segment title when displayed.
-
-### Context
-- `&#039;` is the decimal HTML entity for apostrophe ('); `&#39;` is equivalent without the leading zero. Both should render as a single quote.
-- Backend: `backend/decodeHtmlEntities.ts` is used when building album metadata (e.g. in `sqlUtils.ts` for `albumTitle`, and when building breadcrumb items). It already lists `['&#039;', "'"]` and `['&#39;', "'"]` in NAMED_ENTITIES and has a generic `&#(\d+);` replacement. If the stored or incoming title uses a variant (e.g. no semicolon, or different escaping in JSON), it may not match.
-- Frontend: `frontend/src/utils/decodeHtmlEntities.ts` has the same mappings. Display typically goes through `parseBBCodeDecoded()`, which calls `decodeHtmlEntities(text)` before BBCode parsing. So titles shown via `parseBBCodeDecoded(item.title)` or `parseBBCodeDecoded(metadata.albumTitle)` should be decoded. If the backend emits the raw entity in JSON (e.g. due to a code path that doesn’t run decode, or double-encoding), the frontend must decode it.
-- Places that show album/breadcrumb titles: `Breadcrumbs` (each `item.title`), `AlbumDetail` (metadata title), `RootAlbumListBlock` (album title, subalbum labels), `AlbumCard`, etc. All should show decoded text.
-- Data: `data/23390.json` metadata has `albumTitle` and `breadcrumbPath[].title`. If the bug is “still shows &#039;”, then either the JSON still contains the literal entity (backend not decoding in the export that produced this file) or the frontend has a path that doesn’t run decode.
-
-### Requirements
-
-#### Implementation Tasks
-- Confirm where the literal `&#039;` appears: in the emitted JSON (backend) or only in the UI (frontend display path not decoding).
-- Backend: Ensure every place that sets `albumTitle` or breadcrumb item `title` runs through `decodeHtmlEntities` (or equivalent) and that `&#039;` / `&#39;` and numeric `&#39;` / `&#039;` are decoded. Check `backend/index.ts` (breadcrumb construction, metadata), `backend/sqlUtils.ts` (getAlbumInfo, getChildren), and `backend/decodeHtmlEntities.ts` (support all common apostrophe entity forms, including `&#039;` with no semicolon if present in data).
-- Frontend: Ensure every display of album title and breadcrumb item title uses a path that decodes HTML entities (e.g. `decodeHtmlEntities(...)` or `parseBBCodeDecoded(...)`). Verify Breadcrumbs, AlbumDetail header, RootAlbumListBlock, AlbumCard, and any other title render paths.
-- Add or extend a unit test that asserts `decodeHtmlEntities('DigitalChaos&#039;05')` (and `&#39;`, and `&#039` without semicolon if applicable) equals `DigitalChaos'05`. Fix backend and/or frontend so album 23390 and its breadcrumb show "DigitalChaos'05" (and correct decoding for parent titles).
-
-### Deliverable
-Album 23390 and all parent albums in the breadcrumb show the apostrophe correctly (e.g. "DigitalChaos'05"); no literal `&#039;` or `&#39;` in titles anywhere in the chain to root.
-
-### Testing Requirements
-- Load album 23390 (or equivalent data with `&#039;` in title); confirm page title and breadcrumb show "DigitalChaos'05" and parent titles are decoded.
-- Unit test: `decodeHtmlEntities('x&#039;y')` and `decodeHtmlEntities('x&#39;y')` return `x'y`; run for both backend and frontend decode modules if they are separate.
-- Regression: other entities (e.g. &auml;, &#228;) still decode correctly.
-
-### Technical Notes
-- Backend and frontend each have a `decodeHtmlEntities` module; keep behavior aligned for entity set and order (e.g. `&amp;` first).
-- If the source data has the entity without a trailing semicolon (`&#039`), add support or normalize before decode so it still decodes.
-
----
-
+ doesn’t “still shows doesn’t
 ## Make Root Album List Block Entire Article Link to Album (With Exclusions)
 
 **Status:** Pending
