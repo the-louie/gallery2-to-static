@@ -361,6 +361,20 @@ const main = async (
                     }
                     return { ...child, ...highlightSpread, ...countSpread };
                 }
+                if (child.type === 'GalleryPhotoItem' && child.pathComponent) {
+                    const rawPath = child.pathComponent.split('/').pop() ?? '';
+                    const cleanedTitle = cleanup_uipathcomponent(child.title ?? rawPath ?? '');
+                    const dir = uipath.slice(1).join('/');
+                    const thumbFilename = getThumbTarget(
+                        cleanedTitle,
+                        rawPath,
+                        thumbPrefix,
+                    );
+                    const highlightThumbnailUrlPath = dir
+                        ? `${dir}/${thumbFilename}`
+                        : thumbFilename;
+                    return { ...child, highlightThumbnailUrlPath };
+                }
                 return child;
             }),
         );

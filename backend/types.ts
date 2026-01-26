@@ -28,6 +28,10 @@ export interface Child {
      */
     thumbnailUrlPath?: string | null;
     /**
+     * Legacy thumbnail URL path for photo children (GalleryPhotoItem). Same convention as album thumbnailUrlPath (uipath-based dir + thumb filename from getThumbTarget). Present when backend emits legacy paths.
+     */
+    highlightThumbnailUrlPath?: string | null;
+    /**
      * ID of the photo used as the album thumbnail.
      * Only present for albums (GalleryAlbumItem) that contain photos.
      */

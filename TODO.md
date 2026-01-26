@@ -1,5 +1,249 @@
 # TODO
 
+## Make Root Album List Block Title (h2) Twice as Large
+
+**Status:** Pending
+**Priority:** Low
+**Complexity:** Trivial
+**Estimated Time:** 5–10 minutes
+
+### Description
+Increase the font size of the root album block title so that `h2.root-album-list-block-title` is twice as large as it is now. This applies to the album title heading on the root album page (each block showing a root-level album with title, description, subalbums).
+
+### Context
+- Component: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx` — the title is rendered as `<h2 className="root-album-list-block-title">` with a link inside.
+- Styles: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.css` — `.root-album-list-block-title` currently uses `font-size: 1.25rem` (base). In a media query (e.g. narrower viewport), it is set to `font-size: 1.125rem`. “Twice as large” means double those values (e.g. 2.5rem and 2.25rem respectively), unless the design intent is to double only the base and scale the breakpoint proportionally.
+
+### Requirements
+
+#### Implementation Tasks
+- In `RootAlbumListBlock.css`, update `.root-album-list-block-title` font-size to double the current value(s). Current base: `1.25rem` → use `2.5rem`. If there is a media-query override (e.g. `1.125rem`), double it to `2.25rem` to keep hierarchy consistent.
+- Optionally adjust line-height, margin, or padding if the larger title affects layout (e.g. clipping, overlapping). No change to HTML or component logic.
+
+### Deliverable
+`h2.root-album-list-block-title` displays at twice the current font size on the root album page.
+
+### Testing Requirements
+- Visual check on root album view: title text is noticeably larger and readable; no layout break or overlap with description/subalbums.
+- If responsive breakpoints exist, confirm the doubled size is applied at all breakpoints where the title is styled.
+
+### Technical Notes
+- File: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.css`. Only CSS changes; no TypeScript/React changes required.
+
+---
+
+## Fix HTML Entity &#039; Not Decoded in Album 23390 and Parent Titles
+
+**Status:** Pending
+**Priority:** Medium
+**Complexity:** Low
+**Estimated Time:** 45–60 minutes
+
+### Description
+Album 23390.json (and its parent albums in the breadcrumb, down to root) do not decode the HTML entity `&#039;` (apostrophe) correctly in the title. The entity appears literally in the UI instead of as a single quote (`'`)—e.g. "DigitalChaos&#039;05" instead of "DigitalChaos'05". The fix must ensure the apostrophe entity is decoded in the current album title and in every breadcrumb segment title when displayed.
+
+### Context
+- `&#039;` is the decimal HTML entity for apostrophe ('); `&#39;` is equivalent without the leading zero. Both should render as a single quote.
+- Backend: `backend/decodeHtmlEntities.ts` is used when building album metadata (e.g. in `sqlUtils.ts` for `albumTitle`, and when building breadcrumb items). It already lists `['&#039;', "'"]` and `['&#39;', "'"]` in NAMED_ENTITIES and has a generic `&#(\d+);` replacement. If the stored or incoming title uses a variant (e.g. no semicolon, or different escaping in JSON), it may not match.
+- Frontend: `frontend/src/utils/decodeHtmlEntities.ts` has the same mappings. Display typically goes through `parseBBCodeDecoded()`, which calls `decodeHtmlEntities(text)` before BBCode parsing. So titles shown via `parseBBCodeDecoded(item.title)` or `parseBBCodeDecoded(metadata.albumTitle)` should be decoded. If the backend emits the raw entity in JSON (e.g. due to a code path that doesn’t run decode, or double-encoding), the frontend must decode it.
+- Places that show album/breadcrumb titles: `Breadcrumbs` (each `item.title`), `AlbumDetail` (metadata title), `RootAlbumListBlock` (album title, subalbum labels), `AlbumCard`, etc. All should show decoded text.
+- Data: `data/23390.json` metadata has `albumTitle` and `breadcrumbPath[].title`. If the bug is “still shows &#039;”, then either the JSON still contains the literal entity (backend not decoding in the export that produced this file) or the frontend has a path that doesn’t run decode.
+
+### Requirements
+
+#### Implementation Tasks
+- Confirm where the literal `&#039;` appears: in the emitted JSON (backend) or only in the UI (frontend display path not decoding).
+- Backend: Ensure every place that sets `albumTitle` or breadcrumb item `title` runs through `decodeHtmlEntities` (or equivalent) and that `&#039;` / `&#39;` and numeric `&#39;` / `&#039;` are decoded. Check `backend/index.ts` (breadcrumb construction, metadata), `backend/sqlUtils.ts` (getAlbumInfo, getChildren), and `backend/decodeHtmlEntities.ts` (support all common apostrophe entity forms, including `&#039;` with no semicolon if present in data).
+- Frontend: Ensure every display of album title and breadcrumb item title uses a path that decodes HTML entities (e.g. `decodeHtmlEntities(...)` or `parseBBCodeDecoded(...)`). Verify Breadcrumbs, AlbumDetail header, RootAlbumListBlock, AlbumCard, and any other title render paths.
+- Add or extend a unit test that asserts `decodeHtmlEntities('DigitalChaos&#039;05')` (and `&#39;`, and `&#039` without semicolon if applicable) equals `DigitalChaos'05`. Fix backend and/or frontend so album 23390 and its breadcrumb show "DigitalChaos'05" (and correct decoding for parent titles).
+
+### Deliverable
+Album 23390 and all parent albums in the breadcrumb show the apostrophe correctly (e.g. "DigitalChaos'05"); no literal `&#039;` or `&#39;` in titles anywhere in the chain to root.
+
+### Testing Requirements
+- Load album 23390 (or equivalent data with `&#039;` in title); confirm page title and breadcrumb show "DigitalChaos'05" and parent titles are decoded.
+- Unit test: `decodeHtmlEntities('x&#039;y')` and `decodeHtmlEntities('x&#39;y')` return `x'y`; run for both backend and frontend decode modules if they are separate.
+- Regression: other entities (e.g. &auml;, &#228;) still decode correctly.
+
+### Technical Notes
+- Backend and frontend each have a `decodeHtmlEntities` module; keep behavior aligned for entity set and order (e.g. `&amp;` first).
+- If the source data has the entity without a trailing semicolon (`&#039`), add support or normalize before decode so it still decodes.
+
+---
+
+## Fix Images Not Loading Due to Security (Blob) Restrictions
+
+**Status:** Pending
+**Priority:** High
+**Complexity:** Medium
+**Estimated Time:** 1–2 hours
+
+### Description
+Some images fail to load in the app with a browser security error. The console shows messages such as (Swedish): “Säkerhetsfel: Innehåll på http://localhost:5173/#/album/... får inte hämta data från blob:http://localhost:5173/...” (“Security error: Content on ... may not load data from blob:...”). The fetch of the image (via `fetchImageAsObjectUrl`) succeeds and a blob object URL is created, but when that blob URL is used (e.g. as `img` src in the Lightbox or grid), the browser blocks it for security reasons—commonly when the image was fetched cross-origin without proper CORS, producing an opaque blob that cannot be used in certain contexts.
+
+### Context
+- Image loading flow: `useProgressiveImage` (and possibly `imagePreload`) calls `fetchImageAsObjectUrl(url, signal)`, which uses `fetch(url)` then `URL.createObjectURL(blob)`. The returned blob URL is set as `displayThumbnailUrl` / `displayFullImageUrl` and used in `<img src={...}>`.
+- When the image URL is cross-origin (e.g. from `image-config.json` baseUrl such as `https://anbilder.se/` or `https://ilder.se/` while the app is on `http://localhost:5173`), and the server does not send CORS headers (e.g. `Access-Control-Allow-Origin`), the fetch can still succeed in some modes but the resulting blob is opaque. Using an opaque blob as `img.src` can trigger the “may not load data from blob” security error in some browsers or when the blob is later used in a restricted context.
+- Relevant files: `frontend/src/utils/fetchImageAsObjectUrl.ts`, `frontend/src/hooks/useProgressiveImage.ts`, `frontend/src/utils/imagePreload.ts`. The hook already falls back to the server URL in the `.catch` when fetch throws (e.g. network/CORS failure), but when fetch succeeds and an opaque blob is returned, the blob URL is still used and the security error occurs when the image is displayed.
+- Console evidence: `[fetchImageAsObjectUrl] GET` / `ok` for URLs like `ilder.se/...` and `anbilder.se/...`, followed by “Säkerhetsfel … får inte hämta data från blob:”.
+
+### Requirements
+
+#### Implementation Tasks
+- Investigate and fix the security-related image load failure so that images from cross-origin base URLs either load correctly or fail gracefully and fall back to the direct server URL.
+- Options to consider (choose or combine as appropriate):
+  1. **CORS:** Use `fetch(url, { mode: 'cors' })` and treat non-CORS or opaque responses as failure; then fall back to setting the display URL to the original server URL (so `<img src={serverUrl}>` loads directly and avoids blob). Document that for cross-origin image bases the server should send CORS headers if blob-based loading is desired.
+  2. **Fallback on blob load failure:** When the blob URL is set but the `<img>` (or `new Image()`) fails to load (onerror), treat as failure and set display URL to the server URL instead of leaving the blob or showing error state, so the image can still render via direct URL.
+  3. **Skip blob for cross-origin:** If the request URL’s origin differs from the document origin, do not use fetch+blob; use the server URL directly for `img.src` to avoid opaque-blob restrictions. This may require passing baseUrl or a “same-origin” flag into the hook/utils.
+- Ensure `useProgressiveImage` and any code using `fetchImageAsObjectUrl` still revoke object URLs on cleanup/abort and do not leak blob URLs.
+- Ensure existing fallback behavior (server URL when fetch fails) remains; extend it to cover “blob created but blocked when used” so the user still sees the image via direct URL where possible.
+- Update or add tests for the chosen fix (e.g. cross-origin fallback, blob-onerror fallback).
+
+### Deliverable
+Images that currently trigger “may not load data from blob” security errors either load correctly (e.g. via server URL when blob is blocked or CORS is missing) or fail gracefully with a clear fallback; no regression for same-origin or CORS-enabled image bases.
+
+### Testing Requirements
+- Run the app with a cross-origin image base URL (e.g. baseUrl pointing to another domain); open an album and lightbox. Confirm images load (either via blob when CORS is correct, or via direct server URL when blob is avoided/blocked).
+- Confirm console no longer shows “Säkerhetsfel … får inte hämta data från blob” for the previously failing images when a fix is applied.
+- Confirm same-origin image base (e.g. local static assets) still works with current behavior.
+- Unit tests: cover fetch failure → server URL fallback; optionally cover “cross-origin → use server URL” or “img onerror → fallback to server URL” if implemented.
+
+### Technical Notes
+- `fetchImageAsObjectUrl.ts` already documents: “Callers should not use the returned URL as the only display URL if the document restricts blob (e.g. use server URL for img src).”
+- In `useProgressiveImage`, thumbnail path already has an onerror that doesn’t set a broken blob as display URL; full image onerror sets error state—consider also setting `displayFullImageUrl` to `fullImageUrl` (server URL) in onerror so the image can still display.
+- Check whether `ImageConfigContext` / baseUrl is available where needed to implement “skip blob when cross-origin” or to build the server URL for fallback.
+
+---
+
+## Make Root Album List Block Entire Article Link to Album (With Exclusions)
+
+**Status:** Pending
+**Priority:** Medium
+**Complexity:** Low
+**Estimated Time:** 45–60 minutes
+
+### Description
+On the root album page, make the whole `article.root-album-list-block` act as a link to that album’s page so that clicking anywhere on the block (title, description, metadata, background) navigates to `/album/{album.id}`. **Important exclusions:** (1) Any “link to homepage for the event” (the optional website link extracted from BBCode in summary/description, currently `.root-album-list-block-website-link`) must remain a separate control—clicks on it must open the external URL and must not navigate to the album. (2) The entire `section.root-album-list-block-subalbums` must be excluded: clicks on that section (including subalbum links and “…and more!”) must not navigate to the parent album; subalbum links must continue to go to their respective `/album/{sub.id}` or stay as-is.
+
+### Context
+- Component: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx`. The block currently has a title link (`.root-album-list-block-title-link`) and, in original theme, a thumb link—both to the album. The rest of the block (description, metadata, background) is not clickable as a whole.
+- The “event homepage” link is rendered when `extUrl` is set (from `extractUrlFromBBCode(album.summary ?? album.description)`), in a paragraph with `.root-album-list-block-website-link` (external `href`, `target="_blank"`, `rel="noopener noreferrer"`).
+- The subalbums section (`.root-album-list-block-subalbums`) contains a list of links to child albums (`.root-album-list-block-subalbum-link`) and optionally “…and more!” text.
+- Goal: single large click target for “open this album” while keeping the website link and subalbums section as distinct click targets with their current behavior.
+
+### Requirements
+
+#### Implementation Tasks
+- In `RootAlbumListBlock.tsx`, implement “whole block links to album” with exclusions. Acceptable approaches (choose one that fits project patterns):
+  - **Link wrapper:** Wrap the parts of the article that should link to the album in a single `<Link to={linkTo}>` (or an anchor with equivalent routing). Do not wrap the website link paragraph or the `section.root-album-list-block-subalbums`; keep them as siblings (or outside the wrapper) so their links handle clicks.
+  - **Click handler:** Add a click handler on the article that navigates to `linkTo` when the click target is not inside `.root-album-list-block-website-link` or `.root-album-list-block-subalbums`; use `event.preventDefault()` / `event.stopPropagation()` only where needed so the website link and subalbum links work normally.
+- Ensure the optional “event homepage” link (`.root-album-list-block-website-link`) always opens the external URL and never triggers navigation to the album page.
+- Ensure the entire subalbums section (`.root-album-list-block-subalbums`) is excluded: clicks on subalbum links go to the subalbum; no part of that section should trigger navigation to the parent album.
+- Preserve accessibility: avoid nested links; if using a wrapper link, ensure it does not contain another `<a>` or `<Link>` (so exclude website link and subalbums from the wrapper). If using a click handler, ensure keyboard accessibility (e.g. role and tabIndex if the article becomes focusable) and that focusable elements inside exclusions retain their behavior.
+- Preserve existing ARIA and semantics (e.g. `aria-labelledby`, `aria-label` on sections).
+
+### Deliverable
+On the root album view, clicking anywhere on `article.root-album-list-block` except the event website link and the subalbums section navigates to the album page; the website link and subalbums section keep their current behavior.
+
+### Testing Requirements
+- Click on block area (title, description, metadata, background/inner area not in exclusions) navigates to `/album/{album.id}`.
+- Click on “event homepage” / website link opens the external URL (same tab or new tab per current implementation); does not navigate to album.
+- Click on a subalbum link in `section.root-album-list-block-subalbums` navigates to that subalbum’s page; does not navigate to the parent album.
+- No nested interactive elements (no link inside link); keyboard and screen reader behavior remain correct.
+- Update or add tests in `RootAlbumListBlock.test.tsx` as needed for the new behavior and exclusions.
+
+### Technical Notes
+- File: `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx`. Styling in `RootAlbumListBlock.css` may need minor updates (e.g. cursor, hover) if the block or a wrapper becomes the clickable area.
+- The block has two main content regions: `.root-album-list-block-main` (album info) and `.root-album-list-block-subalbums`. The wrapper link or clickable area must include only the main section minus the website paragraph, and must exclude the subalbums section; the thumb link in original theme can remain or be merged into the same “block link” behavior so long as nested links are avoided.
+
+---
+
+## Place Gallery Order Dropdown to the Right of Theme Selector
+
+**Status:** Pending
+**Priority:** Low
+**Complexity:** Low
+**Estimated Time:** 30–45 minutes
+
+### Description
+The Gallery order dropdown (SortDropdown) is currently placed below the theme selector dropdown in the header when the layout wraps or on certain viewports. It should instead be placed to the right of the theme selector dropdown so both controls appear on the same horizontal row.
+
+### Context
+- In `Layout.tsx`, the header actions area (`.layout-header-actions`) contains, in order: SearchBar (when not original theme), ThemeDropdown, SortDropdown.
+- `.layout-header-actions` uses `display: flex`, `flex-wrap: wrap`, and `justify-content: flex-end`. When space is limited, the SortDropdown wraps to a new line and appears below the ThemeDropdown.
+- Layout test in `Layout.test.tsx` asserts “sort dropdown is positioned after theme dropdown” (DOM order); the requirement is to preserve that order but change visual placement so the two dropdowns are side-by-side (theme left, gallery order right).
+
+### Requirements
+
+#### Implementation Tasks
+- In `frontend/src/components/Layout/Layout.css`: Ensure the theme selector and Gallery order dropdown stay on one row. Options (choose one or combine as needed):
+  - Wrap ThemeDropdown and SortDropdown in a flex container that has `flex-wrap: nowrap` (would require a wrapper in Layout.tsx) so they never wrap independently, or
+  - Adjust `.layout-header-actions` (or a new subgroup class) so that the two dropdowns are in a non-wrapping row (e.g. a wrapper div with `display: flex; flex-wrap: nowrap;` around ThemeDropdown and SortDropdown only), allowing the search bar to wrap separately if needed.
+- Preserve DOM order: ThemeDropdown then SortDropdown (accessibility and tests).
+- Preserve responsive behavior: on very small screens, ensure the two dropdowns remain side-by-side where possible, or document any intentional stacking and when it occurs.
+- No change to Layout.test.tsx assertion that sort dropdown is after theme dropdown in DOM order; update or add a test only if checking visual position (e.g. getBoundingClientRect or visible layout) is desired.
+
+### Deliverable
+Theme selector dropdown and Gallery order dropdown appear in a single horizontal row (theme left, gallery order right) in the header; layout/styling only, no change to component behavior.
+
+### Testing Requirements
+- Visual check: at desktop and tablet widths, both dropdowns are on the same row to the right of the search bar.
+- Confirm DOM order remains SearchBar → ThemeDropdown → SortDropdown.
+- Existing Layout tests (including theme dropdown and sort dropdown presence and order) still pass.
+- If a viewport exists where they must stack, confirm it is intentional and document or add a simple test.
+
+### Technical Notes
+- `Layout.css`: `.layout-header-actions` currently uses `flex-wrap: wrap`; consider a wrapper around the two dropdowns with `flex-wrap: nowrap` so only the group (search vs dropdowns) wraps, not the dropdowns relative to each other.
+- Component files: `frontend/src/components/Layout/Layout.tsx`, `frontend/src/components/Layout/Layout.css`.
+
+---
+
+## Add highlightThumbnailUrlPath to Album Children (highlightImageId / first-descendant)
+
+**Status:** Pending
+**Priority:** Medium
+**Complexity:** Medium
+**Estimated Time:** 2–3 hours
+
+### Description
+Add `highlightThumbnailUrlPath` to child objects that are albums (`GalleryAlbumItem`) in album JSON, using the same URL path convention as existing `thumbnailUrlPath`. The thumbnail source must be: (1) the image designated by `highlightImageId` in the database when present, or (2) when no highlight image is set, the first descendant image found by repeatedly taking the first child until an image (`GalleryPhotoItem`) is reached—that image’s thumbnail is then used as the highlight thumbnail for the album (and conceptually for ancestors when resolving recursively).
+
+### Context
+- Album children currently have `thumbnailUrlPath` (from the first direct photo in the album via `findFirstPhoto`) and `highlightImageUrl` (full-size URL from recursive first-image fallback; no `highlightImageId` in schema today).
+- Goal: `highlightThumbnailUrlPath` on album children should be the thumbnail version of the same image used for highlight (either highlight-image or first-descendant image), so parent lists can show a consistent thumbnail.
+
+### Requirements
+
+#### Implementation Tasks
+- In `backend/index.ts`, when building album child entries (`GalleryAlbumItem`) in `processedChildrenWithThumbnails`:
+  - Resolve the “highlight image” for the album: if the database exposes a `highlightImageId` (or equivalent) for the album, load that photo and use it; otherwise resolve “first descendant image” by traversing: get children of the album, take the first child; if it is an album, recurse into it (first child again); repeat until the first child is a `GalleryPhotoItem`, then use that image.
+  - From that resolved image, compute the thumbnail URL path with the same convention as current `thumbnailUrlPath` (same `uipath`/dir and `getThumbTarget(cleanedTitle, rawPath, thumbPrefix)`).
+  - Add `highlightThumbnailUrlPath` to the album child object. If no highlight image can be resolved (empty album or no images in subtree), omit the field or set per existing convention.
+- Add optional `highlightThumbnailUrlPath?: string | null` to `Child` in `backend/types.ts` for album children if not already present from the image-children todo, and document it.
+- If `highlightImageId` is not yet in the schema: either add a DB/schema prerequisite to the todo or implement the first-descendant traversal first and add highlightImageId support when the column exists.
+
+#### Behavior Summary
+- **highlightImageId available:** use that photo’s thumbnail for `highlightThumbnailUrlPath`.
+- **No highlightImageId:** use first-descendant image (first child; if album, first child of that album; repeat until image); use that image’s thumbnail for `highlightThumbnailUrlPath`.
+- Path format: same as existing `thumbnailUrlPath` (directory + `getThumbTarget` filename).
+
+### Deliverable
+Album JSON children of type `GalleryAlbumItem` include `highlightThumbnailUrlPath` when a highlight image (or first-descendant image) can be resolved; backend types updated; behavior unchanged when no image is found.
+
+### Testing Requirements
+- Album with `highlightImageId` set: `highlightThumbnailUrlPath` matches the thumbnail URL of that photo.
+- Album without `highlightImageId`, with direct photos: same as current behavior (first photo’s thumbnail); optionally assert `highlightThumbnailUrlPath` equals current `thumbnailUrlPath` where applicable.
+- Album without `highlightImageId` and no direct photos but subalbums: traverse to first descendant image; assert `highlightThumbnailUrlPath` is the thumbnail of that image.
+- Album with no images in subtree: no `highlightThumbnailUrlPath` or null.
+- Confirm existing `highlightImageUrl` and current `thumbnailUrlPath` semantics remain correct.
+
+### Technical Notes
+- Current code uses `findFirstPhoto(albumChildren)` for album thumbnail; first-descendant logic extends this by recursing into child albums when the first child is an album.
+- Reuse existing path helpers: `getThumbTarget`, `cleanup_uipathcomponent`, and the same directory construction used for `thumbnailUrlPath`. The UI path for the thumbnail is the album’s `uipath` (and the resolved photo’s pathComponent for building the full path to the image).
+- If the Gallery 2 schema does not yet have `highlightImageId`, document that in the todo or implement only the first-descendant path until the column is added.
+
+---
+
 ## Implement Per-Album Theme Configuration
 
 **Status:** Pending
