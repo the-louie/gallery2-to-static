@@ -4,7 +4,7 @@
  */
 
 import assert from 'assert';
-import { decode, cleanup_uipathcomponent } from './cleanupUipath';
+import { decode, cleanup_uipathcomponent, normalizePathcomponentForFilename } from './cleanupUipath';
 
 function run(): void {
   // decode
@@ -48,6 +48,15 @@ function run(): void {
   assert.strictEqual(cleanup_uipathcomponent('Martin Öjes'), 'martin_ojes');
   assert.strictEqual(cleanup_uipathcomponent('Nässlan'), 'nasslan');
   assert.strictEqual(cleanup_uipathcomponent('Ångström'), 'angstrom');
+
+  // normalizePathcomponentForFilename: last segment + cleanup (matches on-disk export)
+  assert.strictEqual(normalizePathcomponentForFilename(null), '');
+  assert.strictEqual(normalizePathcomponentForFilename(undefined), '');
+  assert.strictEqual(normalizePathcomponentForFilename(''), '');
+  assert.strictEqual(normalizePathcomponentForFilename('del av switchrack.jpg'), 'del_av_switchrack.jpg');
+  assert.strictEqual(normalizePathcomponentForFilename('IMG_0064_001.jpg'), 'img_0064_001.jpg');
+  assert.strictEqual(normalizePathcomponentForFilename('album/sub/del av switchrack.jpg'), 'del_av_switchrack.jpg');
+  assert.strictEqual(normalizePathcomponentForFilename('p000335.jpg'), 'p000335.jpg');
 
   console.log('cleanupUipath tests passed');
 }

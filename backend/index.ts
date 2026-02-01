@@ -3,7 +3,7 @@ import * as path from 'path'
 import mysql from 'mysql2/promise'
 import sqlUtils from './sqlUtils'
 import { Config, Child, AlbumFile, BreadcrumbItem, AlbumMetadata } from './types'
-import { cleanup_uipathcomponent } from './cleanupUipath'
+import { cleanup_uipathcomponent, normalizePathcomponentForFilename } from './cleanupUipath'
 import { getLinkTarget, getThumbTarget } from './legacyPaths'
 import { computeAllDescendantImageCounts } from './descendantImageCount'
 
@@ -77,7 +77,7 @@ async function findFirstPhotoRecursive(
     const filtered = children.filter(
         (c) => c.type !== 'GalleryAlbumItem' || !isBlacklisted(c.id, ignoreSet),
     );
-    
+
     // Check direct children first (photos)
     const firstPhoto = findFirstPhoto(filtered);
     if (firstPhoto) {
@@ -87,7 +87,7 @@ async function findFirstPhotoRecursive(
             pathComponent,
         };
     }
-    
+
     // Recurse into sub-albums (breadth-first: process all albums at this level before going deeper)
     for (const child of filtered) {
         if (child.type === 'GalleryAlbumItem' && child.hasChildren && child.pathComponent) {
@@ -104,7 +104,7 @@ async function findFirstPhotoRecursive(
             }
         }
     }
-    
+
     return null;
 }
 
@@ -168,23 +168,23 @@ async function resolveHighlightImageUrl(
             pathComponent,
             ignoreSet,
         );
-        
+
         if (!result) {
             return null;
         }
-        
+
         const { photo, uipath: photoUipath } = result;
-        
+
         if (!photo.pathComponent) {
             return null;
         }
-        
+
         const cleanedTitle = cleanup_uipathcomponent(photo.title ?? photo.pathComponent ?? '');
-        const rawPath = photo.pathComponent;
+        const normalizedPath = normalizePathcomponentForFilename(photo.pathComponent);
         const dir = photoUipath.slice(1).join('/');
-        const linkFilename = getLinkTarget(cleanedTitle, rawPath);
+        const linkFilename = getLinkTarget(cleanedTitle, normalizedPath);
         const urlPath = dir ? `${dir}/${linkFilename}` : linkFilename;
-        
+
         return urlPath;
     } catch (error) {
         console.warn(`Error resolving highlight image for album ${root}:`, error);
@@ -202,15 +202,15 @@ function buildHighlightImageUrlFromResult(result: FirstPhotoResult): string | nu
     const { photo, uipath: photoUipath } = result;
     if (!photo.pathComponent) return null;
     const cleanedTitle = cleanup_uipathcomponent(photo.title ?? photo.pathComponent ?? '');
-    const rawPath = photo.pathComponent;
+    const normalizedPath = normalizePathcomponentForFilename(photo.pathComponent);
     const dir = photoUipath.slice(1).join('/');
-    const linkFilename = getLinkTarget(cleanedTitle, rawPath);
+    const linkFilename = getLinkTarget(cleanedTitle, normalizedPath);
     return dir ? `${dir}/${linkFilename}` : linkFilename;
 }
 
 /**
  * Builds the thumbnail URL path for the highlight image from a findFirstPhotoRecursive result.
- * Same dir convention as thumbnailUrlPath; uses getThumbTarget(cleanedTitle, rawPath, thumbPrefix).
+ * Same dir convention as thumbnailUrlPath; uses getThumbTarget(cleanedTitle, normalizedPath, thumbPrefix).
  */
 function buildHighlightThumbnailUrlPathFromResult(
     result: FirstPhotoResult,
@@ -219,9 +219,9 @@ function buildHighlightThumbnailUrlPathFromResult(
     const { photo, uipath: photoUipath } = result;
     if (!photo.pathComponent) return null;
     const cleanedTitle = cleanup_uipathcomponent(photo.title ?? photo.pathComponent ?? '');
-    const rawPath = photo.pathComponent;
+    const normalizedPath = normalizePathcomponentForFilename(photo.pathComponent);
     const dir = photoUipath.slice(1).join('/');
-    const thumbFilename = getThumbTarget(cleanedTitle, rawPath, thumbPrefix);
+    const thumbFilename = getThumbTarget(cleanedTitle, normalizedPath, thumbPrefix);
     return dir ? `${dir}/${thumbFilename}` : thumbFilename;
 }
 
@@ -283,7 +283,7 @@ const main = async (
     );
     if (filtered.length > 0) {
         const albumInfo = await sql.getAlbumInfo(root);
-        
+
         // Build breadcrumbPath for current album
         const isRoot = breadcrumbAncestors.length === 0;
         const currentBreadcrumbItem: BreadcrumbItem = {
@@ -294,7 +294,7 @@ const main = async (
         const breadcrumbPath: BreadcrumbItem[] = isRoot
             ? [currentBreadcrumbItem]
             : breadcrumbAncestors.concat([currentBreadcrumbItem]);
-        
+
         const recursivePromises: Promise<void>[] = [];
         filtered.forEach((child) => {
             if (child.hasChildren && child.pathComponent) {
@@ -322,9 +322,9 @@ const main = async (
             if (child.type === 'GalleryPhotoItem' && child.pathComponent) {
                 const fullPath = pathComponent.concat([child.pathComponent]).join('/');
                 const cleanedTitle = cleanup_uipathcomponent(child.title ?? child.pathComponent ?? '');
-                const rawPath = child.pathComponent;
+                const normalizedPath = normalizePathcomponentForFilename(child.pathComponent);
                 const dir = uipath.slice(1).join('/');
-                const linkFilename = getLinkTarget(cleanedTitle, rawPath);
+                const linkFilename = getLinkTarget(cleanedTitle, normalizedPath);
                 const urlPath = dir ? `${dir}/${linkFilename}` : linkFilename;
                 return { ...child, pathComponent: fullPath, urlPath };
             }
@@ -384,11 +384,11 @@ const main = async (
                         const cleanedTitle = cleanup_uipathcomponent(
                             firstPhoto.title ?? firstPhoto.pathComponent ?? '',
                         );
-                        const rawPath = firstPhoto.pathComponent ?? '';
+                        const normalizedPath = normalizePathcomponentForFilename(firstPhoto.pathComponent ?? '');
                         const dir = albumUipath.slice(1).join('/');
                         const thumbFilename = getThumbTarget(
                             cleanedTitle,
-                            rawPath,
+                            normalizedPath,
                             thumbPrefix,
                         );
                         const thumbnailUrlPath = dir
@@ -405,12 +405,12 @@ const main = async (
                     return { ...child, ...highlightSpread, ...countSpread };
                 }
                 if (child.type === 'GalleryPhotoItem' && child.pathComponent) {
-                    const rawPath = child.pathComponent.split('/').pop() ?? '';
-                    const cleanedTitle = cleanup_uipathcomponent(child.title ?? rawPath ?? '');
+                    const normalizedPath = normalizePathcomponentForFilename(child.pathComponent);
+                    const cleanedTitle = cleanup_uipathcomponent(child.title ?? child.pathComponent ?? '');
                     const dir = uipath.slice(1).join('/');
                     const thumbFilename = getThumbTarget(
                         cleanedTitle,
-                        rawPath,
+                        normalizedPath,
                         thumbPrefix,
                     );
                     const highlightThumbnailUrlPath = dir
@@ -469,7 +469,7 @@ const main = async (
             ownerName: albumInfo.ownerName,
             breadcrumbPath,
         };
-        
+
         // Resolve highlight image URL (recursive first image fallback)
         const highlightImageUrl = await resolveHighlightImageUrl(
             root,
@@ -478,7 +478,7 @@ const main = async (
             pathComponent,
             ignoreSet,
         );
-        
+
         if (highlightImageUrl !== null) {
             metadata.highlightImageUrl = highlightImageUrl;
         }
@@ -529,14 +529,14 @@ let connection: mysql.Connection | null = null;
 
         connection = await mysql.createConnection(config.mysqlSettings);
         const sql = sqlUtils(connection, config);
-        
+
         const dataDir = path.join(__dirname, '..', 'data');
         try {
             await fs.access(dataDir);
         } catch {
             await fs.mkdir(dataDir, { recursive: true });
         }
-        
+
         // Create search subdirectory
         const searchDir = path.join(dataDir, 'search');
         try {
@@ -545,7 +545,7 @@ let connection: mysql.Connection | null = null;
             await fs.mkdir(searchDir, { recursive: true });
             console.log('Created search directory');
         }
-        
+
         const rootId = config.rootId ?? await sql.getRootAlbumId();
         console.log(`Using root album ID: ${rootId}`);
 
@@ -557,8 +557,11 @@ let connection: mysql.Connection | null = null;
 
         // Initialize search index accumulator
         const searchIndex = new Map<number, SearchIndexItem>();
-        
+
         const thumbPrefix = config.thumbPrefix ?? 't__';
+        if (thumbPrefix === '__t_') {
+            console.warn('thumbPrefix "__t_" does not match extract.py convention (t__); thumb URLs may 404.');
+        }
         const albumsWithImageDescendants = await computeAlbumsWithImageDescendants(rootId, sql, ignoreSet);
         const descendantImageCounts = await computeAllDescendantImageCounts(
             rootId,
@@ -567,7 +570,7 @@ let connection: mysql.Connection | null = null;
             albumsWithImageDescendants,
         );
         await main(sql, rootId, [], [''], dataDir, searchIndex, thumbPrefix, ignoreSet, [], config, rootId, albumsWithImageDescendants, descendantImageCounts);
-        
+
         // Generate search index file
         try {
             const searchIndexArray = Array.from(searchIndex.values());
@@ -584,7 +587,7 @@ let connection: mysql.Connection | null = null;
             console.error('Error generating search index:', error);
             // Don't fail extraction if search index generation fails
         }
-        
+
         // Generate index.json with root album metadata
         const rootAlbumInfo = await sql.getRootAlbumInfo(rootId);
         const indexData = {

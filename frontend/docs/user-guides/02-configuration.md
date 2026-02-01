@@ -162,14 +162,14 @@ If your installation uses a different prefix (e.g., `"gal_"`), change this value
 
 - **Type**: String
 - **Required**: Yes
-- **Default**: `"__t_"`
-- **Description**: Prefix used to identify thumbnail files in the file system
-- **When to Change**: If your Gallery 2 installation uses a different thumbnail prefix
+- **Default**: `"t__"`
+- **Description**: Prefix used to identify thumbnail files in the export (matches extract.py / Python script convention).
+- **When to Change**: If your export was produced with a different thumbnail prefix
 
-This prefix is used when processing image paths. Gallery 2 typically prefixes thumbnail files with `"__t_"` to distinguish them from full-size images.
+This prefix is used when processing image paths. The export pipeline (extract.py) and backend use `"t__"` by default to match on-disk thumbnail filenames.
 
 ```json
-"thumbPrefix": "__t_"
+"thumbPrefix": "t__"
 ```
 
 ## Album Filtering
@@ -240,7 +240,7 @@ Here's a complete example configuration file:
         "tablePrefix": "g2_",
         "columnPrefix": "g_"
     },
-    "thumbPrefix": "__t_",
+    "thumbPrefix": "t__",
     "ignoreAlbums": [],
     "onlyAlbums": []
 }

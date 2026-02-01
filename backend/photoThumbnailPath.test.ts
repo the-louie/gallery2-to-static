@@ -1,11 +1,11 @@
 /**
  * Unit tests for highlightThumbnailUrlPath computation.
- * - GalleryPhotoItem: uipath-based dir + getThumbTarget(cleanedTitle, rawPath, thumbPrefix).
+ * - GalleryPhotoItem: uipath-based dir + getThumbTarget(cleanedTitle, normalizedPath, thumbPrefix).
  * - GalleryAlbumItem: same formula applied to findFirstPhotoRecursive result (first-descendant image).
  */
 
 import assert from 'assert';
-import { cleanup_uipathcomponent } from './cleanupUipath';
+import { cleanup_uipathcomponent, normalizePathcomponentForFilename } from './cleanupUipath';
 import { getThumbTarget } from './legacyPaths';
 
 const THUMB_PREFIX = 't__';
@@ -27,9 +27,9 @@ function computeAlbumChildHighlightThumbnailUrlPath(
     const { photo, uipath: photoUipath } = result;
     if (!photo.pathComponent) return null;
     const cleanedTitle = cleanup_uipathcomponent(photo.title ?? photo.pathComponent ?? '');
-    const rawPath = photo.pathComponent;
+    const normalizedPath = normalizePathcomponentForFilename(photo.pathComponent);
     const dir = photoUipath.slice(1).join('/');
-    const thumbFilename = getThumbTarget(cleanedTitle, rawPath, thumbPrefix);
+    const thumbFilename = getThumbTarget(cleanedTitle, normalizedPath, thumbPrefix);
     return dir ? `${dir}/${thumbFilename}` : thumbFilename;
 }
 
@@ -43,10 +43,10 @@ function computePhotoHighlightThumbnailUrlPath(
     title: string | null,
     thumbPrefix: string,
 ): string {
-    const rawPath = pathComponent.split('/').pop() ?? '';
-    const cleanedTitle = cleanup_uipathcomponent(title ?? rawPath ?? '');
+    const normalizedPath = normalizePathcomponentForFilename(pathComponent);
+    const cleanedTitle = cleanup_uipathcomponent(title ?? pathComponent ?? '');
     const dir = uipath.slice(1).join('/');
-    const thumbFilename = getThumbTarget(cleanedTitle, rawPath, thumbPrefix);
+    const thumbFilename = getThumbTarget(cleanedTitle, normalizedPath, thumbPrefix);
     return dir ? `${dir}/${thumbFilename}` : thumbFilename;
 }
 

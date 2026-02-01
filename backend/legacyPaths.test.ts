@@ -5,6 +5,7 @@
 
 import assert from 'assert';
 import { getLinkTarget, getThumbTarget } from './legacyPaths';
+import { normalizePathcomponentForFilename } from './cleanupUipath';
 
 const THUMB = 't__';
 
@@ -39,6 +40,18 @@ function run(): void {
     't__20090418-img_1720.jpg',
   );
   assert.ok(!getThumbTarget('a', 'a.jpg', THUMB).includes('.jpg.jpg'));
+
+  // With normalized pathcomponent: spaces → _ (matches on-disk extract.py output)
+  const normalizedDelAv = normalizePathcomponentForFilename('del av switchrack.jpg');
+  assert.strictEqual(normalizedDelAv, 'del_av_switchrack.jpg');
+  assert.strictEqual(
+    getThumbTarget('del_av_switchrack', normalizedDelAv, THUMB),
+    't__del_av_switchrack___del_av_switchrack.jpg',
+  );
+  assert.strictEqual(
+    getLinkTarget('del_av_switchrack', normalizedDelAv),
+    'del_av_switchrack___del_av_switchrack.jpg',
+  );
 
   console.log('legacyPaths tests passed');
 }
