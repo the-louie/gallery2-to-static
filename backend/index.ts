@@ -6,6 +6,7 @@ import { Config, Child, AlbumFile, BreadcrumbItem, AlbumMetadata } from './types
 import { cleanup_uipathcomponent, normalizePathcomponentForFilename } from './cleanupUipath'
 import { getLinkTarget, getThumbTarget } from './legacyPaths'
 import { computeAllDescendantImageCounts } from './descendantImageCount'
+import { runVerification } from './verifyImagePaths'
 
 /**
  * Build a Set of album IDs to ignore from config.ignoreAlbums.
@@ -606,6 +607,28 @@ let connection: mysql.Connection | null = null;
         const indexPath = path.join(dataDir, 'index.json');
         await fs.writeFile(indexPath, JSON.stringify(indexData, null, 2));
         console.log(`Generated index.json with root album reference`);
+
+        const projectRoot = path.join(__dirname, '..');
+        try {
+            const verification = await runVerification(
+                dataDir,
+                projectRoot,
+                {
+                    verifyImagePaths: config.verifyImagePaths !== false,
+                    imageConfigPath: config.imageConfigPath,
+                    verifyTimeoutMs: config.verifyTimeoutMs,
+                    verifyConcurrency: config.verifyConcurrency,
+                },
+            );
+            if (verification) {
+                console.log(`Verified ${verification.verifiedCount} image URLs; ${verification.deviationCount} deviations.`);
+                if (verification.reportPath) {
+                    console.log(`Deviation report: ${verification.reportPath}`);
+                }
+            }
+        } catch (verificationError) {
+            console.warn('Image path verification failed (extraction succeeded):', verificationError);
+        }
     } catch (error) {
         console.error('Error in main:', error);
         process.exit(1);

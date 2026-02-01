@@ -204,6 +204,12 @@ Empty albums will have empty arrays `[]`.
 
 Ensure files are valid JSON (they should parse without errors). You can use online JSON validators or command-line tools.
 
+### 5. Image Path Verification
+
+After extraction completes, the backend verifies that image URLs resolve. It reads `frontend/public/image-config.json` for `baseUrl`, collects all image URLs from the generated album JSON, and fetches each to check it exists. If any fail, a deviation report is written to the project root: `deviation-report_YYYYMMDD-HHMMSS.md`.
+
+Verification is optional: set `verifyImagePaths: false` in `backend/config.json` to skip. It is skipped automatically when image-config.json is missing or baseUrl is not HTTP(S).
+
 ## Common Issues
 
 ### No Files Generated

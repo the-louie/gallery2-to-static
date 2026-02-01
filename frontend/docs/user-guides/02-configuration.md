@@ -172,6 +172,39 @@ This prefix is used when processing image paths. The export pipeline (extract.py
 "thumbPrefix": "t__"
 ```
 
+## Image Path Verification
+
+### verifyImagePaths
+
+- **Type**: Boolean
+- **Required**: No
+- **Default**: `true`
+- **Description**: After extraction, verify image URLs by fetching each. Uses `frontend/public/image-config.json` for baseUrl. Writes `deviation-report_YYYYMMDD-HHMMSS.md` to project root if any fail.
+
+```json
+"verifyImagePaths": true
+```
+
+### verifyTimeoutMs
+
+- **Type**: Number
+- **Required**: No
+- **Default**: `10000`
+- **Description**: Timeout in milliseconds per image URL fetch during verification.
+
+### verifyConcurrency
+
+- **Type**: Number
+- **Required**: No
+- **Default**: `5`
+- **Description**: Maximum concurrent HTTP requests during image path verification.
+
+### imageConfigPath
+
+- **Type**: String
+- **Required**: No
+- **Description**: Override path to image-config.json. Relative paths are resolved against project root; absolute paths used as-is. Default: `frontend/public/image-config.json`.
+
 ## Album Filtering
 
 The configuration file includes two options for controlling which albums are included in the conversion: `ignoreAlbums` and `onlyAlbums`.
@@ -242,7 +275,10 @@ Here's a complete example configuration file:
     },
     "thumbPrefix": "t__",
     "ignoreAlbums": [],
-    "onlyAlbums": []
+    "onlyAlbums": [],
+    "verifyImagePaths": true,
+    "verifyTimeoutMs": 10000,
+    "verifyConcurrency": 5
 }
 ```
 

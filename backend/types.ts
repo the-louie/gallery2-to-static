@@ -132,4 +132,12 @@ export interface Config {
     rootId?: number;
     ignoreAlbums?: Array<string | number>;
     onlyAlbums?: Array<string>;
+    /** If true (default), verify image paths after extraction; requires image-config.json baseUrl. */
+    verifyImagePaths?: boolean;
+    /** Override path to image-config.json (default: frontend/public/image-config.json). */
+    imageConfigPath?: string;
+    /** Timeout in ms per image URL fetch (default 10000). */
+    verifyTimeoutMs?: number;
+    /** Max concurrent HTTP requests during verification (default 5). */
+    verifyConcurrency?: number;
 }

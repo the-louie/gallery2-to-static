@@ -11,5 +11,9 @@
     },
     "thumbPrefix": "t__",
     "ignoreAlbums": [],
-    "onlyAlbums": []
+    "onlyAlbums": [],
+    "verifyImagePaths": true,
+    "imageConfigPath": "frontend/public/image-config.json",
+    "verifyTimeoutMs": 10000,
+    "verifyConcurrency": 5
 }
