@@ -9,11 +9,11 @@ function run(): void {
   // null → null
   assert.strictEqual(normalizeOwnerDisplayName(null), null);
 
-  // "Gallery Administrator" → "The Louie"
-  assert.strictEqual(normalizeOwnerDisplayName('Gallery Administrator'), 'The Louie');
+  // "Gallery Administrator" → "Unknown"
+  assert.strictEqual(normalizeOwnerDisplayName('Gallery Administrator'), 'Unknown');
 
-  // "The Louie" → "The Louie" (idempotent)
-  assert.strictEqual(normalizeOwnerDisplayName('The Louie'), 'The Louie');
+  // "Unknown" → "Unknown" (idempotent)
+  assert.strictEqual(normalizeOwnerDisplayName('Unknown'), 'Unknown');
 
   // "Other User" → "Other User"
   assert.strictEqual(normalizeOwnerDisplayName('Other User'), 'Other User');
