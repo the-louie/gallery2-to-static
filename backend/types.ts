@@ -140,4 +140,10 @@ export interface Config {
     verifyTimeoutMs?: number;
     /** Max concurrent HTTP requests during verification (default 5). */
     verifyConcurrency?: number;
+    /** Path to file list for fuzzy matching (e.g. backend/all-lanbilder-files.txt). Relative to project root. */
+    fileListPath?: string;
+    /** Path to fuzzy-match-strategy.json. Relative to project root. Default: fuzzy-match-strategy.json. */
+    fuzzyStrategyPath?: string;
+    /** Enable fuzzy filename matching when file list and strategy are loaded (default true when paths provided). */
+    enableFuzzyMatch?: boolean;
 }

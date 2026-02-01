@@ -1,0 +1,17 @@
+{
+  "algorithm": "Weighted fuzzy consensus (path+album+filename)",
+  "type": "consensus",
+  "params": {
+    "threshold": 0.55,
+    "confidenceGap": 0.3,
+    "lowerThreshold": 0.45,
+    "weights": {
+      "pathWeight": 0.2,
+      "albumWeight": 0.4,
+      "fileWeight": 0.4
+    }
+  },
+  "hits": 1042,
+  "total": 1043,
+  "hitRate": "99.9"
+}

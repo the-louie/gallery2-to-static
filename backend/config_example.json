@@ -15,5 +15,8 @@
     "verifyImagePaths": true,
     "imageConfigPath": "frontend/public/image-config.json",
     "verifyTimeoutMs": 10000,
-    "verifyConcurrency": 5
+    "verifyConcurrency": 5,
+    "fileListPath": "backend/all-lanbilder-files.txt",
+    "fuzzyStrategyPath": "fuzzy-match-strategy.json",
+    "enableFuzzyMatch": true
 }
