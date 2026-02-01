@@ -225,6 +225,14 @@
   --lightbox-details-color: rgba(255, 255, 255, 0.7);
   --lightbox-border-radius: 4px;
   --lightbox-image-bg: transparent;
+  --lightbox-breadcrumb-bg: rgba(0, 0, 0, 0.5);
+  --lightbox-breadcrumb-link-color: rgba(255, 255, 255, 0.95);
+  --lightbox-breadcrumb-link-hover-bg: rgba(255, 255, 255, 0.15);
+  --lightbox-breadcrumb-link-hover-color: #ffffff;
+  --lightbox-breadcrumb-focus: #A78BFA;
+  --lightbox-breadcrumb-link-focus-bg: rgba(255, 255, 255, 0.1);
+  --lightbox-breadcrumb-current-color: rgba(255, 255, 255, 0.9);
+  --lightbox-breadcrumb-separator-color: rgba(255, 255, 255, 0.6);
 
   /* Breadcrumbs Component */
   --breadcrumb-link-color: #E2725B;
@@ -417,6 +425,14 @@
 
   /* Lightbox */
   --lightbox-focus: #A78BFA;
+  --lightbox-breadcrumb-bg: rgba(0, 0, 0, 0.5);
+  --lightbox-breadcrumb-link-color: rgba(255, 255, 255, 0.95);
+  --lightbox-breadcrumb-link-hover-bg: rgba(255, 255, 255, 0.15);
+  --lightbox-breadcrumb-link-hover-color: #ffffff;
+  --lightbox-breadcrumb-focus: #A78BFA;
+  --lightbox-breadcrumb-link-focus-bg: rgba(255, 255, 255, 0.1);
+  --lightbox-breadcrumb-current-color: rgba(255, 255, 255, 0.9);
+  --lightbox-breadcrumb-separator-color: rgba(255, 255, 255, 0.6);
 
   /* Breadcrumbs */
   --breadcrumb-link-color: #E2725B;
@@ -621,6 +637,14 @@
   --lightbox-details-color: rgba(255, 255, 255, 0.7);
   --lightbox-border-radius: 4px;
   --lightbox-image-bg: transparent;
+  --lightbox-breadcrumb-bg: rgba(0, 0, 0, 0.5);
+  --lightbox-breadcrumb-link-color: rgba(255, 255, 255, 0.95);
+  --lightbox-breadcrumb-link-hover-bg: rgba(255, 255, 255, 0.15);
+  --lightbox-breadcrumb-link-hover-color: #ffffff;
+  --lightbox-breadcrumb-focus: #A78BFA;
+  --lightbox-breadcrumb-link-focus-bg: rgba(255, 255, 255, 0.1);
+  --lightbox-breadcrumb-current-color: rgba(255, 255, 255, 0.9);
+  --lightbox-breadcrumb-separator-color: rgba(255, 255, 255, 0.6);
 
   /* Breadcrumbs Component */
   --breadcrumb-link-color: #E2725B;
@@ -800,6 +824,14 @@
   --image-error-text: #888888;
 
   --lightbox-focus: #0b6cff;
+  --lightbox-breadcrumb-bg: rgba(0, 0, 0, 0.5);
+  --lightbox-breadcrumb-link-color: rgba(255, 255, 255, 0.95);
+  --lightbox-breadcrumb-link-hover-bg: rgba(255, 255, 255, 0.15);
+  --lightbox-breadcrumb-link-hover-color: #ffffff;
+  --lightbox-breadcrumb-focus: #0b6cff;
+  --lightbox-breadcrumb-link-focus-bg: rgba(255, 255, 255, 0.1);
+  --lightbox-breadcrumb-current-color: rgba(255, 255, 255, 0.9);
+  --lightbox-breadcrumb-separator-color: rgba(255, 255, 255, 0.6);
 
   --breadcrumb-link-color: #6b8cb7;
   --breadcrumb-link-hover-bg: #eeeeee;

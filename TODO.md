@@ -70,37 +70,6 @@
 
 **Verification:** Run thumbnail generation from a fullsize tree; serve both roots (e.g. `/images` and `/thumbnails`); set config; confirm root album, album grid, and lightbox show thumbnails from the thumbnail root and fullsize from the fullsize root, with no console errors.
 
-### Make the breadcrumbs more visible when viewing a single image
-
-**Objective:** Improve the visibility of the breadcrumb navigation when the user is viewing a single image (e.g. in the lightbox or on an image-detail view such as `/album/:albumId/image/:imageId`), so that the hierarchy (root → … → album → current image/context) remains easy to see and use without hunting for it.
-
-**Context:** Breadcrumbs are implemented in `frontend/src/components/Breadcrumbs/` and rendered in `AlbumDetail` (`frontend/src/components/AlbumDetail/AlbumDetail.tsx`) inside `album-detail-breadcrumbs`. They appear on album detail and album grid views. When a single image is shown (lightbox open or image-focused route), the breadcrumbs can be hard to notice because: (1) they sit above the main content and may be scrolled off or overshadowed by the image; (2) the lightbox overlay dims the page and the breadcrumbs may sit outside or at the edge of the visible area with low contrast; (3) font size, color, or background may not stand out enough against the image or overlay. There is no breadcrumb inside the Lightbox component today.
-
-**Expected behavior:**
-
-- When viewing a single image (lightbox open or image-detail view), the breadcrumb trail is clearly visible (readable contrast, sufficient size, and positioned so it is not hidden or overlooked).
-- Options to consider: (a) Increase prominence of the existing breadcrumbs when an image is focused (e.g. ensure they stay in view, add a subtle background or border, or slightly larger type). (b) Show a compact breadcrumb inside or at the top of the lightbox overlay so it is always visible while the image is open. (c) Fix stacking/scroll so the breadcrumb bar remains visible (e.g. sticky or fixed) when the user has scrolled to the image or opened the lightbox.
-- Accessibility: Focus order and ARIA remain correct; breadcrumb links stay keyboard- and screen-reader friendly.
-- The change applies when “viewing a single image” (lightbox or image route); album-only view can keep current styling or be updated consistently.
-
-**Implementation direction:**
-
-1. **Audit:** Confirm where breadcrumbs are rendered when the user opens a single image (AlbumDetail layout vs. Lightbox) and whether they are in the DOM but hard to see (contrast, position, z-index, scroll) or missing in some view.
-2. **Visibility improvements:** Improve contrast and prominence (e.g. theme variables in `themes.css`: `--breadcrumb-*`; or component styles in `Breadcrumbs.css`) so breadcrumbs stand out against the background (e.g. light theme and dark overlay). Consider a slight background, border, or increased font weight/size for the “single image” context if it can be targeted (e.g. class on a parent when lightbox is open or route is image-detail).
-3. **Position/stickiness:** If breadcrumbs scroll away when the user scrolls to the image or when the lightbox is open, consider making the breadcrumb bar sticky or ensuring it stays visible (e.g. top of viewport or top of lightbox overlay). Avoid covering critical image content.
-4. **Optional – breadcrumbs in lightbox:** If the existing bar cannot be made visible enough when the lightbox is open, add a compact breadcrumb row inside the Lightbox component (e.g. at the top of the overlay), using the same `breadcrumbPath` from album metadata, and ensure it does not clash with lightbox controls (close, prev/next, etc.).
-5. **Themes:** Verify visibility in light, dark, and original themes; adjust CSS variables or overrides if needed.
-6. **Verification:** Open an album, open a single image in the lightbox (or navigate to an image-detail URL); confirm breadcrumbs are easy to see and use; test keyboard and a screen reader if possible.
-
-**Files likely to touch:**
-
-- `frontend/src/components/Breadcrumbs/Breadcrumbs.css` – styles for prominence (size, contrast, background).
-- `frontend/src/styles/themes.css` – `--breadcrumb-*` variables for contrast in all themes.
-- `frontend/src/components/AlbumDetail/AlbumDetail.tsx` – optional wrapper class when image is focused or lightbox is open.
-- `frontend/src/components/Lightbox/Lightbox.tsx` (and CSS) – optional: add breadcrumb row inside overlay and pass `breadcrumbPath` (e.g. from route/context).
-- Layout or context that knows “lightbox open” or “image-detail route” – to apply a modifier class or pass props to breadcrumbs/lightbox.
-
-**Verification:** Navigate to an album, open a single image (lightbox or image URL); confirm the breadcrumb trail is clearly visible and usable without hunting; check in light and dark themes.
 
 ### Undo the renaming of Gallery Administrator to "The Louie"; change it to "Unknown" instead
 

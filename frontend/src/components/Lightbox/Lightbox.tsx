@@ -70,8 +70,9 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import type { Image } from '@/types';
+import type { Image, BreadcrumbPath } from '@/types';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { parseBBCodeDecoded } from '@/utils/bbcode';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { useImageNavigation } from '@/hooks/useImageNavigation';
@@ -101,6 +102,8 @@ export interface LightboxProps {
   onNext?: () => void;
   /** Optional callback function for previous image navigation */
   onPrevious?: () => void;
+  /** Optional breadcrumb path for album hierarchy; when provided, breadcrumbs are shown at top of overlay (e.g. from ImageDetailPage). */
+  breadcrumbPath?: BreadcrumbPath | null;
 }
 
 /**
@@ -121,6 +124,7 @@ export function Lightbox({
   albumId: _albumId = null,
   onNext,
   onPrevious,
+  breadcrumbPath,
 }: LightboxProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -865,7 +869,7 @@ export function Lightbox({
         }}
       >
         <div className="lightbox-container" ref={modalRef}>
-        {/* Close Button */}
+        {/* Close Button – first in DOM for focus order (Close → Breadcrumbs → Nav) */}
         <button
           ref={closeButtonRef}
           className="lightbox-close"
@@ -878,6 +882,12 @@ export function Lightbox({
             ×
           </span>
         </button>
+        {/* Breadcrumb row – album location when viewing single image */}
+        {breadcrumbPath && breadcrumbPath.length > 1 && (
+          <div className="lightbox-breadcrumb-row" aria-label="Album location">
+            <Breadcrumbs path={breadcrumbPath} className="breadcrumbs-lightbox" />
+          </div>
+        )}
 
         {/* Navigation Buttons */}
         {canNavigate && onNext && onPrevious && (

@@ -73,6 +73,8 @@ export function ImageDetailPage({
     [metadata?.breadcrumbPath],
   );
 
+  const breadcrumbPath = metadata?.breadcrumbPath ?? null;
+
   // Extract images from album data
   const images = useMemo<Image[]>(() => {
     if (!albumData) {
@@ -198,6 +200,7 @@ export function ImageDetailPage({
             onClose={lightboxState.closeLightbox}
             onNext={lightboxState.navigateToNext}
             onPrevious={lightboxState.navigateToPrevious}
+            breadcrumbPath={breadcrumbPath}
           />
         </Suspense>
       ) : null}

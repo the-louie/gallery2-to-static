@@ -59,6 +59,61 @@
   animation: lightbox-scale-in 0.3s ease-out;
 }
 
+/* Breadcrumb row – top of overlay, light text on dark for contrast */
+.lightbox-breadcrumb-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--lightbox-breadcrumb-bg, rgba(0, 0, 0, 0.5));
+  z-index: 9;
+  box-sizing: border-box;
+}
+
+.breadcrumbs-lightbox.breadcrumbs {
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumbs-lightbox .breadcrumbs-list {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.25rem 0;
+}
+
+.breadcrumbs-lightbox .breadcrumbs-link {
+  color: var(--lightbox-breadcrumb-link-color, rgba(255, 255, 255, 0.95));
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8125rem;
+  min-height: 36px;
+}
+
+.breadcrumbs-lightbox .breadcrumbs-link:hover {
+  background-color: var(--lightbox-breadcrumb-link-hover-bg, rgba(255, 255, 255, 0.15));
+  color: var(--lightbox-breadcrumb-link-hover-color, #fff);
+}
+
+.breadcrumbs-lightbox .breadcrumbs-link:focus {
+  outline: 2px solid var(--lightbox-breadcrumb-focus, #0066cc);
+  outline-offset: 2px;
+  background-color: var(--lightbox-breadcrumb-link-focus-bg, rgba(255, 255, 255, 0.1));
+}
+
+.breadcrumbs-lightbox .breadcrumbs-current {
+  color: var(--lightbox-breadcrumb-current-color, rgba(255, 255, 255, 0.9));
+  font-size: 0.8125rem;
+  padding: 0.35rem 0.5rem;
+  min-height: 36px;
+}
+
+.breadcrumbs-lightbox .breadcrumbs-separator {
+  color: var(--lightbox-breadcrumb-separator-color, rgba(255, 255, 255, 0.6));
+}
+
 @keyframes lightbox-scale-in {
   from {
     transform: scale(0.95);
