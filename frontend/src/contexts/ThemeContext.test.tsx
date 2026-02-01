@@ -247,6 +247,27 @@ describe('ThemeContext', () => {
       expect(result.current.theme).toBe('dark');
     });
 
+    it('effectiveTheme uses user theme when subalbum has no entry in album-themes.json', async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          defaultTheme: 'original',
+          albumThemes: {},
+        }),
+      });
+
+      const { result } = renderHook(() => useTheme(), {
+        wrapper: createWrapper('dark', ['/album/7']),
+      });
+
+      await waitFor(() => {
+        expect(result.current.effectiveTheme).toBe('dark');
+      });
+
+      expect(result.current.theme).toBe('dark');
+      expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    });
+
     it('effectiveTheme falls back to defaultTheme when album has invalid theme in config', async () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 

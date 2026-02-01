@@ -353,6 +353,7 @@ export function ThemeProvider({
     () => getAlbumIdFromPath(location.pathname),
     [location.pathname],
   );
+  /** Per-album override from album-themes.json; null when album has no override (user theme is used). */
   const [albumOverrideTheme, setAlbumOverrideTheme] = useState<ThemeName | null>(
     null,
   );

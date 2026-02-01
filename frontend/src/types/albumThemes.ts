@@ -10,11 +10,11 @@
 /**
  * Configuration for per-album theme overrides.
  *
- * - defaultTheme: Theme used when an album has no override. Defaults to app DEFAULT_THEME.
+ * - defaultTheme: Fallback when albumId is null or when an album's entry has an invalid theme value. Defaults to app DEFAULT_THEME. When an album has no entry in albumThemes, the app uses the user's theme, not defaultTheme.
  * - albumThemes: Map of album ID (string) to theme name. Keys must be valid positive integers as strings.
  */
 export interface AlbumThemesConfig {
-  /** Theme used when album has no override or when album theme is invalid */
+  /** Fallback when albumId is null or when an album's theme value is invalid; not used when album has no entry (user theme is used then) */
   defaultTheme?: string;
   /** Map of album ID (as string) to theme name (e.g. "7" -> "dark") */
   albumThemes?: Record<string, string>;

@@ -2,7 +2,8 @@
  * Per-album theme configuration utilities
  *
  * Loads and parses album-themes.json from the public directory.
- * Provides theme lookup for albums with fallback to default theme.
+ * Provides theme lookup for albums. When an album has no entry in albumThemes,
+ * returns null so the caller can use the user's theme (no override).
  *
  * @module frontend/src/utils/albumThemesConfig
  */
@@ -53,24 +54,24 @@ export function isValidAlbumThemesConfig(data: unknown): data is AlbumThemesConf
  *
  * @param albumId - Album ID, or null when not viewing an album
  * @param config - Parsed album themes config
- * @returns Valid theme name (always from registry)
+ * @returns Theme name when the album has an explicit override (or fallback for invalid value); null when the album has no entry in albumThemes. Caller should treat null as "no override – use user's theme".
  */
 export function getThemeForAlbum(
   albumId: number | null,
   config: AlbumThemesConfig,
-): ThemeName {
+): ThemeName | null {
   if (albumId === null) {
     return resolveDefaultTheme(config);
   }
 
   const albumThemes = config.albumThemes;
   if (!albumThemes || typeof albumThemes !== 'object') {
-    return resolveDefaultTheme(config);
+    return null;
   }
 
   const themeName = albumThemes[String(albumId)];
   if (themeName === undefined || themeName === null) {
-    return resolveDefaultTheme(config);
+    return null;
   }
 
   if (isValidTheme(themeName)) {

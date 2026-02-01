@@ -49,29 +49,29 @@ describe('albumThemesConfig utilities', () => {
       consoleSpy.mockRestore();
     });
 
-    it('returns defaultTheme when album has no override', () => {
+    it('returns null when album has no override', () => {
       const config = {
         defaultTheme: 'dark',
         albumThemes: { '12': 'light' },
       };
-      expect(getThemeForAlbum(7, config)).toBe('dark');
+      expect(getThemeForAlbum(7, config)).toBe(null);
     });
 
-    it('returns DEFAULT_THEME when config is empty', () => {
-      expect(getThemeForAlbum(7, {})).toBe('original');
+    it('returns null when config is empty', () => {
+      expect(getThemeForAlbum(7, {})).toBe(null);
     });
 
-    it('returns DEFAULT_THEME when albumThemes is empty', () => {
+    it('returns null when albumThemes is empty', () => {
       const config = { defaultTheme: 'original', albumThemes: {} };
-      expect(getThemeForAlbum(7, config)).toBe('original');
+      expect(getThemeForAlbum(7, config)).toBe(null);
     });
 
-    it('falls back to DEFAULT_THEME when defaultTheme is invalid', () => {
+    it('returns null when album has no override and defaultTheme is invalid', () => {
       const config = {
         defaultTheme: 'invalid',
         albumThemes: {},
       };
-      expect(getThemeForAlbum(7, config)).toBe('original');
+      expect(getThemeForAlbum(7, config)).toBe(null);
     });
   });
 

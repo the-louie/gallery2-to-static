@@ -16,4 +16,4 @@
 **In Progress:** 0
 **Completed:** 0
 
-**Estimated Total Time:** -
+**Estimated Total Time:** –
