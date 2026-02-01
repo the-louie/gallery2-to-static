@@ -187,6 +187,7 @@ export async function collectImageUrlsFromAlbumTree(
 
 /**
  * Verify a single image URL via HTTP fetch.
+ * Uses HEAD to avoid downloading the full body; falls back to GET if HEAD returns 405.
  */
 export async function verifyImageUrl(
     url: string,
@@ -198,8 +199,21 @@ export async function verifyImageUrl(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     try {
-        const res = await fetch(url, { method: 'GET', redirect: 'follow', signal: controller.signal });
-        clearTimeout(timeoutId);
+        let res = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: controller.signal });
+        if (res.status === 405) {
+            clearTimeout(timeoutId);
+            const controller2 = new AbortController();
+            const timeoutId2 = setTimeout(() => controller2.abort(), timeoutMs);
+            try {
+                res = await fetch(url, { method: 'GET', redirect: 'follow', signal: controller2.signal });
+                clearTimeout(timeoutId2);
+            } catch (e) {
+                clearTimeout(timeoutId2);
+                throw e;
+            }
+        } else {
+            clearTimeout(timeoutId);
+        }
         if (!res.ok) {
             const err = res.status === 404 ? '404 Not Found' : res.status >= 500 ? `${res.status} server error` : `${res.status}`;
             return { ok: false, status: res.status, error: err };
@@ -208,12 +222,8 @@ export async function verifyImageUrl(
         if (!isImageContentType(contentType)) {
             return { ok: false, status: res.status, error: `not an image (Content-Type: ${contentType ?? 'missing'})` };
         }
-        const reader = res.body?.getReader();
-        if (reader) {
-            while (true) {
-                const { done } = await reader.read();
-                if (done) break;
-            }
+        if (res.body) {
+            await res.body.cancel().catch(() => {});
         }
         return { ok: true, status: res.status };
     } catch (err) {

@@ -6,7 +6,11 @@ import { Config, Child, AlbumFile, BreadcrumbItem, AlbumMetadata } from './types
 import { cleanup_uipathcomponent, normalizePathcomponentForFilename } from './cleanupUipath'
 import { getLinkTarget, getThumbTarget } from './legacyPaths'
 import { computeAllDescendantImageCounts } from './descendantImageCount'
-import { runVerification } from './verifyImagePaths'
+import {
+    runVerification,
+    loadImageConfigForVerification,
+    verifyImageUrl,
+} from './verifyImagePaths'
 import {
     loadFileList,
     buildFileIndex,
@@ -176,7 +180,7 @@ async function resolveHighlightImageUrl(
         if (!result) return null;
         if (!result.photo.pathComponent) return null;
 
-        const paths = buildHighlightPathsFromResult(result, thumbPrefix, resolveImagePath);
+        const paths = await buildHighlightPathsFromResult(result, thumbPrefix, resolveImagePath);
         return paths?.urlPath ?? null;
     } catch (error) {
         console.warn(`Error resolving highlight image for album ${root}:`, error);
@@ -190,26 +194,77 @@ export type ResolveImagePathFn = (
     dirSegments: string[],
     linkFilename: string,
     thumbFilename: string,
-) => { urlPath: string; thumbnailUrlPath: string };
+) => Promise<{ urlPath: string; thumbnailUrlPath: string }>;
+
+function buildFullImageUrl(baseUrl: string, pathSegment: string): string {
+    const p = (pathSegment || '').replace(/^\/+/, '');
+    const base = baseUrl.replace(/\/+$/, '');
+    return base && p ? `${base}/${p}` : '';
+}
+
+function createSemaphore(max: number): { acquire: () => Promise<void>; release: () => void } {
+    let inFlight = 0;
+    const queue: Array<() => void> = [];
+    return {
+        acquire: () =>
+            new Promise<void>((resolve) => {
+                if (inFlight < max) {
+                    inFlight++;
+                    resolve();
+                } else {
+                    queue.push(() => {
+                        inFlight++;
+                        resolve();
+                    });
+                }
+            }),
+        release: () => {
+            inFlight--;
+            const next = queue.shift();
+            if (next) next();
+        },
+    };
+}
 
 /**
- * Creates resolveImagePath that uses fuzzy matching when fileIndex and strategy are available.
- * On fuzzy hit: urlPath = matched fullPath, thumbnailUrlPath = dir + thumbPrefix + filename.
- * On miss: fallback to dir/linkFilename and dir/thumbFilename.
+ * Creates resolveImagePath that uses naive path first, HTTP check, then fuzzy+HTTP fallback.
+ * When baseUrl is null, returns naive paths only (no HTTP check, no fuzzy).
+ * Limits concurrent HTTP checks to avoid overwhelming the server.
  */
 function createResolveImagePath(
     fileIndex: FileIndex,
     strategy: FuzzyStrategy,
     thumbPrefix: string,
+    baseUrl: string | null,
+    timeoutMs: number,
+    concurrency: number,
 ): ResolveImagePathFn {
-    return (
+    const sem = createSemaphore(concurrency);
+    return async (
         dirSegments: string[],
         linkFilename: string,
         thumbFilename: string,
-    ): { urlPath: string; thumbnailUrlPath: string } => {
+    ): Promise<{ urlPath: string; thumbnailUrlPath: string }> => {
         const dir = dirSegments.join('/');
-        const fallbackUrlPath = dir ? `${dir}/${linkFilename}` : linkFilename;
-        const fallbackThumbPath = dir ? `${dir}/${thumbFilename}` : thumbFilename;
+        const naiveUrlPath = dir ? `${dir}/${linkFilename}` : linkFilename;
+        const naiveThumbPath = dir ? `${dir}/${thumbFilename}` : thumbFilename;
+
+        if (!baseUrl || !baseUrl.startsWith('http')) {
+            return { urlPath: naiveUrlPath, thumbnailUrlPath: naiveThumbPath };
+        }
+
+        const naiveFullUrl = buildFullImageUrl(baseUrl, naiveUrlPath);
+        if (naiveFullUrl) {
+            await sem.acquire();
+            try {
+                const check = await verifyImageUrl(naiveFullUrl, timeoutMs);
+                if (check.ok) {
+                    return { urlPath: naiveUrlPath, thumbnailUrlPath: naiveThumbPath };
+                }
+            } finally {
+                sem.release();
+            }
+        }
 
         const resolved = resolveFuzzy(
             { dirSegments, baseFilename: linkFilename },
@@ -221,22 +276,35 @@ function createResolveImagePath(
             const resolvedDir = lastSlash === -1 ? '' : resolved.slice(0, lastSlash);
             const resolvedFile = lastSlash === -1 ? resolved : resolved.slice(lastSlash + 1);
             const resolvedThumb = thumbPrefix + resolvedFile;
-            const thumbnailUrlPath = resolvedDir ? `${resolvedDir}/${resolvedThumb}` : resolvedThumb;
-            return { urlPath: resolved, thumbnailUrlPath };
+            const fuzzyUrlPath = resolved;
+            const fuzzyThumbPath = resolvedDir ? `${resolvedDir}/${resolvedThumb}` : resolvedThumb;
+            const fuzzyFullUrl = buildFullImageUrl(baseUrl, fuzzyUrlPath);
+            if (fuzzyFullUrl) {
+                await sem.acquire();
+                try {
+                    const check = await verifyImageUrl(fuzzyFullUrl, timeoutMs);
+                    if (check.ok) {
+                        return { urlPath: fuzzyUrlPath, thumbnailUrlPath: fuzzyThumbPath };
+                    }
+                } finally {
+                    sem.release();
+                }
+            }
         }
-        return { urlPath: fallbackUrlPath, thumbnailUrlPath: fallbackThumbPath };
+
+        return { urlPath: naiveUrlPath, thumbnailUrlPath: naiveThumbPath };
     };
 }
 
 /**
  * Builds full-size and thumbnail URL paths from a findFirstPhotoRecursive result.
- * Uses resolveImagePath when available for fuzzy matching.
+ * Uses resolveImagePath when available (naive→HTTP check→fuzzy→HTTP check).
  */
-function buildHighlightPathsFromResult(
+async function buildHighlightPathsFromResult(
     result: FirstPhotoResult,
     thumbPrefix: string,
     resolveImagePath?: ResolveImagePathFn | null,
-): { urlPath: string; thumbnailUrlPath: string } | null {
+): Promise<{ urlPath: string; thumbnailUrlPath: string } | null> {
     const { photo, uipath: photoUipath } = result;
     if (!photo.pathComponent) return null;
     const cleanedTitle = cleanup_uipathcomponent(photo.title ?? photo.pathComponent ?? '');
@@ -349,34 +417,36 @@ const main = async (
                 );
             }
         });
-        const processedChildren = filtered.map((child) => {
-            if (child.type === 'GalleryPhotoItem' && child.pathComponent) {
-                const fullPath = pathComponent.concat([child.pathComponent]).join('/');
-                const cleanedTitle = cleanup_uipathcomponent(child.title ?? child.pathComponent ?? '');
-                const normalizedPath = normalizePathcomponentForFilename(child.pathComponent);
-                const dirSegments = uipath.slice(1);
-                const linkFilename = getLinkTarget(cleanedTitle, normalizedPath);
-                const thumbFilename = getThumbTarget(cleanedTitle, normalizedPath, thumbPrefix);
-                let urlPath: string;
-                let highlightThumbnailUrlPath: string;
-                if (resolveImagePath) {
-                    const resolved = resolveImagePath(dirSegments, linkFilename, thumbFilename);
-                    urlPath = resolved.urlPath;
-                    highlightThumbnailUrlPath = resolved.thumbnailUrlPath;
-                } else {
-                    const dir = dirSegments.join('/');
-                    urlPath = dir ? `${dir}/${linkFilename}` : linkFilename;
-                    highlightThumbnailUrlPath = dir ? `${dir}/${thumbFilename}` : thumbFilename;
+        const processedChildren = await Promise.all(
+            filtered.map(async (child) => {
+                if (child.type === 'GalleryPhotoItem' && child.pathComponent) {
+                    const fullPath = pathComponent.concat([child.pathComponent]).join('/');
+                    const cleanedTitle = cleanup_uipathcomponent(child.title ?? child.pathComponent ?? '');
+                    const normalizedPath = normalizePathcomponentForFilename(child.pathComponent);
+                    const dirSegments = uipath.slice(1);
+                    const linkFilename = getLinkTarget(cleanedTitle, normalizedPath);
+                    const thumbFilename = getThumbTarget(cleanedTitle, normalizedPath, thumbPrefix);
+                    let urlPath: string;
+                    let highlightThumbnailUrlPath: string;
+                    if (resolveImagePath) {
+                        const resolved = await resolveImagePath(dirSegments, linkFilename, thumbFilename);
+                        urlPath = resolved.urlPath;
+                        highlightThumbnailUrlPath = resolved.thumbnailUrlPath;
+                    } else {
+                        const dir = dirSegments.join('/');
+                        urlPath = dir ? `${dir}/${linkFilename}` : linkFilename;
+                        highlightThumbnailUrlPath = dir ? `${dir}/${thumbFilename}` : thumbFilename;
+                    }
+                    return {
+                        ...child,
+                        pathComponent: fullPath,
+                        urlPath,
+                        highlightThumbnailUrlPath,
+                    };
                 }
-                return {
-                    ...child,
-                    pathComponent: fullPath,
-                    urlPath,
-                    highlightThumbnailUrlPath,
-                };
-            }
-            return child;
-        });
+                return child;
+            }),
+        );
         await Promise.all(recursivePromises);
 
         const processedChildrenWithThumbnails = await Promise.all(
@@ -400,7 +470,7 @@ const main = async (
                             ignoreSet,
                         );
                         if (highlightResult) {
-                            const paths = buildHighlightPathsFromResult(
+                            const paths = await buildHighlightPathsFromResult(
                                 highlightResult,
                                 thumbPrefix,
                                 resolveImagePath,
@@ -445,11 +515,12 @@ const main = async (
                         );
                         let thumbnailUrlPath: string;
                         if (resolveImagePath) {
-                            thumbnailUrlPath = resolveImagePath(
+                            const resolved = await resolveImagePath(
                                 dirSegments,
                                 linkFilename,
                                 thumbFilename,
-                            ).thumbnailUrlPath;
+                            );
+                            thumbnailUrlPath = resolved.thumbnailUrlPath;
                         } else {
                             const dir = dirSegments.join('/');
                             thumbnailUrlPath = dir ? `${dir}/${thumbFilename}` : thumbFilename;
@@ -616,6 +687,8 @@ let connection: mysql.Connection | null = null;
 
         const projectRoot = path.join(__dirname, '..');
         let resolveImagePath: ResolveImagePathFn | null = null;
+        const baseUrl = await loadImageConfigForVerification(projectRoot, config.imageConfigPath);
+        const timeoutMs = config.verifyTimeoutMs ?? 10_000;
         const fileListPath = config.fileListPath ?? 'backend/all-lanbilder-files.txt';
         const fuzzyStrategyPath = config.fuzzyStrategyPath ?? 'fuzzy-match-strategy.json';
         const enableFuzzy = config.enableFuzzyMatch !== false;
@@ -639,8 +712,17 @@ let connection: mysql.Connection | null = null;
                     typeof strategy.type === 'string' &&
                     typeof strategy.algorithm === 'string'
                 ) {
-                    resolveImagePath = createResolveImagePath(fileIndex, strategy, thumbPrefix);
-                    console.log(`Fuzzy matching enabled: ${entries.length} files, strategy "${strategy.algorithm}"`);
+                    const concurrency = Math.max(1, config.verifyConcurrency ?? 5);
+                    resolveImagePath = createResolveImagePath(
+                        fileIndex,
+                        strategy,
+                        thumbPrefix,
+                        baseUrl,
+                        timeoutMs,
+                        concurrency,
+                    );
+                    const mode = baseUrl ? 'HTTP-check (naive→fuzzy fallback)' : 'disabled (no baseUrl)';
+                    console.log(`Fuzzy matching enabled: ${entries.length} files, strategy "${strategy.algorithm}", ${mode}`);
                 }
             } catch (err) {
                 console.warn(

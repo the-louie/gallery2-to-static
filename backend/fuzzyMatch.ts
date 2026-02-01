@@ -355,7 +355,9 @@ function getTopKCandidates(
   topK: number = BORDA_TOP_K,
 ): Array<{ e: FileEntry; score: number }> {
   const w = { ...DEFAULT_WEIGHTS, ...weights, ...options.weights };
-  const candidates = getCandidates(parsed, fileIndex, options);
+  const candidateCap = typeof options.candidateCap === 'number' ? options.candidateCap : undefined;
+  const earlyExitTop = typeof options.earlyExitTop === 'number' ? options.earlyExitTop : undefined;
+  const candidates = getCandidates(parsed, fileIndex, { candidateCap, earlyExitTop });
   const scored = candidates.map((e) => ({
     e,
     score: scoreCandidate(parsed, e, w, {
@@ -387,7 +389,9 @@ function bestMatch(
   const lowerThresh = (options.lowerThreshold ?? DEFAULT_LOWER_THRESHOLD) as number;
   const w = { ...DEFAULT_WEIGHTS, ...weights, ...(options.weights as Weights | undefined) };
 
-  const candidates = getCandidates(parsed, fileIndex, options);
+  const candidateCap = typeof options.candidateCap === 'number' ? options.candidateCap : undefined;
+  const earlyExitTop = typeof options.earlyExitTop === 'number' ? options.earlyExitTop : undefined;
+  const candidates = getCandidates(parsed, fileIndex, { candidateCap, earlyExitTop });
   if (candidates.length === 0) return null;
 
   const scored = candidates.map((e) => ({
