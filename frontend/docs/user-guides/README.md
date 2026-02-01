@@ -18,6 +18,7 @@ This documentation is organized into the following guides:
 
 ### Configuration
 - **[02-configuration.md](02-configuration.md)** - Complete configuration file reference
+- **[08-local-images.md](08-local-images.md)** - Local image copy setup and verification
 
 ### Usage
 - **[03-backend-usage.md](03-backend-usage.md)** - Running the backend conversion script

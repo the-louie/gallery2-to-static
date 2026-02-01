@@ -4,38 +4,6 @@
 
 ## Pending
 
-### Incorporate local copy of images and verify that it works correctly
-
-**Objective:** Serve gallery images from a local path (e.g. `/images` or a dev-served directory) instead of a remote base URL, and verify that thumbnails, album grid, lightbox, and root album view all load and display correctly.
-
-**Context:** The app currently uses `public/image-config.json` to set `baseUrl` (e.g. `https://lanbilder.se`). Image URLs are built as `{baseUrl}/{pathComponent}` or `{baseUrl}/{thumbnailPathComponent}`. When `baseUrl` is cross-origin (e.g. from `localhost`), CORS/CORP can cause OpaqueResponseBlocking; a dev proxy (`VITE_IMAGE_PROXY_TARGET`) exists to work around that. Using a local copy avoids cross-origin entirely and simplifies development and offline verification.
-
-**Expected behavior:**
-
-- A local directory (or Vite-served path) contains the same image paths as production (e.g. `internationella/.../__t_...jpg` for thumbnails, full paths for full-size images).
-- `image-config.json` (or env) is set so `baseUrl` points at that local path (e.g. `/images` with no trailing slash, matching `DEFAULT_BASE_URL` in `frontend/src/utils/imageConfig.ts`).
-- Root album view: all root-level album thumbnails load (RootAlbumListBlock when `isOriginal`, and background/highlight images when not).
-- Album detail view: album thumbnails in AlbumGrid (AlbumCard) load.
-- Lightbox: thumbnail and full-size images load; progressive loading and preload behave correctly.
-- No OpaqueResponseBlocking or CORS errors when using the local base URL (same-origin).
-- Optional: document how to populate the local copy (e.g. sync from extraction output or CDN) and how to switch between local and remote baseUrl.
-
-**Implementation direction:**
-
-1. **Local image source:** Decide where the local copy lives (e.g. `frontend/public/images/`, or a Vite dev middleware path like `/data/images/`). Ensure path structure matches what the app expects (same relative paths as `thumbnailPathComponent`, `pathComponent`, `thumbnailUrlPath`, etc.).
-2. **Config:** Use `baseUrl: "/images"` (or the chosen path) in `public/image-config.json` for local development, or document `VITE_IMAGE_BASE_URL=/images` so the app uses the local base without editing the JSON.
-3. **Serving:** If images are under `public/images/`, Vite serves them at `/images/...` by default. If they live outside `public/`, add or reuse a Vite plugin/middleware to serve that directory at the chosen base path.
-4. **Verification:** Manually (or via a small checklist) verify: (a) root album list thumbnails, (b) album grid thumbnails on an album page, (c) lightbox open/next/prev and full-size load, (d) no console errors for image loads. Optionally add or run an existing smoke test that asserts image URLs resolve.
-5. **Docs:** Update README or dev docs with: how to set up the local image copy, how to point `baseUrl` at it, and how to verify (and, if relevant, how to use the remote baseUrl or proxy for comparison).
-
-**Files likely to touch:**
-
-- `frontend/public/image-config.json` or `.example` – document local `baseUrl` value.
-- `frontend/vite.config.ts` – only if a new path (e.g. outside `public/`) needs to be served.
-- Docs (e.g. `README.md`, `frontend/README.md`, or `docs/`) – setup and verification steps.
-
-**Verification:** With `baseUrl` set to the local path, load the app on the root album view and an album detail view; confirm thumbnails and lightbox images load and that the console reports no OpaqueResponseBlocking or CORS errors for image requests.
-
 ### Add ability to generate thumbnails from the fullsize images; use a separate directory root but the same directory structure as the fullsize images
 
 **Objective:** (1) Provide a way to generate thumbnail images from fullsize images (e.g. a script or build step that resizes/crops and writes thumbnails). (2) Serve thumbnails from a separate directory root (e.g. `/thumbnails` or a configurable `thumbnailBaseUrl`) while keeping the same relative path structure under that root as under the fullsize root (e.g. fullsize `baseUrl/album/sub/photo.jpg` → thumbnail `thumbnailBaseUrl/album/sub/photo.jpg` or `thumbnailBaseUrl/album/sub/t__photo.jpg`).

@@ -19,6 +19,7 @@ Comprehensive user documentation is available in the [frontend/docs/user-guides/
 
 - **[Getting Started](frontend/docs/user-guides/01-getting-started.md)** - Installation and first steps
 - **[Configuration](frontend/docs/user-guides/02-configuration.md)** - Complete configuration reference
+- **[Local image copy](frontend/docs/user-guides/08-local-images.md)** - Serve images from a local path (e.g. `/images`)
 - **[Backend Usage](frontend/docs/user-guides/03-backend-usage.md)** - Running the conversion script
 - **[Frontend Usage](frontend/docs/user-guides/04-frontend-usage.md)** - Using the gallery application
 - **[Features](frontend/docs/user-guides/05-features.md)** - Detailed feature documentation
