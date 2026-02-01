@@ -285,6 +285,34 @@ The theme switcher is located in the header, next to the search bar.
 - **Moon Icon**: Dark mode
 - **Monitor Icon**: System mode
 
+### Per-Album Theme Configuration
+
+You can assign a specific theme to individual albums via `public/album-themes.json`. See [docs/theming/per-album-configuration.md](../../../docs/theming/per-album-configuration.md) for full documentation. When viewing an album with a theme override, that theme is applied instead of your stored preference.
+
+**File location**: `frontend/public/album-themes.json`
+
+**Structure**:
+- `defaultTheme` (optional): Theme used when an album has no override. Defaults to `"original"`.
+- `albumThemes` (optional): Map of album ID (as string) to theme name. Example: `"7": "dark"` applies dark theme to album 7.
+
+**Example** (see [album-themes.json.example](../../public/album-themes.json.example)):
+
+```json
+{
+  "defaultTheme": "original",
+  "albumThemes": {
+    "7": "dark",
+    "12": "light"
+  }
+}
+```
+
+**Behavior**:
+- Albums without an entry use `defaultTheme` (or app default if omitted)
+- Invalid theme names fall back to `defaultTheme`
+- On home page and search, your stored theme preference is used (no album override)
+- File is loaded at runtime; no rebuild required
+
 ## Virtual Scrolling
 
 For large albums with many items, virtual scrolling improves performance.

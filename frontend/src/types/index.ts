@@ -17,6 +17,7 @@ import type { Child, AlbumMetadata, AlbumFile } from '../../../backend/types';
  * while maintaining a single source of truth in the backend/types.ts file.
  */
 export type { Child, AlbumMetadata, AlbumFile };
+export type { AlbumThemesConfig } from './albumThemes';
 
 /**
  * Index metadata structure from index.json

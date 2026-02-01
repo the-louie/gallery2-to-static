@@ -46,18 +46,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
-import { ThemeProvider, useTheme, type Theme } from './ThemeContext';
+import { MemoryRouter } from 'react-router-dom';
+import { ThemeProvider, useTheme } from './ThemeContext';
 import type { ThemeName } from '../config/themes';
+import * as albumThemesConfig from '../utils/albumThemesConfig';
 
-// Helper to create wrapper with ThemeProvider
-function createWrapper(defaultTheme?: ThemeName) {
+const originalFetch = globalThis.fetch;
+
+// Helper to create wrapper with ThemeProvider and MemoryRouter (ThemeProvider uses useLocation)
+function createWrapper(
+  defaultTheme?: ThemeName,
+  initialEntries: string[] = ['/'],
+) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return (
-      <ThemeProvider defaultTheme={defaultTheme}>
-        {children}
-      </ThemeProvider>
+      <MemoryRouter initialEntries={initialEntries}>
+        <ThemeProvider defaultTheme={defaultTheme}>
+          {children}
+        </ThemeProvider>
+      </MemoryRouter>
     );
   };
 }
@@ -71,13 +80,18 @@ describe('ThemeContext', () => {
 
     // Reset document attribute
     document.documentElement.removeAttribute('data-theme');
+
+    // Clear album themes cache
+    albumThemesConfig.clearAlbumThemesConfigCache();
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    globalThis.fetch = originalFetch;
     document.documentElement.removeAttribute('data-theme');
     localStorage.clear();
     localStorage.removeItem('gallery-theme-migrated');
+    albumThemesConfig.clearAlbumThemesConfigCache();
   });
 
   describe('ThemeProvider', () => {
@@ -87,6 +101,7 @@ describe('ThemeContext', () => {
       });
 
       expect(result.current).toHaveProperty('theme');
+      expect(result.current).toHaveProperty('effectiveTheme');
       expect(result.current).toHaveProperty('setTheme');
       expect(result.current).toHaveProperty('availableThemes');
       expect(result.current).toHaveProperty('isDark');
@@ -182,6 +197,78 @@ describe('ThemeContext', () => {
       expect(result.current.availableThemes.some((t) => t.name === 'light')).toBe(true);
       expect(result.current.availableThemes.some((t) => t.name === 'dark')).toBe(true);
       expect(result.current.availableThemes.some((t) => t.name === 'original')).toBe(true);
+    });
+
+    it('effectiveTheme equals theme when on home page', () => {
+      const { result } = renderHook(() => useTheme(), {
+        wrapper: createWrapper('light'),
+      });
+
+      expect(result.current.effectiveTheme).toBe('light');
+      expect(result.current.theme).toBe('light');
+    });
+
+    it('effectiveTheme applies album override when on album page', async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          defaultTheme: 'original',
+          albumThemes: { '7': 'dark' },
+        }),
+      });
+
+      const { result } = renderHook(() => useTheme(), {
+        wrapper: createWrapper('light', ['/album/7']),
+      });
+
+      await waitFor(() => {
+        expect(result.current.effectiveTheme).toBe('dark');
+      });
+
+      expect(result.current.theme).toBe('light');
+      expect(result.current.isDark).toBe(true);
+      expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    });
+
+    it('effectiveTheme uses user theme on home when no album override', async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          defaultTheme: 'original',
+          albumThemes: {},
+        }),
+      });
+
+      const { result } = renderHook(() => useTheme(), {
+        wrapper: createWrapper('dark', ['/']),
+      });
+
+      expect(result.current.effectiveTheme).toBe('dark');
+      expect(result.current.theme).toBe('dark');
+    });
+
+    it('effectiveTheme falls back to defaultTheme when album has invalid theme in config', async () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          defaultTheme: 'light',
+          albumThemes: { '7': 'invalid' },
+        }),
+      });
+
+      const { result } = renderHook(() => useTheme(), {
+        wrapper: createWrapper('dark', ['/album/7']),
+      });
+
+      await waitFor(() => {
+        expect(result.current.effectiveTheme).toBe('light');
+      });
+
+      expect(result.current.theme).toBe('dark');
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
     });
   });
 

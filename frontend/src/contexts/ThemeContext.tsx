@@ -72,15 +72,27 @@
  * ```
  */
 
-import React, { createContext, useContext, useMemo, useLayoutEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useLayoutEffect,
+  useEffect,
+  useState,
+} from 'react';
+import { useLocation } from 'react-router-dom';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import {
   type ThemeName,
   DEFAULT_THEME,
   getAllThemes,
   isValidTheme,
-  getTheme,
 } from '../config/themes';
+import {
+  loadAlbumThemesConfig,
+  getAlbumIdFromPath,
+  getThemeForAlbum,
+} from '../utils/albumThemesConfig';
 
 /** Theme type (exported for convenience) */
 export type Theme = ThemeName;
@@ -98,17 +110,19 @@ const MIGRATION_FLAG_KEY = 'gallery-theme-migrated';
  * Theme context value interface
  */
 export interface ThemeContextValue {
-  /** The current theme name */
+  /** User's stored theme preference (for ThemeDropdown) */
   theme: Theme;
+  /** Theme actually applied (considering per-album overrides) */
+  effectiveTheme: Theme;
   /** Function to update the theme */
   setTheme: (theme: ThemeName) => void;
   /** Array of all available themes */
   availableThemes: ReturnType<typeof getAllThemes>;
-  /** Convenience property: true if current theme is dark */
+  /** Convenience property: true if effective theme is dark */
   isDark: boolean;
-  /** Convenience property: true if current theme is light */
+  /** Convenience property: true if effective theme is light */
   isLight: boolean;
-  /** Convenience property: true if current theme is original (G2 Classic) */
+  /** Convenience property: true if effective theme is original (G2 Classic) */
   isOriginal: boolean;
 }
 
@@ -117,6 +131,7 @@ export interface ThemeContextValue {
  */
 const defaultContextValue: ThemeContextValue = {
   theme: DEFAULT_THEME,
+  effectiveTheme: DEFAULT_THEME,
   setTheme: () => {
     if (import.meta.env.DEV) {
       console.warn('ThemeProvider not found. Make sure your component is wrapped in ThemeProvider.');
@@ -124,8 +139,8 @@ const defaultContextValue: ThemeContextValue = {
   },
   availableThemes: getAllThemes(),
   isDark: false,
-  isLight: true,
-  isOriginal: false,
+  isLight: false,
+  isOriginal: true,
 };
 
 /**
@@ -332,11 +347,42 @@ export function ThemeProvider({
     }
   }, [theme, validatedTheme, setThemeState]);
 
+  // Per-album theme override from album-themes.json
+  const location = useLocation();
+  const albumId = useMemo(
+    () => getAlbumIdFromPath(location.pathname),
+    [location.pathname],
+  );
+  const [albumOverrideTheme, setAlbumOverrideTheme] = useState<ThemeName | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (albumId === null) {
+      setAlbumOverrideTheme(null);
+      return;
+    }
+    let cancelled = false;
+    loadAlbumThemesConfig().then((config) => {
+      if (!cancelled) {
+        setAlbumOverrideTheme(getThemeForAlbum(albumId, config));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [albumId]);
+
+  const effectiveTheme: ThemeName =
+    albumId === null
+      ? validatedTheme
+      : (albumOverrideTheme ?? validatedTheme);
+
   // Apply theme to DOM immediately (before paint) using useLayoutEffect
   // This helps prevent FOUC
   useLayoutEffect(() => {
-    applyTheme(validatedTheme);
-  }, [validatedTheme]);
+    applyTheme(effectiveTheme);
+  }, [effectiveTheme]);
 
   // Wrapper for setTheme that validates theme name
   const setTheme = React.useCallback(
@@ -359,13 +405,14 @@ export function ThemeProvider({
   const contextValue = useMemo<ThemeContextValue>(
     () => ({
       theme: validatedTheme,
+      effectiveTheme,
       setTheme,
       availableThemes,
-      isDark: validatedTheme === 'dark',
-      isLight: validatedTheme === 'light',
-      isOriginal: validatedTheme === 'original',
+      isDark: effectiveTheme === 'dark',
+      isLight: effectiveTheme === 'light',
+      isOriginal: effectiveTheme === 'original',
     }),
-    [validatedTheme, setTheme, availableThemes]
+    [validatedTheme, effectiveTheme, setTheme, availableThemes]
   );
 
   return (
