@@ -216,6 +216,25 @@ describe('ImageThumbnail', () => {
       expect(mockIntersectionObserver.observe).toHaveBeenCalled();
     });
 
+    it('creates observer with rootMargin aligned to VirtualGrid (400px)', () => {
+      render(<ImageThumbnail image={mockPhoto} />);
+      expect(global.IntersectionObserver).toHaveBeenCalled();
+      const options = (mockIntersectionObserver as any).options;
+      expect(options).toBeDefined();
+      expect(options.rootMargin).toContain('400px');
+    });
+
+    it('loads image after fallback delay when observer never fires', async () => {
+      vi.useFakeTimers();
+      render(<ImageThumbnail image={mockPhoto} />);
+      expect(screen.queryByAltText('Test Photo')).not.toBeInTheDocument();
+      vi.advanceTimersByTime(350);
+      await waitFor(() => {
+        expect(screen.getByAltText('Test Photo')).toBeInTheDocument();
+      });
+      vi.useRealTimers();
+    });
+
     it('does not load image when not in viewport', () => {
       render(<ImageThumbnail image={mockPhoto} />);
       // Image should not be rendered until intersection

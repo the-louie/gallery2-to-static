@@ -40,7 +40,7 @@
 
 **Objective:** (1) Provide a way to generate thumbnail images from fullsize images (e.g. a script or build step that resizes/crops and writes thumbnails). (2) Serve thumbnails from a separate directory root (e.g. `/thumbnails` or a configurable `thumbnailBaseUrl`) while keeping the same relative path structure under that root as under the fullsize root (e.g. fullsize `baseUrl/album/sub/photo.jpg` → thumbnail `thumbnailBaseUrl/album/sub/photo.jpg` or `thumbnailBaseUrl/album/sub/t__photo.jpg`).
 
-**Context:** The app builds image URLs in `frontend/src/utils/imageUrl.ts`: full images use `{baseUrl}/{pathComponent}`; thumbnails use the same `baseUrl` with a filename prefix (e.g. `t__`) so the URL is `{baseUrl}/{dir}t__{filename}`. Album thumbnails use `thumbnailPathComponent` or `thumbnailUrlPath` with the same single base URL. There is no separate “thumbnail base URL” today; fullsize and thumb share one `baseUrl`. Extraction/backend may output `thumbnailPathComponent` with the same path shape as fullsize (directory structure) but with a different filename convention (e.g. `__t_...___...jpg`). To support a separate thumbnail root with the same directory structure: thumbnail URL would become `{thumbnailBaseUrl}/{sameRelativePathAsFullsize}` (or with thumb prefix in filename under that root), so that fullsize and thumb can live on different roots (e.g. `/images` vs `/thumbnails`) while paths like `album/sub/photo.jpg` stay the same under each root.
+**Context:** The app builds image URLs in `frontend/src/utils/imageUrl.ts`: full images use `{baseUrl}/{pathComponent}`; thumbnails use the same `baseUrl` with a filename prefix (e.g. `t__`) so the URL is `{baseUrl}/{dir}t__{filename}`. Album thumbnails use `thumbnailPathComponent` or `thumbnailUrlPath` with the same single base URL. There is no separate "thumbnail base URL" today; fullsize and thumb share one `baseUrl`. Extraction/backend may output `thumbnailPathComponent` with the same path shape as fullsize (directory structure) but with a different filename convention (e.g. `__t_...___...jpg`). To support a separate thumbnail root with the same directory structure: thumbnail URL would become `{thumbnailBaseUrl}/{sameRelativePathAsFullsize}` (or with thumb prefix in filename under that root), so that fullsize and thumb can live on different roots (e.g. `/images` vs `/thumbnails`) while paths like `album/sub/photo.jpg` stay the same under each root.
 
 **Expected behavior:**
 
@@ -99,31 +99,3 @@
 - `docs/dev-notes/20260125-1300_replace-gallery-administrator-with-the-louie-ownername-backend.md` (or new dev note) – document that replacement is now "Unknown".
 
 **Verification:** Run backend ownerDisplayName tests; run extraction (or a quick manual check) and confirm emitted album/image JSON has `ownerName: "Unknown"` when the source is Gallery Administrator. Spot-check frontend (album block, lightbox) to ensure "Unknown" displays correctly.
-
-### Bug: Single row of images below the fold never loads when scrolling (lazy-load never triggered)
-
-**Objective:** Fix the bug where, for albums that have only one row of images and that row is entirely below the initial viewport, the images are not loaded on first paint and when the user scrolls down the lazy-loading of those images is never triggered, so the row stays empty or placeholder. Example: `http://localhost:5173/#/album/2946`.
-
-**Context:** The image grid uses `ImageThumbnail` (`frontend/src/components/ImageThumbnail/ImageThumbnail.tsx`), which lazy-loads via `IntersectionObserver`: it observes the thumbnail container with `rootMargin: '0px 0px 200px 0px'` and default `root` (viewport). When `entry.isIntersecting` becomes true, it sets `shouldLoad(true)` and the image loads. If the grid (or the album content) is inside a scrollable container that is not the document viewport, then the observer’s root is still the viewport; scrolling that inner container does not change intersection with the viewport, so elements that come into view inside the scrollable area never become “intersecting” and never load. Alternatively, the scroll container might be the document but the observer root or the observed element’s position might be such that after scroll the callback never fires (e.g. root not updated, or observed node not in the right scroll context). Outcome: one row of images below the fold never gets `isIntersecting` and never loads.
-
-**Expected behavior:**
-
-- When the user scrolls down (whether the scroll is on the document or inside a scrollable album/content area), any image row that comes into view (or within a reasonable rootMargin of the visible area) should eventually intersect and trigger loading.
-- Albums that have only one row of images below the fold should show those images after the user scrolls to them, not remain blank or placeholder.
-- No regression: images that are already in view or that load on initial render should continue to work.
-
-**Implementation direction:**
-
-1. **Identify scroll context:** Determine where the album image grid lives in the DOM and what element is the scroll container (document vs. an inner div with overflow scroll). If the grid is inside a scrollable div, the `IntersectionObserver` used for lazy-loading must use that scroll container as `root` so that when the user scrolls inside it, intersection is computed against that root and entries fire when images enter the visible part of that container.
-2. **Observer root:** In `ImageThumbnail` (or a parent that provides context), either (a) use the scroll container element as `root` when it exists (e.g. pass a ref from the album detail/grid layout that points to the scrollable element), or (b) ensure the observed nodes are descendants of the viewport’s scroll and that no intermediate scroll container is the real scroll context; then verify that with default root (viewport) the callback fires when the user scrolls the page. If the layout uses an inner scroll (e.g. main content area with overflow), option (a) is required.
-3. **rootMargin:** Keep or tune rootMargin so that images start loading slightly before they enter the visible area (e.g. 200px below); ensure the root used for the observer is the same as the scroll context so that “below” is in the right coordinate system.
-4. **Fallback:** If the observer never fires (e.g. element never intersects the root within a short delay), consider a fallback that sets `shouldLoad(true)` after a timeout or when the user scrolls, so that images below the fold eventually load even in edge cases.
-5. **Verification:** Reproduce with an album that has only one row of images below the fold (e.g. album 2946). Load the page, scroll down to where the row is; confirm the images load. Test with both document scroll and, if applicable, an inner scroll container.
-
-**Files likely to touch:**
-
-- `frontend/src/components/ImageThumbnail/ImageThumbnail.tsx` – use scroll container as observer `root` when available; or add fallback when intersection never fires.
-- Layout or album grid component that wraps the image grid – pass ref to the scroll container so ImageThumbnail (or a context/hook) can use it as observer root.
-- Possibly a shared hook or context that provides the scroll root ref for lazy-loaded content.
-
-**Verification:** Open `http://localhost:5173/#/album/2946` (or any album with a single row of images below the fold). Without scrolling, confirm the row is not visible. Scroll down until the row is in view; confirm the images load. Repeat with a narrow viewport if the bug is viewport-dependent.“/” lightbox “back”’s

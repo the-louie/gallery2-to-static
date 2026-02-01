@@ -1,4 +1,23 @@
 /**
+ * Bottom rootMargin (px) for lazy-load IntersectionObserver. Matches or exceeds
+ * VirtualGrid's increaseViewportBy.bottom (400) so items mounted by Virtuoso
+ * in the 200–400px band below the viewport are within the observer's "visible" region.
+ */
+const LAZY_LOAD_ROOT_MARGIN_BOTTOM_PX = 400;
+
+/**
+ * Top rootMargin (px) for symmetry when scrolling up. Matches VirtualGrid's
+ * increaseViewportBy.top (400).
+ */
+const LAZY_LOAD_ROOT_MARGIN_TOP_PX = 400;
+
+/**
+ * Fallback delay (ms): if the observer has not fired after this time, load the image
+ * anyway. Handles layout/timing edge cases and sub-pixel boundaries.
+ */
+const LAZY_LOAD_FALLBACK_MS = 300;
+
+/**
  * ImageThumbnail Component
  *
  * A reusable image thumbnail component with lazy loading, progressive image loading
@@ -7,7 +26,8 @@
  * ## Features
  *
  * - Progressive image loading with blur-up technique (thumbnail → full image)
- * - Lazy loading using Intersection Observer API with optimized rootMargin (200px bottom)
+ * - Lazy loading using Intersection Observer API with rootMargin aligned to VirtualGrid viewport extension (400px)
+ * - Time-based fallback so mounted items load even if intersection never fires
  * - Native loading="lazy" attribute as fallback for browsers without Intersection Observer
  * - Aspect ratio preservation to prevent layout shift (CLS optimization)
  * - Error handling with accessible fallback placeholder
@@ -26,11 +46,10 @@
  *
  * ## Lazy Loading Implementation
  *
- * The component uses Intersection Observer API with the following configuration:
- * - rootMargin: '0px 0px 200px 0px' - preloads images 200px before entering viewport
- * - threshold: 0.01 - triggers when 1% is visible
- * - Observer automatically disconnects after intersection to prevent memory leaks
- * - Falls back to native loading="lazy" if Intersection Observer is unavailable
+ * IntersectionObserver rootMargin matches VirtualGrid's increaseViewportBy (400px top/bottom)
+ * so items mounted by the grid are within the observer's "visible" region. A short fallback
+ * timeout ensures images load even if intersection never fires (e.g. layout edge cases).
+ * Observer disconnects after intersection; fallback is cleared when shouldLoad becomes true.
  *
  * ## Usage
  *
@@ -78,8 +97,8 @@ export interface ImageThumbnailProps {
  * Supports both thumbnail and full image URLs based on the useThumbnail prop.
  *
  * The component implements lazy loading using Intersection Observer API to improve
- * initial page load performance. Images are only loaded when they approach the viewport
- * (200px before entering), reducing bandwidth usage and improving Core Web Vitals.
+ * initial page load performance. rootMargin is aligned with VirtualGrid's viewport
+ * extension so items mounted by the grid are within the observer's visible region.
  *
  * @param props - Component props
  * @returns React component
@@ -97,6 +116,7 @@ function ImageThumbnailComponent({
   const fullImgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const isMountedRef = useRef(true);
 
   // Use progressive image loading hook
   const progressiveImage = useProgressiveImage(image, true);
@@ -117,9 +137,16 @@ function ImageThumbnailComponent({
     return decodeHtmlEntities(raw);
   }, [alt, image.title, image.description]);
 
+  // Track mount state so fallback timeout does not update state after unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   // Reset lazy loading state when image changes
   useEffect(() => {
-    // Clean up existing observer when image changes
     if (observerRef.current) {
       observerRef.current.disconnect();
       observerRef.current = null;
@@ -146,24 +173,22 @@ function ImageThumbnailComponent({
       return;
     }
 
-    // Create observer with error handling for edge cases
-    // rootMargin: '0px 0px 200px 0px' - preload 200px below viewport (best practice for lazy loading)
-    // threshold: 0.01 - trigger when 1% is visible (early loading for smooth UX)
+    // Create observer with rootMargin aligned to VirtualGrid's increaseViewportBy
+    const rootMargin = `${LAZY_LOAD_ROOT_MARGIN_TOP_PX}px 0px ${LAZY_LOAD_ROOT_MARGIN_BOTTOM_PX}px 0px`;
     try {
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               setShouldLoad(true);
-              // Disconnect observer once image should load to prevent memory leaks
               observer.disconnect();
               observerRef.current = null;
             }
           });
         },
         {
-          rootMargin: '0px 0px 200px 0px', // Start loading 200px before entering viewport (bottom only)
-          threshold: 0.01, // Trigger when 1% is visible
+          rootMargin,
+          threshold: 0.01,
         },
       );
 
@@ -182,13 +207,23 @@ function ImageThumbnailComponent({
       setShouldLoad(true);
     }
 
-    // Cleanup function - disconnect observer on unmount or when dependencies change
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
         observerRef.current = null;
       }
     };
+  }, [shouldLoad]);
+
+  // Fallback: if observer has not fired after LAZY_LOAD_FALLBACK_MS, load anyway
+  useEffect(() => {
+    if (shouldLoad || typeof IntersectionObserver === 'undefined') return;
+    const container = containerRef.current;
+    if (!container) return;
+    const timeoutId = setTimeout(() => {
+      if (isMountedRef.current) setShouldLoad(true);
+    }, LAZY_LOAD_FALLBACK_MS);
+    return () => clearTimeout(timeoutId);
   }, [shouldLoad]);
 
   // Handle thumbnail image load
