@@ -1,0 +1,222 @@
+/* Reconstructed Gallery 2 (lanbilder.se) theme - from __docs/original-design screenshots */
+
+body {
+  background: #E6E6E6;
+  font-family: Arial, Helvetica, Verdana, sans-serif;
+  font-size: 12px;
+  color: #333333;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: #0066CC;
+  text-decoration: underline;
+}
+
+#gsHeader {
+  background: #EEEEEE;
+  border-bottom: 1px solid #CFCFCF;
+}
+
+.gsHeaderTop {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.gsHeaderDisclaimer {
+  color: #666666;
+}
+
+.gsHeaderLinks a {
+  color: #0066CC;
+}
+
+.gsHeaderMain {
+  padding: 6px 8px;
+}
+
+.gsBreadcrumb {
+  font-size: 12px;
+}
+
+.gsBreadcrumb a {
+  color: #0066CC;
+}
+
+#gsContainer {
+  max-width: 950px;
+  margin: 0 auto;
+  background: #FFFFFF;
+  overflow: hidden;
+}
+
+#gsLeft {
+  float: left;
+  width: 160px;
+  background: #FFFFFF;
+  border-right: 1px solid #CCCCCC;
+  padding: 10px 0;
+}
+
+.gsBlock {
+  border-bottom: 1px solid #CCCCCC;
+  padding: 8px 10px;
+}
+
+.gsBlock h2 {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333333;
+  margin: 0 0 6px 0;
+}
+
+.gsBlockContent {
+  font-size: 12px;
+}
+
+.gsBlockContent a {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.gsSearch {
+  width: 140px;
+  padding: 4px;
+  border: 1px solid #CCCCCC;
+  margin-bottom: 6px;
+}
+
+#gsRight {
+  margin-left: 160px;
+  padding: 15px 20px;
+  background: #FFFFFF;
+  min-height: 400px;
+}
+
+.gsDescription {
+  font-size: 12px;
+  color: #333333;
+  margin: 0 0 8px 0;
+}
+
+.gsMetadata {
+  font-size: 11px;
+  color: #666666;
+  margin: 0 0 15px 0;
+  text-align: right;
+}
+
+.gsAlbumList {
+  border-top: 1px solid #CCCCCC;
+}
+
+.gsAlbumRow {
+  border-bottom: 1px solid #CCCCCC;
+  padding: 12px 0;
+  overflow: hidden;
+}
+
+.gsAlbumThumb {
+  float: left;
+  margin-right: 15px;
+}
+
+.gsAlbumThumb img {
+  border: 1px solid #CCCCCC;
+  display: block;
+}
+
+.gsAlbumInfo {
+  margin-left: 135px;
+}
+
+.gsAlbumTitle {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+}
+
+.gsAlbumTitle a {
+  color: #333333;
+  text-decoration: none;
+}
+
+.gsAlbumInfo p {
+  font-size: 12px;
+  margin: 2px 0;
+}
+
+.gsAlbumMeta {
+  font-size: 11px;
+  color: #666666;
+}
+
+.gsSubalbums {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.gsSubalbums strong {
+  font-size: 12px;
+}
+
+.gsSubalbums ul {
+  list-style: none;
+  margin: 4px 0 0 0;
+  padding: 0;
+}
+
+.gsSubalbums li {
+  margin: 2px 0;
+}
+
+.gsPagination {
+  font-size: 11px;
+  color: #333333;
+  margin: 15px 0 0 0;
+}
+
+#gsFooter {
+  clear: both;
+  padding: 8px 15px;
+  font-size: 11px;
+  color: #666666;
+  background: #EEEEEE;
+  border-top: 1px solid #CCCCCC;
+}
+
+/* Album detail / grid (sub-album thumbnails) */
+.giItem {
+  float: left;
+  width: 180px;
+  margin: 0 15px 20px 0;
+  padding: 10px;
+  background: #FFFFFF;
+  border: 1px solid #CCCCCC;
+}
+
+.giItem img {
+  display: block;
+  margin: 0 auto 8px auto;
+  border: 1px solid #CCCCCC;
+}
+
+.giItem .giTitle {
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.giItem .giDesc {
+  font-size: 12px;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.giItem .giMeta {
+  font-size: 11px;
+  color: #666666;
+  text-align: center;
+}
