@@ -157,7 +157,7 @@ export function SearchResultsPage() {
                     </p>
                   )}
                   <Link
-                    to={`/album/${album.id}`}
+                    to={album.path ?? `/album/${album.id}`}
                     className="search-results-link"
                   >
                     <div className="search-results-item-content">

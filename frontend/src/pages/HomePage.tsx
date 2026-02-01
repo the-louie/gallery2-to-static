@@ -12,6 +12,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RootAlbumListView } from '@/components/RootAlbumListView';
 import { FilterPanel } from '@/components/FilterPanel';
+import { getAlbumPathFromAlbum } from '@/utils/albumPath';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { findRootAlbumId, DataLoadError } from '@/utils/dataLoader';
 import type { Album } from '@/types';
@@ -33,7 +34,7 @@ export function HomePage() {
 
   const handleAlbumClick = useCallback(
     (album: Album) => {
-      navigate(`/album/${album.id}`);
+      navigate(getAlbumPathFromAlbum(album));
     },
     [navigate],
   );

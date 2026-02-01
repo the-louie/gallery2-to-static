@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   loadAlbum,
   findRootAlbumId,
+  loadPathIndex,
+  resolvePathToAlbumId,
   getCachedData,
   setCachedData,
   clearCache,
@@ -497,6 +499,88 @@ describe('dataLoader', () => {
       const result = getCachedData('/data/11.json');
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('loadPathIndex', () => {
+    it('returns pathIndex from index.json when present', async () => {
+      const pathIndex = { '/': 7, '/albums': 8, '/albums/events': 9 };
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ rootAlbumId: 7, pathIndex }),
+      });
+
+      const result = await loadPathIndex();
+
+      expect(result).toEqual(pathIndex);
+      expect(global.fetch).toHaveBeenCalledWith('/data/index.json');
+    });
+
+    it('returns empty object when index has no pathIndex', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ rootAlbumId: 7 }),
+      });
+
+      const result = await loadPathIndex();
+
+      expect(result).toEqual({});
+    });
+
+    it('returns empty object when loadIndex returns null', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      const result = await loadPathIndex();
+
+      expect(result).toEqual({});
+    });
+  });
+
+  describe('resolvePathToAlbumId', () => {
+    it('returns album ID when path exists in pathIndex', async () => {
+      const pathIndex = { '/': 7, '/albums': 8, '/albums/events': 9 };
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ rootAlbumId: 7, pathIndex }),
+      });
+
+      expect(await resolvePathToAlbumId('/albums')).toBe(8);
+      expect(await resolvePathToAlbumId('/albums/events')).toBe(9);
+      expect(await resolvePathToAlbumId('/')).toBe(7);
+    });
+
+    it('normalizes path (trailing slash, leading slash)', async () => {
+      const pathIndex = { '/albums': 8 };
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ rootAlbumId: 7, pathIndex }),
+      });
+
+      expect(await resolvePathToAlbumId('albums')).toBe(8);
+      expect(await resolvePathToAlbumId('/albums/')).toBe(8);
+    });
+
+    it('returns null when path not in pathIndex', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ rootAlbumId: 7, pathIndex: { '/': 7 } }),
+      });
+
+      expect(await resolvePathToAlbumId('/nonexistent')).toBeNull();
+      expect(await resolvePathToAlbumId('/albums/missing')).toBeNull();
+    });
+
+    it('returns null when pathIndex is empty', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ rootAlbumId: 7 }),
+      });
+
+      expect(await resolvePathToAlbumId('/any')).toBeNull();
     });
   });
 

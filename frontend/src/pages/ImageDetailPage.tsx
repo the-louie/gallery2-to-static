@@ -15,6 +15,7 @@ import { useEffect, useMemo } from 'react';
 import { parseAlbumImageParams, parseImageId } from '@/utils/routeParams';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useLightbox } from '@/hooks/useLightbox';
+import { getAlbumPath } from '@/utils/albumPath';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { isImage } from '@/types';
 import type { RouteParams, Image } from '@/types';
@@ -22,36 +23,54 @@ import type { RouteParams, Image } from '@/types';
 // Lazy load Lightbox component for code splitting
 const Lightbox = lazy(() => import('@/components/Lightbox').then((module) => ({ default: module.Lightbox })));
 
+interface ImageDetailPageProps {
+  /** When provided (e.g. from PathResolverPage), use these instead of route params. */
+  resolvedAlbumId?: number;
+  resolvedImageId?: number;
+}
+
 /**
  * ImageDetailPage component
  *
  * Loads album data and displays the current image in a lightbox modal.
- * Supports both hierarchical routes (`/album/:albumId/image/:imageId`)
- * and legacy routes (`/image/:id`). Handles loading states, error states,
- * and invalid IDs.
+ * Supports path-based route (resolvedAlbumId/resolvedImageId), hierarchical routes
+ * (`/album/:albumId/image/:imageId`), and legacy routes (`/image/:id`).
  *
  * @returns React component
  */
-export function ImageDetailPage() {
+export function ImageDetailPage({
+  resolvedAlbumId: resolvedAlbumIdProp,
+  resolvedImageId: resolvedImageIdProp,
+}: ImageDetailPageProps = {}) {
   const params = useParams<RouteParams>();
   const navigate = useNavigate();
 
-  // Parse route parameters (handle both route patterns)
   const routeParams = useMemo(() => {
-    // Check for hierarchical route: /album/:albumId/image/:imageId
+    if (resolvedAlbumIdProp !== undefined && resolvedImageIdProp !== undefined) {
+      return { albumId: resolvedAlbumIdProp, imageId: resolvedImageIdProp };
+    }
     if (params.albumId && params.imageId) {
       return parseAlbumImageParams(params.albumId, params.imageId);
     }
-    // Check for legacy route: /image/:id
     if (params.id) {
       return { albumId: null, imageId: parseImageId(params.id) };
     }
     return { albumId: null, imageId: null };
-  }, [params.albumId, params.imageId, params.id]);
+  }, [
+    resolvedAlbumIdProp,
+    resolvedImageIdProp,
+    params.albumId,
+    params.imageId,
+    params.id,
+  ]);
 
-  // Load album data if albumId is available
-  const { data: albumData, isLoading, error } = useAlbumData(
+  const { data: albumData, metadata, isLoading, error } = useAlbumData(
     routeParams.albumId,
+  );
+
+  const albumPath = useMemo(
+    () => (metadata?.breadcrumbPath ? getAlbumPath(metadata.breadcrumbPath) : undefined),
+    [metadata?.breadcrumbPath],
   );
 
   // Extract images from album data
@@ -70,8 +89,12 @@ export function ImageDetailPage() {
     return images.find((img) => img.id === routeParams.imageId) || null;
   }, [routeParams.imageId, images]);
 
-  // Use lightbox hook for state management and navigation
-  const lightboxState = useLightbox(images);
+  const lightboxState = useLightbox(
+    images,
+    albumPath,
+    routeParams.albumId ?? undefined,
+    routeParams.imageId ?? undefined,
+  );
 
   // Redirect to 404 if IDs are invalid
   useEffect(() => {
@@ -110,7 +133,11 @@ export function ImageDetailPage() {
         <p>The image was not found in this album.</p>
         <button
           type="button"
-          onClick={() => navigate(`/album/${routeParams.albumId}`)}
+          onClick={() =>
+            navigate(
+              albumPath ?? (routeParams.albumId != null ? `/album/${routeParams.albumId}` : '/'),
+            )
+          }
           aria-label="Go back to album"
         >
           Go Back to Album

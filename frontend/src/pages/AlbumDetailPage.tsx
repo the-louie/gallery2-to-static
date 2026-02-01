@@ -16,26 +16,36 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { parseAlbumId } from '@/utils/routeParams';
 import type { RouteParams } from '@/types';
 
+interface AlbumDetailPageProps {
+  /** When provided (e.g. from PathResolverPage), use this instead of route params. */
+  resolvedAlbumId?: number;
+}
+
 /**
  * AlbumDetailPage component
  *
  * Page-level component that handles route parameters and passes them to
  * the AlbumDetail component. Handles invalid album ID redirects.
+ * When resolvedAlbumId is provided (path-based route), uses it instead of params.
  *
  * @returns React component
  */
-export function AlbumDetailPage() {
+export function AlbumDetailPage({ resolvedAlbumId: resolvedId }: AlbumDetailPageProps = {}) {
   const { id } = useParams<RouteParams>();
   const navigate = useNavigate();
 
-  const albumId = useMemo(() => parseAlbumId(id), [id]);
+  const albumId = useMemo(() => {
+    if (resolvedId !== undefined) return resolvedId;
+    return parseAlbumId(id);
+  }, [resolvedId, id]);
 
   // Redirect to 404 if album ID is invalid
   useEffect(() => {
+    if (resolvedId !== undefined) return;
     if (id !== undefined && albumId === null) {
       navigate('/not-found', { replace: true });
     }
-  }, [id, albumId, navigate]);
+  }, [resolvedId, id, albumId, navigate]);
 
   // Invalid album ID (will redirect, but show message in case redirect fails)
   if (albumId === null) {

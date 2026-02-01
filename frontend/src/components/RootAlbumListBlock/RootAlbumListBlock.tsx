@@ -21,6 +21,7 @@ import { parseBBCodeDecoded, extractUrlFromBBCode } from '@/utils/bbcode';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { formatAlbumDate } from '@/utils/dateUtils';
 import { getAlbumHighlightImageUrl, getAlbumThumbnailUrl } from '@/utils/imageUrl';
+import { titleToSegment } from '@/utils/albumPath';
 import { sortItems } from '@/utils/sorting';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useImageBaseUrl } from '@/contexts/ImageConfigContext';
@@ -80,7 +81,7 @@ export function RootAlbumListBlock({
   const hasMoreSubalbums =
     !isOriginal && subalbums.length > ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT;
 
-  const linkTo = `/album/${album.id}`;
+  const linkTo = album.path ?? `/${titleToSegment(album.title)}`;
   const highlightImageUrl = getAlbumHighlightImageUrl(album, baseUrl);
   const thumbnailUrl = getAlbumThumbnailUrl(album, undefined, baseUrl);
   const safeBgUrl =

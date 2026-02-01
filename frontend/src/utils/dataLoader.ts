@@ -476,3 +476,29 @@ export async function findRootAlbumId(): Promise<number | null> {
 
   return null;
 }
+
+/** Normalize path for path-index lookup: leading /, no trailing /. */
+function normalizePathForLookup(path: string): string {
+  const p = (path ?? '').trim().replace(/\/+$/, '');
+  return p === '' ? '/' : (p.startsWith('/') ? p : `/${p}`);
+}
+
+/**
+ * Load path index from index.json (path string -> album ID).
+ * Uses loadIndex(); returns empty object if index or pathIndex missing.
+ */
+export async function loadPathIndex(): Promise<Record<string, number>> {
+  const index = await loadIndex();
+  return index?.pathIndex ?? {};
+}
+
+/**
+ * Resolve path-based URL to album ID. Loads path index from index.json, normalizes path, returns albumId or null.
+ * Handles trailing slash, empty path (root), invalid path.
+ */
+export async function resolvePathToAlbumId(path: string): Promise<number | null> {
+  const pathIndex = await loadPathIndex();
+  const key = normalizePathForLookup(path);
+  const albumId = pathIndex[key];
+  return albumId != null && Number.isFinite(albumId) ? albumId : null;
+}

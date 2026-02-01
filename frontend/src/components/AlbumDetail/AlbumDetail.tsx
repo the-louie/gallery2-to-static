@@ -24,6 +24,7 @@ import { applyFilters } from '@/utils/filterUtils';
 import { parseBBCodeDecoded } from '@/utils/bbcode';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { albumFromMetadata } from '@/utils/albumMetadata';
+import { getChildAlbumPath, getImagePath } from '@/utils/albumPath';
 import { AlbumGrid } from '@/components/AlbumGrid';
 import { ImageGrid } from '@/components/ImageGrid';
 import { SortDropdown } from '@/components/SortDropdown';
@@ -144,16 +145,25 @@ export function AlbumDetail({
     return allImages;
   }, [data, criteria]);
 
-  // Default navigation handlers
+  // Default navigation handlers (path-based URLs when breadcrumbPath available)
   const handleAlbumClick = useCallback(
     (clickedAlbum: Album) => {
       if (onAlbumClick) {
         onAlbumClick(clickedAlbum);
       } else {
-        navigate(`/album/${clickedAlbum.id}`);
+        const path =
+          breadcrumbPath != null
+            ? getChildAlbumPath(
+                breadcrumbPath,
+                clickedAlbum.title,
+                clickedAlbum.id,
+                (clickedAlbum as Child).path,
+              )
+            : `/album/${clickedAlbum.id}`;
+        navigate(path);
       }
     },
-    [onAlbumClick, navigate],
+    [onAlbumClick, navigate, breadcrumbPath],
   );
 
   const handleImageClick = useCallback(
@@ -161,11 +171,14 @@ export function AlbumDetail({
       if (onImageClick) {
         onImageClick(clickedImage);
       } else {
-        // Navigate to hierarchical route: /album/:albumId/image/:imageId
-        navigate(`/album/${albumId}/image/${clickedImage.id}`);
+        const path =
+          breadcrumbPath != null
+            ? getImagePath(breadcrumbPath, clickedImage.id)
+            : `/album/${albumId}/image/${clickedImage.id}`;
+        navigate(path);
       }
     },
-    [onImageClick, navigate, albumId],
+    [onImageClick, navigate, albumId, breadcrumbPath],
   );
 
   const handleBackClick = useCallback(() => {

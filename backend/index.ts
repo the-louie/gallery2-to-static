@@ -4,6 +4,7 @@ import mysql from 'mysql2/promise'
 import sqlUtils from './sqlUtils'
 import { Config, Child, AlbumFile, BreadcrumbItem, AlbumMetadata } from './types'
 import { cleanup_uipathcomponent, normalizePathcomponentForFilename } from './cleanupUipath'
+import { getSegmentForAlbum, appendSegment, titleToSegment } from './pathSegments'
 import { getLinkTarget, getThumbTarget } from './legacyPaths'
 import { computeAllDescendantImageCounts } from './descendantImageCount'
 import {
@@ -354,6 +355,7 @@ interface SearchIndexItem {
     parentId?: number;
     pathComponent: string;
     ancestors?: string; // Optional, path of ancestor albums (root omitted), e.g. "dreamhack/dreamhack 08/crew"
+    path?: string; // Path-based URL for this album (e.g. /albums/photos)
 }
 
 const main = async (
@@ -370,7 +372,9 @@ const main = async (
     rootAlbumId: number,
     albumsWithImageDescendants: Set<number>,
     descendantImageCounts: Map<number, number>,
-    resolveImagePath?: ResolveImagePathFn | null,
+    resolveImagePath: ResolveImagePathFn | null | undefined,
+    pathIndex: Map<string, number>,
+    usedSegmentsByParentId: Map<number, Set<string>>,
 ) => {
     const children = await sql.getChildren(root);
     // Exclude child albums that are blacklisted or have no image descendant.
@@ -382,12 +386,29 @@ const main = async (
     if (filtered.length > 0) {
         const albumInfo = await sql.getAlbumInfo(root);
 
-        // Build breadcrumbPath for current album
+        // Build breadcrumbPath for current album with path-based URL
         const isRoot = breadcrumbAncestors.length === 0;
+        const parentPath = isRoot ? '' : (breadcrumbAncestors[breadcrumbAncestors.length - 1]?.path ?? '');
+        const usedSegments = isRoot
+            ? new Set<string>()
+            : (() => {
+                  const parentId = breadcrumbAncestors[breadcrumbAncestors.length - 1]?.id ?? root;
+                  let set = usedSegmentsByParentId.get(parentId);
+                  if (!set) {
+                      set = new Set<string>();
+                      usedSegmentsByParentId.set(parentId, set);
+                  }
+                  return set;
+              })();
+        const currentTitle = isRoot ? 'Home' : (albumInfo.albumTitle ?? `Album ${root}`);
+        const currentSegment = isRoot ? '' : getSegmentForAlbum(currentTitle, root, usedSegments);
+        const currentPath = isRoot ? '/' : appendSegment(parentPath, currentSegment);
+        pathIndex.set(currentPath, root);
+
         const currentBreadcrumbItem: BreadcrumbItem = {
             id: root,
             title: isRoot ? 'Home' : (albumInfo.albumTitle ?? `Album ${root}`),
-            path: isRoot ? '/' : `/album/${root}`,
+            path: currentPath,
         };
         const breadcrumbPath: BreadcrumbItem[] = isRoot
             ? [currentBreadcrumbItem]
@@ -413,6 +434,8 @@ const main = async (
                         albumsWithImageDescendants,
                         descendantImageCounts,
                         resolveImagePath,
+                        pathIndex,
+                        usedSegmentsByParentId,
                     ),
                 );
             }
@@ -449,9 +472,19 @@ const main = async (
         );
         await Promise.all(recursivePromises);
 
+        const usedForChildren = new Set<string>();
+        const childPathByAlbumId = new Map<number, string>();
+        for (const child of processedChildren) {
+            if (child.type === 'GalleryAlbumItem') {
+                const seg = getSegmentForAlbum(child.title, child.id, usedForChildren);
+                childPathByAlbumId.set(child.id, appendSegment(currentPath, seg));
+            }
+        }
+
         const processedChildrenWithThumbnails = await Promise.all(
             processedChildren.map(async (child) => {
                 if (child.type === 'GalleryAlbumItem') {
+                    const childPath = childPathByAlbumId.get(child.id) ?? appendSegment(currentPath, titleToSegment(child.title ?? ''));
                     const albumTitle = cleanup_uipathcomponent(
                         child.title ?? child.pathComponent ?? '',
                     );
@@ -527,13 +560,14 @@ const main = async (
                         }
                         return {
                             ...child,
+                            path: childPath,
                             ...thumbnailInfo,
                             thumbnailUrlPath,
                             ...highlightSpread,
                             ...countSpread,
                         };
                     }
-                    return { ...child, ...highlightSpread, ...countSpread };
+                    return { ...child, path: childPath, ...highlightSpread, ...countSpread };
                 }
                 if (child.type === 'GalleryPhotoItem' && child.pathComponent) {
                     return child;
@@ -544,6 +578,7 @@ const main = async (
 
         for (const child of processedChildrenWithThumbnails) {
             if (child.type === 'GalleryAlbumItem') {
+                const childPath = childPathByAlbumId.get(child.id);
                 const searchItem: SearchIndexItem = {
                     id: child.id,
                     type: 'GalleryAlbumItem',
@@ -557,6 +592,7 @@ const main = async (
                 if (uipath.length > 1) {
                     searchItem.ancestors = uipath.slice(1).join('/');
                 }
+                if (childPath != null) searchItem.path = childPath;
                 searchIndex.set(child.id, searchItem);
             }
         }
@@ -739,6 +775,8 @@ let connection: mysql.Connection | null = null;
             ignoreSet,
             albumsWithImageDescendants,
         );
+        const pathIndex = new Map<string, number>();
+        const usedSegmentsByParentId = new Map<number, Set<string>>();
         await main(
             sql,
             rootId,
@@ -754,6 +792,8 @@ let connection: mysql.Connection | null = null;
             albumsWithImageDescendants,
             descendantImageCounts,
             resolveImagePath ?? undefined,
+            pathIndex,
+            usedSegmentsByParentId,
         );
 
         // Generate search index file
@@ -773,14 +813,19 @@ let connection: mysql.Connection | null = null;
             // Don't fail extraction if search index generation fails
         }
 
-        // Generate index.json with root album metadata
+        // Generate index.json with root album metadata and path index
         const rootAlbumInfo = await sql.getRootAlbumInfo(rootId);
+        const pathIndexObj: Record<string, number> = {};
+        pathIndex.forEach((albumId, pathKey) => {
+            pathIndexObj[pathKey] = albumId;
+        });
         const indexData = {
             rootAlbumId: rootId,
             rootAlbumFile: `${rootId}.json`,
             siteName: rootAlbumInfo.title,
             siteDescription: rootAlbumInfo.description,
             generatedAt: new Date().toISOString(),
+            pathIndex: pathIndexObj,
             metadata: {
                 rootAlbumId: rootAlbumInfo.id,
                 rootAlbumTitle: rootAlbumInfo.title,

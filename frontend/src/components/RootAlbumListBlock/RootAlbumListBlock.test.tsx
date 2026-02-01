@@ -34,13 +34,13 @@ describe('RootAlbumListBlock', () => {
     expect(screen.getByText('Test Album')).toBeInTheDocument();
     const blockLink = screen.getByRole('link', { name: /open album: test album/i });
     expect(blockLink).toBeInTheDocument();
-    expect(blockLink).toHaveAttribute('href', '/album/1');
+    expect(blockLink).toHaveAttribute('href', '/test_album');
   });
 
   it('block link is the single link to the album and wraps title area', () => {
     render(<RootAlbumListBlock album={baseAlbum} subalbums={[]} />);
     const blockLink = screen.getByRole('link', { name: /open album: test album/i });
-    expect(blockLink).toHaveAttribute('href', '/album/1');
+    expect(blockLink).toHaveAttribute('href', '/test_album');
     expect(blockLink).toHaveClass('root-album-list-block-block-link');
     const h2 = screen.getByRole('heading', { name: 'Test Album' });
     expect(blockLink).toContainElement(h2);
@@ -219,8 +219,8 @@ describe('RootAlbumListBlock', () => {
     it('block link exists with href to album and contains no duplicate album link', () => {
       const { container } = render(<RootAlbumListBlock album={baseAlbum} subalbums={[]} />);
       const blockLink = screen.getByRole('link', { name: /open album: test album/i });
-      expect(blockLink).toHaveAttribute('href', '/album/1');
-      const albumLinksInside = blockLink.querySelectorAll('a[href="/album/1"]');
+      expect(blockLink).toHaveAttribute('href', '/test_album');
+      const albumLinksInside = blockLink.querySelectorAll('a[href="/test_album"]');
       expect(albumLinksInside.length).toBe(0);
     });
 
@@ -248,7 +248,7 @@ describe('RootAlbumListBlock', () => {
 
     it('only one link to the album page (the block link)', () => {
       render(<RootAlbumListBlock album={baseAlbum} subalbums={[]} />);
-      const albumLinks = screen.getAllByRole('link').filter((el) => el.getAttribute('href') === '/album/1');
+      const albumLinks = screen.getAllByRole('link').filter((el) => el.getAttribute('href') === '/test_album');
       expect(albumLinks.length).toBe(1);
       expect(albumLinks[0]).toHaveAttribute('aria-label', 'Open album: Test Album');
     });

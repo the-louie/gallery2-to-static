@@ -94,18 +94,38 @@ function resolveDefaultTheme(config: AlbumThemesConfig): ThemeName {
   return DEFAULT_THEME;
 }
 
+/** Normalize pathname for path-index lookup (leading /, no trailing /). */
+function normalizePathnameForLookup(pathname: string): string {
+  const p = (pathname ?? '').trim().replace(/\/+$/, '');
+  if (p === '' || p === '/') return '/';
+  return p.startsWith('/') ? p : `/${p}`;
+}
+
 /**
  * Extract album ID from pathname.
  *
- * Matches /album/7 and /album/7/image/10. Returns null for /, /search, etc.
- * Uses same validation as parseAlbumId (positive integer).
+ * When pathIndex is provided: looks up path in path index first (path-based URLs).
+ * Then tries legacy /album/7 and /album/7/image/10. Returns null for /, /search, etc.
  *
- * @param pathname - Pathname from useLocation (e.g. /album/7 or /album/7/image/10)
+ * @param pathname - Pathname from useLocation (e.g. /album/7 or /albums/photos)
+ * @param pathIndex - Optional path -> albumId map from index.json pathIndex
  * @returns Parsed album ID or null
  */
-export function getAlbumIdFromPath(pathname: string): number | null {
+export function getAlbumIdFromPath(
+  pathname: string,
+  pathIndex?: Record<string, number> | null,
+): number | null {
   if (typeof pathname !== 'string' || pathname.trim() === '') {
     return null;
+  }
+
+  const normalized = normalizePathnameForLookup(pathname);
+  if (pathIndex && typeof pathIndex === 'object') {
+    const albumPath = normalized.replace(/\/image\/\d+$/, '');
+    const id = pathIndex[albumPath === '' ? '/' : albumPath];
+    if (id != null && Number.isFinite(id)) {
+      return id;
+    }
   }
 
   const match = pathname.match(/^\/album\/(\d+)(?:\/|$)/);

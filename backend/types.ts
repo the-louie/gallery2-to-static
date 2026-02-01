@@ -66,6 +66,10 @@ export interface Child {
      * Item summary from Gallery 2 (distinct from description). Null when not set.
      */
     summary?: string | null;
+    /**
+     * Path-based URL path for this album (path-based routing). Only present for albums (GalleryAlbumItem) when backend emits path-based URLs.
+     */
+    path?: string | null;
 }
 
 /**

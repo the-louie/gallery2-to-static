@@ -36,6 +36,8 @@ export interface IndexMetadata {
   siteDescription: string | null;
   /** ISO timestamp when index.json was generated */
   generatedAt: string;
+  /** Path-based URL path to album ID. Keys are path strings (e.g. "/albums/photos"), values are album IDs. */
+  pathIndex?: Record<string, number>;
   /** Additional root album metadata */
   metadata: {
     rootAlbumId: number;
@@ -131,6 +133,8 @@ export interface RouteParams {
   albumId?: string;
   /** Image ID parameter from hierarchical route (e.g., /album/:albumId/image/:imageId) */
   imageId?: string;
+  /** Path-based route splat (path="*"), e.g. "seg1/seg2" or "seg1/seg2/image/123" */
+  '*'?: string;
 }
 
 /**

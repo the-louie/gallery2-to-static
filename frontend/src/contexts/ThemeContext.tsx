@@ -93,6 +93,7 @@ import {
   getAlbumIdFromPath,
   getThemeForAlbum,
 } from '../utils/albumThemesConfig';
+import { loadPathIndex } from '../utils/dataLoader';
 
 /** Theme type (exported for convenience) */
 export type Theme = ThemeName;
@@ -349,9 +350,19 @@ export function ThemeProvider({
 
   // Per-album theme override from album-themes.json
   const location = useLocation();
+  const [pathIndex, setPathIndex] = useState<Record<string, number> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    loadPathIndex().then((index) => {
+      if (!cancelled) setPathIndex(index);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const albumId = useMemo(
-    () => getAlbumIdFromPath(location.pathname),
-    [location.pathname],
+    () => getAlbumIdFromPath(location.pathname, pathIndex),
+    [location.pathname, pathIndex],
   );
   /** Per-album override from album-themes.json; null when album has no override (user theme is used). */
   const [albumOverrideTheme, setAlbumOverrideTheme] = useState<ThemeName | null>(

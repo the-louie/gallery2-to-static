@@ -72,6 +72,7 @@ export interface UseLightboxReturn {
  * the lightbox is automatically opened with the corresponding image.
  *
  * @param images - Optional array of images for album context (can be provided later via openLightbox)
+ * @param albumPath - Optional path-based album URL (e.g. /albums/photos); when provided, navigation uses path-based URLs
  * @returns Object with lightbox state and control functions
  *
  * @example
@@ -85,32 +86,47 @@ export interface UseLightboxReturn {
  * closeLightbox();
  * ```
  */
-export function useLightbox(images: Image[] = []): UseLightboxReturn {
+export function useLightbox(
+  images: Image[] = [],
+  albumPath?: string | null,
+  resolvedAlbumId?: number | null,
+  resolvedImageId?: number | null,
+): UseLightboxReturn {
   const navigate = useNavigate();
   const params = useParams<RouteParams>();
+
+  const pathBase =
+    albumPath != null && albumPath !== ''
+      ? albumPath.replace(/\/+$/, '')
+      : null;
 
   // State for current image and album context
   const [currentImage, setCurrentImage] = useState<Image | null>(null);
   const [albumId, setAlbumId] = useState<number | null>(null);
   const [albumImages, setAlbumImages] = useState<Image[]>(images);
+  const [resolvedAlbumPath, setResolvedAlbumPath] = useState<string | null>(pathBase ?? null);
+
+  useEffect(() => {
+    setResolvedAlbumPath(pathBase ?? null);
+  }, [pathBase]);
 
   // Update album images when prop changes
   useEffect(() => {
     setAlbumImages(images);
   }, [images]);
 
-  // Parse route parameters
   const routeParams = useMemo(() => {
-    // Check for hierarchical route: /album/:albumId/image/:imageId
+    if (resolvedAlbumId != null && resolvedImageId != null) {
+      return { albumId: resolvedAlbumId, imageId: resolvedImageId };
+    }
     if (params.albumId && params.imageId) {
       return parseAlbumImageParams(params.albumId, params.imageId);
     }
-    // Check for legacy route: /image/:id
     if (params.id) {
       return { albumId: null, imageId: parseImageId(params.id) };
     }
     return { albumId: null, imageId: null };
-  }, [params.albumId, params.imageId, params.id]);
+  }, [resolvedAlbumId, resolvedImageId, params.albumId, params.imageId, params.id]);
 
   // Determine if lightbox should be open based on URL
   const isOpen = useMemo(() => {
@@ -148,57 +164,61 @@ export function useLightbox(images: Image[] = []): UseLightboxReturn {
     }
   }, [routeParams.albumId, routeParams.imageId]);
 
+  const pathForImage = useCallback(
+    (imageId: number) => {
+      if (resolvedAlbumPath !== null) {
+        return resolvedAlbumPath ? `${resolvedAlbumPath}/image/${imageId}` : `/image/${imageId}`;
+      }
+      if (albumId !== null) return `/album/${albumId}/image/${imageId}`;
+      return `/image/${imageId}`;
+    },
+    [resolvedAlbumPath, albumId],
+  );
+
+  const pathForAlbum = useCallback(() => {
+    if (resolvedAlbumPath !== null) return resolvedAlbumPath || '/';
+    if (albumId !== null) return `/album/${albumId}`;
+    return '/';
+  }, [resolvedAlbumPath, albumId]);
+
   // Function to open lightbox with image and album context
   const openLightbox = useCallback(
     (image: Image, albumIdParam: number, imagesParam: Image[]) => {
       setCurrentImage(image);
       setAlbumId(albumIdParam);
       setAlbumImages(imagesParam);
-      // Navigate to hierarchical route
-      navigate(`/album/${albumIdParam}/image/${image.id}`, { replace: false });
+      navigate(pathForImage(image.id), { replace: false });
     },
-    [navigate],
+    [navigate, pathForImage],
   );
 
   // Function to close lightbox
   const closeLightbox = useCallback(() => {
-    // Navigate back to album page
-    if (albumId !== null) {
-      navigate(`/album/${albumId}`, { replace: false });
-    } else {
-      // Fallback: navigate to home
-      navigate('/', { replace: false });
-    }
+    navigate(pathForAlbum(), { replace: false });
     setCurrentImage(null);
     setAlbumId(null);
     setAlbumImages([]);
-  }, [navigate, albumId]);
+  }, [navigate, pathForAlbum]);
 
   // Function to navigate to next image
   const navigateToNext = useCallback(() => {
-    if (currentImage === null || albumImages.length === 0 || albumId === null) {
-      return;
-    }
-
+    if (currentImage === null || albumImages.length === 0) return;
     const currentIndex = albumImages.findIndex((img) => img.id === currentImage.id);
     if (currentIndex >= 0 && currentIndex < albumImages.length - 1) {
       const nextImage = albumImages[currentIndex + 1];
-      navigate(`/album/${albumId}/image/${nextImage.id}`, { replace: true });
+      navigate(pathForImage(nextImage.id), { replace: true });
     }
-  }, [currentImage, albumImages, albumId, navigate]);
+  }, [currentImage, albumImages, navigate, pathForImage]);
 
   // Function to navigate to previous image
   const navigateToPrevious = useCallback(() => {
-    if (currentImage === null || albumImages.length === 0 || albumId === null) {
-      return;
-    }
-
+    if (currentImage === null || albumImages.length === 0) return;
     const currentIndex = albumImages.findIndex((img) => img.id === currentImage.id);
     if (currentIndex > 0) {
       const previousImage = albumImages[currentIndex - 1];
-      navigate(`/album/${albumId}/image/${previousImage.id}`, { replace: true });
+      navigate(pathForImage(previousImage.id), { replace: true });
     }
-  }, [currentImage, albumImages, albumId, navigate]);
+  }, [currentImage, albumImages, navigate, pathForImage]);
 
   return {
     isOpen,
