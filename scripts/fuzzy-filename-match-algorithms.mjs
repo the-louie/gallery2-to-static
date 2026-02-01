@@ -13,12 +13,20 @@
  * Inputs: mismatch markdown (URLs), file list (e.g. all-lanbilder-files.txt)
  * Output: stdout table of algorithm | hits | misses | hit rate, sorted by best
  *
+ * Output strategy JSON schema (--output-strategy):
+ *   { algorithm, type: "single"|"consensus", params, hits, total, hitRate }
+ *   For single algorithms, params is null. For "Weighted fuzzy consensus
+ *   (path+album+filename)", params includes threshold, confidenceGap,
+ *   lowerThreshold, weights. Written for backend consumption.
+ *
  * Usage:
  *   node scripts/fuzzy-filename-match-algorithms.mjs
  *   node scripts/fuzzy-filename-match-algorithms.mjs --mismatch-file path --file-list path
  *   node scripts/fuzzy-filename-match-algorithms.mjs --threshold 0.55 --confidence-gap 0.3 --lower-threshold 0.45
  *   node scripts/fuzzy-filename-match-algorithms.mjs --weights 0.2,0.4,0.4
  *   node scripts/fuzzy-filename-match-algorithms.mjs --train --golden-set path [--file-list path]
+ *   node scripts/fuzzy-filename-match-algorithms.mjs --output-strategy [path]
+ *     Writes best-strategy JSON for backend. Default path: fuzzy-match-strategy.json (repo root).
  */
 
 import fs from 'fs';
@@ -40,6 +48,7 @@ function parseArgs() {
   let confidenceGap = 0.3;
   let lowerThreshold = 0.45;
   let weightsStr = null;
+  let outputStrategyPath = null;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--mismatch-file' && args[i + 1]) {
       mismatchFile = args[++i];
@@ -57,6 +66,11 @@ function parseArgs() {
       lowerThreshold = Number(args[++i]);
     } else if (args[i] === '--weights' && args[i + 1]) {
       weightsStr = args[++i];
+    } else if (args[i] === '--output-strategy') {
+      outputStrategyPath =
+        args[i + 1] && !args[i + 1].startsWith('--')
+          ? args[++i]
+          : path.join(repoRoot, 'fuzzy-match-strategy.json');
     }
   }
   let weights = { ...DEFAULT_WEIGHTS };
@@ -75,6 +89,7 @@ function parseArgs() {
     confidenceGap,
     lowerThreshold,
     weights,
+    outputStrategyPath,
   };
 }
 
@@ -904,6 +919,7 @@ function main() {
     confidenceGap,
     lowerThreshold,
     weights: cliWeights,
+    outputStrategyPath,
   } = parseArgs();
 
   let fileListContent;
@@ -985,6 +1001,34 @@ function main() {
   console.log('');
 
   const best = results[0];
+  if (best && outputStrategyPath) {
+    const FUZZY_CONSENSUS_NAME = 'Weighted fuzzy consensus (path+album+filename)';
+    const strategyType = best.name.includes('consensus') ? 'consensus' : 'single';
+    const params =
+      best.name === FUZZY_CONSENSUS_NAME
+        ? {
+            threshold: runOpts.threshold,
+            confidenceGap: runOpts.confidenceGap,
+            lowerThreshold: runOpts.lowerThreshold,
+            weights: runOpts.weights,
+          }
+        : null;
+    /** Shape: { algorithm, type: 'single'|'consensus', params, hits, total, hitRate } */
+    const strategyObject = {
+      algorithm: best.name,
+      type: strategyType,
+      params,
+      hits: best.hits,
+      total: best.total,
+      hitRate: best.hitRate,
+    };
+    try {
+      fs.writeFileSync(outputStrategyPath, JSON.stringify(strategyObject, null, 2), 'utf8');
+    } catch (e) {
+      console.error('Failed to write strategy file:', outputStrategyPath, e.message);
+      process.exit(1);
+    }
+  }
   if (best && best.hitExamples.length > 0) {
     console.log('Sample hits (best algorithm):');
     for (const ex of best.hitExamples) {
