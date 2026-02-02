@@ -68,9 +68,12 @@
   padding: 1rem;
 }
 
+/* Same width/margins as layout-main + album-detail so header aligns with album-detail-header */
 .layout-header-content {
-  max-width: 1200px;
+  max-width: 2400px;
+  width: 100%;
   margin: 0 auto;
+  padding: 0 2rem; /* layout-main 1rem + album-detail 1rem */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -83,6 +86,7 @@
   flex-direction: column;
   gap: 0.25rem;
   min-width: 0;
+  flex: 1;
 }
 
 .layout-header-description {
@@ -91,7 +95,7 @@
   font-weight: 400;
   line-height: 1.4;
   color: var(--album-detail-text-muted, var(--color-text-muted));
-  max-width: 40ch;
+  width: 100%;
 }
 
 .layout-header-actions {
@@ -99,7 +103,7 @@
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
-  flex: 1;
+  flex: 0 0 auto;
   justify-content: flex-end;
   min-width: 0;
 }
@@ -230,6 +234,7 @@
   .layout-header-content {
     flex-direction: column;
     align-items: stretch;
+    padding: 0 2.25rem; /* layout-main 1.5rem + album-detail 0.75rem */
   }
 
   .layout-header-actions {
@@ -243,6 +248,12 @@
   }
 }
 
+@media (max-width: 480px) {
+  .layout-header-content {
+    padding: 0 1.5rem; /* layout-main 1rem + album-detail 0.5rem */
+  }
+}
+
 /* Tablet and Desktop Responsive Styles */
 @media (min-width: 768px) {
   .layout-header {
@@ -252,10 +263,11 @@
   .layout-header-content {
     flex-direction: row;
     align-items: center;
+    padding: 0 2.25rem; /* layout-main 1.5rem + album-detail 0.75rem */
   }
 
   .layout-header-actions {
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     margin-top: 0;
   }
 
@@ -275,6 +287,10 @@
 @media (min-width: 1024px) {
   .layout-header {
     padding: 2rem;
+  }
+
+  .layout-header-content {
+    padding: 0 3rem; /* layout-main 2rem + album-detail 1rem */
   }
 
   .layout-title {
