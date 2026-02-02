@@ -1,3 +1,4 @@
 {
-  "baseUrl": "https://cdn.example.com/gallery-images"
+  "baseUrl": "https://cdn.example.com/gallery-images",
+  "thumbnailBaseUrl": "https://cdn.example.com/gallery-thumbnails"
 }

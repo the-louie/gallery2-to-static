@@ -1,3 +1,4 @@
 {
-  "baseUrl": "/images"
+  "baseUrl": "/g2data/albums",
+  "thumbnailBaseUrl": "/g2data/thumbnails"
 }

@@ -33,6 +33,7 @@ export interface VerifyOptions {
     verifyTimeoutMs?: number;
     verifyConcurrency?: number;
     imageConfigPath?: string;
+    projectRoot?: string;
 }
 
 function ensureNoLeadingSlash(s: string | null | undefined): string {
@@ -88,25 +89,35 @@ function isImageContentType(contentType: string | null | undefined): boolean {
     return type.startsWith('image/') || type === 'application/octet-stream';
 }
 
+export interface ImageConfigForVerification {
+    baseUrl: string;
+    thumbnailBaseUrl: string;
+}
+
 /**
  * Load image-config.json from frontend/public or custom path.
- * Returns baseUrl or null if missing/invalid (caller should skip verification).
+ * Returns { baseUrl, thumbnailBaseUrl } or null if missing/invalid (caller should skip verification).
  */
 export async function loadImageConfigForVerification(
     projectRoot: string,
     imageConfigPath?: string,
-): Promise<string | null> {
+): Promise<ImageConfigForVerification | null> {
     const configPath = imageConfigPath
         ? (path.isAbsolute(imageConfigPath) ? imageConfigPath : path.join(projectRoot, imageConfigPath))
         : path.join(projectRoot, 'frontend', 'public', 'image-config.json');
     try {
         const content = await fs.readFile(configPath, 'utf-8');
-        const data = JSON.parse(content) as { baseUrl?: string };
+        const data = JSON.parse(content) as { baseUrl?: string; thumbnailBaseUrl?: string };
         const baseUrl = data?.baseUrl;
         if (!baseUrl || typeof baseUrl !== 'string' || baseUrl.trim() === '') {
             return null;
         }
-        return baseUrl.trim().replace(/\/+$/, '') || null;
+        const normalizedBase = baseUrl.trim().replace(/\/+$/, '') || null;
+        if (!normalizedBase) return null;
+        const thumbUrl = data?.thumbnailBaseUrl && typeof data.thumbnailBaseUrl === 'string'
+            ? data.thumbnailBaseUrl.trim().replace(/\/+$/, '') || normalizedBase
+            : normalizedBase;
+        return { baseUrl: normalizedBase, thumbnailBaseUrl: thumbUrl };
     } catch {
         return null;
     }
@@ -115,11 +126,14 @@ export async function loadImageConfigForVerification(
 /**
  * Collect image URLs from album tree (data/*.json).
  * Aligns with check-album-assets URL construction.
+ * Uses baseUrl for full images, thumbnailBaseUrl for thumbnails.
  */
 export async function collectImageUrlsFromAlbumTree(
     dataDir: string,
     baseUrl: string,
+    thumbnailBaseUrl?: string,
 ): Promise<UrlToVerify[]> {
+    const thumbBase = thumbnailBaseUrl ?? baseUrl;
     const indexPath = path.join(dataDir, 'index.json');
     let indexData: { rootAlbumId?: number };
     try {
@@ -158,7 +172,7 @@ export async function collectImageUrlsFromAlbumTree(
         for (const child of children) {
             const type = child.type ?? '';
             if (type === 'GalleryAlbumItem') {
-                const thumbUrl = getAlbumThumbnailUrl(child as Parameters<typeof getAlbumThumbnailUrl>[0], baseUrl);
+                const thumbUrl = getAlbumThumbnailUrl(child as Parameters<typeof getAlbumThumbnailUrl>[0], thumbBase);
                 if (thumbUrl && !seen.has(thumbUrl)) {
                     seen.add(thumbUrl);
                     result.push({ url: thumbUrl, albumId, albumTitle, type: 'album-thumb' });
@@ -172,7 +186,7 @@ export async function collectImageUrlsFromAlbumTree(
                     seen.add(fullUrl);
                     result.push({ url: fullUrl, albumId, albumTitle, type: 'photo-full' });
                 }
-                const thumbUrl = getPhotoThumbUrl(child as Parameters<typeof getPhotoThumbUrl>[0], baseUrl);
+                const thumbUrl = getPhotoThumbUrl(child as Parameters<typeof getPhotoThumbUrl>[0], thumbBase);
                 if (thumbUrl && !seen.has(thumbUrl)) {
                     seen.add(thumbUrl);
                     result.push({ url: thumbUrl, albumId, albumTitle, type: 'photo-thumb' });
@@ -186,15 +200,49 @@ export async function collectImageUrlsFromAlbumTree(
 }
 
 /**
- * Verify a single image URL via HTTP fetch.
- * Uses HEAD to avoid downloading the full body; falls back to GET if HEAD returns 405.
+ * Verify a local file path exists.
+ * url is a path like /g2data/albums/...; resolves to projectRoot/frontend/public/...
+ */
+async function verifyLocalFile(
+    url: string,
+    projectRoot: string,
+): Promise<{ ok: boolean; error?: string }> {
+    if (!url || typeof url !== 'string' || !url.startsWith('/')) {
+        return { ok: false, error: 'Not a local path' };
+    }
+    const relativePath = url.replace(/^\//, '').replace(/\//g, path.sep);
+    const localPath = path.join(projectRoot, 'frontend', 'public', relativePath);
+    const resolved = path.resolve(localPath);
+    const publicDir = path.resolve(projectRoot, 'frontend', 'public');
+    const rel = path.relative(publicDir, resolved);
+    if (rel.startsWith('..') || path.isAbsolute(rel)) {
+        return { ok: false, error: 'Path escapes public directory' };
+    }
+    try {
+        await fs.access(resolved);
+        return { ok: true };
+    } catch {
+        return { ok: false, error: 'File not found' };
+    }
+}
+
+/**
+ * Verify a single image URL via HTTP fetch or local file check.
+ * Uses local file check when url does not start with http.
  */
 export async function verifyImageUrl(
     url: string,
     timeoutMs: number = DEFAULT_TIMEOUT_MS,
+    projectRoot?: string,
 ): Promise<{ ok: boolean; status?: number; error?: string }> {
-    if (!url || !url.startsWith('http')) {
-        return { ok: false, error: 'URL not HTTP(S)' };
+    if (!url) {
+        return { ok: false, error: 'Empty URL' };
+    }
+    if (!url.startsWith('http')) {
+        if (projectRoot) {
+            return verifyLocalFile(url, projectRoot);
+        }
+        return { ok: false, error: 'URL not HTTP(S) and no projectRoot for local check' };
     }
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -261,8 +309,9 @@ export async function verifyUrls(
     const concurrency = Math.max(1, rawConcurrency);
     const deviations: DeviationEntry[] = [];
 
+    const projectRoot = options.projectRoot;
     const runOne = async (item: UrlToVerify): Promise<void> => {
-        const r = await verifyImageUrl(item.url, timeoutMs);
+        const r = await verifyImageUrl(item.url, timeoutMs, projectRoot);
         if (!r.ok) {
             deviations.push({
                 url: item.url,
@@ -356,15 +405,13 @@ export async function runVerification(
     if (options.verifyImagePaths === false) {
         return null;
     }
-    const baseUrl = await loadImageConfigForVerification(projectRoot, options.imageConfigPath);
-    if (!baseUrl) {
+    const config = await loadImageConfigForVerification(projectRoot, options.imageConfigPath);
+    if (!config) {
         return null;
     }
-    if (!baseUrl.startsWith('http')) {
-        return null;
-    }
+    const { baseUrl, thumbnailBaseUrl } = config;
 
-    const urls = await collectImageUrlsFromAlbumTree(dataDir, baseUrl);
+    const urls = await collectImageUrlsFromAlbumTree(dataDir, baseUrl, thumbnailBaseUrl);
     if (urls.length === 0) {
         return null;
     }
@@ -372,6 +419,7 @@ export async function runVerification(
     const deviations = await verifyUrls(urls, {
         timeoutMs: options.timeoutMs ?? options.verifyTimeoutMs ?? DEFAULT_TIMEOUT_MS,
         concurrency: options.concurrency ?? options.verifyConcurrency ?? DEFAULT_CONCURRENCY,
+        projectRoot: options.projectRoot ?? projectRoot,
     });
 
     let reportPath: string | null = null;

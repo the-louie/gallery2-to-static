@@ -15,7 +15,7 @@ export interface Child {
      */
     order?: number | null;
     /**
-     * Legacy URL path for images (uipath-based dir + link filename). Present for photos when backend emits legacy paths.
+     * Relative URL path for full-size image (pathComponent-based, e.g. album/subalbum/photo.jpg).
      */
     urlPath?: string | null;
     /**
@@ -24,13 +24,12 @@ export interface Child {
      */
     thumbnailPathComponent?: string | null;
     /**
-     * Legacy URL path for album thumbnail (uipath-based dir + thumb filename). Present for albums with thumbnails when backend emits legacy paths.
+     * Relative URL path for album thumbnail (pathComponent-based dir + thumb-prefixed filename).
      */
     thumbnailUrlPath?: string | null;
     /**
-     * Thumbnail URL path. For GalleryPhotoItem: legacy thumbnail path (uipath-based dir + thumb filename from getThumbTarget). Present when backend emits legacy paths.
-     * For GalleryAlbumItem: thumbnail URL path of the album's highlight image (first-descendant image until highlightImageId exists in schema); same path convention as thumbnailUrlPath. Omitted when no highlight image can be resolved.
-     * Note: Highlight image source is first-descendant traversal only until highlightImageId is available in the schema.
+     * Thumbnail URL path. For GalleryPhotoItem: pathComponent-based dir + thumb-prefixed filename.
+     * For GalleryAlbumItem: thumbnail path of the album's highlight image (first-descendant).
      */
     highlightThumbnailUrlPath?: string | null;
     /**
@@ -98,8 +97,7 @@ export interface AlbumMetadata {
     breadcrumbPath?: BreadcrumbItem[];
     /**
      * Highlight image URL for the album (recursive first-image fallback; no highlightId in schema).
-     * Uses same URL format as photo urlPath (getLinkTarget, uipath-based directory).
-     * Omitted when no image can be found.
+     * Uses pathComponent-based relative path.
      */
     highlightImageUrl?: string | null;
     /**
@@ -144,10 +142,18 @@ export interface Config {
     verifyTimeoutMs?: number;
     /** Max concurrent HTTP requests during verification (default 5). */
     verifyConcurrency?: number;
-    /** Path to file list for fuzzy matching (e.g. backend/all-lanbilder-files.txt). Relative to project root. */
-    fileListPath?: string;
-    /** Path to fuzzy-match-strategy.json. Relative to project root. Default: fuzzy-match-strategy.json. */
-    fuzzyStrategyPath?: string;
-    /** Enable fuzzy filename matching when file list and strategy are loaded (default true when paths provided). */
-    enableFuzzyMatch?: boolean;
+    /** Path to full-size images (relative to project root). Default: frontend/public/g2data/albums */
+    albumsRoot?: string;
+    /** Path to thumbnails output (relative to project root). Default: frontend/public/g2data/thumbnails */
+    thumbnailsRoot?: string;
+    /** Skip thumbnail generation when true (e.g. pre-generated thumbnails). Default: false */
+    skipThumbnailGeneration?: boolean;
+    /** Max width for generated thumbnails. Default: 400 */
+    thumbnailMaxWidth?: number;
+    /** Max height for generated thumbnails. Default: 400 */
+    thumbnailMaxHeight?: number;
+    /** JPEG quality for thumbnails (1-100). Default: 80 */
+    thumbnailQuality?: number;
+    /** Max concurrent thumbnail generations. Default: 5 */
+    thumbnailConcurrency?: number;
 }

@@ -16,7 +16,11 @@
     "imageConfigPath": "frontend/public/image-config.json",
     "verifyTimeoutMs": 10000,
     "verifyConcurrency": 5,
-    "fileListPath": "backend/all-lanbilder-files.txt",
-    "fuzzyStrategyPath": "fuzzy-match-strategy.json",
-    "enableFuzzyMatch": true
+    "albumsRoot": "frontend/public/g2data/albums",
+    "thumbnailsRoot": "frontend/public/g2data/thumbnails",
+    "skipThumbnailGeneration": false,
+    "thumbnailMaxWidth": 400,
+    "thumbnailMaxHeight": 400,
+    "thumbnailQuality": 80,
+    "thumbnailConcurrency": 5
 }

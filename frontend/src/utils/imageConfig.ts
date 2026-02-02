@@ -43,8 +43,10 @@
  * Defines the structure of the image configuration JSON file.
  */
 export interface ImageConfig {
-  /** Base URL for image files (absolute URL or relative path) */
+  /** Base URL for full-size image files (absolute URL or relative path) */
   baseUrl: string;
+  /** Base URL for thumbnail images. When set, thumbnails use this; when unset, use baseUrl */
+  thumbnailBaseUrl?: string;
 }
 
 /**
@@ -54,10 +56,11 @@ export interface ImageConfig {
 export const DEFAULT_BASE_URL = '/images';
 
 /**
- * Cached configuration value
+ * Cached configuration values
  * Loaded once and cached for application lifetime
  */
 let cachedBaseUrl: string | null = null;
+let cachedThumbnailBaseUrl: string | null = null;
 
 /**
  * Configuration loading promise
@@ -125,12 +128,15 @@ export function normalizeImageBaseUrl(url: string | null | undefined): string {
  * @returns True if data matches ImageConfig structure
  */
 function isValidImageConfig(data: unknown): data is ImageConfig {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'baseUrl' in data &&
-    typeof (data as ImageConfig).baseUrl === 'string'
-  );
+  if (typeof data !== 'object' || data === null || !('baseUrl' in data)) {
+    return false;
+  }
+  const c = data as ImageConfig;
+  if (typeof c.baseUrl !== 'string') return false;
+  if ('thumbnailBaseUrl' in c && c.thumbnailBaseUrl != null && typeof c.thumbnailBaseUrl !== 'string') {
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -209,6 +215,10 @@ export async function loadImageConfig(): Promise<string> {
             const normalized = normalizeImageBaseUrl(jsonData.baseUrl);
             const baseUrl = maybeProxyForDev(normalized);
             cachedBaseUrl = baseUrl;
+            const thumbUrl = jsonData.thumbnailBaseUrl
+              ? maybeProxyForDev(normalizeImageBaseUrl(jsonData.thumbnailBaseUrl))
+              : baseUrl;
+            cachedThumbnailBaseUrl = thumbUrl;
             return baseUrl;
           } else if (jsonData !== undefined) {
             // Invalid schema - fall through to env/default
@@ -232,15 +242,20 @@ export async function loadImageConfig(): Promise<string> {
 
       // Try environment variable
       const envBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+      const envThumbUrl = import.meta.env.VITE_IMAGE_THUMBNAIL_BASE_URL;
       if (envBaseUrl && typeof envBaseUrl === 'string') {
         const normalized = normalizeImageBaseUrl(envBaseUrl);
         const baseUrl = maybeProxyForDev(normalized);
         cachedBaseUrl = baseUrl;
+        cachedThumbnailBaseUrl = envThumbUrl && typeof envThumbUrl === 'string'
+          ? maybeProxyForDev(normalizeImageBaseUrl(envThumbUrl))
+          : baseUrl;
         return baseUrl;
       }
 
       // Use default
       cachedBaseUrl = DEFAULT_BASE_URL;
+      cachedThumbnailBaseUrl = DEFAULT_BASE_URL;
       return DEFAULT_BASE_URL;
     } finally {
       // Clear load promise after completion
@@ -290,6 +305,17 @@ export function getImageBaseUrl(): string {
 }
 
 /**
+ * Get thumbnail base URL.
+ * Returns thumbnailBaseUrl when configured, otherwise baseUrl.
+ */
+export function getThumbnailBaseUrl(): string {
+  if (cachedThumbnailBaseUrl !== null) {
+    return cachedThumbnailBaseUrl;
+  }
+  return getImageBaseUrl();
+}
+
+/**
  * Clear image configuration cache
  *
  * Clears the cached configuration value. Useful for testing.
@@ -304,6 +330,7 @@ export function getImageBaseUrl(): string {
  */
 export function clearImageConfigCache(): void {
   cachedBaseUrl = null;
+  cachedThumbnailBaseUrl = null;
   loadPromise = null;
 }
 

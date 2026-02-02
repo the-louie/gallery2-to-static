@@ -34,7 +34,7 @@
  */
 
 import type { Image, Album } from '../types';
-import { getImageBaseUrl } from './imageConfig';
+import { getImageBaseUrl, getThumbnailBaseUrl } from './imageConfig';
 
 /**
  * Default thumbnail prefix for legacy URL compatibility (matches Python config thumb_prefix).
@@ -68,7 +68,7 @@ function constructThumbnailUrl(
   format: 'webp' | 'avif' | 'original' = 'original',
   baseUrlOverride?: string | null,
 ): string {
-  const baseUrl = baseUrlOverride ?? getImageBaseUrl();
+  const baseUrl = baseUrlOverride ?? getThumbnailBaseUrl();
 
   if (!pathComponent) {
     return baseUrl;
@@ -286,7 +286,7 @@ export function getAlbumThumbnailUrl(
   thumbPrefix?: string,
   baseUrlOverride?: string | null,
 ): string | null {
-  const baseUrl = baseUrlOverride ?? getImageBaseUrl();
+  const baseUrl = baseUrlOverride ?? getThumbnailBaseUrl();
   if (album.thumbnailUrlPath && album.thumbnailUrlPath.length > 0) {
     return `${baseUrl}/${ensureNoLeadingSlash(album.thumbnailUrlPath)}`;
   }

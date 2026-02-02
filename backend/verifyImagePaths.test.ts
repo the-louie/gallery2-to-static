@@ -26,7 +26,9 @@ async function run(): Promise<void> {
         const configPath = path.join(tmpDir, 'image-config.json');
         await fs.writeFile(configPath, JSON.stringify({ baseUrl: 'https://example.com/images' }), 'utf-8');
         const loaded = await loadImageConfigForVerification(tmpDir, configPath);
-        assert.strictEqual(loaded, 'https://example.com/images');
+        assert.ok(loaded !== null);
+        assert.strictEqual(loaded!.baseUrl, 'https://example.com/images');
+        assert.strictEqual(loaded!.thumbnailBaseUrl, 'https://example.com/images');
 
         // loadImageConfigForVerification: empty baseUrl returns null
         await fs.writeFile(configPath, JSON.stringify({ baseUrl: '' }), 'utf-8');
