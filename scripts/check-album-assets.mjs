@@ -2,16 +2,16 @@
  * Depth-first traversal of all albums; checks image and thumbnail URLs
  * and writes a report of missing/failed assets.
  *
+ * Local-only model: images load from /g2data/albums and /g2data/thumbnails.
  * Album data (index, JSON) is loaded from the dev server (BASE).
- * Image URLs use the base from /image-config.json (e.g. https://lanbilder.se);
- * images are not served from the dev machine and are intended to live on that domain.
  *
  * Run: node scripts/check-album-assets.mjs
  * Requires dev server at BASE (default http://localhost:5173).
  */
 
 const BASE = process.env.BASE_URL || 'http://localhost:5173';
-const DEFAULT_IMAGE_BASE = '/images';
+const DEFAULT_IMAGE_BASE = '/g2data/albums';
+const DEFAULT_THUMBNAIL_BASE = '/g2data/thumbnails';
 const THUMB_PREFIX = 't__';
 const FETCH_TIMEOUT_MS = Number(process.env.FETCH_TIMEOUT_MS) || 30_000;
 const FULL_OUTPUT = process.argv.includes('--full-output');
@@ -36,17 +36,17 @@ function buildImageUrl(imageBase, path) {
   return base.replace(/\/+$/, '') + '/' + p;
 }
 
-function getAlbumThumbnailUrl(child, imageBase) {
+function getAlbumThumbnailUrl(child, thumbnailBase, imageBase) {
   if (child.thumbnailUrlPath && child.thumbnailUrlPath.length > 0)
-    return buildImageUrl(imageBase, child.thumbnailUrlPath);
+    return buildImageUrl(thumbnailBase, child.thumbnailUrlPath);
   if (child.highlightThumbnailUrlPath && child.highlightThumbnailUrlPath.length > 0)
-    return buildImageUrl(imageBase, child.highlightThumbnailUrlPath);
+    return buildImageUrl(thumbnailBase, child.highlightThumbnailUrlPath);
   if (child.thumbnailPathComponent) {
     const path = ensureNoLeadingSlash(child.thumbnailPathComponent);
     const lastSlash = path.lastIndexOf('/');
     const dir = lastSlash === -1 ? '' : path.slice(0, lastSlash + 1);
     const file = lastSlash === -1 ? path : path.slice(lastSlash + 1);
-    return buildImageUrl(imageBase, dir + THUMB_PREFIX + file);
+    return buildImageUrl(thumbnailBase, dir + THUMB_PREFIX + file);
   }
   if (child.highlightImageUrl && child.highlightImageUrl.length > 0)
     return buildImageUrl(imageBase, child.highlightImageUrl);
@@ -116,7 +116,7 @@ function logProgress(progress, albumTitle, albumId, childCount, depth, isLastSib
   log(prefix + albumTitle + ' (id ' + albumId + ')' + childrenPart + countPart);
 }
 
-async function visitAlbum(albumId, imageBase, reportLines, failuresByAlbum, progress, depth, isLastSibling) {
+async function visitAlbum(albumId, imageBase, thumbnailBase, reportLines, failuresByAlbum, progress, depth, isLastSibling) {
   const url = `${BASE}/data/${albumId}.json`;
   let data;
   try {
@@ -160,7 +160,7 @@ async function visitAlbum(albumId, imageBase, reportLines, failuresByAlbum, prog
   for (const child of children) {
     const type = child.type || '';
     if (type === 'GalleryAlbumItem') {
-      const thumbUrl = getAlbumThumbnailUrl(child, imageBase);
+      const thumbUrl = getAlbumThumbnailUrl(child, thumbnailBase, imageBase);
       if (thumbUrl) {
         urlIndex += 1;
         if (progress.fullOutput) log(`  [${urlIndex}] checking: subalbum thumb "${child.title ?? child.id}"`);
@@ -171,13 +171,13 @@ async function visitAlbum(albumId, imageBase, reportLines, failuresByAlbum, prog
       }
     } else if (type === 'GalleryPhotoItem') {
       const fullUrl = getPhotoFullUrl(child, imageBase);
+      const thumbUrl = getPhotoThumbUrl(child, thumbnailBase);
       if (fullUrl) {
         urlIndex += 1;
         if (progress.fullOutput) log(`  [${urlIndex}] checking: full "${child.title ?? child.id}"`);
         const r = await checkUrl(fullUrl);
         if (!r.ok) failures.push(`Image missing or failed: ${fullUrl}${r.status != null ? ` (${r.status})` : ''}${r.error ? ` ${r.error}` : ''}`);
       }
-      const thumbUrl = getPhotoThumbUrl(child, imageBase);
       if (thumbUrl) {
         urlIndex += 1;
         if (progress.fullOutput) log(`  [${urlIndex}] checking: thumb "${child.title ?? child.id}"`);
@@ -199,7 +199,7 @@ async function visitAlbum(albumId, imageBase, reportLines, failuresByAlbum, prog
   for (let i = 0; i < albumChildren.length; i++) {
     const child = albumChildren[i];
     const isLast = i === albumChildren.length - 1;
-    await visitAlbum(Number(child.id), imageBase, reportLines, failuresByAlbum, progress, depth + 1, isLast);
+    await visitAlbum(Number(child.id), imageBase, thumbnailBase, reportLines, failuresByAlbum, progress, depth + 1, isLast);
   }
 }
 
@@ -217,11 +217,13 @@ async function main() {
   }
 
   let imageBase = DEFAULT_IMAGE_BASE;
+  let thumbnailBase = DEFAULT_THUMBNAIL_BASE;
   try {
     const configRes = await fetch(`${BASE}/image-config.json`);
     if (configRes.ok) {
       const config = await configRes.json();
       if (config.baseUrl) imageBase = config.baseUrl.replace(/\/+$/, '') || DEFAULT_IMAGE_BASE;
+      if (config.thumbnailBaseUrl) thumbnailBase = config.thumbnailBaseUrl.replace(/\/+$/, '') || DEFAULT_THUMBNAIL_BASE;
     }
   } catch (_) {}
 
@@ -240,7 +242,7 @@ async function main() {
   const progress = { albumsChecked: 0, totalAlbums, fullOutput: FULL_OUTPUT };
   log(totalAlbums != null ? `Starting depth-first album traversal (${totalAlbums} albums)…` : 'Starting depth-first album traversal…');
   log('.');
-  await visitAlbum(rootId, imageBase, reportLines, failuresByAlbum, progress, 0, true);
+  await visitAlbum(rootId, imageBase, thumbnailBase, reportLines, failuresByAlbum, progress, 0, true);
   log(`Done. ${progress.albumsChecked} albums checked.\n`);
 
   // Print report to stderr

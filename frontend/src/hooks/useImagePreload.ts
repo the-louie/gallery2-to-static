@@ -13,7 +13,6 @@ import type { Image } from '@/types';
 import { getImageUrl } from '@/utils/imageUrl';
 import { preloadImage } from '@/utils/imagePreload';
 import { useViewAbortSignal } from '@/contexts/ViewAbortContext';
-import { useImageBaseUrl } from '@/contexts/ImageConfigContext';
 
 /**
  * Preloads next and previous images when the current image changes.
@@ -24,7 +23,6 @@ export function useImagePreload(
   albumContext: Image[],
 ): void {
   const signal = useViewAbortSignal();
-  const baseUrl = useImageBaseUrl();
   const preloadAbortRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -50,7 +48,7 @@ export function useImagePreload(
     }
 
     imagesToPreload.forEach((image) => {
-      const imageUrl = getImageUrl(image, false, undefined, baseUrl);
+      const imageUrl = getImageUrl(image, false);
       preloadImage(imageUrl, { signal }).catch((err) => {
         if (err?.name === 'AbortError') {
           return;
@@ -64,5 +62,5 @@ export function useImagePreload(
     return () => {
       preloadAbortRef.current = true;
     };
-  }, [currentImage, albumContext, baseUrl, signal]);
+  }, [currentImage, albumContext, signal]);
 }

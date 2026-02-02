@@ -16,7 +16,6 @@ import { getImageUrl } from '@/utils/imageUrl';
 import { getImageCache } from '@/utils/imageCache';
 import { fetchImageAsObjectUrl } from '@/utils/fetchImageAsObjectUrl';
 import { useViewAbortSignal } from '@/contexts/ViewAbortContext';
-import { useImageBaseUrl } from '@/contexts/ImageConfigContext';
 
 /**
  * Progressive loading state
@@ -64,7 +63,6 @@ export function useProgressiveImage(
   useThumbnail: boolean = true,
 ): UseProgressiveImageReturn {
   const signal = useViewAbortSignal();
-  const baseUrl = useImageBaseUrl();
   const [state, setState] = useState<ProgressiveImageState>('thumbnail');
   const [hasError, setHasError] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -107,8 +105,8 @@ export function useProgressiveImage(
     setDisplayThumbnailUrl('');
     setDisplayFullImageUrl('');
 
-    const thumbRequestUrl = getImageUrl(image, true, undefined, baseUrl);
-    const fullUrl = getImageUrl(image, false, undefined, baseUrl);
+    const thumbRequestUrl = getImageUrl(image, true);
+    const fullUrl = getImageUrl(image, false);
     setThumbnailUrl(thumbRequestUrl);
     setFullImageUrl(fullUrl);
 
@@ -126,7 +124,7 @@ export function useProgressiveImage(
       thumbnailImgRef.current = null;
       fullImgRef.current = null;
     };
-  }, [image?.id, image?.pathComponent, image?.urlPath, baseUrl, signal]);
+  }, [image?.id, image?.pathComponent, image?.urlPath, signal]);
 
   // Load thumbnail (fetch + object URL when signal provided)
   useEffect(() => {

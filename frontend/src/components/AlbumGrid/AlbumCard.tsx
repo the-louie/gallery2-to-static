@@ -14,7 +14,6 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import type { Album } from '@/types';
 import { getAlbumThumbnailUrl } from '@/utils/imageUrl';
-import { useImageBaseUrl } from '@/contexts/ImageConfigContext';
 import { parseBBCodeDecoded } from '@/utils/bbcode';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import './AlbumCard.css';
@@ -49,8 +48,7 @@ function AlbumCardComponent({
   'aria-label': ariaLabel,
 }: AlbumCardProps) {
   const [imageError, setImageError] = useState(false);
-  const baseUrl = useImageBaseUrl();
-  const thumbnailUrl = getAlbumThumbnailUrl(album, undefined, baseUrl);
+  const thumbnailUrl = getAlbumThumbnailUrl(album);
   const shouldShowThumbnail = thumbnailUrl !== null && !imageError;
 
   // Reset error state when thumbnail URL changes

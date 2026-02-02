@@ -1,35 +1,18 @@
 /**
  * Image URL construction utilities
  *
- * Provides functions to construct URLs for images and thumbnails from the
- * pathComponent field in the Image data structure. Supports format variants
- * (WebP, AVIF) with automatic extension replacement.
+ * Local-only model: all images load from frontend/public/g2data (symlink).
+ * Full images: /g2data/albums/{pathComponent}
+ * Thumbnails: /g2data/thumbnails/{thumbnailUrlPath}
  *
- * ## URL Construction Strategy
- *
- * - Base URL: Configurable via environment variable (`VITE_IMAGE_BASE_URL`) or
- *   runtime config file (`/image-config.json`). Defaults to `/images` if not configured.
- * - Full images: `{baseUrl}/{pathComponent}` or `{baseUrl}/{urlPath}` when present
- * - Thumbnails: `{thumbnailBaseUrl}/{thumbnailUrlPath}` (e.g. /g2data/thumbnails/album/t__photo.jpg)
- * - Format variants: Replace extension with `.webp` or `.avif`
- *
- * When urlPath/thumbnailUrlPath are present in the JSON, those are used for image URLs.
- *
- * ## Configuration
- *
- * The base URL can be configured via:
- * 1. Runtime config file: `public/image-config.json` with `{"baseUrl": "https://cdn.example.com"}`
- * 2. Environment variable: `VITE_IMAGE_BASE_URL=https://cdn.example.com`
- * 3. Default: `/images` (if neither is configured)
- *
- * See `imageConfig.ts` for more details on configuration.
+ * When urlPath/thumbnailUrlPath are present in the JSON, those are used.
+ * Format variants: Replace extension with `.webp` or `.avif` (for future use).
  *
  * ## Edge Cases
  *
  * - Empty pathComponent: Returns base URL (should not occur in practice)
  * - Special characters: PathComponent is used as-is (assumes proper encoding)
  * - Missing thumbnails: Component should handle gracefully by falling back to full image
- * - Format variants: Original extension is replaced with format extension
  */
 
 import type { Image, Album } from '../types';
@@ -51,10 +34,9 @@ function ensureNoLeadingSlash(path: string): string {
  * Construct thumbnail URL from pathComponent
  *
  * Applies the thumbnail prefix to the filename portion of the pathComponent.
- * Uses the configured base URL from imageConfig.
+ * Uses getThumbnailBaseUrl() (or baseUrlOverride).
  *
- * For example: "album/photo.jpg" -> "/images/album/t__photo.jpg" (default)
- * or "https://cdn.example.com/album/t__photo.jpg" (if configured)
+ * For example: "album/photo.jpg" -> "/g2data/thumbnails/album/t__photo.jpg"
  *
  * @param pathComponent - Full path component from image data
  * @param thumbPrefix - Thumbnail prefix (defaults to "t__")
@@ -133,10 +115,9 @@ function replaceExtension(
 /**
  * Construct full image URL from pathComponent
  *
- * Uses the configured base URL from imageConfig.
+ * Uses getImageBaseUrl() (or baseUrlOverride).
  *
- * For example: "album/photo.jpg" -> "/images/album/photo.jpg" (default)
- * or "https://cdn.example.com/album/photo.jpg" (if configured)
+ * For example: "album/photo.jpg" -> "/g2data/albums/album/photo.jpg"
  *
  * @param pathComponent - Full path component from image data
  * @param format - Optional format variant: 'webp', 'avif', or 'original' (default)
@@ -180,10 +161,10 @@ function constructFullImageUrl(
  * };
  *
  * const thumbUrl = getImageUrl(image, true);
- * // Returns: "/images/album/t__photo.jpg" (default) or configured base URL
+ * // Returns: "/g2data/thumbnails/album/t__photo.jpg"
  *
  * const fullUrl = getImageUrl(image, false);
- * // Returns: "/images/album/photo.jpg" (default) or configured base URL
+ * // Returns: "/g2data/albums/album/photo.jpg"
  * ```
  */
 export function getImageUrl(
@@ -225,10 +206,10 @@ export function getImageUrl(
  * };
  *
  * const webpUrl = getImageUrlWithFormat(image, false, 'webp');
- * // Returns: "/images/album/photo.webp" (default) or configured base URL
+ * // Returns: "/g2data/albums/album/photo.webp"
  *
  * const thumbWebpUrl = getImageUrlWithFormat(image, true, 'webp');
- * // Returns: "/images/album/t__photo.webp" (default) or configured base URL
+ * // Returns: "/g2data/thumbnails/album/t__photo.webp"
  * ```
  */
 export function getImageUrlWithFormat(
@@ -268,7 +249,7 @@ export function getImageUrlWithFormat(
  * };
  *
  * const thumbUrl = getAlbumThumbnailUrl(album);
- * // Returns: "/images/album/t__photo.jpg" (default) or configured base URL
+ * // Returns: "/g2data/thumbnails/album/t__photo.jpg"
  *
  * const albumWithoutThumb: Album = {
  *   id: 2,
@@ -301,7 +282,8 @@ export function getAlbumThumbnailUrl(
   }
 
   if (album.highlightImageUrl && album.highlightImageUrl.length > 0) {
-    return `${baseUrl}/${ensureNoLeadingSlash(album.highlightImageUrl)}`;
+    const imageBase = getImageBaseUrl();
+    return `${imageBase}/${ensureNoLeadingSlash(album.highlightImageUrl)}`;
   }
 
   return null;

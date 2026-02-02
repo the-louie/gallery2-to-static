@@ -48,20 +48,20 @@ function buildImageUrl(baseUrl: string, pathSegment: string): string | null {
     return base ? `${base}/${p}` : null;
 }
 
-function getAlbumThumbnailUrl(child: { thumbnailUrlPath?: string | null; highlightThumbnailUrlPath?: string | null; thumbnailPathComponent?: string | null; highlightImageUrl?: string | null }, baseUrl: string): string | null {
+function getAlbumThumbnailUrl(child: { thumbnailUrlPath?: string | null; highlightThumbnailUrlPath?: string | null; thumbnailPathComponent?: string | null; highlightImageUrl?: string | null }, thumbBase: string, imageBase: string): string | null {
     if (child.thumbnailUrlPath && child.thumbnailUrlPath.length > 0)
-        return buildImageUrl(baseUrl, child.thumbnailUrlPath);
+        return buildImageUrl(thumbBase, child.thumbnailUrlPath);
     if (child.highlightThumbnailUrlPath && child.highlightThumbnailUrlPath.length > 0)
-        return buildImageUrl(baseUrl, child.highlightThumbnailUrlPath);
+        return buildImageUrl(thumbBase, child.highlightThumbnailUrlPath);
     if (child.thumbnailPathComponent) {
         const p = ensureNoLeadingSlash(child.thumbnailPathComponent);
         const lastSlash = p.lastIndexOf('/');
         const dir = lastSlash === -1 ? '' : p.slice(0, lastSlash + 1);
         const file = lastSlash === -1 ? p : p.slice(lastSlash + 1);
-        return buildImageUrl(baseUrl, dir + THUMB_PREFIX + file);
+        return buildImageUrl(thumbBase, dir + THUMB_PREFIX + file);
     }
     if (child.highlightImageUrl && child.highlightImageUrl.length > 0)
-        return buildImageUrl(baseUrl, child.highlightImageUrl);
+        return buildImageUrl(imageBase, child.highlightImageUrl);
     return null;
 }
 
@@ -172,7 +172,7 @@ export async function collectImageUrlsFromAlbumTree(
         for (const child of children) {
             const type = child.type ?? '';
             if (type === 'GalleryAlbumItem') {
-                const thumbUrl = getAlbumThumbnailUrl(child as Parameters<typeof getAlbumThumbnailUrl>[0], thumbBase);
+                const thumbUrl = getAlbumThumbnailUrl(child as Parameters<typeof getAlbumThumbnailUrl>[0], thumbBase, baseUrl);
                 if (thumbUrl && !seen.has(thumbUrl)) {
                     seen.add(thumbUrl);
                     result.push({ url: thumbUrl, albumId, albumTitle, type: 'album-thumb' });

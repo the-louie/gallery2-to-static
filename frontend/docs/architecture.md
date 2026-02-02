@@ -724,35 +724,18 @@ To limit RAM usage when browsing large galleries:
 
 ### Image URL Configuration
 
-The frontend supports configurable image base URLs, allowing images to be served from external domains (CDNs, separate servers) or custom paths.
+Local-only model: all images load from `frontend/public/g2data` (symlink).
 
-**Configuration System:**
+**Fixed Paths:**
 - **Module**: `frontend/src/utils/imageConfig.ts`
-- **Configuration Precedence** (highest to lowest):
-  1. Runtime config file: `public/image-config.json` (loaded at runtime)
-  2. Environment variable: `VITE_IMAGE_BASE_URL` (set at build time)
-  3. Default: `/images` (fallback if neither is configured)
+- Full-size images: `/g2data/albums/{pathComponent}`
+- Thumbnails: `/g2data/thumbnails/{thumbnailUrlPath}`
 
 **URL Construction:**
 - The app loads only the image URLs as provided in the data JSON (original format); no format variants (AVIF/WebP) are requested.
-- Images are displayed using direct server URLs in `<img src>` to avoid blob URL security restrictions in some environments; progressive loading still uses fetch + cache for load detection.
-- Image URLs are constructed by combining the configured base URL with the `pathComponent` from image data
-- Base URL is normalized (trailing slashes removed) during configuration loading
-- Supports both absolute URLs (`https://cdn.example.com`) and relative paths (`/gallery-images`)
-- All image URL construction functions (`getImageUrl`, `getImageUrlWithFormat`, `getAlbumThumbnailUrl`) use the configured base URL
-
-**Configuration Loading:**
-- Configuration is loaded asynchronously at application startup
-- Loaded configuration is cached for application lifetime
-- Graceful fallback to default on configuration errors (no thrown errors)
-- Development mode shows console warnings for invalid configuration
-
-**Integration:**
-- All components using image URLs automatically benefit from configuration
-- No component changes needed when switching between default and external domain
-- Backward compatible: default behavior unchanged when no configuration provided
-
-See [Building and Deployment Guide](user-guides/06-building-deployment.md#image-base-url-configuration) for detailed configuration instructions.
+- Images are displayed using direct server URLs in `<img src>`; progressive loading uses fetch + cache for load detection.
+- Image URLs are constructed by combining the fixed base with `pathComponent` or `thumbnailUrlPath` from image data.
+- All image URL construction functions (`getImageUrl`, `getImageUrlWithFormat`, `getAlbumThumbnailUrl`) use the fixed bases.
 
 ## Future Enhancement Support
 

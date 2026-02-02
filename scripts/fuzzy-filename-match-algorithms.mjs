@@ -1,6 +1,9 @@
 /**
  * Fuzzy filename match algorithm evaluator.
  *
+ * DEPRECATED: With local g2data/albums, database paths match disk directly.
+ * No fuzzy matching needed. Kept for reference or one-off analysis.
+ *
  * Evaluates matching algorithms to map database-derived URLs (from the mismatch
  * report) to actual files in the file list. Target: ≥98% hit rate.
  *

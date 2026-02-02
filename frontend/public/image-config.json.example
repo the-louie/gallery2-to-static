@@ -1,4 +1,4 @@
 {
-  "baseUrl": "https://cdn.example.com/gallery-images",
-  "thumbnailBaseUrl": "https://cdn.example.com/gallery-thumbnails"
+  "baseUrl": "/g2data/albums",
+  "thumbnailBaseUrl": "/g2data/thumbnails"
 }

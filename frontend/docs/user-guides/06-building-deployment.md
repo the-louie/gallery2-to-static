@@ -113,121 +113,14 @@ The frontend expects JSON files at `/data/{id}.json` (relative to the served roo
 2. **Configure Server**: Configure server to serve `data/` from appropriate location
 3. **CDN**: Serve data files from CDN (if using CDN for assets)
 
-### Image Base URL Configuration
+### Image Paths
 
-The frontend can be configured to serve images from an external domain (CDN, separate server, etc.) instead of the default `/images` path. This is useful for:
+Local-only model: all images load from `frontend/public/g2data` (symlink). No configuration required.
 
-- **CDN Integration**: Serve images from a CDN for better performance
-- **Separate Server**: Host images on a different server or domain
-- **Path Customization**: Use a custom path prefix for images
+- Full-size images: `/g2data/albums/{pathComponent}`
+- Thumbnails: `/g2data/thumbnails/{thumbnailUrlPath}`
 
-#### Configuration Methods
-
-The image base URL can be configured in two ways (in order of precedence):
-
-1. **Runtime Configuration File** (highest priority): `public/image-config.json`
-2. **Environment Variable**: `VITE_IMAGE_BASE_URL`
-3. **Default**: `/images` (if neither is configured)
-
-#### Method 1: Runtime Configuration File
-
-Create a file `frontend/public/image-config.json`:
-
-```json
-{
-  "baseUrl": "https://cdn.example.com/gallery-images"
-}
-```
-
-**Advantages**:
-- Can be changed without rebuilding
-- Easy to update after deployment
-- Works with any hosting platform
-
-**Examples**:
-- Absolute URL: `"https://cdn.example.com"`
-- Absolute URL with path: `"https://cdn.example.com/gallery-images"`
-- Relative path: `"/gallery-images"`
-- Default (no file): Uses `/images`
-
-#### Method 2: Environment Variable
-
-Set the `VITE_IMAGE_BASE_URL` environment variable during build:
-
-```bash
-VITE_IMAGE_BASE_URL=https://cdn.example.com/gallery-images npm run build
-```
-
-Or create a `.env` file in the `frontend` directory:
-
-```
-VITE_IMAGE_BASE_URL=https://cdn.example.com/gallery-images
-```
-
-**Advantages**:
-- Set at build time
-- Can be different for different environments (dev, staging, production)
-
-**Note**: Environment variables must be prefixed with `VITE_` to be accessible in the frontend code.
-
-#### Configuration Precedence
-
-1. If `image-config.json` exists and is valid, it is used (overrides environment variable)
-2. If no runtime config file, `VITE_IMAGE_BASE_URL` is used (if set)
-3. If neither is configured, defaults to `/images`
-
-#### Examples
-
-**CDN Configuration**:
-```json
-{
-  "baseUrl": "https://cdn.example.com"
-}
-```
-Images will be loaded from: `https://cdn.example.com/album/photo.jpg`
-
-**CDN with Path Prefix**:
-```json
-{
-  "baseUrl": "https://cdn.example.com/gallery-images"
-}
-```
-Images will be loaded from: `https://cdn.example.com/gallery-images/album/photo.jpg`
-
-**Relative Path**:
-```json
-{
-  "baseUrl": "/static/images"
-}
-```
-Images will be loaded from: `/static/images/album/photo.jpg`
-
-**Default (no configuration)**:
-Images will be loaded from: `/images/album/photo.jpg`
-
-#### CORS Considerations
-
-If images are served from a different domain, ensure CORS headers are properly configured on the image server:
-
-```
-Access-Control-Allow-Origin: *
-Access-Control-Allow-Methods: GET
-```
-
-Most CDNs and static hosting services handle CORS automatically for image files.
-
-#### Troubleshooting
-
-**Images not loading**:
-- Verify the base URL is correct (check browser network tab)
-- Ensure CORS headers are set if using external domain
-- Check that the configuration file is in `public/` directory (not `src/`)
-- Verify environment variable is prefixed with `VITE_`
-
-**Configuration not taking effect**:
-- Clear browser cache
-- Rebuild the application if using environment variable
-- Check browser console for configuration warnings (in development mode)
+Ensure `g2data` (or symlink target) is present under `frontend/public/` before build. Copy or symlink your image tree so paths match the JSON data.
 
 ### Base Path Configuration
 

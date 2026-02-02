@@ -37,14 +37,3 @@ export {
 } from './ViewAbortContext';
 
 export type { ViewAbortContextValue, ViewAbortProviderProps } from './ViewAbortContext';
-
-// Image config context (base URL for image assets)
-export {
-  ImageConfigProvider,
-  useImageBaseUrl,
-} from './ImageConfigContext';
-
-export type {
-  ImageConfigContextValue,
-  ImageConfigProviderProps,
-} from './ImageConfigContext';
