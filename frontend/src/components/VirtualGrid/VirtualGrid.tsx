@@ -135,8 +135,8 @@ export function VirtualGrid<T>({
         itemContent={itemContent}
         useWindowScroll
         listClassName={listClassName}
-        overscan={200}
-        increaseViewportBy={{ top: 400, bottom: 400 }}
+        overscan={50}
+        increaseViewportBy={{ top: 200, bottom: 200 }}
         computeItemKey={(index, item) => {
           const key = (item as { id?: unknown })?.id;
           return key != null ? String(key) : String(index);
