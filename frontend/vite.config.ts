@@ -82,6 +82,10 @@ export default defineConfig({
     fs: {
       allow: ['..'],
     },
+    // Ignore g2data symlink (large directory) to prevent watcher hang
+    watch: {
+      ignored: ['**/public/g2data/**'],
+    },
   },
   build: {
     outDir: 'dist',

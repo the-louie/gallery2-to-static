@@ -60,13 +60,14 @@
 }
 
 /* Breadcrumb row – top of overlay, light text on dark for contrast */
+/* padding-left clears zoom controls (+ / −) on the left */
 .lightbox-breadcrumb-row {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   width: 100%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 0.75rem 0.5rem 4rem;
   background-color: var(--lightbox-breadcrumb-bg, rgba(0, 0, 0, 0.5));
   z-index: 9;
   box-sizing: border-box;
