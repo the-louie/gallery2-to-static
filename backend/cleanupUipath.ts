@@ -85,19 +85,6 @@ function normalizeNordicForPath(s: string): string {
 }
 
 /**
- * Normalize pathcomponent for use in thumb/link filenames (getThumbTarget, getLinkTarget).
- * Uses last path segment and applies cleanup_uipathcomponent so output matches on-disk
- * filenames produced by extract.py (spaces → _, etc).
- */
-export function normalizePathcomponentForFilename(
-    pathcomponent: string | null | undefined,
-): string {
-    if (pathcomponent == null) return '';
-    const lastSegment = pathcomponent.split('/').pop() ?? '';
-    return cleanup_uipathcomponent(lastSegment);
-}
-
-/**
  * Clean up directory/file names for URLs (matches Python cleanup_uipathcomponent).
  * Steps: replace \0 → decode → strip [.*?] → unescape HTML → Nordic norm → replace illegal chars → __→_, _-_→- → decode().lower() → Nordic norm.
  * URL path segments must go through this (and thus Nordic normalization); do not build paths from raw title/pathComponent elsewhere.
