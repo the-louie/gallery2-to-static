@@ -6,6 +6,7 @@ import { SearchBar } from '../SearchBar';
 import { SortDropdown } from '../SortDropdown';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useSiteMetadata } from '@/hooks/useSiteMetadata';
+import { parseBBCodeDecoded } from '@/utils/bbcode';
 import { useSort } from '@/hooks/useSort';
 import './Layout.css';
 
@@ -38,7 +39,7 @@ export interface LayoutProps {
  * ```
  */
 export function Layout({ children, className }: LayoutProps) {
-  const { siteName } = useSiteMetadata();
+  const { siteName, siteDescription } = useSiteMetadata();
   const { isOriginal } = useTheme();
   const { option: sortOption, setOption: setSortOption } = useSort('albums');
   const location = useLocation();
@@ -81,13 +82,20 @@ export function Layout({ children, className }: LayoutProps) {
       </a>
       <header className="layout-header">
         <div className="layout-header-content">
-          {isOriginal ? (
-            <span className="layout-title">{siteName || 'Gallery 2 to Static'}</span>
-          ) : (
-            <Link to="/" className="layout-title-link" aria-label="Go to home page">
+          <div className="layout-header-branding">
+            {isOriginal ? (
               <span className="layout-title">{siteName || 'Gallery 2 to Static'}</span>
-            </Link>
-          )}
+            ) : (
+              <Link to="/" className="layout-title-link" aria-label="Go to home page">
+                <span className="layout-title">{siteName || 'Gallery 2 to Static'}</span>
+              </Link>
+            )}
+            {siteDescription?.trim() && (
+              <p className="layout-header-description">
+                {parseBBCodeDecoded(siteDescription.trim())}
+              </p>
+            )}
+          </div>
           <div className="layout-header-actions">
             {!isOriginal && <SearchBar />}
             <div className="layout-header-dropdowns">

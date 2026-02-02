@@ -13,29 +13,6 @@
   width: 100%;
 }
 
-/* Intro block: root album title and optional description from metadata */
-.root-album-list-view-intro {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 0;
-}
-
-.root-album-list-view-intro-title {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--album-detail-title-color, #333333);
-}
-
-.root-album-list-view-intro-description {
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.5;
-  color: var(--album-detail-text-muted, var(--color-text-muted));
-}
-
 .root-album-list-view-list {
   margin: 0;
   padding: 0;

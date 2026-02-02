@@ -113,7 +113,7 @@ describe('RootAlbumListView', () => {
     expect(screen.getByText('Test Album')).toBeInTheDocument();
   });
 
-  it('shows intro block with title and description when metadata provided', () => {
+  it('renders album list without root intro (title/description shown in header)', () => {
     mockUseAlbumData.mockReturnValue({
       data: mockAlbums as Child[],
       metadata: {
@@ -129,12 +129,11 @@ describe('RootAlbumListView', () => {
     });
 
     renderWithProviders(<RootAlbumListView albumId={7} />);
-    expect(screen.getByText('My Gallery')).toBeInTheDocument();
-    expect(screen.getByText('Welcome to the gallery.')).toBeInTheDocument();
     expect(screen.getByText('Test Album')).toBeInTheDocument();
+    expect(screen.getByText('Parent Album')).toBeInTheDocument();
   });
 
-  it('shows intro with title only when metadata has no description', () => {
+  it('renders album list when metadata has no description', () => {
     mockUseAlbumData.mockReturnValue({
       data: mockAlbums as Child[],
       metadata: {
@@ -150,12 +149,10 @@ describe('RootAlbumListView', () => {
     });
 
     renderWithProviders(<RootAlbumListView albumId={7} />);
-    expect(screen.getByText('Gallery Home')).toBeInTheDocument();
-    expect(screen.queryByText('Welcome to the gallery.')).not.toBeInTheDocument();
     expect(screen.getByText('Test Album')).toBeInTheDocument();
   });
 
-  it('does not show intro when metadata is null', () => {
+  it('renders album list when metadata is null', () => {
     mockUseAlbumData.mockReturnValue({
       data: mockAlbums as Child[],
       metadata: null,

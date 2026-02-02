@@ -21,6 +21,7 @@ import type { IndexMetadata } from '@/types';
 
 interface UseSiteMetadataResult {
   siteName: string | null;
+  siteDescription: string | null;
   rootAlbumId: number | null;
   isLoading: boolean;
   error: DataLoadError | null;
@@ -33,6 +34,7 @@ const cache: { data: IndexMetadata | null; promise: Promise<IndexMetadata | null
 
 export function useSiteMetadata(): UseSiteMetadataResult {
   const [siteName, setSiteName] = useState<string | null>(null);
+  const [siteDescription, setSiteDescription] = useState<string | null>(null);
   const [rootAlbumId, setRootAlbumId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<DataLoadError | null>(null);
@@ -41,6 +43,7 @@ export function useSiteMetadata(): UseSiteMetadataResult {
     // If we have cached data, use it immediately
     if (cache.data) {
       setSiteName(cache.data.siteName);
+      setSiteDescription(cache.data.siteDescription ?? null);
       setRootAlbumId(cache.data.rootAlbumId);
       setIsLoading(false);
       return;
@@ -52,6 +55,7 @@ export function useSiteMetadata(): UseSiteMetadataResult {
         .then((index) => {
           if (index) {
             setSiteName(index.siteName);
+            setSiteDescription(index.siteDescription ?? null);
             setRootAlbumId(index.rootAlbumId);
           }
           setIsLoading(false);
@@ -82,6 +86,7 @@ export function useSiteMetadata(): UseSiteMetadataResult {
         cache.promise = null;
         if (index) {
           setSiteName(index.siteName);
+          setSiteDescription(index.siteDescription ?? null);
           setRootAlbumId(index.rootAlbumId);
         }
         setIsLoading(false);
@@ -101,5 +106,5 @@ export function useSiteMetadata(): UseSiteMetadataResult {
       });
   }, []);
 
-  return { siteName, rootAlbumId, isLoading, error };
+  return { siteName, siteDescription, rootAlbumId, isLoading, error };
 }
