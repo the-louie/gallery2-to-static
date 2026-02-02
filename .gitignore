@@ -12,3 +12,4 @@ frontend/.vite
 frontend/*.local
 frontend/.DS_Store
 backend/all-lanbilder-files.txt
+frontend/public/g2data
