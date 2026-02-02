@@ -22,12 +22,13 @@ const DEFAULT_OPTIONS: ThumbnailOptions = {
 /**
  * Generate a thumbnail from a full-size image.
  * Skips if destPath already exists. Creates parent directory if needed.
+ * Returns 'invalid' when source exists but is corrupted or not a valid image.
  */
 export async function generateThumbnail(
     sourcePath: string,
     destPath: string,
     options: Partial<ThumbnailOptions> = {},
-): Promise<'generated' | 'skipped' | 'missing'> {
+): Promise<'generated' | 'skipped' | 'missing' | 'invalid'> {
     const opts = { ...DEFAULT_OPTIONS, ...options };
 
     try {
@@ -46,10 +47,14 @@ export async function generateThumbnail(
     const destDir = path.dirname(destPath);
     await fs.mkdir(destDir, { recursive: true });
 
-    await sharp(sourcePath)
-        .resize(opts.maxWidth, opts.maxHeight, { fit: 'inside', withoutEnlargement: true })
-        .jpeg({ quality: opts.quality })
-        .toFile(destPath);
+    try {
+        await sharp(sourcePath, { failOnError: true })
+            .resize(opts.maxWidth, opts.maxHeight, { fit: 'inside', withoutEnlargement: true })
+            .jpeg({ quality: opts.quality })
+            .toFile(destPath);
+    } catch {
+        return 'invalid';
+    }
 
     return 'generated';
 }

@@ -39,6 +39,12 @@ async function run(): Promise<void> {
         const skipped = await generateThumbnail(sourcePath, destPath);
         assert.strictEqual(skipped, 'skipped');
 
+        // Invalid source: non-image file, should return 'invalid'
+        const invalidPath = path.join(tmpDir, 'not-an-image.jpg');
+        await fs.writeFile(invalidPath, 'not an image');
+        const invalid = await generateThumbnail(invalidPath, path.join(tmpDir, 'out', 't__not-an-image.jpg'));
+        assert.strictEqual(invalid, 'invalid');
+
         // Verify directory was created (destPath has subdir)
         const destDir = path.dirname(destPath);
         const stat = await fs.stat(destDir);

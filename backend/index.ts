@@ -269,7 +269,7 @@ const main = async (
     descendantImageCounts: Map<number, number>,
     pathIndex: Map<string, number>,
     usedSegmentsByParentId: Map<number, Set<string>>,
-    thumbnailContext: { albumsRoot: string; thumbnailsRoot: string; sem: ReturnType<typeof createSemaphore>; options: { maxWidth: number; maxHeight: number; quality: number }; skip: boolean; generatedCount: number; skippedCount: number } | null,
+    thumbnailContext: { albumsRoot: string; thumbnailsRoot: string; sem: ReturnType<typeof createSemaphore>; options: { maxWidth: number; maxHeight: number; quality: number }; skip: boolean; generatedCount: number; skippedCount: number; excludedCount: number } | null,
 ) => {
     const children = await sql.getChildren(root);
     // Exclude child albums that are blacklisted or have no image descendant.
@@ -335,7 +335,7 @@ const main = async (
                 );
             }
         });
-        const processedChildren = await Promise.all(
+        const processedChildrenRaw = await Promise.all(
             filtered.map(async (child) => {
                 if (child.type === 'GalleryPhotoItem' && child.pathComponent) {
                     const pathComponentChain = pathComponent.concat([child.pathComponent]);
@@ -353,6 +353,10 @@ const main = async (
                             const result = await generateThumbnail(sourcePath, destPath, thumbnailContext.options);
                             if (result === 'missing') {
                                 console.warn(`Missing source image: ${sourcePath}`);
+                            } else if (result === 'invalid') {
+                                console.warn(`Invalid/corrupted image excluded: ${sourcePath}`);
+                                thumbnailContext.excludedCount++;
+                                return null;
                             } else if (result === 'generated') {
                                 thumbnailContext.generatedCount++;
                             } else if (result === 'skipped') {
@@ -360,6 +364,8 @@ const main = async (
                             }
                         } catch (err) {
                             console.warn(`Thumbnail generation failed for ${sourcePath}:`, err instanceof Error ? err.message : String(err));
+                            thumbnailContext.excludedCount++;
+                            return null;
                         } finally {
                             thumbnailContext.sem.release();
                         }
@@ -376,6 +382,7 @@ const main = async (
                 return child;
             }),
         );
+        const processedChildren = processedChildrenRaw.filter((c): c is Child => c !== null);
         await Promise.all(recursivePromises);
 
         const usedForChildren = new Set<string>();
@@ -535,6 +542,9 @@ const main = async (
 
         const albumFile: AlbumFile = { metadata, children: childrenForFile };
         const filePath = path.join(dataDir, `${root}.json`);
+        const albumTitle = albumInfo.albumTitle ?? `Album ${root}`;
+        const fullPath = uipath.slice(1).filter(Boolean).join('/') || (isRoot ? 'Home' : albumTitle);
+        console.log(`Writing ${root}.json (${fullPath})`);
         try {
             await fs.writeFile(
                 filePath,
@@ -551,6 +561,7 @@ let connection: mysql.Connection | null = null;
 
 (async () => {
     try {
+        console.log('Loading config...');
         const configPath = path.join(__dirname, 'config.json');
         let config: Config;
         try {
@@ -570,10 +581,12 @@ let connection: mysql.Connection | null = null;
             process.exit(1);
         }
 
+        console.log('Connecting to database...');
         connection = await mysql.createConnection(config.mysqlSettings);
         const sql = sqlUtils(connection, config);
 
         const dataDir = path.join(__dirname, '..', 'data');
+        console.log('Preparing data directory...');
         try {
             await fs.access(dataDir);
         } catch {
@@ -602,9 +615,6 @@ let connection: mysql.Connection | null = null;
         const searchIndex = new Map<number, SearchIndexItem>();
 
         const thumbPrefix = config.thumbPrefix ?? 't__';
-        if (thumbPrefix === '__t_') {
-            console.warn('thumbPrefix "__t_" does not match extract.py convention (t__); thumb URLs may 404.');
-        }
 
         const projectRoot = path.join(__dirname, '..');
         const albumsRoot = path.join(
@@ -624,6 +634,7 @@ let connection: mysql.Connection | null = null;
             skip: boolean;
             generatedCount: number;
             skippedCount: number;
+            excludedCount: number;
         } | null = null;
         if (!skipThumbnailGeneration) {
             try {
@@ -641,6 +652,7 @@ let connection: mysql.Connection | null = null;
                     skip: false,
                     generatedCount: 0,
                     skippedCount: 0,
+                    excludedCount: 0,
                 };
                 console.log(`Thumbnail generation enabled: ${albumsRoot} -> ${thumbnailsRoot}`);
             } catch (err) {
@@ -648,7 +660,9 @@ let connection: mysql.Connection | null = null;
             }
         }
 
+        console.log('Computing albums with image descendants...');
         const albumsWithImageDescendants = await computeAlbumsWithImageDescendants(rootId, sql, ignoreSet);
+        console.log('Computing descendant image counts...');
         const descendantImageCounts = await computeAllDescendantImageCounts(
             rootId,
             (id) => sql.getChildren(id),
@@ -677,10 +691,14 @@ let connection: mysql.Connection | null = null;
         );
 
         if (thumbnailContext) {
-            console.log(`Thumbnails: ${thumbnailContext.generatedCount} generated, ${thumbnailContext.skippedCount} skipped (already existed)`);
+            const parts = [`${thumbnailContext.generatedCount} generated`, `${thumbnailContext.skippedCount} skipped`];
+            if (thumbnailContext.excludedCount > 0) {
+                parts.push(`${thumbnailContext.excludedCount} excluded (invalid/corrupted)`);
+            }
+            console.log(`Thumbnails: ${parts.join(', ')}`);
         }
 
-        // Generate search index file
+        console.log('Generating search index...');
         try {
             const searchIndexArray = Array.from(searchIndex.values());
             const searchIndexData = {
@@ -722,6 +740,7 @@ let connection: mysql.Connection | null = null;
         console.log(`Generated index.json with root album reference`);
 
         try {
+            console.log('Verifying image paths...');
             const verification = await runVerification(
                 dataDir,
                 projectRoot,
@@ -741,6 +760,7 @@ let connection: mysql.Connection | null = null;
         } catch (verificationError) {
             console.warn('Image path verification failed (extraction succeeded):', verificationError);
         }
+        console.log('Extraction complete.');
     } catch (error) {
         console.error('Error in main:', error);
         process.exit(1);

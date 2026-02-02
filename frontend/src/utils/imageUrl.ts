@@ -9,12 +9,11 @@
  *
  * - Base URL: Configurable via environment variable (`VITE_IMAGE_BASE_URL`) or
  *   runtime config file (`/image-config.json`). Defaults to `/images` if not configured.
- * - Full images: `{baseUrl}/{pathComponent}` or `{baseUrl}/{urlPath}` when present (legacy)
- * - Thumbnails: `{baseUrl}/{dir}t__{filename}` (prefix `t__` for legacy match)
+ * - Full images: `{baseUrl}/{pathComponent}` or `{baseUrl}/{urlPath}` when present
+ * - Thumbnails: `{thumbnailBaseUrl}/{thumbnailUrlPath}` (e.g. /g2data/thumbnails/album/t__photo.jpg)
  * - Format variants: Replace extension with `.webp` or `.avif`
  *
- * Thumb prefix `t__` (legacy) is applied to the filename when using pathComponent.
- * When urlPath/thumbnailUrlPath are present, those are used for image URLs.
+ * When urlPath/thumbnailUrlPath are present in the JSON, those are used for image URLs.
  *
  * ## Configuration
  *
@@ -37,7 +36,7 @@ import type { Image, Album } from '../types';
 import { getImageBaseUrl, getThumbnailBaseUrl } from './imageConfig';
 
 /**
- * Default thumbnail prefix for legacy URL compatibility (matches Python config thumb_prefix).
+ * Thumbnail filename prefix (e.g. t__photo.jpg under g2data/thumbnails).
  */
 const DEFAULT_THUMB_PREFIX = 't__';
 
@@ -252,7 +251,7 @@ export function getImageUrlWithFormat(
 /**
  * Get album thumbnail URL for an Album object
  *
- * Fallback order: thumbnailUrlPath (legacy), highlightThumbnailUrlPath (thumbnail of highlight image),
+ * Fallback order: thumbnailUrlPath, highlightThumbnailUrlPath (thumbnail of highlight image),
  * thumbnailPathComponent (built with thumb prefix), highlightImageUrl (full image path). Returns null if none are set.
  *
  * @param album - Album with optional thumbnailUrlPath, highlightThumbnailUrlPath, thumbnailPathComponent, or highlightImageUrl
