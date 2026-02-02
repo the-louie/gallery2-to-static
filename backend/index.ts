@@ -9,6 +9,7 @@ import { computeAllDescendantImageCounts } from './descendantImageCount'
 import { runVerification } from './verifyImagePaths'
 import { generateThumbnail } from './generateThumbnail'
 import { buildPathsFromPathComponent } from './pathResolution'
+import { decodeHtmlEntities } from './decodeHtmlEntities'
 
 /**
  * Build a Set of album IDs to ignore from config.ignoreAlbums.
@@ -722,10 +723,11 @@ let connection: mysql.Connection | null = null;
             pathIndexObj[pathKey] = albumId;
         });
         const override = config.layoutHeaderDescriptionOverride;
-        const siteDescription =
+        const rawDescription =
             typeof override === 'string' && override.trim().length > 0
                 ? override.trim()
                 : rootAlbumInfo.description;
+        const siteDescription = decodeHtmlEntities(rawDescription ?? '');
 
         const indexData = {
             rootAlbumId: rootId,
