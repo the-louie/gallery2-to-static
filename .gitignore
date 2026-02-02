@@ -11,3 +11,4 @@ frontend/dist
 frontend/.vite
 frontend/*.local
 frontend/.DS_Store
+backend/all-lanbilder-files.txt
