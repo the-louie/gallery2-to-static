@@ -342,8 +342,9 @@
   grid-template-columns: 1fr;
 }
 
-/* G2 Classic: subalbums section - no box, list on white */
+/* G2 Classic: subalbums section - no box, list on white, single column */
 [data-theme="classic"] .root-album-list-block-subalbums {
+  max-width: 300px;
   background-color: transparent;
   border: none;
   border-radius: 0;
