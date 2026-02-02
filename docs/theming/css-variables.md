@@ -117,7 +117,7 @@ Variables are defined in four places:
 1. **`:root`** — Base/fallback (defaults to light)
 2. **`[data-theme="light"]`** — Explicit light overrides
 3. **`[data-theme="dark"]`** — Dark theme overrides
-4. **`[data-theme="original"]`** — Original (G2 Classic) overrides
+4. **`[data-theme="classic"]`** — Classic (G2 Classic) overrides
 
 When `document.documentElement` has `data-theme="dark"`, all `[data-theme="dark"]` variables apply. Unset variables inherit from `:root`.
 

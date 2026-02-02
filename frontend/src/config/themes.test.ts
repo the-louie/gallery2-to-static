@@ -16,11 +16,11 @@ import {
 
 describe('Theme Registry', () => {
   describe('THEME_REGISTRY', () => {
-    it('contains light, dark, and original themes', () => {
+    it('contains light, dark, and classic themes', () => {
       const themeNames = THEME_REGISTRY.map((theme) => theme.name);
       expect(themeNames).toContain('light');
       expect(themeNames).toContain('dark');
-      expect(themeNames).toContain('original');
+      expect(themeNames).toContain('classic');
     });
 
     it('has exactly three themes', () => {
@@ -70,11 +70,11 @@ describe('Theme Registry', () => {
       expect(darkTheme?.displayName).toBe('Dark');
     });
 
-    it('returns theme definition for original theme', () => {
-      const originalTheme = getTheme('original');
-      expect(originalTheme).toBeDefined();
-      expect(originalTheme?.name).toBe('original');
-      expect(originalTheme?.displayName).toBe('Original');
+    it('returns theme definition for classic theme', () => {
+      const classicTheme = getTheme('classic');
+      expect(classicTheme).toBeDefined();
+      expect(classicTheme?.name).toBe('classic');
+      expect(classicTheme?.displayName).toBe('Classic');
     });
 
     it('returns undefined for invalid theme name', () => {
@@ -120,7 +120,7 @@ describe('Theme Registry', () => {
     it('returns true for valid theme names', () => {
       expect(isValidTheme('light')).toBe(true);
       expect(isValidTheme('dark')).toBe(true);
-      expect(isValidTheme('original')).toBe(true);
+      expect(isValidTheme('classic')).toBe(true);
     });
 
     it('returns false for invalid theme names', () => {
@@ -144,8 +144,8 @@ describe('Theme Registry', () => {
       expect(isValidTheme(DEFAULT_THEME)).toBe(true);
     });
 
-    it('is original theme', () => {
-      expect(DEFAULT_THEME).toBe('original');
+    it('is classic theme', () => {
+      expect(DEFAULT_THEME).toBe('classic');
     });
   });
 });

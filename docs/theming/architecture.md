@@ -37,7 +37,7 @@ main.tsx
 └── HashRouter
     └── ThemeProvider          ← useLocation(), loadAlbumThemesConfig
         └── App
-            └── Layout         ← uses useTheme().isOriginal for sidebar
+            └── Layout         ← uses useTheme().isClassic for sidebar
                 └── ThemeDropdown  ← uses useTheme().theme, setTheme
 ```
 
@@ -54,10 +54,10 @@ ThemeProvider must be inside a Router because it uses `useLocation()` to determi
 ### Theme Context (`frontend/src/contexts/ThemeContext.tsx`)
 
 - `ThemeProvider`: Wraps app; manages user preference (localStorage), resolves effective theme from path + album-themes config
-- `useTheme()`: Returns `{ theme, effectiveTheme, setTheme, availableThemes, isDark, isLight, isOriginal }`
+- `useTheme()`: Returns `{ theme, effectiveTheme, setTheme, availableThemes, isDark, isLight, isClassic }`
 - `theme`: User's stored preference (for ThemeDropdown)
 - `effectiveTheme`: Theme actually applied (may be album override)
-- `isDark`, `isLight`, `isOriginal`: Derived from `effectiveTheme`
+- `isDark`, `isLight`, `isClassic`: Derived from `effectiveTheme`
 
 ### Album Themes Config (`frontend/src/utils/albumThemesConfig.ts`)
 
@@ -71,7 +71,7 @@ ThemeProvider must be inside a Router because it uses `useLocation()` to determi
 - `:root`: Base/fallback (light theme values)
 - `[data-theme="light"]`: Explicit light theme
 - `[data-theme="dark"]`: Dark theme
-- `[data-theme="original"]`: Gallery 2 Classic theme
+- `[data-theme="classic"]`: Gallery 2 Classic theme
 - Components use `var(--color-text-primary)` etc.; values change when `data-theme` changes
 
 ## Theme Application
@@ -87,7 +87,7 @@ ThemeProvider must be inside a Router because it uses `useLocation()` to determi
 
 - User preference stored in `localStorage` under key `gallery-theme`
 - Old key `gallery-theme-preference` (values: light, dark, system) migrated on first load
-- Migration: light→light, dark→dark, system→original
+- Migration: light→light, dark→dark, system→classic
 - Migration flag `gallery-theme-migrated` prevents repeated migration
 
 ## Error Handling

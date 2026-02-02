@@ -2,11 +2,11 @@
  * Theme Switcher Component
  *
  * @deprecated This component is deprecated. Use ThemeDropdown instead.
- * An accessible button that cycles through themes: light → dark → original → light.
+ * An accessible button that cycles through themes: light → dark → classic → light.
  *
  * ## Features
  *
- * - Cycles through light, dark, and original themes; ThemeDropdown is preferred for direct selection
+ * - Cycles through light, dark, and classic themes; ThemeDropdown is preferred for direct selection
  * - Accessible with proper ARIA attributes
  * - Keyboard navigable (Enter, Space)
  * - Visual icons for each mode
@@ -47,7 +47,7 @@ export interface ThemeSwitcherProps {
 }
 
 /**
- * Get the next theme in the cycle (light → dark → original → light)
+ * Get the next theme in the cycle (light → dark → classic → light)
  * @param current - Current theme
  * @returns Next theme in cycle
  */
@@ -56,8 +56,8 @@ function getNextTheme(current: Theme): Theme {
     case 'light':
       return 'dark';
     case 'dark':
-      return 'original';
-    case 'original':
+      return 'classic';
+    case 'classic':
       return 'light';
     default:
       return 'light';
@@ -74,9 +74,9 @@ function getAriaLabel(theme: Theme): string {
     case 'light':
       return 'Theme: Light mode. Click to switch to dark mode.';
     case 'dark':
-      return 'Theme: Dark mode. Click to switch to original mode.';
-    case 'original':
-      return 'Theme: Original mode. Click to switch to light mode.';
+      return 'Theme: Dark mode. Click to switch to classic mode.';
+    case 'classic':
+      return 'Theme: Classic mode. Click to switch to light mode.';
     default:
       return 'Toggle theme';
   }
@@ -131,7 +131,7 @@ function MoonIcon(): React.ReactElement {
 }
 
 /**
- * Classic/frame icon for Original (G2 Classic) theme
+ * Classic/frame icon for Classic (G2 Classic) theme
  */
 function ClassicIcon(): React.ReactElement {
   return (
@@ -178,7 +178,7 @@ function SystemIcon(): React.ReactElement {
  * Theme Switcher Component
  *
  * @deprecated Use ThemeDropdown instead. This component is kept for backward compatibility.
- * Button that cycles through themes: light → dark → original → light
+ * Button that cycles through themes: light → dark → classic → light
  *
  * @param props - Component props
  * @returns Theme switcher button
@@ -202,7 +202,7 @@ export function ThemeSwitcher({ className }: ThemeSwitcherProps): React.ReactEle
         return <SunIcon />;
       case 'dark':
         return <MoonIcon />;
-      case 'original':
+      case 'classic':
         return <ClassicIcon />;
       default:
         return <SunIcon />;

@@ -291,17 +291,17 @@
 }
 
 /* G2 Classic */
-[data-theme="original"] .root-album-list-block {
+[data-theme="classic"] .root-album-list-block {
   min-height: 0;
 }
 
-[data-theme="original"] .root-album-list-block-block-link {
+[data-theme="classic"] .root-album-list-block-block-link {
   flex-direction: row;
   align-items: flex-start;
   gap: 1rem;
 }
 
-[data-theme="original"] .root-album-list-block-inner {
+[data-theme="classic"] .root-album-list-block-inner {
   flex: 1;
   min-width: 0;
 }
@@ -313,7 +313,7 @@
   overflow: hidden;
 }
 
-[data-theme="original"] .root-album-list-block-thumb {
+[data-theme="classic"] .root-album-list-block-thumb {
   background: var(--color-background-secondary);
   padding: 4px;
   border: 1px solid var(--color-border);
@@ -338,12 +338,12 @@
   font-size: 0.75rem;
 }
 
-[data-theme="original"] .root-album-list-block-subalbums-list {
+[data-theme="classic"] .root-album-list-block-subalbums-list {
   grid-template-columns: 1fr;
 }
 
 /* G2 Classic: subalbums section - no box, list on white */
-[data-theme="original"] .root-album-list-block-subalbums {
+[data-theme="classic"] .root-album-list-block-subalbums {
   background-color: transparent;
   border: none;
   border-radius: 0;
@@ -351,7 +351,7 @@
 }
 
 /* G2 Classic: subalbum links - bold, smaller font, compact line-height */
-[data-theme="original"] .root-album-list-block-subalbum-link {
+[data-theme="classic"] .root-album-list-block-subalbum-link {
   font-weight: bold;
   font-size: 0.75rem;
   line-height: 1.25;

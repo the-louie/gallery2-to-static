@@ -2,7 +2,7 @@
  * RootAlbumListBlock Component
  *
  * Renders a single root-level album as a rich block. The block (title, description, metadata,
- * and in original theme the thumb) is a single link to the album page; the optional event
+ * and in classic theme the thumb) is a single link to the album page; the optional event
  * website link and the subalbums section are excluded so they keep their own behavior.
  *
  * Contains: album title (bold), description, optional website link from summary/description,
@@ -66,18 +66,18 @@ export function RootAlbumListBlock({
   const dateStr = useMemo(() => formatAlbumDate(album.timestamp ?? null), [album.timestamp]);
   const showOwner = Boolean(album.ownerName?.trim());
   const showDescription = Boolean(album.description?.trim());
-  const { isOriginal } = useTheme();
+  const { isClassic } = useTheme();
   const showSubalbums = subalbums.length > 0;
 
   const displaySubalbums = useMemo(() => {
     const sorted = sortItems([...subalbums], 'date-desc');
-    if (isOriginal) {
+    if (isClassic) {
       return sorted;
     }
     return sorted.slice(0, ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT);
-  }, [subalbums, isOriginal]);
+  }, [subalbums, isClassic]);
   const hasMoreSubalbums =
-    !isOriginal && subalbums.length > ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT;
+    !isClassic && subalbums.length > ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT;
 
   const linkTo = album.path ?? `/${titleToSegment(album.title)}`;
   const highlightImageUrl = getAlbumHighlightImageUrl(album);
@@ -92,7 +92,7 @@ export function RootAlbumListBlock({
       className={className ? `root-album-list-block ${className}` : 'root-album-list-block'}
       aria-labelledby={`root-album-title-${album.id}`}
     >
-      {highlightImageUrl != null && !isOriginal && (
+      {highlightImageUrl != null && !isClassic && (
         <div
           className="root-album-list-block-bg"
           role="presentation"
@@ -107,7 +107,7 @@ export function RootAlbumListBlock({
             className="root-album-list-block-block-link"
             aria-label={`Open album: ${decodeHtmlEntities(album.title || 'Untitled')}`}
           >
-            {isOriginal && (
+            {isClassic && (
               <div className="root-album-list-block-thumb">
                 {thumbnailUrl != null ? (
                   <img
@@ -124,7 +124,7 @@ export function RootAlbumListBlock({
             )}
             <div className="root-album-list-block-content">
               <h2 id={`root-album-title-${album.id}`} className="root-album-list-block-title">
-                {isOriginal && <span className="root-album-list-block-title-prefix">Album: </span>}
+                {isClassic && <span className="root-album-list-block-title-prefix">Album: </span>}
                 <span className="root-album-list-block-title-text">{parsedTitle}</span>
               </h2>
               {showDescription && (
@@ -177,7 +177,7 @@ export function RootAlbumListBlock({
             role="region"
             aria-label="Subalbums"
           >
-            {isOriginal && (
+            {isClassic && (
               <strong className="root-album-list-block-subalbums-heading">Subalbums:</strong>
             )}
             <ul className="root-album-list-block-subalbums-list">

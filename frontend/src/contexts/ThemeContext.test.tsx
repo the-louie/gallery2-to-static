@@ -106,7 +106,7 @@ describe('ThemeContext', () => {
       expect(result.current).toHaveProperty('availableThemes');
       expect(result.current).toHaveProperty('isDark');
       expect(result.current).toHaveProperty('isLight');
-      expect(result.current).toHaveProperty('isOriginal');
+      expect(result.current).toHaveProperty('isClassic');
     });
 
     it('defaults to original theme', () => {
@@ -114,7 +114,7 @@ describe('ThemeContext', () => {
         wrapper: createWrapper(),
       });
 
-      expect(result.current.theme).toBe('original');
+      expect(result.current.theme).toBe('classic');
     });
 
     it('uses provided default theme', () => {
@@ -141,12 +141,12 @@ describe('ThemeContext', () => {
       expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
     });
 
-    it('applies original theme to root element', () => {
+    it('applies classic theme to root element', () => {
       renderHook(() => useTheme(), {
-        wrapper: createWrapper('original'),
+        wrapper: createWrapper('classic'),
       });
 
-      expect(document.documentElement.getAttribute('data-theme')).toBe('original');
+      expect(document.documentElement.getAttribute('data-theme')).toBe('classic');
     });
 
     it('persists theme to localStorage', () => {
@@ -196,7 +196,7 @@ describe('ThemeContext', () => {
       expect(result.current.availableThemes.length).toBeGreaterThan(0);
       expect(result.current.availableThemes.some((t) => t.name === 'light')).toBe(true);
       expect(result.current.availableThemes.some((t) => t.name === 'dark')).toBe(true);
-      expect(result.current.availableThemes.some((t) => t.name === 'original')).toBe(true);
+      expect(result.current.availableThemes.some((t) => t.name === 'classic')).toBe(true);
     });
 
     it('effectiveTheme equals theme when on home page', () => {
@@ -212,7 +212,7 @@ describe('ThemeContext', () => {
       globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
-          defaultTheme: 'original',
+          defaultTheme: 'classic',
           albumThemes: { '7': 'dark' },
         }),
       });
@@ -234,7 +234,7 @@ describe('ThemeContext', () => {
       globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
-          defaultTheme: 'original',
+          defaultTheme: 'classic',
           albumThemes: {},
         }),
       });
@@ -251,7 +251,7 @@ describe('ThemeContext', () => {
       globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
-          defaultTheme: 'original',
+          defaultTheme: 'classic',
           albumThemes: {},
         }),
       });
@@ -323,12 +323,12 @@ describe('ThemeContext', () => {
       expect(result.current.isDark).toBe(false);
     });
 
-    it('isOriginal is true when theme is original', () => {
+    it('isClassic is true when theme is classic', () => {
       const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('original'),
+        wrapper: createWrapper('classic'),
       });
 
-      expect(result.current.isOriginal).toBe(true);
+      expect(result.current.isClassic).toBe(true);
       expect(result.current.isDark).toBe(false);
       expect(result.current.isLight).toBe(false);
     });
@@ -346,8 +346,8 @@ describe('ThemeContext', () => {
         wrapper: createWrapper(),
       });
 
-      // Should fall back to default (original)
-      expect(result.current.theme).toBe('original');
+      // Should fall back to default (classic)
+      expect(result.current.theme).toBe('classic');
 
       consoleSpy.mockRestore();
     });
@@ -400,17 +400,29 @@ describe('ThemeContext', () => {
       expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('dark');
     });
 
-    it('migrates from old preference system - system defaults to original', () => {
+    it('migrates from old preference system - system defaults to classic', () => {
       localStorage.setItem('gallery-theme-preference', JSON.stringify('system'));
 
       const { result } = renderHook(() => useTheme(), {
         wrapper: createWrapper(),
       });
 
-      expect(result.current.theme).toBe('original');
+      expect(result.current.theme).toBe('classic');
       expect(localStorage.getItem('gallery-theme-preference')).toBeNull();
       expect(localStorage.getItem('gallery-theme-migrated')).toBe('true');
-      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('original');
+      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('classic');
+    });
+
+    it('migrates legacy original theme to classic', () => {
+      localStorage.setItem('gallery-theme', JSON.stringify('original'));
+      localStorage.setItem('gallery-theme-migrated', 'true');
+
+      const { result } = renderHook(() => useTheme(), {
+        wrapper: createWrapper(),
+      });
+
+      expect(result.current.theme).toBe('classic');
+      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('classic');
     });
 
     it('does not migrate if already migrated', () => {
@@ -438,7 +450,7 @@ describe('ThemeContext', () => {
       });
 
       // Should fall back to default
-      expect(result.current.theme).toBe('original');
+      expect(result.current.theme).toBe('classic');
       expect(localStorage.getItem('gallery-theme-preference')).toBeNull();
       expect(localStorage.getItem('gallery-theme-migrated')).toBe('true');
 
@@ -485,7 +497,7 @@ describe('ThemeContext', () => {
       });
 
       // Should fall back to default theme
-      expect(result.current.theme).toBe('original');
+      expect(result.current.theme).toBe('classic');
 
       consoleSpy.mockRestore();
     });
@@ -504,8 +516,8 @@ describe('ThemeContext', () => {
         wrapper: createWrapper(),
       });
 
-      // Should always return a valid theme (light, dark, or original)
-      expect(['light', 'dark', 'original']).toContain(result.current.theme);
+      // Should always return a valid theme (light, dark, or classic)
+      expect(['light', 'dark', 'classic']).toContain(result.current.theme);
 
       // Restore
       Object.defineProperty(window, 'localStorage', {
@@ -643,7 +655,7 @@ describe('ThemeContext', () => {
       });
 
       // Should handle corrupted data gracefully
-      expect(result.current.theme).toBe('original');
+      expect(result.current.theme).toBe('classic');
 
       // Now set valid data
       act(() => {

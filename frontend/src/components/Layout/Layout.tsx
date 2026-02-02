@@ -40,7 +40,7 @@ export interface LayoutProps {
  */
 export function Layout({ children, className }: LayoutProps) {
   const { siteName, siteDescription } = useSiteMetadata();
-  const { isOriginal } = useTheme();
+  const { isClassic } = useTheme();
   const { option: sortOption, setOption: setSortOption } = useSort('albums');
   const location = useLocation();
   const isInitialMount = useRef(true);
@@ -93,10 +93,10 @@ export function Layout({ children, className }: LayoutProps) {
             )}
           </div>
           <div className="layout-header-actions">
-            {!isOriginal && <SearchBar />}
+            {!isClassic && <SearchBar />}
             <div className="layout-header-dropdowns">
               <ThemeDropdown />
-              {!isOriginal && (
+              {!isClassic && (
                 <SortDropdown
                   currentOption={sortOption}
                   onOptionChange={setSortOption}
@@ -106,7 +106,7 @@ export function Layout({ children, className }: LayoutProps) {
           </div>
         </div>
       </header>
-      {isOriginal ? (
+      {isClassic ? (
         <div className="layout-body layout-body-with-sidebar">
           <aside className="layout-sidebar" aria-label="Gallery navigation">
             <div className="layout-sidebar-block">

@@ -8,11 +8,11 @@
 
 **Props:**
 - `children`: React node
-- `defaultTheme?`: Theme when no stored preference exists (default: `"original"`)
+- `defaultTheme?`: Theme when no stored preference exists (default: `"classic"`)
 
 **Usage:**
 ```tsx
-<ThemeProvider defaultTheme="original">
+<ThemeProvider defaultTheme="classic">
   <App />
 </ThemeProvider>
 ```
@@ -41,13 +41,13 @@ interface ThemeContextValue {
   availableThemes: readonly ThemeDefinition[];
   isDark: boolean;
   isLight: boolean;
-  isOriginal: boolean;
+  isClassic: boolean;
 }
 ```
 
 **Usage:**
 ```tsx
-const { theme, effectiveTheme, setTheme, isOriginal } = useTheme();
+const { theme, effectiveTheme, setTheme, isClassic } = useTheme();
 ```
 
 **Throws:** Error if used outside ThemeProvider.
@@ -73,7 +73,7 @@ const { theme, effectiveTheme, setTheme, isOriginal } = useTheme();
 - Keyboard navigation (ArrowUp/ArrowDown, Enter, Escape, Tab)
 - Click-outside-to-close
 - ARIA attributes for accessibility
-- Icons: Sun (light), Moon (dark), Frame (original)
+- Icons: Sun (light), Moon (dark), Frame (classic)
 - Displays current theme; selects and applies on choice
 
 **Context:** Uses `useTheme()` for `theme`, `setTheme`, `availableThemes`.
@@ -84,7 +84,7 @@ const { theme, effectiveTheme, setTheme, isOriginal } = useTheme();
 
 **Location:** `frontend/src/components/ThemeSwitcher/ThemeSwitcher.tsx`
 
-**Purpose:** Alternate theme control that cycles through themes on click (Light → Dark → Original → Light). May be used in place of or alongside ThemeDropdown.
+**Purpose:** Alternate theme control that cycles through themes on click (Light → Dark → Classic → Light). May be used in place of or alongside ThemeDropdown.
 
 **Context:** Uses `useTheme()` for `theme`, `setTheme`.
 
@@ -94,11 +94,11 @@ const { theme, effectiveTheme, setTheme, isOriginal } = useTheme();
 
 **Location:** `frontend/src/components/Layout/Layout.tsx`
 
-**Usage:** `const { isOriginal } = useTheme();`
+**Usage:** `const { isClassic } = useTheme();`
 
 **Behaviour:**
-- When `isOriginal` is true: Renders two-column layout with sidebar (search, RSS, Slideshow links); site name is plain text; Search and Sort in sidebar
-- When `isOriginal` is false: Single-column layout; site name is a link; Search and Sort in header
+- When `isClassic` is true: Renders two-column layout with sidebar (search, RSS, Slideshow links); site name is plain text; Search and Sort in sidebar
+- When `isClassic` is false: Single-column layout; site name is a link; Search and Sort in header
 
 ---
 
@@ -106,11 +106,11 @@ const { theme, effectiveTheme, setTheme, isOriginal } = useTheme();
 
 **Location:** `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx`
 
-**Usage:** `const { isOriginal } = useTheme();`
+**Usage:** `const { isClassic } = useTheme();`
 
 **Behaviour:**
-- When `isOriginal`: Shows "Album: " prefix before titles; different subalbum display; no highlight image in certain cases
-- When not original: Standard display
+- When `isClassic`: Shows "Album: " prefix before titles; different subalbum display; no highlight image in certain cases
+- When not classic: Standard display
 
 ---
 

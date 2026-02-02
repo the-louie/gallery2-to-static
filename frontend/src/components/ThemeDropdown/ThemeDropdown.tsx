@@ -100,7 +100,7 @@ function MoonIcon(): React.ReactElement {
 }
 
 /**
- * Classic/frame icon for Original (G2 Classic) theme
+ * Classic/frame icon for Classic (G2 Classic) theme
  */
 function ClassicIcon(): React.ReactElement {
   return (
@@ -130,7 +130,7 @@ function getThemeIcon(themeName: ThemeName): React.ReactElement {
       return <SunIcon />;
     case 'dark':
       return <MoonIcon />;
-    case 'original':
+    case 'classic':
       return <ClassicIcon />;
     default:
       return <SunIcon />;

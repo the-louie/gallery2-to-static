@@ -5,7 +5,7 @@ This directory contains comprehensive documentation for the gallery application'
 ## Contents
 
 - **[Architecture](architecture.md)** — Theme system architecture, data flow, and integration points
-- **[Available Themes](themes.md)** — Light, Dark, and Original (Gallery 2 Classic) theme specifications
+- **[Available Themes](themes.md)** — Light, Dark, and Classic (Gallery 2 Classic) theme specifications
 - **[CSS Variables Reference](css-variables.md)** — Complete list of CSS custom properties used for theming
 - **[Per-Album Configuration](per-album-configuration.md)** — Assigning themes to specific albums via `album-themes.json`
 - **[Adding New Themes](adding-themes.md)** — Step-by-step guide for adding new themes to the system
@@ -23,7 +23,7 @@ This directory contains comprehensive documentation for the gallery application'
 
 ## Key Concepts
 
-- **Theme**: Named visual style (light, dark, original) applied via `data-theme` on `document.documentElement`
+- **Theme**: Named visual style (light, dark, classic) applied via `data-theme` on `document.documentElement`
 - **Effective theme**: The theme actually applied; may differ from user preference when viewing an album with an override
 - **User preference**: Theme selected via ThemeDropdown; persisted in localStorage
 - **Per-album override**: Theme assigned to a specific album in `album-themes.json`; takes precedence when viewing that album

@@ -13,7 +13,7 @@ The file is fetched at runtime from `/album-themes.json` (served from `public/`)
 
 ```json
 {
-  "defaultTheme": "original",
+  "defaultTheme": "classic",
   "albumThemes": {
     "7": "dark",
     "12": "light"
@@ -23,7 +23,7 @@ The file is fetched at runtime from `/album-themes.json` (served from `public/`)
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `defaultTheme` | string | No | Theme used when an album has no override. Must be a valid theme name (`light`, `dark`, `original`). Defaults to `original` if omitted or invalid. |
+| `defaultTheme` | string | No | Theme used when an album has no override. Must be a valid theme name (`light`, `dark`, `classic`). Defaults to `classic` if omitted or invalid. |
 | `albumThemes` | object | No | Map of album ID (string key) to theme name. Keys must be numeric album IDs as strings. Values must be valid theme names. |
 
 ## Behaviour
@@ -32,7 +32,7 @@ The file is fetched at runtime from `/album-themes.json` (served from `public/`)
 2. **Album page (`/album/7`):** Album ID 7 is extracted from the path. Config is loaded. If `albumThemes["7"]` exists and is valid, that theme is applied. Otherwise, `defaultTheme` is used.
 3. **Image page (`/album/7/image/10`):** Same as album page; album ID 7 is used for theme lookup.
 4. **Invalid theme names:** Fall back to `defaultTheme` (or app default if `defaultTheme` is also invalid).
-5. **Missing file (404), malformed JSON, invalid schema:** Default config is used (`defaultTheme: "original"`, `albumThemes: {}`).
+5. **Missing file (404), malformed JSON, invalid schema:** Default config is used (`defaultTheme: "classic"`, `albumThemes: {}`).
 
 ## Album ID Format
 
@@ -46,10 +46,10 @@ The config is loaded once and cached for the application lifetime. Clearing the 
 
 ## Example Configurations
 
-**All albums use default (original):**
+**All albums use default (classic):**
 ```json
 {
-  "defaultTheme": "original",
+  "defaultTheme": "classic",
   "albumThemes": {}
 }
 ```
@@ -60,7 +60,7 @@ The config is loaded once and cached for the application lifetime. Clearing the 
   "defaultTheme": "light",
   "albumThemes": {
     "7": "dark",
-    "12": "original",
+    "12": "classic",
     "25": "light"
   }
 }
@@ -70,7 +70,7 @@ The config is loaded once and cached for the application lifetime. Clearing the 
 ```json
 {}
 ```
-This uses app default (`original`) and no album overrides.
+This uses app default (`classic`) and no album overrides.
 
 ## TypeScript Types
 

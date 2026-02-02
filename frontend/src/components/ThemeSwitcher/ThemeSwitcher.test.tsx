@@ -67,7 +67,7 @@ describe('ThemeSwitcher', () => {
     expect(svg).toBeInTheDocument();
   });
 
-  it('cycles through themes on click (light → dark → original → light)', async () => {
+  it('cycles through themes on click (light → dark → classic → light)', async () => {
     const user = userEvent.setup();
 
     render(<ThemeSwitcher />, { defaultTheme: 'light' });
@@ -79,11 +79,11 @@ describe('ThemeSwitcher', () => {
     await user.click(button);
     expect(button).toHaveTextContent('dark');
 
-    // Dark -> Original
+    // Dark -> Classic
     await user.click(button);
-    expect(button).toHaveTextContent('original');
+    expect(button).toHaveTextContent('classic');
 
-    // Original -> Light
+    // Classic -> Light
     await user.click(button);
     expect(button).toHaveTextContent('light');
   });
@@ -134,22 +134,22 @@ describe('ThemeSwitcher', () => {
     );
   });
 
-  it('displays classic icon for original theme', () => {
-    render(<ThemeSwitcher />, { defaultTheme: 'original' });
+  it('displays classic icon for classic theme', () => {
+    render(<ThemeSwitcher />, { defaultTheme: 'classic' });
 
     const button = screen.getByRole('button');
-    expect(button).toHaveTextContent('original');
+    expect(button).toHaveTextContent('classic');
     const svg = button.querySelector('svg');
     expect(svg).toBeInTheDocument();
   });
 
-  it('has correct aria-label for original mode', () => {
-    render(<ThemeSwitcher />, { defaultTheme: 'original' });
+  it('has correct aria-label for classic mode', () => {
+    render(<ThemeSwitcher />, { defaultTheme: 'classic' });
 
     const button = screen.getByRole('button');
     expect(button).toHaveAttribute(
       'aria-label',
-      'Theme: Original mode. Click to switch to light mode.'
+      'Theme: Classic mode. Click to switch to light mode.'
     );
   });
 

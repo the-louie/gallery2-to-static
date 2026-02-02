@@ -99,7 +99,7 @@ describe('ThemeDropdown', () => {
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
 
-  it('shows Original theme option and selects it', async () => {
+  it('shows Classic theme option and selects it', async () => {
     const user = userEvent.setup();
 
     render(<ThemeDropdown />, { defaultTheme: 'light' });
@@ -107,12 +107,12 @@ describe('ThemeDropdown', () => {
     const button = screen.getByRole('button');
     await user.click(button);
 
-    const originalOption = screen.getByRole('option', { name: /original/i });
-    expect(originalOption).toBeInTheDocument();
-    await user.click(originalOption);
+    const classicOption = screen.getByRole('option', { name: /classic/i });
+    expect(classicOption).toBeInTheDocument();
+    await user.click(classicOption);
 
-    expect(document.documentElement.getAttribute('data-theme')).toBe('original');
-    expect(button).toHaveTextContent('Original');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('classic');
+    expect(button).toHaveTextContent('Classic');
   });
 
   it('navigates options with arrow keys', async () => {

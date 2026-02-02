@@ -13,7 +13,7 @@ Implemented per-album theme configuration allowing each album to have an optiona
 
 - **Config loader:** Created `frontend/src/utils/albumThemesConfig.ts` with `loadAlbumThemesConfig()`, `getThemeForAlbum()`, `getAlbumIdFromPath()`, `clearAlbumThemesConfigCache()`, and `isValidAlbumThemesConfig()`. Follows the same fetch-and-cache pattern as `imageConfig.ts`.
 
-- **ThemeContext:** Extended to support effective theme. `ThemeProvider` uses `useLocation()` to extract album ID from path, loads album-themes config asynchronously, and resolves `effectiveTheme = albumOverride ?? userStoredTheme`. `isDark`, `isLight`, `isOriginal` now derive from `effectiveTheme`.
+- **ThemeContext:** Extended to support effective theme. `ThemeProvider` uses `useLocation()` to extract album ID from path, loads album-themes config asynchronously, and resolves `effectiveTheme = albumOverride ?? userStoredTheme`. `isDark`, `isLight`, `isClassic` now derive from `effectiveTheme`.
 
 - **Config files:** Created `frontend/public/album-themes.json` and `album-themes.json.example` with `defaultTheme` and `albumThemes` structure.
 

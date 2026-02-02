@@ -6,7 +6,7 @@
  *
  * ## Features
  *
- * - Multiple theme support (light, dark, original, and extensible for future themes)
+ * - Multiple theme support (light, dark, classic, and extensible for future themes)
  * - localStorage persistence of user theme selection
  * - Automatic migration from old preference-based system
  * - Robust error handling with graceful fallbacks
@@ -19,7 +19,7 @@
  * ## Theme Selection
  *
  * Users can select from available themes defined in the theme registry.
- * The default theme is 'original'. Themes are applied via the data-theme attribute
+ * The default theme is 'classic'. Themes are applied via the data-theme attribute
  * on the document element.
  *
  * ## Error Handling
@@ -36,7 +36,7 @@
  * The system automatically migrates from the old preference-based system:
  * - 'light' preference → 'light' theme
  * - 'dark' preference → 'dark' theme
- * - 'system' preference → default theme (original)
+ * - 'system' preference → default theme (classic)
  *
  * ## Usage
  *
@@ -123,8 +123,8 @@ export interface ThemeContextValue {
   isDark: boolean;
   /** Convenience property: true if effective theme is light */
   isLight: boolean;
-  /** Convenience property: true if effective theme is original (G2 Classic) */
-  isOriginal: boolean;
+  /** Convenience property: true if effective theme is classic (G2 Classic) */
+  isClassic: boolean;
 }
 
 /**
@@ -141,7 +141,7 @@ const defaultContextValue: ThemeContextValue = {
   availableThemes: getAllThemes(),
   isDark: false,
   isLight: false,
-  isOriginal: true,
+  isClassic: true,
 };
 
 /**
@@ -172,7 +172,7 @@ function applyTheme(theme: ThemeName): void {
   if (typeof document !== 'undefined' && document.documentElement) {
     try {
       // Apply theme via data-theme attribute
-      // [data-theme="light"], [data-theme="dark"], or [data-theme="original"]
+      // [data-theme="light"], [data-theme="dark"], or [data-theme="classic"]
       document.documentElement.setAttribute('data-theme', theme);
     } catch (error) {
       // Handle edge cases where attribute manipulation fails
@@ -189,8 +189,8 @@ function applyTheme(theme: ThemeName): void {
  * Migration rules:
  * - 'light' preference → 'light' theme
  * - 'dark' preference → 'dark' theme
- * - 'system' preference → default theme (original)
- * - Invalid/corrupted data → default theme (original)
+ * - 'system' preference → default theme (classic)
+ * - Invalid/corrupted data → default theme (classic)
  *
  * This function performs the migration synchronously and stores the result
  * in the new localStorage key, so useLocalStorage can read it immediately.
@@ -278,7 +278,7 @@ function migrateThemePreference(): boolean {
  *
  * @example
  * ```tsx
- * <ThemeProvider defaultTheme="original">
+ * <ThemeProvider defaultTheme="classic">
  *   <App />
  * </ThemeProvider>
  * ```
@@ -302,6 +302,15 @@ export function ThemeProvider({
         const stored = localStorage.getItem(THEME_STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored) as string;
+          // Migrate legacy 'original' theme to 'classic'
+          if (parsed === 'original') {
+            try {
+              localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify('classic'));
+            } catch {
+              // Ignore storage errors
+            }
+            return 'classic';
+          }
           if (isValidTheme(parsed)) {
             return parsed;
           }
@@ -422,7 +431,7 @@ export function ThemeProvider({
       availableThemes,
       isDark: effectiveTheme === 'dark',
       isLight: effectiveTheme === 'light',
-      isOriginal: effectiveTheme === 'original',
+      isClassic: effectiveTheme === 'classic',
     }),
     [validatedTheme, effectiveTheme, setTheme, availableThemes]
   );

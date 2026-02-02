@@ -714,10 +714,10 @@
 }
 
 /* ============================================================================
-   Original Theme (Gallery 2 Classic)
+   Classic Theme (Gallery 2 Classic)
    ============================================================================ */
 
-[data-theme="original"] {
+[data-theme="classic"] {
   /* G2 Classic: docs/dev-notes/2026-01-25-1200_original_design_analyzis_1.md */
   --gradient-bg-start: #ffffff;
   --gradient-bg-end: #eeeeee;
@@ -883,32 +883,32 @@
 }
 
 /* G2 Classic: no background image on root album blocks; solid white/light grey only */
-[data-theme="original"] .root-album-list-block-bg {
+[data-theme="classic"] .root-album-list-block-bg {
   display: none;
 }
 
-[data-theme="original"] .root-album-list-block {
+[data-theme="classic"] .root-album-list-block {
   background: var(--color-background-primary);
 }
 
 /* G2 Classic: solid page background (no gradient) */
-[data-theme="original"] .layout {
+[data-theme="classic"] .layout {
   background: var(--color-background-primary);
 }
 
 /* G2 Classic: top bar - white/light strip with border (site name + actions) */
-[data-theme="original"] .layout-header {
+[data-theme="classic"] .layout-header {
   background: var(--header-bg);
   border-bottom: 1px solid var(--header-border);
 }
 
 /* G2 Classic: wider left sidebar */
-[data-theme="original"] .layout-sidebar {
+[data-theme="classic"] .layout-sidebar {
   width: 200px;
 }
 
 /* G2 Classic typography: body font per design analysis (base font-size 62.5% deferred to avoid rem layout impact) */
-[data-theme="original"] body {
+[data-theme="classic"] body {
   font-family: Verdana, Arial, Helvetica, sans-serif;
 }
 
@@ -921,7 +921,7 @@
  *
  * Transitions are applied to color and background properties that change
  * between themes. This provides a smooth visual experience when switching
- * between light, dark, and original themes.
+ * between light, dark, and classic themes.
  *
  * The transitions respect the prefers-reduced-motion media query to ensure
  * accessibility for users who prefer reduced motion.
@@ -930,7 +930,7 @@
 :root,
 [data-theme="light"],
 [data-theme="dark"],
-[data-theme="original"] {
+[data-theme="classic"] {
   /* Transition properties for theme changes */
   transition:
     background-color 0.3s ease-in-out,
@@ -944,7 +944,7 @@
   :root,
   [data-theme="light"],
   [data-theme="dark"],
-  [data-theme="original"] {
+  [data-theme="classic"] {
     transition: none;
   }
 }
@@ -972,7 +972,7 @@ textarea,
   :root,
   [data-theme="light"],
   [data-theme="dark"],
-  [data-theme="original"],
+  [data-theme="classic"],
   body,
   button,
   a,

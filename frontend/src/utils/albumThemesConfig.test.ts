@@ -31,7 +31,7 @@ describe('albumThemesConfig utilities', () => {
 
     it('returns album-specific theme when configured', () => {
       const config = {
-        defaultTheme: 'original',
+        defaultTheme: 'classic',
         albumThemes: { '7': 'dark', '12': 'light' },
       };
       expect(getThemeForAlbum(7, config)).toBe('dark');
@@ -62,7 +62,7 @@ describe('albumThemesConfig utilities', () => {
     });
 
     it('returns null when albumThemes is empty', () => {
-      const config = { defaultTheme: 'original', albumThemes: {} };
+      const config = { defaultTheme: 'classic', albumThemes: {} };
       expect(getThemeForAlbum(7, config)).toBe(null);
     });
 
@@ -120,7 +120,7 @@ describe('albumThemesConfig utilities', () => {
       const config = await loadAlbumThemesConfig();
 
       expect(config).toEqual({
-        defaultTheme: 'original',
+        defaultTheme: 'classic',
         albumThemes: {},
       });
       expect(globalThis.fetch).toHaveBeenCalledWith('/album-themes.json');
@@ -139,7 +139,7 @@ describe('albumThemesConfig utilities', () => {
     it('returns parsed config when file is valid', async () => {
       const mockConfig = {
         defaultTheme: 'dark',
-        albumThemes: { '7': 'light', '12': 'original' },
+        albumThemes: { '7': 'light', '12': 'classic' },
       };
       globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
@@ -149,6 +149,21 @@ describe('albumThemesConfig utilities', () => {
       const config = await loadAlbumThemesConfig();
 
       expect(config).toEqual(mockConfig);
+    });
+
+    it('migrates legacy original theme to classic in config', async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          defaultTheme: 'original',
+          albumThemes: { '7': 'original' },
+        }),
+      });
+
+      const config = await loadAlbumThemesConfig();
+
+      expect(config.defaultTheme).toBe('classic');
+      expect(config.albumThemes['7']).toBe('classic');
     });
 
     it('returns default config when JSON is malformed', async () => {
@@ -164,7 +179,7 @@ describe('albumThemesConfig utilities', () => {
       const config = await loadAlbumThemesConfig();
 
       expect(config).toEqual({
-        defaultTheme: 'original',
+        defaultTheme: 'classic',
         albumThemes: {},
       });
       expect(consoleSpy).toHaveBeenCalled();
@@ -181,7 +196,7 @@ describe('albumThemesConfig utilities', () => {
 
       const config = await loadAlbumThemesConfig();
 
-      expect(config.defaultTheme).toBe('original');
+      expect(config.defaultTheme).toBe('classic');
       expect(config.albumThemes).toEqual({});
       expect(consoleSpy).toHaveBeenCalled();
       consoleSpy.mockRestore();
@@ -195,7 +210,7 @@ describe('albumThemesConfig utilities', () => {
       const config = await loadAlbumThemesConfig();
 
       expect(config).toEqual({
-        defaultTheme: 'original',
+        defaultTheme: 'classic',
         albumThemes: {},
       });
       expect(consoleSpy).toHaveBeenCalled();

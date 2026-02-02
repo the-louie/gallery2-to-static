@@ -34,9 +34,9 @@
 
 ---
 
-## Original (Gallery 2 Classic)
+## Classic (Gallery 2 Classic)
 
-**Identifier:** `original`
+**Identifier:** `classic`
 
 **Description:** Reproduces the Gallery 2 Classic (lanbilder.se) colour palette and semantics. Based on the design analysis of the original Gallery 2 theme.
 
@@ -50,20 +50,20 @@
 - Borders: (#ccc)
 - Focus/current accent: (#0b6cff)
 - Typography: Verdana, Arial, Helvetica
-- Layout: Two-column with sidebar (200px) when `isOriginal`; search in sidebar, "Album:" prefix on titles
+- Layout: Two-column with sidebar (200px) when `isClassic`; search in sidebar, "Album:" prefix on titles
 - No gradient backgrounds on root album blocks; solid colours only
 
-**Layout differences when Original is active:**
+**Layout differences when Classic is active:**
 - Sidebar layout with search block, RSS/Slideshow links
 - Site name in header is plain text (not a link)
 - Search bar and Sort dropdown moved to sidebar
 - Root album blocks: "Album: " prefix before titles
 - Background image on root blocks hidden
 
-**CSS selector:** `[data-theme="original"]`
+**CSS selector:** `[data-theme="classic"]`
 
 ---
 
 ## Default Theme
 
-The application default is `original`. This can be overridden per album via `album-themes.json` (`defaultTheme` field).
+The application default is `classic`. This can be overridden per album via `album-themes.json` (`defaultTheme` field).

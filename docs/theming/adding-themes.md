@@ -47,7 +47,7 @@ Add your theme to the transition blocks so theme changes animate smoothly:
 :root,
 [data-theme="light"],
 [data-theme="dark"],
-[data-theme="original"],
+[data-theme="classic"],
 [data-theme="mytheme"] {
   transition: ...;
 }
@@ -64,7 +64,7 @@ function getThemeIcon(themeName: string) {
   switch (themeName) {
     case 'light': return <SunIcon />;
     case 'dark': return <MoonIcon />;
-    case 'original': return <FrameIcon />;
+    case 'classic': return <FrameIcon />;
     case 'mytheme': return <MyThemeIcon />;
     default: return <SunIcon />;
   }
@@ -73,7 +73,7 @@ function getThemeIcon(themeName: string) {
 
 ## 5. Layout Variations (Optional)
 
-If your theme requires layout changes (like Original's sidebar), add logic in Layout or other components using `useTheme()`:
+If your theme requires layout changes (like Classic's sidebar), add logic in Layout or other components using `useTheme()`:
 
 ```tsx
 const { effectiveTheme } = useTheme();

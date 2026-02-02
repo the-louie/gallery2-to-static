@@ -182,9 +182,15 @@ export async function loadAlbumThemesConfig(): Promise<AlbumThemesConfig> {
       }
 
       if (isValidAlbumThemesConfig(jsonData)) {
+        const migrateTheme = (t: string) => (t === 'original' ? 'classic' : t);
+        const rawAlbumThemes = jsonData.albumThemes ?? {};
+        const albumThemes: Record<string, string> = {};
+        for (const [id, theme] of Object.entries(rawAlbumThemes)) {
+          albumThemes[id] = migrateTheme(String(theme));
+        }
         const config: AlbumThemesConfig = {
-          defaultTheme: jsonData.defaultTheme,
-          albumThemes: jsonData.albumThemes ?? {},
+          defaultTheme: jsonData.defaultTheme ? migrateTheme(jsonData.defaultTheme) : undefined,
+          albumThemes,
         };
         cachedConfig = config;
         return config;
