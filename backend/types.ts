@@ -156,4 +156,9 @@ export interface Config {
     thumbnailQuality?: number;
     /** Max concurrent thumbnail generations. Default: 5 */
     thumbnailConcurrency?: number;
+    /**
+     * Override for layout-header-description (site description shown in header).
+     * When absent, empty string, false, or null, the backend extracts from the database (root album description).
+     */
+    layoutHeaderDescriptionOverride?: string | null;
 }

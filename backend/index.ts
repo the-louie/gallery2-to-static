@@ -721,11 +721,17 @@ let connection: mysql.Connection | null = null;
         pathIndex.forEach((albumId, pathKey) => {
             pathIndexObj[pathKey] = albumId;
         });
+        const override = config.layoutHeaderDescriptionOverride;
+        const siteDescription =
+            typeof override === 'string' && override.trim().length > 0
+                ? override.trim()
+                : rootAlbumInfo.description;
+
         const indexData = {
             rootAlbumId: rootId,
             rootAlbumFile: `${rootId}.json`,
             siteName: rootAlbumInfo.title,
-            siteDescription: rootAlbumInfo.description,
+            siteDescription,
             generatedAt: new Date().toISOString(),
             pathIndex: pathIndexObj,
             metadata: {

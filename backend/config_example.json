@@ -22,5 +22,6 @@
     "thumbnailMaxWidth": 400,
     "thumbnailMaxHeight": 400,
     "thumbnailQuality": 80,
-    "thumbnailConcurrency": 5
+    "thumbnailConcurrency": 5,
+    "layoutHeaderDescriptionOverride": null
 }
