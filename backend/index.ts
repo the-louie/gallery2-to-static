@@ -7,7 +7,6 @@ import { cleanup_uipathcomponent } from './cleanupUipath'
 import { getSegmentForAlbum, appendSegment, titleToSegment } from './pathSegments'
 import { computeAllDescendantImageCounts } from './descendantImageCount'
 import { runVerification } from './verifyImagePaths'
-import { generateThumbnail } from './generateThumbnail'
 import { buildPathsFromPathComponent } from './pathResolution'
 import { decodeHtmlEntities } from './decodeHtmlEntities'
 
@@ -351,6 +350,7 @@ const main = async (
                         const destPath = path.join(thumbnailsRoot, highlightThumbnailUrlPath);
                         await thumbnailContext.sem.acquire();
                         try {
+                            const { generateThumbnail } = await import('./generateThumbnail');
                             const result = await generateThumbnail(sourcePath, destPath, thumbnailContext.options);
                             if (result === 'missing') {
                                 console.warn(`Missing source image: ${sourcePath}`);

@@ -1,9 +1,8 @@
 /**
- * Decode HTML entities for album title fields only.
- * Used so emitted JSON (metadata.albumTitle, children titles, index.json)
- * contains readable plain text (e.g. Nässlan not N&auml;sslan).
- * Supports apostrophe entities &#039; and &#39;, and numeric without semicolon (e.g. &#039).
- * Do not use for description, summary, or path components.
+ * Decode HTML entities for album titles, descriptions, summaries, and layout header.
+ * Used so emitted JSON contains readable plain text (e.g. Nässlan not N&auml;sslan).
+ * Supports apostrophe entities &#039;, &#39;, &apos;, and numeric without semicolon (e.g. &#039).
+ * Do not use for path components.
  *
  * @module backend/decodeHtmlEntities
  */
@@ -15,6 +14,7 @@ const NAMED_ENTITIES: [string, string][] = [
   ['&quot;', '"'],
   ['&#039;', "'"],
   ['&#39;', "'"],
+  ['&apos;', "'"],
   ['&auml;', 'ä'],
   ['&ouml;', 'ö'],
   ['&uuml;', 'ü'],
@@ -47,7 +47,7 @@ const MAX_ITERATIONS = 10;
  * double-encoded entities (e.g. &amp;auml;) resolve correctly.
  * Process &amp; first, then other named entities and numeric refs.
  *
- * @param str - Input string (title field only)
+ * @param str - Input string (album title or layout header description)
  * @returns Decoded string, or '' for null/undefined
  */
 export function decodeHtmlEntities(str: string | null | undefined): string {

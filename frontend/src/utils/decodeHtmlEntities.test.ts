@@ -76,6 +76,11 @@ describe('decodeHtmlEntities', () => {
     expect(decodeHtmlEntities('x&#39y')).toBe("x'y");
   });
 
+  it('decodes &apos; as apostrophe', () => {
+    expect(decodeHtmlEntities('&apos;')).toBe("'");
+    expect(decodeHtmlEntities("world&apos;s")).toBe("world's");
+  });
+
   it('decodes &Auml;, &Ouml;, &Uuml;, &szlig;', () => {
     expect(decodeHtmlEntities('&Auml;')).toBe('Ä');
     expect(decodeHtmlEntities('&Ouml;')).toBe('Ö');

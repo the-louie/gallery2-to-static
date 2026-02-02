@@ -172,17 +172,11 @@ export function getBBCodeCacheStats(): { size: number; maxSize: number } {
 }
 
 /**
- * Escape HTML entities in text
+ * Pass-through for text in React. React escapes when rendering to DOM,
+ * so we must not pre-encode (e.g. ' to &#039;) or entities display literally.
  */
 function escapeHtml(text: string): string {
-  const map: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;',
-  };
-  return text.replace(/[&<>"']/g, (m) => map[m]);
+  return text;
 }
 
 /**
@@ -594,7 +588,7 @@ export function parseBBCode(text: string, options: BBCodeParseOptions = {}): Rea
 /**
  * Decode HTML entities then parse BBCode. Use for user-provided title/heading
  * text that may contain entities (e.g. album names). Ensures decode runs
- * before parse so escapeHtml in the parser does not double-encode.
+ * before parse so entities are decoded before BBCode parsing.
  *
  * @param text - Raw title/heading string (may contain entities)
  * @param options - Parsing options (same as parseBBCode)

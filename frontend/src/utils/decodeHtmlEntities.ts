@@ -1,6 +1,6 @@
 /**
  * Decode HTML entities for display strings (e.g. &auml;, &ouml;, &aring;, &eacute; → ä, ö, å, é).
- * Supports common Latin accents, apostrophe (&#039; / &#39;), and numeric without semicolon (e.g. &#039).
+ * Supports common Latin accents, apostrophe (&#039; / &#39; / &apos;), and numeric without semicolon (e.g. &#039).
  *
  * Use for album titles, breadcrumbs, subalbum labels, descriptions, etc.
  * Must run **before** BBCode parsing when used with parseBBCode so that
@@ -18,6 +18,7 @@ const NAMED_ENTITIES: [string, string][] = [
   ['&quot;', '"'],
   ['&#039;', "'"],
   ['&#39;', "'"],
+  ['&apos;', "'"],
   ['&auml;', 'ä'],
   ['&ouml;', 'ö'],
   ['&uuml;', 'ü'],

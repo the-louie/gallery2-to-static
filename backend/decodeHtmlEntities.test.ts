@@ -70,6 +70,8 @@ function run(): void {
   // Numeric without trailing semicolon
   assert.strictEqual(decodeHtmlEntities('&#039'), "'");
   assert.strictEqual(decodeHtmlEntities('x&#39y'), "x'y");
+  assert.strictEqual(decodeHtmlEntities('&apos;'), "'");
+  assert.strictEqual(decodeHtmlEntities("world&apos;s"), "world's");
 
   console.log('decodeHtmlEntities tests passed');
 }
