@@ -134,6 +134,26 @@ function isValidImageConfig(data: unknown): data is ImageConfig {
 }
 
 /**
+ * In development, when VITE_IMAGE_PROXY_TARGET is set and baseUrl matches,
+ * return same-origin proxy base so cross-origin image requests avoid
+ * OpaqueResponseBlocking (CORS/CORP). Otherwise return baseUrl unchanged.
+ */
+function maybeProxyForDev(baseUrl: string): string {
+  if (!import.meta.env.DEV || typeof window === 'undefined') {
+    return baseUrl;
+  }
+  const proxyTarget = import.meta.env.VITE_IMAGE_PROXY_TARGET;
+  if (!proxyTarget || typeof proxyTarget !== 'string') {
+    return baseUrl;
+  }
+  const target = proxyTarget.trim().replace(/\/+$/, '');
+  if (target === '' || (!baseUrl.startsWith(target) && baseUrl !== target)) {
+    return baseUrl;
+  }
+  return `${window.location.origin}/image-proxy`;
+}
+
+/**
  * Load image configuration
  *
  * Loads configuration from runtime config file or environment variable.
@@ -187,8 +207,9 @@ export async function loadImageConfig(): Promise<string> {
           // Validate and use runtime config
           if (jsonData !== undefined && isValidImageConfig(jsonData)) {
             const normalized = normalizeImageBaseUrl(jsonData.baseUrl);
-            cachedBaseUrl = normalized;
-            return normalized;
+            const baseUrl = maybeProxyForDev(normalized);
+            cachedBaseUrl = baseUrl;
+            return baseUrl;
           } else if (jsonData !== undefined) {
             // Invalid schema - fall through to env/default
             if (import.meta.env.DEV) {
@@ -213,8 +234,9 @@ export async function loadImageConfig(): Promise<string> {
       const envBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
       if (envBaseUrl && typeof envBaseUrl === 'string') {
         const normalized = normalizeImageBaseUrl(envBaseUrl);
-        cachedBaseUrl = normalized;
-        return normalized;
+        const baseUrl = maybeProxyForDev(normalized);
+        cachedBaseUrl = baseUrl;
+        return baseUrl;
       }
 
       // Use default

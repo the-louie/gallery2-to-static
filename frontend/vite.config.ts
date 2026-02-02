@@ -82,6 +82,18 @@ export default defineConfig({
     fs: {
       allow: ['..'],
     },
+    // Proxy cross-origin image base URL in dev to avoid OpaqueResponseBlocking (CORS/CORP).
+    // Set VITE_IMAGE_PROXY_TARGET to match image-config.json baseUrl (e.g. https://lanbilder.se).
+    proxy:
+      process.env.VITE_IMAGE_PROXY_TARGET ?
+        {
+          '/image-proxy': {
+            target: process.env.VITE_IMAGE_PROXY_TARGET.replace(/\/+$/, ''),
+            changeOrigin: true,
+            rewrite: (path: string) => path.replace(/^\/image-proxy\/?/, '/') || '/',
+          },
+        }
+      : undefined,
   },
   build: {
     outDir: 'dist',

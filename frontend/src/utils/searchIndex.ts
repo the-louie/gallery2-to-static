@@ -58,6 +58,8 @@ export interface SearchIndexItem {
   pathComponent: string;
   /** Ancestor albums path (root omitted), e.g. "dreamhack/dreamhack 08/crew" */
   ancestors?: string;
+  /** Path-based URL for this album (e.g. /albums/photos), when backend emits it */
+  path?: string;
 }
 
 /**
