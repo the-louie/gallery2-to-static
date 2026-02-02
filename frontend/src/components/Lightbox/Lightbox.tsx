@@ -70,6 +70,16 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faXmark,
+  faChevronLeft,
+  faChevronRight,
+  faPlus,
+  faMinus,
+  faRotateRight,
+  faImage,
+} from '@fortawesome/free-solid-svg-icons';
 import type { Image, BreadcrumbPath } from '@/types';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -878,9 +888,11 @@ export function Lightbox({
           aria-label="Close image viewer"
           type="button"
         >
-          <span className="lightbox-close-icon" aria-hidden="true">
-            ×
-          </span>
+          <FontAwesomeIcon
+            icon={faXmark}
+            className="lightbox-close-icon"
+            aria-hidden
+          />
         </button>
         {/* Breadcrumb row – album location when viewing single image */}
         {breadcrumbPath && breadcrumbPath.length > 1 && (
@@ -899,9 +911,11 @@ export function Lightbox({
               aria-label="Previous image"
               type="button"
             >
-              <span className="lightbox-nav-icon" aria-hidden="true">
-                ‹
-              </span>
+              <FontAwesomeIcon
+                icon={faChevronLeft}
+                className="lightbox-nav-icon"
+                aria-hidden
+              />
             </button>
             <button
               className="lightbox-nav lightbox-nav-next"
@@ -910,9 +924,11 @@ export function Lightbox({
               aria-label="Next image"
               type="button"
             >
-              <span className="lightbox-nav-icon" aria-hidden="true">
-                ›
-              </span>
+              <FontAwesomeIcon
+                icon={faChevronRight}
+                className="lightbox-nav-icon"
+                aria-hidden
+              />
             </button>
           </>
         )}
@@ -926,9 +942,11 @@ export function Lightbox({
             aria-label="Zoom in"
             type="button"
           >
-            <span className="lightbox-zoom-icon" aria-hidden="true">
-              +
-            </span>
+            <FontAwesomeIcon
+              icon={faPlus}
+              className="lightbox-zoom-icon"
+              aria-hidden
+            />
           </button>
           <button
             className="lightbox-zoom-btn lightbox-zoom-out"
@@ -937,9 +955,11 @@ export function Lightbox({
             aria-label="Zoom out"
             type="button"
           >
-            <span className="lightbox-zoom-icon" aria-hidden="true">
-              −
-            </span>
+            <FontAwesomeIcon
+              icon={faMinus}
+              className="lightbox-zoom-icon"
+              aria-hidden
+            />
           </button>
           {zoom.isZoomed && (
             <button
@@ -948,9 +968,11 @@ export function Lightbox({
               aria-label="Reset zoom"
               type="button"
             >
-              <span className="lightbox-zoom-icon" aria-hidden="true">
-                ↻
-              </span>
+              <FontAwesomeIcon
+                icon={faRotateRight}
+                className="lightbox-zoom-icon"
+                aria-hidden
+              />
             </button>
           )}
         </div>
@@ -970,9 +992,11 @@ export function Lightbox({
         >
           {hasError ? (
             <div className="lightbox-error" role="img" aria-label={altText}>
-              <span className="lightbox-error-icon" aria-hidden="true">
-                📷
-              </span>
+              <FontAwesomeIcon
+                icon={faImage}
+                className="lightbox-error-icon"
+                aria-hidden
+              />
               <span className="lightbox-error-text">Image unavailable</span>
             </div>
           ) : (

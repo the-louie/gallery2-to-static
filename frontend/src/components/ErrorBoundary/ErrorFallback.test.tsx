@@ -38,11 +38,11 @@ describe('ErrorFallback', () => {
     });
 
     it('displays error icon', () => {
-      renderWithRouter(
+      const { container } = renderWithRouter(
         <ErrorFallback error={mockError} resetError={mockResetError} />,
       );
 
-      const icon = screen.getByText('⚠️');
+      const icon = container.querySelector('.error-fallback-icon');
       expect(icon).toBeInTheDocument();
       expect(icon).toHaveAttribute('aria-hidden', 'true');
     });
@@ -115,11 +115,11 @@ describe('ErrorFallback', () => {
     });
 
     it('hides decorative icon from screen readers', () => {
-      renderWithRouter(
+      const { container } = renderWithRouter(
         <ErrorFallback error={mockError} resetError={mockResetError} />,
       );
 
-      const icon = screen.getByText('⚠️');
+      const icon = container.querySelector('.error-fallback-icon');
       expect(icon).toHaveAttribute('aria-hidden', 'true');
     });
   });

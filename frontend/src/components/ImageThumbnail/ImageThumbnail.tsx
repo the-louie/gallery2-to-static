@@ -68,6 +68,8 @@ const LAZY_LOAD_FALLBACK_MS = 300;
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faImage } from '@fortawesome/free-solid-svg-icons';
 import type { Image } from '@/types';
 import { getAspectRatioWithFallback } from '@/utils/aspectRatio';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
@@ -290,9 +292,11 @@ function ImageThumbnailComponent({
     >
       {hasError ? (
         <div className="image-thumbnail-error" role="img" aria-label={altText}>
-          <span className="image-thumbnail-error-icon" aria-hidden="true">
-            📷
-          </span>
+          <FontAwesomeIcon
+            icon={faImage}
+            className="image-thumbnail-error-icon"
+            aria-hidden
+          />
           <span className="image-thumbnail-error-text">Image unavailable</span>
         </div>
       ) : shouldRenderImage ? (

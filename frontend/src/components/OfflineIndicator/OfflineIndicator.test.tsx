@@ -65,8 +65,8 @@ describe('OfflineIndicator', () => {
         isOnline: false,
       });
 
-      render(<OfflineIndicator />);
-      const icon = screen.getByText('⚠️');
+      const { container } = render(<OfflineIndicator />);
+      const icon = container.querySelector('.offline-indicator-icon');
       expect(icon).toHaveAttribute('aria-hidden', 'true');
     });
   });

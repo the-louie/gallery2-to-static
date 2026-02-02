@@ -8,6 +8,8 @@
  */
 
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import type { ErrorFallbackProps } from './ErrorBoundary';
 import './ErrorFallback.css';
 
@@ -36,9 +38,11 @@ export function ErrorFallback({
   return (
     <div className="error-fallback" role="alert" aria-live="assertive">
       <div className="error-fallback-content">
-        <div className="error-fallback-icon" aria-hidden="true">
-          ⚠️
-        </div>
+        <FontAwesomeIcon
+          icon={faTriangleExclamation}
+          className="error-fallback-icon"
+          aria-hidden
+        />
         <h1 className="error-fallback-title">Something went wrong</h1>
         <p className="error-fallback-message">
           We encountered an unexpected error. Please try again or return to the home

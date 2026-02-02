@@ -12,6 +12,8 @@
  */
 
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFolder } from '@fortawesome/free-solid-svg-icons';
 import type { Album } from '@/types';
 import { getAlbumThumbnailUrl } from '@/utils/imageUrl';
 import { parseBBCodeDecoded } from '@/utils/bbcode';
@@ -108,7 +110,11 @@ function AlbumCardComponent({
           />
         ) : (
           <div className="album-card-thumbnail-placeholder" aria-hidden="true">
-            <span className="album-card-thumbnail-icon">📁</span>
+            <FontAwesomeIcon
+              icon={faFolder}
+              className="album-card-thumbnail-icon"
+              aria-hidden
+            />
           </div>
         )}
       </div>

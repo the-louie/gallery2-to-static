@@ -36,6 +36,8 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMagnifyingGlass, faXmark } from '@fortawesome/free-solid-svg-icons';
 import './SearchBar.css';
 
 /**
@@ -51,44 +53,28 @@ export interface SearchBarProps {
 }
 
 /**
- * Search icon SVG
+ * Search icon (Font Awesome free)
  */
 function SearchIcon(): React.ReactElement {
   return (
-    <svg
+    <FontAwesomeIcon
+      icon={faMagnifyingGlass}
       className="search-bar-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.35-4.35" />
-    </svg>
+      aria-hidden
+    />
   );
 }
 
 /**
- * Clear icon SVG (X)
+ * Clear icon (Font Awesome free)
  */
 function ClearIcon(): React.ReactElement {
   return (
-    <svg
+    <FontAwesomeIcon
+      icon={faXmark}
       className="search-bar-clear-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
+      aria-hidden
+    />
   );
 }
 

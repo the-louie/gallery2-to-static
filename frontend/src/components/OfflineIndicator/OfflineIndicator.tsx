@@ -8,6 +8,8 @@
  */
 
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { useOfflineDetection } from '@/hooks/useOfflineDetection';
 import './OfflineIndicator.css';
 
@@ -44,9 +46,11 @@ export function OfflineIndicator({ className }: OfflineIndicatorProps): JSX.Elem
       aria-label="Network status: Offline"
     >
       <div className="offline-indicator-content">
-        <span className="offline-indicator-icon" aria-hidden="true">
-          ⚠️
-        </span>
+        <FontAwesomeIcon
+          icon={faTriangleExclamation}
+          className="offline-indicator-icon"
+          aria-hidden
+        />
         <span className="offline-indicator-message">
           You are currently offline. Some features may be unavailable.
         </span>
