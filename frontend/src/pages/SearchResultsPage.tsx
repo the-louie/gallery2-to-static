@@ -96,8 +96,8 @@ export function SearchResultsPage() {
   if (!urlQuery || urlQuery.trim().length === 0) {
     return (
       <div className="search-results-page search-results-page-empty">
-        <h1>Search</h1>
-        <p>Enter a search query to find albums and images.</p>
+        <h2>Advanced search is a lie</h2>
+        <p>it might come in the future</p>
       </div>
     );
   }

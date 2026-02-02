@@ -14,6 +14,7 @@ const ImageDetailPage = lazy(() => import('./pages/ImageDetailPage').then((modul
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage').then((module) => ({ default: module.SearchResultsPage })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((module) => ({ default: module.NotFoundPage })));
 const PathResolverPage = lazy(() => import('./pages/PathResolverPage').then((module) => ({ default: module.PathResolverPage })));
+const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage').then((module) => ({ default: module.PlaceholderPage })));
 
 /**
  * App Component
@@ -50,6 +51,9 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/search" element={<SearchResultsPage />} />
+              <Route path="/rss" element={<PlaceholderPage title="RSS Feed" />} />
+              <Route path="/slideshow" element={<PlaceholderPage title="Slideshow" />} />
+              <Route path="/slideshow-fullscreen" element={<PlaceholderPage title="Slideshow (Fullscreen)" />} />
               <Route path="/not-found" element={<NotFoundPage />} />
               <Route path="/album/:albumId/image/:imageId" element={<ImageDetailPage />} />
               <Route path="/album/:id" element={<AlbumDetailPage />} />

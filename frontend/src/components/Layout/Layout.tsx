@@ -83,13 +83,9 @@ export function Layout({ children, className }: LayoutProps) {
       <header className="layout-header">
         <div className="layout-header-content">
           <div className="layout-header-branding">
-            {isOriginal ? (
+            <Link to="/" className="layout-title-link" aria-label="Go to home page">
               <span className="layout-title">{siteName || 'Gallery 2 to Static'}</span>
-            ) : (
-              <Link to="/" className="layout-title-link" aria-label="Go to home page">
-                <span className="layout-title">{siteName || 'Gallery 2 to Static'}</span>
-              </Link>
-            )}
+            </Link>
             {siteDescription?.trim() && (
               <p className="layout-header-description">
                 {parseBBCodeDecoded(siteDescription.trim())}
@@ -123,15 +119,15 @@ export function Layout({ children, className }: LayoutProps) {
               </Link>
             </div>
             <div className="layout-sidebar-block">
-              <a href="#rss" className="layout-sidebar-link layout-sidebar-link-icon">
+              <Link to="/rss" className="layout-sidebar-link layout-sidebar-link-icon">
                 RSS Feed for this Album
-              </a>
-              <a href="#slideshow" className="layout-sidebar-link layout-sidebar-link-icon">
+              </Link>
+              <Link to="/slideshow" className="layout-sidebar-link layout-sidebar-link-icon">
                 View Slideshow
-              </a>
-              <a href="#slideshow-fullscreen" className="layout-sidebar-link layout-sidebar-link-icon">
+              </Link>
+              <Link to="/slideshow-fullscreen" className="layout-sidebar-link layout-sidebar-link-icon">
                 View Slideshow (Fullscreen)
-              </a>
+              </Link>
             </div>
           </aside>
           <main id="main-content" className="layout-main" tabIndex={-1}>
