@@ -84,7 +84,7 @@ export function Layout({ children, className }: LayoutProps) {
         <div className="layout-header-content">
           <div className="layout-header-branding">
             <Link to="/" className="layout-title-link" aria-label="Go to home page">
-              <span className="layout-title">{siteName || 'Gallery 2 to Static'}</span>
+              <h1 className="layout-title">{siteName || 'Gallery 2 to Static'}</h1>
             </Link>
             {siteDescription?.trim() && (
               <p className="layout-header-description">

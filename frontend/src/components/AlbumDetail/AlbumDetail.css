@@ -94,6 +94,13 @@
   color: var(--album-detail-text-muted, var(--color-text-muted));
 }
 
+.album-detail-images-total {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: var(--album-detail-images-total-color, var(--album-detail-text-muted, var(--color-text-muted)));
+}
+
 /* Sections */
 .album-detail-albums,
 .album-detail-images {

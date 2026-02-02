@@ -586,6 +586,7 @@
   --album-card-placeholder-bg: #3d3d52;
   --album-card-placeholder-text: #b8b4c8;
   --album-card-title-color: #e8e6f0;
+  --album-card-images-total-color: #b8b4c8;
 
   /* AlbumGrid / ImageGrid */
   --album-grid-error-color: #ff8a80;
@@ -665,6 +666,7 @@
   --album-detail-back-button-active-bg: rgba(255, 255, 255, 0.15);
   --album-detail-title-color: #e8e6f0;
   --album-detail-text-muted: rgba(232, 230, 240, 0.75);
+  --album-detail-images-total-color: #b8b4c8;
   --album-detail-error-button-bg: #E2725B;
   --album-detail-error-button-hover: #ea8a76;
   --album-detail-error-button-focus: #A78BFA;

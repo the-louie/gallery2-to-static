@@ -100,6 +100,7 @@
 .album-card-images-total {
   margin: 0;
   padding: 0;
+  color: var(--album-card-images-total-color, var(--color-text-muted));
 }
 
 /* Responsive adjustments */
