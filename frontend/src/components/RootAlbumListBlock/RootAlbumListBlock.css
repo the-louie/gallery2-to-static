@@ -301,6 +301,14 @@
   gap: 1rem;
 }
 
+/* G2 Classic: full description visible (no line-clamp) */
+[data-theme="classic"] .root-album-list-block-description {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+  -webkit-box-orient: unset;
+}
+
 [data-theme="classic"] .root-album-list-block-inner {
   flex: 1;
   min-width: 0;
