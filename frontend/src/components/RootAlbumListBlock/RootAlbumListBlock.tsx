@@ -193,9 +193,12 @@ export function RootAlbumListBlock({
               ))}
             </ul>
             {hasMoreSubalbums && (
-              <span className="root-album-list-block-subalbums-more">
+              <Link
+                to={linkTo}
+                className="root-album-list-block-subalbums-more"
+              >
                 ...and more!
-              </span>
+              </Link>
             )}
           </section>
         )}
