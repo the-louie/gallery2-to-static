@@ -287,11 +287,11 @@ export function ThemeProvider({
   children,
   defaultTheme = DEFAULT_THEME,
 }: ThemeProviderProps): React.ReactElement {
-  // Perform migration synchronously before reading from localStorage
-  // This ensures migration happens before useLocalStorage reads the value
-  React.useMemo(() => {
-    migrateThemePreference();
-  }, []);
+  // Perform migration synchronously before reading from localStorage.
+  // This must run before useLocalStorage below reads the value.
+  // migrateThemePreference() is idempotent (checks migration flag internally),
+  // so calling it on every render is safe and cheap (single localStorage read).
+  migrateThemePreference();
 
   // Determine initial theme: stored theme or default
   // Migration has already stored the theme in the new key if needed

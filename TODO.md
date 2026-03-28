@@ -86,12 +86,6 @@
 - **Description:** Some components export both default and named exports of the same component, others use only named exports. Creates ambiguity in import style.
 - **Fix:** Standardize on named exports only (more explicit, better tree-shaking). Document in contributing guide.
 
-### ARCH-05: ThemeContext uses useMemo for side effects
-- **Impact:** Low
-- **Files:** `frontend/src/contexts/ThemeContext.tsx:292-294`
-- **Description:** `useMemo(() => { migrateThemePreference(); }, [])` runs side effects in useMemo, violating React best practices. Should use useLayoutEffect for synchronous pre-render migration.
-- **Fix:** Replace with `useLayoutEffect(() => { migrateThemePreference(); }, []);`
-
 ### ARCH-06: albumPath.ts illegal character regex has unescaped hyphen
 - **Impact:** Low
 - **Files:** `frontend/src/utils/albumPath.ts:8`
