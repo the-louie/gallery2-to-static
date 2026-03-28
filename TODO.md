@@ -20,12 +20,6 @@
 
 ## Architecture & DRY Improvements
 
-### ARCH-03: Path alias duplication between vite and vitest configs
-- **Impact:** Medium
-- **Files:** `frontend/vite.config.ts:68-78`, `frontend/vitest.config.ts:30-39`
-- **Description:** Identical path alias definitions (`@/components`, `@/utils`, etc.) in both config files. Adding new aliases requires updating both.
-- **Fix:** Extract aliases to shared config file (e.g., `aliases.config.js`) and import in both configs.
-
 ### ARCH-04: Inconsistent component barrel export patterns
 - **Impact:** Low
 - **Files:** `frontend/src/components/AlbumGrid/index.ts`, `frontend/src/components/AlbumDetail/index.ts`
