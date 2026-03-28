@@ -73,6 +73,58 @@ function run(): void {
   assert.strictEqual(decodeHtmlEntities('&apos;'), "'");
   assert.strictEqual(decodeHtmlEntities("world&apos;s"), "world's");
 
+  // SEC-01: Control character rejection
+  assert.strictEqual(decodeHtmlEntities('&#0;'), '&#0;', 'null byte rejected');
+  assert.strictEqual(decodeHtmlEntities('&#1;'), '&#1;', 'SOH rejected');
+  assert.strictEqual(decodeHtmlEntities('&#8;'), '&#8;', 'backspace rejected');
+  assert.strictEqual(decodeHtmlEntities('&#11;'), '&#11;', 'VT rejected');
+  assert.strictEqual(decodeHtmlEntities('&#12;'), '&#12;', 'FF rejected');
+  assert.strictEqual(decodeHtmlEntities('&#14;'), '&#14;', 'SO rejected');
+  assert.strictEqual(decodeHtmlEntities('&#31;'), '&#31;', 'US rejected');
+  assert.strictEqual(decodeHtmlEntities('&#127;'), '&#127;', 'DEL rejected');
+  assert.strictEqual(decodeHtmlEntities('&#128;'), '&#128;', 'C1 control start rejected');
+  assert.strictEqual(decodeHtmlEntities('&#159;'), '&#159;', 'C1 control end rejected');
+
+  // SEC-01: Allowed control-like characters (whitespace)
+  assert.strictEqual(decodeHtmlEntities('&#9;'), '\t', 'tab allowed');
+  assert.strictEqual(decodeHtmlEntities('&#10;'), '\n', 'LF allowed');
+  assert.strictEqual(decodeHtmlEntities('&#13;'), '\r', 'CR allowed');
+
+  // SEC-01: Surrogate pair rejection
+  assert.strictEqual(decodeHtmlEntities('&#55296;'), '&#55296;', 'surrogate start (0xD800) rejected');
+  assert.strictEqual(decodeHtmlEntities('&#57343;'), '&#57343;', 'surrogate end (0xDFFF) rejected');
+  assert.strictEqual(decodeHtmlEntities('&#xD800;'), '&#xD800;', 'hex surrogate rejected');
+  assert.strictEqual(decodeHtmlEntities('&#xDFFF;'), '&#xDFFF;', 'hex surrogate end rejected');
+
+  // SEC-01: Out-of-range rejection
+  assert.strictEqual(decodeHtmlEntities('&#1114112;'), '&#1114112;', '>0x10FFFF rejected');
+  assert.strictEqual(decodeHtmlEntities('&#x110000;'), '&#x110000;', 'hex >0x10FFFF rejected');
+  assert.strictEqual(decodeHtmlEntities('&#99999999;'), '&#99999999;', 'very large decimal rejected');
+
+  // SEC-01: Unicode noncharacter rejection
+  assert.strictEqual(decodeHtmlEntities('&#xFDD0;'), '&#xFDD0;', 'noncharacter 0xFDD0 rejected');
+  assert.strictEqual(decodeHtmlEntities('&#xFDEF;'), '&#xFDEF;', 'noncharacter 0xFDEF rejected');
+  assert.strictEqual(decodeHtmlEntities('&#xFFFE;'), '&#xFFFE;', 'noncharacter 0xFFFE rejected');
+  assert.strictEqual(decodeHtmlEntities('&#xFFFF;'), '&#xFFFF;', 'noncharacter 0xFFFF rejected');
+
+  // SEC-01: Valid printable ASCII still works
+  assert.strictEqual(decodeHtmlEntities('&#32;'), ' ', 'space (0x20) allowed');
+  assert.strictEqual(decodeHtmlEntities('&#65;'), 'A', 'A (0x41) still works');
+  assert.strictEqual(decodeHtmlEntities('&#126;'), '~', 'tilde (0x7E) allowed');
+
+  // SEC-01: Valid BMP non-ASCII still works
+  assert.strictEqual(decodeHtmlEntities('&#160;'), '\u00A0', 'NBSP (0xA0) allowed');
+  assert.strictEqual(decodeHtmlEntities('&#228;'), 'ä', 'ä (0xE4) still works');
+  assert.strictEqual(decodeHtmlEntities('&#233;'), 'é', 'é (0xE9) still works');
+
+  // SEC-01: Supplementary plane characters (now correctly handled via fromCodePoint)
+  assert.strictEqual(decodeHtmlEntities('&#128512;'), '😀', 'emoji U+1F600 works with fromCodePoint');
+  assert.strictEqual(decodeHtmlEntities('&#x1F600;'), '😀', 'hex emoji works');
+
+  // SEC-01: Without-semicolon variant also validates
+  assert.strictEqual(decodeHtmlEntities('&#0 '), '&#0 ', 'null byte without semicolon rejected');
+  assert.strictEqual(decodeHtmlEntities('x&#55296y'), 'x&#55296y', 'surrogate without semicolon rejected');
+
   console.log('decodeHtmlEntities tests passed');
 }
 

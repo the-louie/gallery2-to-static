@@ -6,6 +6,7 @@
 /**
  * Build urlPath and thumbnailUrlPath from pathComponent chain (direct disk match).
  * pathComponent chain = ancestor album pathComponents + photo pathComponent (filename).
+ * Rejects path components containing traversal segments, slashes, or null bytes.
  */
 export function buildPathsFromPathComponent(
     pathComponentChain: string[],
@@ -13,6 +14,18 @@ export function buildPathsFromPathComponent(
 ): { urlPath: string; thumbnailUrlPath: string } {
     if (!pathComponentChain.length) {
         return { urlPath: '', thumbnailUrlPath: '' };
+    }
+    for (const component of pathComponentChain) {
+        if (!component) continue;
+        if (component.includes('\0')) {
+            throw new Error(`Invalid path component: contains null byte`);
+        }
+        if (component.includes('..')) {
+            throw new Error(`Invalid path component: contains traversal segment`);
+        }
+        if (component.includes('/') || component.includes('\\')) {
+            throw new Error(`Invalid path component: contains path separator`);
+        }
     }
     const relativePath = pathComponentChain.filter(Boolean).join('/').replace(/^\/+/, '');
     const lastSlash = relativePath.lastIndexOf('/');

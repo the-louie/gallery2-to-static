@@ -24,10 +24,18 @@ import { getImageBaseUrl, getThumbnailBaseUrl } from './imageConfig';
 const DEFAULT_THUMB_PREFIX = 't__';
 
 /**
- * Strip leading slashes from a path segment so concatenation with baseUrl (no trailing slash) never produces double slashes.
+ * Strip leading slashes and reject path traversal attempts.
+ * Throws if path contains '..' segments or null bytes.
  */
 function ensureNoLeadingSlash(path: string): string {
-  return path.replace(/^\/+/, '');
+  if (path.includes('\0')) {
+    throw new Error('Invalid path: contains null byte');
+  }
+  const cleaned = path.replace(/^\/+/, '');
+  if (cleaned.split('/').some(seg => seg === '..')) {
+    throw new Error('Invalid path: contains traversal segment');
+  }
+  return cleaned;
 }
 
 /**

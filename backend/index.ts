@@ -582,6 +582,13 @@ let connection: mysql.Connection | null = null;
             process.exit(1);
         }
 
+        // Environment variables override config.json for sensitive values
+        if (process.env.MYSQL_HOST) config.mysqlSettings.host = process.env.MYSQL_HOST;
+        if (process.env.MYSQL_USER) config.mysqlSettings.user = process.env.MYSQL_USER;
+        if (process.env.MYSQL_PASSWORD) config.mysqlSettings.password = process.env.MYSQL_PASSWORD;
+        if (process.env.MYSQL_DATABASE) config.mysqlSettings.database = process.env.MYSQL_DATABASE;
+        if (process.env.MYSQL_PORT) config.mysqlSettings.port = parseInt(process.env.MYSQL_PORT, 10);
+
         console.log('Connecting to database...');
         connection = await mysql.createConnection(config.mysqlSettings);
         const sql = sqlUtils(connection, config);

@@ -390,4 +390,26 @@ describe('imageUrl utilities', () => {
       expect(url).toBe(`${IMAGE_BASE}/path/highlight.jpg`);
     });
   });
+
+  describe('SEC-04: path traversal prevention', () => {
+    it('rejects pathComponent with .. traversal', () => {
+      const img: Image = { ...mockImage, pathComponent: '../../etc/passwd' };
+      expect(() => getImageUrl(img)).toThrow('traversal');
+    });
+
+    it('rejects pathComponent with null byte', () => {
+      const img: Image = { ...mockImage, pathComponent: 'photo\0.jpg' };
+      expect(() => getImageUrl(img)).toThrow('null byte');
+    });
+
+    it('allows normal pathComponent with nested dirs', () => {
+      const img: Image = { ...mockImage, pathComponent: 'album/sub/photo.jpg' };
+      expect(() => getImageUrl(img)).not.toThrow();
+    });
+
+    it('allows pathComponent with Nordic characters', () => {
+      const img: Image = { ...mockImage, pathComponent: 'nässlan/gård/photo.jpg' };
+      expect(() => getImageUrl(img)).not.toThrow();
+    });
+  });
 });

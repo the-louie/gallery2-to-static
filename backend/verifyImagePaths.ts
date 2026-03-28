@@ -202,6 +202,7 @@ export async function collectImageUrlsFromAlbumTree(
 /**
  * Verify a local file path exists.
  * url is a path like /g2data/albums/...; resolves to projectRoot/frontend/public/...
+ * Uses fs.realpath() to resolve symlinks before checking containment.
  */
 async function verifyLocalFile(
     url: string,
@@ -210,25 +211,64 @@ async function verifyLocalFile(
     if (!url || typeof url !== 'string' || !url.startsWith('/')) {
         return { ok: false, error: 'Not a local path' };
     }
+    if (url.includes('\0')) {
+        return { ok: false, error: 'Path contains null byte' };
+    }
     const relativePath = url.replace(/^\//, '').replace(/\//g, path.sep);
+    if (relativePath.split(path.sep).some(seg => seg === '..')) {
+        return { ok: false, error: 'Path contains traversal segment' };
+    }
     const localPath = path.join(projectRoot, 'frontend', 'public', relativePath);
-    const resolved = path.resolve(localPath);
     const publicDir = path.resolve(projectRoot, 'frontend', 'public');
-    const rel = path.relative(publicDir, resolved);
-    if (rel.startsWith('..') || path.isAbsolute(rel)) {
+    try {
+        const realPath = await fs.realpath(localPath);
+        const realPublicDir = await fs.realpath(publicDir);
+        if (!realPath.startsWith(realPublicDir + path.sep) && realPath !== realPublicDir) {
+            return { ok: false, error: 'Path escapes public directory' };
+        }
+        await fs.access(realPath);
+        return { ok: true };
+    } catch (err) {
+        if (err instanceof Error && 'code' in err && (err as NodeJS.ErrnoException).code === 'ENOENT') {
+            return { ok: false, error: 'File not found' };
+        }
         return { ok: false, error: 'Path escapes public directory' };
     }
+}
+
+/**
+ * Check if a URL points to a public (non-internal) host.
+ * Rejects localhost, private IP ranges, and non-http(s) protocols to prevent SSRF.
+ */
+function isPublicUrl(urlString: string): boolean {
     try {
-        await fs.access(resolved);
-        return { ok: true };
+        const parsed = new URL(urlString);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+            return false;
+        }
+        const hostname = parsed.hostname.toLowerCase();
+        if (hostname === 'localhost' || hostname === '[::1]') return false;
+        const ipv4Match = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+        if (ipv4Match) {
+            const a = Number(ipv4Match[1]);
+            const b = Number(ipv4Match[2]);
+            if (a === 127) return false;
+            if (a === 10) return false;
+            if (a === 172 && b >= 16 && b <= 31) return false;
+            if (a === 192 && b === 168) return false;
+            if (a === 169 && b === 254) return false;
+            if (a === 0) return false;
+        }
+        return true;
     } catch {
-        return { ok: false, error: 'File not found' };
+        return false;
     }
 }
 
 /**
  * Verify a single image URL via HTTP fetch or local file check.
  * Uses local file check when url does not start with http.
+ * Rejects internal/private URLs to prevent SSRF.
  */
 export async function verifyImageUrl(
     url: string,
@@ -243,6 +283,9 @@ export async function verifyImageUrl(
             return verifyLocalFile(url, projectRoot);
         }
         return { ok: false, error: 'URL not HTTP(S) and no projectRoot for local check' };
+    }
+    if (!isPublicUrl(url)) {
+        return { ok: false, error: 'URL points to internal/private host' };
     }
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);

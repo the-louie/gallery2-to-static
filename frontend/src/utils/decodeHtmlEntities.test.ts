@@ -161,3 +161,101 @@ describe('decodeHtmlEntities', () => {
     expect(decodeHtmlEntities('&amp;test&amp;')).toBe('&test&');
   });
 });
+
+describe('SEC-01: rejects control characters', () => {
+  it('rejects null byte &#0;', () => {
+    expect(decodeHtmlEntities('&#0;')).toBe('&#0;');
+  });
+  it('rejects backspace &#8;', () => {
+    expect(decodeHtmlEntities('&#8;')).toBe('&#8;');
+  });
+  it('rejects C0 controls &#1; through &#8;, &#11;-&#12;, &#14;-&#31;', () => {
+    for (const cp of [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 14, 15, 16, 31]) {
+      expect(decodeHtmlEntities(`&#${cp};`)).toBe(`&#${cp};`);
+    }
+  });
+  it('allows tab &#9;, LF &#10;, CR &#13;', () => {
+    expect(decodeHtmlEntities('&#9;')).toBe('\t');
+    expect(decodeHtmlEntities('&#10;')).toBe('\n');
+    expect(decodeHtmlEntities('&#13;')).toBe('\r');
+  });
+  it('rejects DEL &#127;', () => {
+    expect(decodeHtmlEntities('&#127;')).toBe('&#127;');
+  });
+  it('rejects C1 controls &#128; through &#159;', () => {
+    for (const cp of [128, 130, 140, 150, 159]) {
+      expect(decodeHtmlEntities(`&#${cp};`)).toBe(`&#${cp};`);
+    }
+  });
+});
+
+describe('SEC-01: rejects surrogate codepoints', () => {
+  it('rejects &#55296; (0xD800)', () => {
+    expect(decodeHtmlEntities('&#55296;')).toBe('&#55296;');
+  });
+  it('rejects &#57343; (0xDFFF)', () => {
+    expect(decodeHtmlEntities('&#57343;')).toBe('&#57343;');
+  });
+  it('rejects &#xD800; and &#xDFFF;', () => {
+    expect(decodeHtmlEntities('&#xD800;')).toBe('&#xD800;');
+    expect(decodeHtmlEntities('&#xDFFF;')).toBe('&#xDFFF;');
+  });
+});
+
+describe('SEC-01: rejects out-of-range codepoints', () => {
+  it('rejects &#1114112; (0x110000)', () => {
+    expect(decodeHtmlEntities('&#1114112;')).toBe('&#1114112;');
+  });
+  it('rejects &#x110000;', () => {
+    expect(decodeHtmlEntities('&#x110000;')).toBe('&#x110000;');
+  });
+  it('rejects very large values', () => {
+    expect(decodeHtmlEntities('&#99999999;')).toBe('&#99999999;');
+  });
+});
+
+describe('SEC-01: rejects Unicode noncharacters', () => {
+  it('rejects &#xFDD0; through &#xFDEF;', () => {
+    expect(decodeHtmlEntities('&#xFDD0;')).toBe('&#xFDD0;');
+    expect(decodeHtmlEntities('&#xFDEF;')).toBe('&#xFDEF;');
+  });
+  it('rejects &#xFFFE; and &#xFFFF;', () => {
+    expect(decodeHtmlEntities('&#xFFFE;')).toBe('&#xFFFE;');
+    expect(decodeHtmlEntities('&#xFFFF;')).toBe('&#xFFFF;');
+  });
+});
+
+describe('SEC-01: supplementary plane characters work correctly', () => {
+  it('decodes emoji &#128512; (U+1F600) via fromCodePoint', () => {
+    expect(decodeHtmlEntities('&#128512;')).toBe('😀');
+  });
+  it('decodes hex emoji &#x1F600;', () => {
+    expect(decodeHtmlEntities('&#x1F600;')).toBe('😀');
+  });
+});
+
+describe('SEC-01: existing valid entities still work', () => {
+  it('printable ASCII range', () => {
+    expect(decodeHtmlEntities('&#32;')).toBe(' ');
+    expect(decodeHtmlEntities('&#65;')).toBe('A');
+    expect(decodeHtmlEntities('&#126;')).toBe('~');
+  });
+  it('Nordic/Latin characters', () => {
+    expect(decodeHtmlEntities('&#228;')).toBe('ä');
+    expect(decodeHtmlEntities('&#246;')).toBe('ö');
+    expect(decodeHtmlEntities('&#233;')).toBe('é');
+    expect(decodeHtmlEntities('&#039;')).toBe("'");
+  });
+  it('NBSP &#160;', () => {
+    expect(decodeHtmlEntities('&#160;')).toBe('\u00A0');
+  });
+});
+
+describe('SEC-01: without-semicolon variant also validates', () => {
+  it('rejects &#0 (null without semicolon)', () => {
+    expect(decodeHtmlEntities('&#0 ')).toBe('&#0 ');
+  });
+  it('rejects surrogate without semicolon', () => {
+    expect(decodeHtmlEntities('x&#55296y')).toBe('x&#55296y');
+  });
+});

@@ -293,6 +293,92 @@ describe('parseBBCode', () => {
     });
   });
 
+  describe('SEC-02: URL structural validation', () => {
+    it('rejects [url=https://] (no host)', () => {
+      const result = parseBBCode('[url=https://]Click[/url]');
+      const { container } = render(<>{result}</>);
+      expect(container.querySelector('a')).not.toBeInTheDocument();
+      expect(container.textContent).toContain('Click');
+    });
+
+    it('rejects [url]https://[/url] (no host in content)', () => {
+      const result = parseBBCode('[url]https://[/url]');
+      const { container } = render(<>{result}</>);
+      expect(container.querySelector('a')).not.toBeInTheDocument();
+    });
+
+    it('accepts [url=https://example.com]Text[/url] (valid URL)', () => {
+      const result = parseBBCode('[url=https://example.com]Text[/url]');
+      const { container } = render(<>{result}</>);
+      const a = container.querySelector('a');
+      expect(a).toBeInTheDocument();
+      expect(a).toHaveAttribute('href', 'https://example.com');
+    });
+
+    it('accepts URL with path and hash', () => {
+      const result = parseBBCode('[url=https://example.com/path/to/page#section]Complex[/url]');
+      const { container } = render(<>{result}</>);
+      expect(container.querySelector('a')).toBeInTheDocument();
+    });
+
+    it('still rejects javascript: scheme', () => {
+      const result = parseBBCode('[url=javascript:alert(1)]Click[/url]');
+      const { container } = render(<>{result}</>);
+      expect(container.querySelector('a')).not.toBeInTheDocument();
+    });
+
+    it('rejects ftp: scheme', () => {
+      const result = parseBBCode('[url=ftp://files.example.com/pub]FTP[/url]');
+      const { container } = render(<>{result}</>);
+      expect(container.querySelector('a')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('SEC-10: CSS injection defense-in-depth', () => {
+    it('rejects color with expression() - no style applied', () => {
+      const result = parseBBCode('[color=expression(alert(1))]Text[/color]');
+      const { container } = render(<>{result}</>);
+      const span = container.querySelector('span');
+      // Tag is recognized but the dangerous color value is rejected
+      // so no style attribute is applied
+      if (span) {
+        expect(span.getAttribute('style')).toBeNull();
+      }
+    });
+
+    it('rejects color with url() - no style applied', () => {
+      const result = parseBBCode('[color=url(javascript:alert(1))]Text[/color]');
+      const { container } = render(<>{result}</>);
+      const span = container.querySelector('span');
+      if (span) {
+        expect(span.getAttribute('style')).toBeNull();
+      }
+    });
+
+    it('rejects color with javascript: - no style applied', () => {
+      const result = parseBBCode('[color=javascript:void(0)]Text[/color]');
+      const { container } = render(<>{result}</>);
+      const span = container.querySelector('span');
+      if (span) {
+        expect(span.getAttribute('style')).toBeNull();
+      }
+    });
+
+    it('still accepts valid named colors', () => {
+      const result = parseBBCode('[color=red]Text[/color]');
+      const { container } = render(<>{result}</>);
+      const span = container.querySelector('span');
+      expect(span).toBeInTheDocument();
+      expect(span?.style.color).toBe('red');
+    });
+
+    it('still accepts valid hex colors', () => {
+      const result = parseBBCode('[color=#ff0000]Text[/color]');
+      const { container } = render(<>{result}</>);
+      expect(container.querySelector('span')).toBeInTheDocument();
+    });
+  });
+
   describe('Caching', () => {
     it('caches parsed results', () => {
       const text = '[b]Bold text[/b]';
@@ -420,6 +506,32 @@ describe('extractUrlFromBBCode', () => {
   it('handles empty or whitespace-only text', () => {
     expect(extractUrlFromBBCode('')).toBeNull();
     expect(extractUrlFromBBCode('   ')).toBeNull();
+  });
+
+  describe('SEC-02: URL structural validation', () => {
+    it('rejects [url=https://]...[/url] (no host)', () => {
+      expect(extractUrlFromBBCode('[url=https://]Click[/url]')).toBeNull();
+    });
+
+    it('rejects [url]https://[/url] (no host)', () => {
+      expect(extractUrlFromBBCode('[url]https://[/url]')).toBeNull();
+    });
+
+    it('accepts valid http URL', () => {
+      const result = extractUrlFromBBCode('[url=http://example.com]Site[/url]');
+      expect(result).not.toBeNull();
+      expect(result?.url).toBe('http://example.com');
+    });
+
+    it('accepts URL with path, query, and hash', () => {
+      const result = extractUrlFromBBCode('[url=https://example.com/p?q=1#h]Link[/url]');
+      expect(result).not.toBeNull();
+      expect(result?.url).toBe('https://example.com/p?q=1#h');
+    });
+
+    it('rejects ftp: scheme', () => {
+      expect(extractUrlFromBBCode('[url=ftp://files.example.com]FTP[/url]')).toBeNull();
+    });
   });
 });
 

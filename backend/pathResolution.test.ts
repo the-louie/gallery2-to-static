@@ -45,6 +45,31 @@ function run(): void {
     assert.strictEqual(emptyMiddle.urlPath, 'a/b.jpg');
     assert.strictEqual(emptyMiddle.thumbnailUrlPath, 'a/t__b.jpg');
 
+    // SEC-11: path component validation
+    assert.throws(
+        () => buildPathsFromPathComponent(['album', '..', 'etc', 'passwd'], THUMB_PREFIX),
+        /traversal/,
+        'rejects .. in path component',
+    );
+    assert.throws(
+        () => buildPathsFromPathComponent(['album/sub', 'photo.jpg'], THUMB_PREFIX),
+        /separator/,
+        'rejects / in path component',
+    );
+    assert.throws(
+        () => buildPathsFromPathComponent(['album\\sub', 'photo.jpg'], THUMB_PREFIX),
+        /separator/,
+        'rejects \\ in path component',
+    );
+    assert.throws(
+        () => buildPathsFromPathComponent(['album\0', 'photo.jpg'], THUMB_PREFIX),
+        /null byte/,
+        'rejects null byte in path component',
+    );
+    // Nordic characters are allowed
+    const nordic = buildPathsFromPathComponent(['nässlan', 'gård', 'photo.jpg'], THUMB_PREFIX);
+    assert.strictEqual(nordic.urlPath, 'nässlan/gård/photo.jpg');
+
     console.log('pathResolution tests passed');
 }
 

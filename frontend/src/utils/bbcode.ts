@@ -151,8 +151,20 @@ const TAG_CONFIGS: Record<string, TagConfig> = {
 const parseCache = new Map<string, CachedResult>();
 const DEFAULT_CACHE_SIZE = 1000;
 
-/** Only http and https URLs are allowed for [url] and extractUrlFromBBCode. */
-const URL_SCHEME_REGEX = /^https?:\/\//i;
+/**
+ * Validate that a string is a well-formed http or https URL.
+ * Uses the URL constructor for structural validation (rejects missing host,
+ * malformed IPv6, etc.) and restricts to http/https schemes to prevent
+ * javascript:, data:, and other dangerous protocols.
+ */
+function isValidHttpUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Clear the parse cache
@@ -172,17 +184,32 @@ export function getBBCodeCacheStats(): { size: number; maxSize: number } {
 }
 
 /**
- * Pass-through for text in React. React escapes when rendering to DOM,
- * so we must not pre-encode (e.g. ' to &#039;) or entities display literally.
+ * Identity pass-through for text destined for React DOM rendering.
+ *
+ * React automatically escapes string children when rendering to the DOM,
+ * so pre-encoding would cause entities to display literally. This function
+ * exists as a named semantic marker at call sites where escaping would
+ * normally be expected.
+ *
+ * IMPORTANT — React-only contract: The output of parseBBCode is safe
+ * ONLY when rendered as React children (JSX). Do NOT use parseBBCode output
+ * with dangerouslySetInnerHTML, string concatenation into HTML, or any
+ * non-React rendering path — those contexts require real HTML escaping.
  */
 function escapeHtml(text: string): string {
   return text;
 }
 
+/** CSS injection keywords rejected as defense-in-depth. */
+const CSS_INJECTION_PATTERN = /expression|url\s*\(|javascript:|@import/i;
+
 /**
  * Validate and sanitize style attribute value
  */
 function sanitizeStyleValue(property: string, value: string): string | null {
+  if (CSS_INJECTION_PATTERN.test(value)) {
+    return null;
+  }
   if (property === 'color') {
     const config = TAG_CONFIGS.color;
     if (config.validateAttribute && !config.validateAttribute(value)) {
@@ -213,7 +240,7 @@ function parseAttribute(tagContent: string, tagName: string): Record<string, str
   // [tag=value] yields tagContent "value" when there's no space (parseTag splits on first =)
   if (equalIndex === -1) {
     const bare = tagContent.trim();
-    if (tagName === 'url' && bare && URL_SCHEME_REGEX.test(bare)) {
+    if (tagName === 'url' && bare && isValidHttpUrl(bare)) {
       return { href: bare };
     }
     if (tagName === 'color') {
@@ -242,7 +269,7 @@ function parseAttribute(tagContent: string, tagName: string): Record<string, str
     return { [attrName]: sanitized };
   }
   if ((attrName === 'url' || attrName === 'href') && tagName === 'url') {
-    if (!URL_SCHEME_REGEX.test(cleanValue)) {
+    if (!isValidHttpUrl(cleanValue)) {
       return null;
     }
     return { href: cleanValue };
@@ -412,7 +439,7 @@ function parseBBCodeInternal(text: string): React.ReactNode {
             const contentAsHref = content.trim().replace(/^["']+|["']+$/g, '');
             const href =
               tagMatch.attributes?.href ??
-              (URL_SCHEME_REGEX.test(contentAsHref) ? contentAsHref : null);
+              (isValidHttpUrl(contentAsHref) ? contentAsHref : null);
             if (href === null) {
               result.push(escapeHtml(tagText));
               result.push(contentElements);
@@ -517,7 +544,7 @@ export function extractUrlFromBBCode(text: string): ExtractedUrl | null {
   if (attrMatch) {
     const rawUrl = attrMatch[1].trim().replace(/^["']+|["']+$/g, '');
     const label = attrMatch[2].trim();
-    if (!URL_SCHEME_REGEX.test(rawUrl)) return null;
+    if (!isValidHttpUrl(rawUrl)) return null;
     return { url: rawUrl, label: label || undefined };
   }
 
@@ -525,7 +552,7 @@ export function extractUrlFromBBCode(text: string): ExtractedUrl | null {
   const simpleMatch = trimmed.match(/\[url\]([\s\S]*?)\[\/url\]/i);
   if (simpleMatch) {
     const rawUrl = simpleMatch[1].trim().replace(/^["']+|["']+$/g, '');
-    if (!URL_SCHEME_REGEX.test(rawUrl)) return null;
+    if (!isValidHttpUrl(rawUrl)) return null;
     return { url: rawUrl, label: rawUrl || undefined };
   }
 

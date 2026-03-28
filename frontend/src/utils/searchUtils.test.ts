@@ -80,6 +80,47 @@ describe('searchUtils', () => {
       expect(result.matchIndices[0]).toBe(0);
       expect(result.matchIndices[1]).toBe(3);
     });
+
+    describe('ReDoS input length validation', () => {
+      it('returns no match when query exceeds 50 characters', () => {
+        const longQuery = 'a'.repeat(51);
+        const text = 'a'.repeat(200);
+        const result = matchSubsequence(text, longQuery);
+        expect(result.matched).toBe(false);
+        expect(result.matchIndices).toEqual([]);
+      });
+
+      it('returns no match when combined length exceeds 2000', () => {
+        const query = 'abc';
+        const longText = 'a'.repeat(2000);
+        const result = matchSubsequence(longText, query);
+        expect(result.matched).toBe(false);
+        expect(result.matchIndices).toEqual([]);
+      });
+
+      it('matches when query is exactly 50 characters', () => {
+        const query = 'a'.repeat(50);
+        const text = 'a'.repeat(50);
+        const result = matchSubsequence(text, query);
+        expect(result.matched).toBe(true);
+        expect(result.matchIndices.length).toBe(50);
+      });
+
+      it('still matches short query against long text within limit', () => {
+        const query = 'abc';
+        const text = 'a' + 'x'.repeat(100) + 'b' + 'x'.repeat(100) + 'c';
+        expect(text.length + query.length).toBeLessThanOrEqual(2000);
+        const result = matchSubsequence(text, query);
+        expect(result.matched).toBe(true);
+        expect(result.matchIndices.length).toBe(3);
+      });
+
+      it('normal-length queries still work correctly', () => {
+        const result = matchSubsequence('Summer Vacation Photos', 'svp');
+        expect(result.matched).toBe(true);
+        expect(result.matchIndices.length).toBe(3);
+      });
+    });
   });
 
   describe('calculateSubsequenceScore', () => {

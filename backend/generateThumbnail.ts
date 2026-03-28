@@ -20,15 +20,31 @@ const DEFAULT_OPTIONS: ThumbnailOptions = {
 };
 
 /**
+ * Reject paths containing traversal segments or null bytes.
+ */
+function validateNoTraversal(filePath: string, label: string): void {
+    if (filePath.includes('\0')) {
+        throw new Error(`${label} contains null byte`);
+    }
+    const segments = filePath.split(/[/\\]/);
+    if (segments.some(seg => seg === '..')) {
+        throw new Error(`${label} contains path traversal segment`);
+    }
+}
+
+/**
  * Generate a thumbnail from a full-size image.
  * Skips if destPath already exists. Creates parent directory if needed.
  * Returns 'invalid' when source exists but is corrupted or not a valid image.
+ * Rejects paths containing traversal segments or null bytes.
  */
 export async function generateThumbnail(
     sourcePath: string,
     destPath: string,
     options: Partial<ThumbnailOptions> = {},
 ): Promise<'generated' | 'skipped' | 'missing' | 'invalid'> {
+    validateNoTraversal(sourcePath, 'sourcePath');
+    validateNoTraversal(destPath, 'destPath');
     const opts = { ...DEFAULT_OPTIONS, ...options };
 
     try {

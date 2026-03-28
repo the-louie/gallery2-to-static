@@ -71,6 +71,16 @@ export function matchSubsequence(
     return { matched: false, matchIndices: [] };
   }
 
+  // Input length validation to prevent ReDoS (catastrophic backtracking)
+  // The regex pattern char1.*?char2.*?... has exponential worst-case complexity
+  // with long inputs, so we cap query length and combined input length.
+  if (trimmedQuery.length > 50) {
+    return { matched: false, matchIndices: [] };
+  }
+  if (trimmedQuery.length + text.length > 2000) {
+    return { matched: false, matchIndices: [] };
+  }
+
   // Convert query to lazy regex pattern
   // Escape special regex characters and join with .*? (lazy match)
   const escapedChars = trimmedQuery

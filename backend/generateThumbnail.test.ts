@@ -50,6 +50,28 @@ async function run(): Promise<void> {
         const stat = await fs.stat(destDir);
         assert.ok(stat.isDirectory(), 'output directory should exist');
 
+        // SEC-05: path traversal rejection
+        await assert.rejects(
+            () => generateThumbnail('../../../etc/passwd', destPath),
+            /traversal/,
+            'source with .. rejected',
+        );
+        await assert.rejects(
+            () => generateThumbnail(sourcePath, '../../evil/output.jpg'),
+            /traversal/,
+            'dest with .. rejected',
+        );
+        await assert.rejects(
+            () => generateThumbnail('photo\0.jpg', destPath),
+            /null byte/,
+            'source with null byte rejected',
+        );
+        await assert.rejects(
+            () => generateThumbnail(sourcePath, 'output\0.jpg'),
+            /null byte/,
+            'dest with null byte rejected',
+        );
+
         console.log('generateThumbnail tests passed');
     } finally {
         await fs.rm(tmpDir, { recursive: true, force: true });

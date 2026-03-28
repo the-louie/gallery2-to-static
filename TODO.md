@@ -2,6 +2,110 @@
 
 ---
 
+## Logic & Edge Case Fixes
+
+### LOGIC-01: Race condition in useAlbumData hook
+- **Severity:** Medium
+- **Files:** `frontend/src/hooks/useAlbumData.ts:119,151-157,177-185`
+- **Description:** `isMountedRef.current` check is non-atomic; component can unmount between check and `setData()`. Auto-retry can trigger double-retry when `!isLoading && !isRetryingRetry` are both false simultaneously.
+- **Fix:** Use AbortController instead of isMountedRef. Guard concurrent retries with state machine.
+
+### LOGIC-02: Object URL memory leaks in useProgressiveImage
+- **Severity:** Medium
+- **Files:** `frontend/src/hooks/useProgressiveImage.ts:127,156,303-306`
+- **Description:** Cleanup useEffect doesn't revoke object URLs; only per-load effect cleanups do. If hook unmounts while loading, URLs leak. Also, if abort happens between `blob()` and `createObjectURL()`, blob is created but URL is not tracked.
+- **Fix:** Add to final cleanup: revoke both `thumbnailObjectUrlRef.current` and `fullObjectUrlRef.current`. Wrap fetch flow in try/finally.
+
+### LOGIC-03: Unbounded cache growth in dataLoader and useSearch
+- **Severity:** Medium
+- **Files:** `frontend/src/utils/dataLoader.ts:102`, `frontend/src/hooks/useSearch.ts:179`
+- **Description:** Album data cache and search results cache grow without bound. Visiting thousands of albums or searching many unique queries causes unbounded memory growth.
+- **Fix:** Implement LRU eviction: limit album cache to ~100 entries, search cache to ~100 results.
+
+### LOGIC-04: Integer overflow in sorting timestamp subtraction
+- **Severity:** Medium
+- **Files:** `frontend/src/utils/sorting.ts:37-38,136-137`
+- **Description:** `aTimestamp - bTimestamp` can lose precision for large timestamps. `width * height` can overflow for very large images.
+- **Fix:** Use comparison operators: `aTimestamp < bTimestamp ? -1 : aTimestamp > bTimestamp ? 1 : 0`. Cap dimensions before multiplication.
+
+### LOGIC-05: Insufficient database result validation in sqlUtils.ts
+- **Severity:** Medium
+- **Files:** `backend/sqlUtils.ts:95-169`
+- **Description:** Query results cast to `Record<string, unknown>` without field-level validation. `String(child.title)` on complex objects produces `[object Object]`. No length validation on strings.
+- **Fix:** Add explicit type checks per field. Add maximum length validation. Consider schema validation library (Zod).
+
+### LOGIC-06: ViewAbortContext controller cleanup race condition
+- **Severity:** Low
+- **Files:** `frontend/src/contexts/ViewAbortContext.tsx:41,48`
+- **Description:** If component unmounts and remounts quickly, cleanup from previous render may abort the new controller's signal. `location.key` may not change reliably with HashRouter.
+- **Fix:** Capture controller in closure: `const c = new AbortController(); setSignal(c.signal); return () => c.abort();`
+
+### LOGIC-07: PathResolverPage doesn't handle URL-encoded paths
+- **Severity:** Low
+- **Files:** `frontend/src/pages/PathResolverPage.tsx:28,32`
+- **Description:** Path normalization doesn't `decodeURIComponent()`. If path has `%20` or similar encoding, lookup fails against decoded index paths. Also, imageId not checked against MAX_SAFE_INTEGER.
+- **Fix:** Decode path before normalization. Add MAX_SAFE_INTEGER check.
+
+### LOGIC-08: imagePreload.ts has no parallelism limit
+- **Severity:** Low
+- **Files:** `frontend/src/utils/imagePreload.ts:109`
+- **Description:** `Promise.all(urls.map(...))` fetches all images simultaneously. If many images are preloaded, network is saturated with concurrent requests.
+- **Fix:** Limit to 4-6 concurrent fetches using a queue or batching pattern.
+
+### LOGIC-09: LRU cache operations are O(n) instead of O(1)
+- **Severity:** Low
+- **Files:** `frontend/src/utils/imageCache.ts:283-289`
+- **Description:** `indexOf()` on lruOrder array is O(n) on every cache access. With 50+ cached images, each hit triggers a linear scan.
+- **Fix:** Replace lruOrder array with `Map<string, number>` for O(1) lookups, or use doubly-linked list.
+
+### LOGIC-10: Incomplete BBCode parsing in backend
+- **Severity:** Low
+- **Files:** `backend/bbcode.ts:21-23`
+- **Description:** Regex `/\[[^\]]*\]/g` doesn't handle nested brackets properly. Input like `[[img]dangerous[/img]]` becomes `[img]dangerous[/img]` after one pass.
+- **Fix:** Use iterative stripping: loop `replace(/\[[^\[\]]*\]/g, '')` until stable (max 10 iterations).
+
+---
+
+## Architecture & DRY Improvements
+
+### ARCH-01: Duplicate decodeHtmlEntities across backend and frontend
+- **Impact:** High
+- **Files:** `backend/decodeHtmlEntities.ts`, `frontend/src/utils/decodeHtmlEntities.ts`
+- **Description:** Both files are byte-for-byte identical in implementation (same NAMED_ENTITIES array, same MAX_ITERATIONS, same loop-until-stable logic). Any bug fix must be applied to both.
+- **Fix:** Extract to a shared module (e.g., `/shared/decodeHtmlEntities.ts`) and import from both packages. Or use monorepo workspace dependency.
+
+### ARCH-02: Implicit coupling in Nordic path normalization
+- **Impact:** Medium-High
+- **Files:** `backend/cleanupUipath.ts`, `frontend/src/utils/albumPath.ts`
+- **Description:** Frontend `titleToSegment()` must match backend `cleanup_uipathcomponent()` output, but this coupling is implicit. If backend changes path normalization, frontend breaks silently.
+- **Fix:** Add integration tests validating frontend paths match backend-generated paths. Document coupling explicitly in both files. Consider extracting shared normalization logic.
+
+### ARCH-03: Path alias duplication between vite and vitest configs
+- **Impact:** Medium
+- **Files:** `frontend/vite.config.ts:68-78`, `frontend/vitest.config.ts:30-39`
+- **Description:** Identical path alias definitions (`@/components`, `@/utils`, etc.) in both config files. Adding new aliases requires updating both.
+- **Fix:** Extract aliases to shared config file (e.g., `aliases.config.js`) and import in both configs.
+
+### ARCH-04: Inconsistent component barrel export patterns
+- **Impact:** Low
+- **Files:** `frontend/src/components/AlbumGrid/index.ts`, `frontend/src/components/AlbumDetail/index.ts`
+- **Description:** Some components export both default and named exports of the same component, others use only named exports. Creates ambiguity in import style.
+- **Fix:** Standardize on named exports only (more explicit, better tree-shaking). Document in contributing guide.
+
+### ARCH-05: ThemeContext uses useMemo for side effects
+- **Impact:** Low
+- **Files:** `frontend/src/contexts/ThemeContext.tsx:292-294`
+- **Description:** `useMemo(() => { migrateThemePreference(); }, [])` runs side effects in useMemo, violating React best practices. Should use useLayoutEffect for synchronous pre-render migration.
+- **Fix:** Replace with `useLayoutEffect(() => { migrateThemePreference(); }, []);`
+
+### ARCH-06: albumPath.ts illegal character regex has unescaped hyphen
+- **Impact:** Low
+- **Files:** `frontend/src/utils/albumPath.ts:8`
+- **Description:** `RE_ILLEGAL = /[\[\]\\\/\?%:\|"\'><#\s&]/gi` - hyphen between `'` and `>` in character class may create unintended range (chars 39-62). Not currently causing issues but fragile.
+- **Fix:** Escape hyphen or place at start/end of character class: `/[-\[\]\\\/\?%:\|"\'><#\s&]/gi`
+
+---
+
 ## Pending
 
 (none)

@@ -133,8 +133,35 @@ async function run(): Promise<void> {
         assert.strictEqual(nonHttp.ok, false);
         assert.ok(nonHttp.error?.includes('HTTP'));
 
-        // verifyImageUrl: real fetch is not mocked - skip to avoid network
-        // Optional: mock fetch if needed for CI
+        // SEC-08: SSRF protection - private IPs rejected
+        const localhost = await verifyImageUrl('http://localhost/image.jpg', 1000);
+        assert.strictEqual(localhost.ok, false);
+        assert.ok(localhost.error?.includes('internal'), 'localhost rejected');
+
+        const loopback = await verifyImageUrl('http://127.0.0.1/image.jpg', 1000);
+        assert.strictEqual(loopback.ok, false);
+        assert.ok(loopback.error?.includes('internal'), '127.0.0.1 rejected');
+
+        const private10 = await verifyImageUrl('http://10.0.0.1/image.jpg', 1000);
+        assert.strictEqual(private10.ok, false);
+        assert.ok(private10.error?.includes('internal'), '10.x rejected');
+
+        const private172 = await verifyImageUrl('http://172.16.0.1/image.jpg', 1000);
+        assert.strictEqual(private172.ok, false);
+        assert.ok(private172.error?.includes('internal'), '172.16.x rejected');
+
+        const private192 = await verifyImageUrl('http://192.168.1.1/image.jpg', 1000);
+        assert.strictEqual(private192.ok, false);
+        assert.ok(private192.error?.includes('internal'), '192.168.x rejected');
+
+        // SEC-06: path traversal rejection in local file verify
+        const traversal = await verifyImageUrl('/g2data/../../etc/passwd', 1000, tmpDir);
+        assert.strictEqual(traversal.ok, false);
+        assert.ok(traversal.error?.includes('traversal') || traversal.error?.includes('escapes'), 'path traversal rejected');
+
+        const nullByte = await verifyImageUrl('/g2data/albums/photo\0.jpg', 1000, tmpDir);
+        assert.strictEqual(nullByte.ok, false);
+        assert.ok(nullByte.error?.includes('null'), 'null byte rejected');
     } finally {
         await fs.rm(tmpDir, { recursive: true, force: true });
     }
