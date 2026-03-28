@@ -7,6 +7,16 @@
  * once (no duplicate request from img src). Falls back to server URL when fetch
  * fails (e.g. CORS) for either thumbnail or full image.
  *
+ * ## Cleanup Strategy
+ *
+ * Object URLs are revoked in three layers:
+ * 1. Per-load effect cleanups revoke URLs when load effects re-run or unmount
+ * 2. Image-change effect cleanup revokes URLs when the image ID changes
+ * 3. Final unmount cleanup revokes any remaining URLs as defense-in-depth
+ *
+ * The .then() handlers for fetch calls are wrapped in try/catch to ensure
+ * URLs stored in refs are revoked if an unexpected error occurs.
+ *
  * @module frontend/src/hooks/useProgressiveImage
  */
 
@@ -158,42 +168,49 @@ export function useProgressiveImage(
           return;
         }
         thumbnailObjectUrlRef.current = objectUrl;
-        if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
-          setDisplayThumbnailUrl(objectUrl);
-        } else {
-          URL.revokeObjectURL(objectUrl);
-          thumbnailObjectUrlRef.current = null;
-          return;
-        }
-        const img = new Image();
-        thumbnailImgRef.current = img;
-        img.onload = () => {
-          if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
-            if (signal.aborted && thumbnailObjectUrlRef.current) {
+        try {
+          if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
+            setDisplayThumbnailUrl(objectUrl);
+          } else {
+            URL.revokeObjectURL(objectUrl);
+            thumbnailObjectUrlRef.current = null;
+            return;
+          }
+          const img = new Image();
+          thumbnailImgRef.current = img;
+          img.onload = () => {
+            if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
+              if (signal.aborted && thumbnailObjectUrlRef.current) {
+                URL.revokeObjectURL(thumbnailObjectUrlRef.current);
+                thumbnailObjectUrlRef.current = null;
+              }
+              return;
+            }
+            if (thumbnailTransitionDoneRef.current) return;
+            thumbnailTransitionDoneRef.current = true;
+            cache.set(thumbnailUrl, img);
+            setState('thumbnail-loaded');
+          };
+          img.onerror = () => {
+            if (thumbnailObjectUrlRef.current) {
               URL.revokeObjectURL(thumbnailObjectUrlRef.current);
               thumbnailObjectUrlRef.current = null;
             }
-            return;
-          }
-          if (thumbnailTransitionDoneRef.current) return;
-          thumbnailTransitionDoneRef.current = true;
-          cache.set(thumbnailUrl, img);
-          setState('thumbnail-loaded');
-        };
-        img.onerror = () => {
-          if (thumbnailObjectUrlRef.current) {
-            URL.revokeObjectURL(thumbnailObjectUrlRef.current);
+            thumbnailImgRef.current = null;
+            if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) return;
+            if (thumbnailTransitionDoneRef.current) return;
+            thumbnailTransitionDoneRef.current = true;
+            // Fallback to server URL when blob fails (e.g. cross-origin security) so the image still displays.
+            setDisplayThumbnailUrl(thumbnailUrl);
+            setState('thumbnail-loaded');
+          };
+          img.src = objectUrl;
+        } catch {
+          if (thumbnailObjectUrlRef.current === objectUrl) {
+            URL.revokeObjectURL(objectUrl);
             thumbnailObjectUrlRef.current = null;
           }
-          thumbnailImgRef.current = null;
-          if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) return;
-          if (thumbnailTransitionDoneRef.current) return;
-          thumbnailTransitionDoneRef.current = true;
-          // Fallback to server URL when blob fails (e.g. cross-origin security) so the image still displays.
-          setDisplayThumbnailUrl(thumbnailUrl);
-          setState('thumbnail-loaded');
-        };
-        img.src = objectUrl;
+        }
       })
       .catch((err) => {
         if (err?.name === 'AbortError') {
@@ -240,43 +257,50 @@ export function useProgressiveImage(
           return;
         }
         fullObjectUrlRef.current = objectUrl;
-        if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
-          setDisplayFullImageUrl(objectUrl);
-        } else {
-          URL.revokeObjectURL(objectUrl);
-          fullObjectUrlRef.current = null;
-          return;
-        }
-        const img = new Image();
-        fullImgRef.current = img;
-        img.onload = () => {
-          if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
-            if (signal.aborted && fullObjectUrlRef.current) {
-              URL.revokeObjectURL(fullObjectUrlRef.current);
-              fullObjectUrlRef.current = null;
-            }
+        try {
+          if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
+            setDisplayFullImageUrl(objectUrl);
+          } else {
+            URL.revokeObjectURL(objectUrl);
+            fullObjectUrlRef.current = null;
             return;
           }
-          cache.set(fullImageUrl, img);
-          setState('full-loaded');
-          setHasError(false);
-          setError(null);
-        };
-        img.onerror = () => {
-          if (fullObjectUrlRef.current) {
-            URL.revokeObjectURL(fullObjectUrlRef.current);
-            fullObjectUrlRef.current = null;
-          }
-          fullImgRef.current = null;
-          if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
-            // Fallback to server URL when blob fails (e.g. cross-origin security) so the image still displays.
-            setDisplayFullImageUrl(fullImageUrl);
+          const img = new Image();
+          fullImgRef.current = img;
+          img.onload = () => {
+            if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
+              if (signal.aborted && fullObjectUrlRef.current) {
+                URL.revokeObjectURL(fullObjectUrlRef.current);
+                fullObjectUrlRef.current = null;
+              }
+              return;
+            }
+            cache.set(fullImageUrl, img);
             setState('full-loaded');
             setHasError(false);
             setError(null);
+          };
+          img.onerror = () => {
+            if (fullObjectUrlRef.current) {
+              URL.revokeObjectURL(fullObjectUrlRef.current);
+              fullObjectUrlRef.current = null;
+            }
+            fullImgRef.current = null;
+            if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
+              // Fallback to server URL when blob fails (e.g. cross-origin security) so the image still displays.
+              setDisplayFullImageUrl(fullImageUrl);
+              setState('full-loaded');
+              setHasError(false);
+              setError(null);
+            }
+          };
+          img.src = objectUrl;
+        } catch {
+          if (fullObjectUrlRef.current === objectUrl) {
+            URL.revokeObjectURL(objectUrl);
+            fullObjectUrlRef.current = null;
           }
-        };
-        img.src = objectUrl;
+        }
       })
       .catch((err) => {
         if (err?.name === 'AbortError') return;
@@ -302,6 +326,15 @@ export function useProgressiveImage(
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
+      // Defense-in-depth: revoke any object URLs that per-effect cleanups may have missed
+      if (thumbnailObjectUrlRef.current) {
+        URL.revokeObjectURL(thumbnailObjectUrlRef.current);
+        thumbnailObjectUrlRef.current = null;
+      }
+      if (fullObjectUrlRef.current) {
+        URL.revokeObjectURL(fullObjectUrlRef.current);
+        fullObjectUrlRef.current = null;
+      }
     };
   }, []);
 

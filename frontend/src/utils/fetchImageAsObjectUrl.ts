@@ -52,8 +52,13 @@ export async function fetchImageAsObjectUrl(
     throw new DOMException('Aborted', 'AbortError');
   }
   const objectUrl = URL.createObjectURL(blob);
-  if (isDev) {
-    console.log('[fetchImageAsObjectUrl] ok', url.slice(-60));
+  try {
+    if (isDev) {
+      console.log('[fetchImageAsObjectUrl] ok', url.slice(-60));
+    }
+    return objectUrl;
+  } catch (err) {
+    URL.revokeObjectURL(objectUrl);
+    throw err;
   }
-  return objectUrl;
 }
