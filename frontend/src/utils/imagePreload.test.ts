@@ -5,7 +5,11 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { preloadImage, preloadImages } from './imagePreload';
+import {
+  preloadImage,
+  preloadImages,
+  MAX_CONCURRENT_PRELOADS,
+} from './imagePreload';
 import { resetImageCache, getImageCache } from './imageCache';
 
 vi.mock('./fetchImageAsObjectUrl', () => ({
@@ -227,6 +231,156 @@ describe('imagePreload', () => {
 
     it('resolves immediately for empty array', async () => {
       await expect(preloadImages([])).resolves.toBeUndefined();
+    });
+
+    it('exports MAX_CONCURRENT_PRELOADS constant', () => {
+      expect(MAX_CONCURRENT_PRELOADS).toBe(4);
+      expect(typeof MAX_CONCURRENT_PRELOADS).toBe('number');
+    });
+
+    it('limits concurrent preloads to MAX_CONCURRENT_PRELOADS', async () => {
+      let activeFetches = 0;
+      let maxActiveFetches = 0;
+      const resolvers: Array<() => void> = [];
+
+      global.Image = vi.fn(() => {
+        const img = {
+          onload: null as (() => void) | null,
+          onerror: null as (() => void) | null,
+          src: '',
+        };
+
+        let _src = '';
+        Object.defineProperty(img, 'src', {
+          get: () => _src,
+          set: (val: string) => {
+            _src = val;
+            activeFetches++;
+            maxActiveFetches = Math.max(maxActiveFetches, activeFetches);
+            resolvers.push(() => {
+              activeFetches--;
+              if (img.onload) img.onload();
+            });
+          },
+        });
+
+        return img as unknown as HTMLImageElement;
+      }) as unknown as typeof Image;
+
+      const urls = Array.from(
+        { length: 8 },
+        (_, i) => `/images/test${i}.jpg`,
+      );
+      const promise = preloadImages(urls);
+
+      // Resolve images one at a time and check concurrency
+      while (resolvers.length > 0 || activeFetches > 0) {
+        await new Promise((r) => setTimeout(r, 0));
+        if (resolvers.length > 0) {
+          resolvers.shift()!();
+        }
+      }
+
+      await promise;
+      expect(maxActiveFetches).toBeLessThanOrEqual(MAX_CONCURRENT_PRELOADS);
+    });
+
+    it('preloads all URLs even when exceeding concurrency limit', async () => {
+      const loadedUrls: string[] = [];
+
+      global.Image = vi.fn(() => {
+        const img = {
+          onload: null as (() => void) | null,
+          onerror: null as (() => void) | null,
+          src: '',
+        };
+
+        Object.defineProperty(img, 'src', {
+          set: (val: string) => {
+            loadedUrls.push(val);
+            setTimeout(() => {
+              if (img.onload) img.onload();
+            }, 0);
+          },
+          get: () => '',
+        });
+
+        return img as unknown as HTMLImageElement;
+      }) as unknown as typeof Image;
+
+      const urls = Array.from(
+        { length: 10 },
+        (_, i) => `/images/test${i}.jpg`,
+      );
+      await preloadImages(urls);
+
+      expect(loadedUrls).toHaveLength(10);
+      urls.forEach((url) => {
+        expect(loadedUrls).toContain(url);
+      });
+    });
+
+    it('uses direct Promise.all for batches within concurrency limit', async () => {
+      const mockImages: Array<{
+        onload: (() => void) | null;
+        onerror: (() => void) | null;
+        src: string;
+      }> = [];
+
+      global.Image = vi.fn(() => {
+        const img = { onload: null, onerror: null, src: '' };
+        mockImages.push(img);
+        return img as unknown as HTMLImageElement;
+      }) as unknown as typeof Image;
+
+      const urls = Array.from(
+        { length: 3 },
+        (_, i) => `/images/test${i}.jpg`,
+      );
+      const promise = preloadImages(urls);
+
+      // All 3 should start immediately
+      expect(mockImages).toHaveLength(3);
+
+      mockImages.forEach((img) => {
+        if (img.onload) img.onload();
+      });
+      await expect(promise).resolves.toBeUndefined();
+    });
+
+    it('rejects when any image fails in a large batch', async () => {
+      let imageIndex = 0;
+      global.Image = vi.fn(() => {
+        const idx = imageIndex++;
+        const img = {
+          onload: null as (() => void) | null,
+          onerror: null as (() => void) | null,
+          src: '',
+        };
+
+        Object.defineProperty(img, 'src', {
+          set: () => {
+            setTimeout(() => {
+              if (idx === 3) {
+                if (img.onerror) img.onerror();
+              } else {
+                if (img.onload) img.onload();
+              }
+            }, 0);
+          },
+          get: () => '',
+        });
+
+        return img as unknown as HTMLImageElement;
+      }) as unknown as typeof Image;
+
+      const urls = Array.from(
+        { length: 8 },
+        (_, i) => `/images/test${i}.jpg`,
+      );
+      await expect(preloadImages(urls)).rejects.toThrow(
+        'Failed to preload image',
+      );
     });
   });
 });

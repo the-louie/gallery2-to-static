@@ -20,6 +20,9 @@
 import { getImageCache } from './imageCache';
 import { fetchImageAsObjectUrl } from './fetchImageAsObjectUrl';
 
+/** Maximum number of images to fetch simultaneously in preloadImages() */
+export const MAX_CONCURRENT_PRELOADS = 4;
+
 export interface PreloadImageOptions {
   /** When provided, use fetch+objectURL so the request can be aborted; revoke on abort */
   signal?: AbortSignal;
@@ -97,14 +100,52 @@ export function preloadImage(url: string, options?: PreloadImageOptions): Promis
 }
 
 /**
- * Preload multiple images
+ * Preload multiple images with a concurrency limit.
+ *
+ * Fetches up to MAX_CONCURRENT_PRELOADS images simultaneously. Additional
+ * URLs are queued and started as active fetches complete. This prevents
+ * network saturation when preloading large batches.
  *
  * @param urls - Array of image URLs to preload
  * @param options - Optional { signal } for cancellation
  */
-export function preloadImages(urls: string[], options?: PreloadImageOptions): Promise<void> {
+export function preloadImages(
+  urls: string[],
+  options?: PreloadImageOptions,
+): Promise<void> {
   if (urls.length === 0) {
     return Promise.resolve();
   }
-  return Promise.all(urls.map((url) => preloadImage(url, options))).then(() => {});
+
+  if (urls.length <= MAX_CONCURRENT_PRELOADS) {
+    // No limiting needed for small batches
+    return Promise.all(urls.map((url) => preloadImage(url, options))).then(
+      () => {},
+    );
+  }
+
+  // Concurrency-limited execution
+  const active = new Set<Promise<void>>();
+  const allSettled: Promise<void>[] = [];
+
+  let i = 0;
+
+  async function enqueueNext(): Promise<void> {
+    while (i < urls.length) {
+      const url = urls[i++];
+      const task = preloadImage(url, options).finally(() => {
+        active.delete(task);
+      });
+      active.add(task);
+      allSettled.push(task);
+
+      if (active.size >= MAX_CONCURRENT_PRELOADS) {
+        await Promise.race(active);
+      }
+    }
+  }
+
+  return enqueueNext()
+    .then(() => Promise.all(allSettled))
+    .then(() => {});
 }

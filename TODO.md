@@ -28,18 +28,6 @@
 - **Description:** Query results cast to `Record<string, unknown>` without field-level validation. `String(child.title)` on complex objects produces `[object Object]`. No length validation on strings.
 - **Fix:** Add explicit type checks per field. Add maximum length validation. Consider schema validation library (Zod).
 
-### LOGIC-08: imagePreload.ts has no parallelism limit
-- **Severity:** Low
-- **Files:** `frontend/src/utils/imagePreload.ts:109`
-- **Description:** `Promise.all(urls.map(...))` fetches all images simultaneously. If many images are preloaded, network is saturated with concurrent requests.
-- **Fix:** Limit to 4-6 concurrent fetches using a queue or batching pattern.
-
-### LOGIC-09: LRU cache operations are O(n) instead of O(1)
-- **Severity:** Low
-- **Files:** `frontend/src/utils/imageCache.ts:283-289`
-- **Description:** `indexOf()` on lruOrder array is O(n) on every cache access. With 50+ cached images, each hit triggers a linear scan.
-- **Fix:** Replace lruOrder array with `Map<string, number>` for O(1) lookups, or use doubly-linked list.
-
 ---
 
 ## Architecture & DRY Improvements
