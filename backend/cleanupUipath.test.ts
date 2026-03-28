@@ -4,6 +4,8 @@
  */
 
 import assert from 'assert';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import { decode, cleanup_uipathcomponent } from './cleanupUipath';
 
 function run(): void {
@@ -50,6 +52,19 @@ function run(): void {
   assert.strictEqual(cleanup_uipathcomponent('Ångström'), 'angstrom');
 
   console.log('cleanupUipath tests passed');
+
+  // Shared cross-validation vectors (ARCH-02)
+  const vectorsPath = resolve(__dirname, '../test-vectors/nordic-path-normalization.json');
+  const vectors = JSON.parse(readFileSync(vectorsPath, 'utf8'));
+  for (const [input, expected] of vectors.common as [string, string][]) {
+    const actual = cleanup_uipathcomponent(input);
+    assert.strictEqual(
+      actual,
+      expected,
+      `cleanup_uipathcomponent(${JSON.stringify(input)}) → ${JSON.stringify(actual)}, expected ${JSON.stringify(expected)}`,
+    );
+  }
+  console.log(`  ${vectors.common.length} shared vector tests passed`);
 }
 
 run();

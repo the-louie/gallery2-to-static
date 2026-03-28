@@ -26,12 +26,6 @@
 
 ## Architecture & DRY Improvements
 
-### ARCH-02: Implicit coupling in Nordic path normalization
-- **Impact:** Medium-High
-- **Files:** `backend/cleanupUipath.ts`, `frontend/src/utils/albumPath.ts`
-- **Description:** Frontend `titleToSegment()` must match backend `cleanup_uipathcomponent()` output, but this coupling is implicit. If backend changes path normalization, frontend breaks silently.
-- **Fix:** Add integration tests validating frontend paths match backend-generated paths. Document coupling explicitly in both files. Consider extracting shared normalization logic.
-
 ### ARCH-03: Path alias duplication between vite and vitest configs
 - **Impact:** Medium
 - **Files:** `frontend/vite.config.ts:68-78`, `frontend/vitest.config.ts:30-39`
@@ -44,14 +38,8 @@
 - **Description:** Some components export both default and named exports of the same component, others use only named exports. Creates ambiguity in import style.
 - **Fix:** Standardize on named exports only (more explicit, better tree-shaking). Document in contributing guide.
 
-### ARCH-06: albumPath.ts illegal character regex has unescaped hyphen
-- **Impact:** Low
-- **Files:** `frontend/src/utils/albumPath.ts:8`
-- **Description:** `RE_ILLEGAL = /[\[\]\\\/\?%:\|"\'><#\s&]/gi` - hyphen between `'` and `>` in character class may create unintended range (chars 39-62). Not currently causing issues but fragile.
-- **Fix:** Escape hyphen or place at start/end of character class: `/[-\[\]\\\/\?%:\|"\'><#\s&]/gi`
-
 ---
 
 ## Pending
 
-(none)
+### VERIFY-01: go through each function that handles characters for URLs, forbidden or convertions from nordic characters and make sure that it doesn't break any album or image url. The full set of albums are available in @/data/ as json-files.

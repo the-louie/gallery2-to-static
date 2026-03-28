@@ -1,0 +1,31 @@
+{
+  "_comment": "Shared test vectors for Nordic path normalization. Both backend cleanup_uipathcomponent() and frontend titleToSegment() must produce the same output for these inputs. See ARCH-02.",
+  "common": [
+    ["", ""],
+    ["Photos", "photos"],
+    ["Test Album", "test_album"],
+    ["IMG 0064 001", "img_0064_001"],
+    ["a__b", "a_b"],
+    ["a_-_b", "a-b"],
+    ["åäö", "aao"],
+    ["ÅÄÖ", "aao"],
+    ["Martin Öjes", "martin_ojes"],
+    ["Nässlan", "nasslan"],
+    ["Ångström", "angstrom"],
+    ["&ouml;jes", "ojes"],
+    ["&auml;sslan", "asslan"],
+    ["&aring;ngstrom", "angstrom"],
+    ["Martin &ouml;jes", "martin_ojes"],
+    ["n&auml;sslan_3", "nasslan_3"],
+    ["&Ouml;jes", "ojes"],
+    ["&Auml;sslan", "asslan"],
+    ["&Aring;ngstrom", "angstrom"],
+    ["Martin &oumljes", "martin_ojes"],
+    ["Backspace 2.0", "backspace_2.0"]
+  ],
+  "backend_only_comment": "These inputs produce different results due to unidecode/markup stripping in backend. Frontend does not need to match these.",
+  "backend_only": [
+    { "input": "[b]Bold[/b] Album", "backend": "bold_album", "note": "Backend strips BBCode markup" },
+    { "input": "Café", "backend": "cafe", "note": "Backend uses unidecode for non-Nordic Unicode" }
+  ]
+}

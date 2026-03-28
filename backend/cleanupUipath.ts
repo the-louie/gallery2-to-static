@@ -4,12 +4,22 @@
  * - decode: ASCII-friendly normalization via unidecode.
  * - cleanup_uipathcomponent: strip markup, unescape HTML, replace illegal chars, normalize.
  * - URL path segments use ASCII a/a/o for Nordic (å→a, ä→a, ö→o); all path construction must go through cleanup_uipathcomponent.
+ *
+ * ## COUPLING: frontend/src/utils/albumPath.ts
+ *
+ * The frontend's titleToSegment() is a simplified version of cleanup_uipathcomponent()
+ * used as a fallback when pre-computed paths are not available. It must produce
+ * identical output for common inputs (Nordic characters, spaces, illegal URL chars).
+ * Shared test vectors in /test-vectors/nordic-path-normalization.json validate this
+ * contract. If you change normalization logic here, update the frontend and test
+ * vectors to match.
  */
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const unidecode = require('unidecode') as (s: string) => string;
 
-const RE_ILLEGAL = /[\[\]\\\/\?%:|"\'><#\s&]/gi;
+/** Illegal URL characters replaced with underscore. No bare hyphen inside the class (would create a char range). */
+const RE_ILLEGAL = /[\[\]\\\/\?%:|"'><#\s&]/gi;
 const RE_MARKUP = /\[.*?\]/g;
 
 /** Nordic HTML named entities → ASCII for URL path. Applied before illegal-char replacement so & is not turned into _. Includes optional trailing semicolon and bare entity (e.g. &ouml without ;). */

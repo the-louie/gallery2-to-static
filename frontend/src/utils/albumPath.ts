@@ -1,11 +1,43 @@
 /**
  * Path-based album URL utilities. Must match backend path segment logic for paths built from titles.
  * When backend emits path on child albums, prefer child.path over building from title.
+ *
+ * ## COUPLING: backend/cleanupUipath.ts
+ *
+ * titleToSegment() is a simplified version of the backend's cleanup_uipathcomponent().
+ * It omits unidecode transliteration (not needed for pre-decoded titles from JSON).
+ * For common inputs (Nordic chars, spaces, illegal URL chars), the output must be
+ * identical. Shared test vectors in /test-vectors/nordic-path-normalization.json
+ * validate this contract. If you change normalization logic here, update the backend
+ * and test vectors to match.
  */
 
 import type { BreadcrumbPath } from '@/types';
 
-const RE_ILLEGAL = /[\[\]\\\/\?%:|"\'><#\s&]/gi;
+/** Illegal URL characters replaced with underscore. No bare hyphen inside the class (would create a char range). */
+const RE_ILLEGAL = /[\[\]\\\/\?%:|"'><#\s&]/gi;
+/** BBCode markup tags, stripped defensively (titles are pre-stripped by backend). */
+const RE_MARKUP = /\[.*?\]/g;
+
+/** Standard HTML entities unescaped before path normalization. */
+const HTML_ENTITIES: [RegExp, string][] = [
+  [/&amp;/gi, '&'],
+  [/&lt;/gi, '<'],
+  [/&gt;/gi, '>'],
+  [/&quot;/gi, '"'],
+  [/&#39;/gi, "'"],
+];
+
+/** Unescape the five standard HTML entities. Defensive for pre-decoded titles. */
+function unescapeBasicHtml(s: string): string {
+  let x = s;
+  for (const [re, rep] of HTML_ENTITIES) {
+    re.lastIndex = 0;
+    x = x.replace(re, rep);
+  }
+  return x;
+}
+
 const NORDIC: [RegExp, string][] = [
   [/&ouml;/gi, 'o'],
   [/&auml;/gi, 'a'],
@@ -37,6 +69,9 @@ function normalizeNordic(s: string): string {
 export function titleToSegment(title: string | null | undefined, _id?: number): string {
   if (title == null) return '';
   let x = String(title).replace(/\0/g, '');
+  RE_MARKUP.lastIndex = 0;
+  x = x.replace(RE_MARKUP, '');
+  x = unescapeBasicHtml(x);
   x = normalizeNordic(x);
   RE_ILLEGAL.lastIndex = 0;
   x = x.replace(RE_ILLEGAL, '_');
