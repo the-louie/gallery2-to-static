@@ -10,12 +10,6 @@
 - **Description:** Cleanup useEffect doesn't revoke object URLs; only per-load effect cleanups do. If hook unmounts while loading, URLs leak. Also, if abort happens between `blob()` and `createObjectURL()`, blob is created but URL is not tracked.
 - **Fix:** Add to final cleanup: revoke both `thumbnailObjectUrlRef.current` and `fullObjectUrlRef.current`. Wrap fetch flow in try/finally.
 
-### LOGIC-03: Unbounded cache growth in dataLoader and useSearch
-- **Severity:** Medium
-- **Files:** `frontend/src/utils/dataLoader.ts:102`, `frontend/src/hooks/useSearch.ts:179`
-- **Description:** Album data cache and search results cache grow without bound. Visiting thousands of albums or searching many unique queries causes unbounded memory growth.
-- **Fix:** Implement LRU eviction: limit album cache to ~100 entries, search cache to ~100 results.
-
 ---
 
 ## Architecture & DRY Improvements

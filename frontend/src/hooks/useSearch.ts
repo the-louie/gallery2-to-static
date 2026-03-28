@@ -33,6 +33,47 @@ import { sortSearchResultsByContextTier } from '../utils/searchContextSort';
 import { findRootAlbumId } from '../utils/dataLoader';
 
 /**
+ * Maximum number of search result entries to keep in cache.
+ * When exceeded, the least recently used entry is evicted.
+ */
+export const MAX_SEARCH_CACHE_SIZE = 50;
+
+/**
+ * Get a value from a Map and refresh its LRU position.
+ * Returns undefined if key is not in the map.
+ */
+function lruGet<K, V>(map: Map<K, V>, key: K): V | undefined {
+  const value = map.get(key);
+  if (value !== undefined) {
+    map.delete(key);
+    map.set(key, value);
+  }
+  return value;
+}
+
+/**
+ * Set a value in a Map with LRU eviction.
+ * Evicts the oldest entry if the map exceeds maxSize.
+ */
+function lruSet<K, V>(
+  map: Map<K, V>,
+  key: K,
+  value: V,
+  maxSize: number,
+): void {
+  if (map.has(key)) {
+    map.delete(key);
+  }
+  map.set(key, value);
+  while (map.size > maxSize) {
+    const oldestKey = map.keys().next().value;
+    if (oldestKey !== undefined) {
+      map.delete(oldestKey);
+    }
+  }
+}
+
+/**
  * Return type for useSearch hook
  */
 export interface UseSearchReturn {
@@ -144,7 +185,7 @@ export function useSearch(): UseSearchReturn {
         normalizedQuery + '\0' + (contextAlbumId ?? '');
 
       // Check cache first
-      const cachedResults = resultsCacheRef.current.get(cacheKey);
+      const cachedResults = lruGet(resultsCacheRef.current, cacheKey);
       if (cachedResults !== undefined) {
         if (isMountedRef.current) {
           setResults(cachedResults);
@@ -176,7 +217,12 @@ export function useSearch(): UseSearchReturn {
         }
 
         // Cache results
-        resultsCacheRef.current.set(cacheKey, searchResults);
+        lruSet(
+          resultsCacheRef.current,
+          cacheKey,
+          searchResults,
+          MAX_SEARCH_CACHE_SIZE,
+        );
 
         if (isMountedRef.current) {
           setResults(searchResults);

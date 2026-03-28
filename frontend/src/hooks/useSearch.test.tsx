@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useSearch } from './useSearch';
+import { useSearch, MAX_SEARCH_CACHE_SIZE } from './useSearch';
 import { SearchIndex } from '../utils/searchIndex';
 import { findRootAlbumId, loadAlbum } from '../utils/dataLoader';
 
@@ -211,5 +211,43 @@ describe('useSearch', () => {
       expect(result.current.results[0].item.id).toBe(201);
       expect(result.current.results[1].item.id).toBe(301);
     });
+  });
+
+  it('evicts oldest search results when cache exceeds MAX_SEARCH_CACHE_SIZE', async () => {
+    const mockResults = [
+      {
+        item: {
+          id: 1,
+          type: 'GalleryAlbumItem' as const,
+          title: 'Result',
+          pathComponent: 'result',
+        },
+        score: 1,
+        matchedInTitle: true,
+        matchedInDescription: false,
+      },
+    ];
+    vi.mocked(mockSearchIndex.getItemCount).mockReturnValue(100);
+    vi.mocked(mockSearchIndex.search).mockReturnValue(mockResults);
+
+    const { result } = renderHook(() => useSearch());
+
+    for (let i = 0; i <= MAX_SEARCH_CACHE_SIZE; i++) {
+      result.current.search(`query${i}`);
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+    }
+
+    const callCount = vi.mocked(mockSearchIndex.search).mock.calls.length;
+
+    result.current.search('query0');
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(vi.mocked(mockSearchIndex.search).mock.calls.length).toBe(
+      callCount + 1,
+    );
   });
 });

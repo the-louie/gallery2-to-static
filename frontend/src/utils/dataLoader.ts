@@ -89,15 +89,22 @@ export class NotFoundError extends DataLoadError {
 }
 
 /**
- * In-memory cache for album data
+ * Maximum number of album entries to keep in cache.
+ * When exceeded, the least recently used entry is evicted.
+ */
+export const MAX_ALBUM_CACHE_SIZE = 100;
+
+/**
+ * In-memory LRU cache for album data.
  * Key: URL string, Value: AlbumFile
  *
  * Cache Strategy:
- * - No size limit: Static JSON files are typically small and limited in number
- * - No expiration: Data doesn't change during application lifetime
- * - Cache persists for application lifetime
- * - Cache is unbounded; optional LRU or size-based eviction can be added later
- *   if the user visits many albums and memory becomes an issue.
+ * - LRU eviction: when cache exceeds MAX_ALBUM_CACHE_SIZE, the least
+ *   recently accessed entry is evicted.
+ * - No expiration: data doesn't change during application lifetime.
+ * - Cache persists for application lifetime.
+ * - Uses Map insertion-order semantics: delete + re-insert moves entry
+ *   to "most recently used" position; first key is "least recently used".
  */
 const cache = new Map<string, AlbumFile>();
 
@@ -108,7 +115,14 @@ const cache = new Map<string, AlbumFile>();
  * @returns Cached AlbumFile or null if not found
  */
 export function getCachedData(url: string): AlbumFile | null {
-  return cache.get(url) ?? null;
+  const entry = cache.get(url);
+  if (entry === undefined) {
+    return null;
+  }
+  // Move to end (most recently used) by delete + re-insert
+  cache.delete(url);
+  cache.set(url, entry);
+  return entry;
 }
 
 /**
@@ -118,7 +132,18 @@ export function getCachedData(url: string): AlbumFile | null {
  * @param data - The AlbumFile to cache
  */
 export function setCachedData(url: string, data: AlbumFile): void {
+  // If key already exists, delete first so re-insert moves to end
+  if (cache.has(url)) {
+    cache.delete(url);
+  }
   cache.set(url, data);
+  // Evict oldest entries if over limit
+  while (cache.size > MAX_ALBUM_CACHE_SIZE) {
+    const oldestKey = cache.keys().next().value;
+    if (oldestKey !== undefined) {
+      cache.delete(oldestKey);
+    }
+  }
 }
 
 /**

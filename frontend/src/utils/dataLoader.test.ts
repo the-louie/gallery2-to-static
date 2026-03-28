@@ -11,6 +11,7 @@ import {
   ParseError,
   NotFoundError,
   DataLoadError,
+  MAX_ALBUM_CACHE_SIZE,
 } from './dataLoader';
 import type { Child, AlbumFile } from '../../../backend/types';
 
@@ -499,6 +500,47 @@ describe('dataLoader', () => {
       const result = getCachedData('/data/11.json');
 
       expect(result).toBeNull();
+    });
+
+    it('evicts least recently used entry when cache exceeds MAX_ALBUM_CACHE_SIZE', () => {
+      for (let i = 0; i < MAX_ALBUM_CACHE_SIZE; i++) {
+        setCachedData(`/data/${i}.json`, albumFile(i, []));
+      }
+      expect(getCachedData('/data/0.json')).not.toBeNull();
+
+      // getCachedData above refreshed entry 0, so entry 1 is now oldest
+      setCachedData(
+        `/data/${MAX_ALBUM_CACHE_SIZE}.json`,
+        albumFile(MAX_ALBUM_CACHE_SIZE, []),
+      );
+      expect(getCachedData('/data/1.json')).toBeNull();
+      expect(
+        getCachedData(`/data/${MAX_ALBUM_CACHE_SIZE}.json`),
+      ).not.toBeNull();
+    });
+
+    it('getCachedData refreshes LRU order', () => {
+      for (let i = 0; i < MAX_ALBUM_CACHE_SIZE; i++) {
+        setCachedData(`/data/${i}.json`, albumFile(i, []));
+      }
+
+      getCachedData('/data/0.json');
+
+      setCachedData('/data/new.json', albumFile(999, []));
+      expect(getCachedData('/data/0.json')).not.toBeNull();
+      expect(getCachedData('/data/1.json')).toBeNull();
+    });
+
+    it('setCachedData on existing key refreshes LRU order', () => {
+      for (let i = 0; i < MAX_ALBUM_CACHE_SIZE; i++) {
+        setCachedData(`/data/${i}.json`, albumFile(i, []));
+      }
+
+      setCachedData('/data/0.json', albumFile(0, []));
+
+      setCachedData('/data/new.json', albumFile(999, []));
+      expect(getCachedData('/data/0.json')).not.toBeNull();
+      expect(getCachedData('/data/1.json')).toBeNull();
     });
   });
 
