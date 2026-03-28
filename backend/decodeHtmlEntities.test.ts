@@ -3,7 +3,7 @@
  */
 
 import assert from 'assert';
-import { decodeHtmlEntities } from './decodeHtmlEntities';
+import { decodeHtmlEntities } from '../shared/decodeHtmlEntities';
 import { stripBBCode } from './bbcode';
 
 function run(): void {

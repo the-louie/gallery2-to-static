@@ -1,7 +1,7 @@
 import type mysql from 'mysql2/promise'
 import type { Child, Config, AlbumMetadata } from './types'
 import { stripBBCode } from './bbcode'
-import { decodeHtmlEntities } from './decodeHtmlEntities'
+import { decodeHtmlEntities } from '../shared/decodeHtmlEntities'
 import { normalizeOwnerDisplayName } from './ownerDisplayName'
 
 export default (connection: mysql.Connection, config: Config) => {

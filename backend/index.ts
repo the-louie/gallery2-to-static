@@ -8,7 +8,7 @@ import { getSegmentForAlbum, appendSegment, titleToSegment } from './pathSegment
 import { computeAllDescendantImageCounts } from './descendantImageCount'
 import { runVerification } from './verifyImagePaths'
 import { buildPathsFromPathComponent } from './pathResolution'
-import { decodeHtmlEntities } from './decodeHtmlEntities'
+import { decodeHtmlEntities } from '../shared/decodeHtmlEntities'
 
 /**
  * Build a Set of album IDs to ignore from config.ignoreAlbums.

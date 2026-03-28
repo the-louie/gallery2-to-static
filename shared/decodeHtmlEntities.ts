@@ -1,10 +1,12 @@
 /**
- * Decode HTML entities for album titles, descriptions, summaries, and layout header.
- * Used so emitted JSON contains readable plain text (e.g. Nässlan not N&auml;sslan).
- * Supports apostrophe entities &#039;, &#39;, &apos;, and numeric without semicolon (e.g. &#039).
- * Do not use for path components.
+ * Decode HTML entities for display strings (titles, descriptions, summaries, breadcrumbs).
+ * Supports common Latin accents, apostrophe entities, and numeric references.
+ * Uses loop-until-stable to resolve double-encoded entities.
  *
- * @module backend/decodeHtmlEntities
+ * Shared between backend (extraction) and frontend (display).
+ * Do not use for URLs, paths, or other non-display contexts.
+ *
+ * @module shared/decodeHtmlEntities
  */
 
 const NAMED_ENTITIES: [string, string][] = [
@@ -71,10 +73,10 @@ function safeFromCodePoint(codepoint: number, original: string): string {
 
 /**
  * Decode HTML entities in a string. Uses loop-until-stable so that
- * double-encoded entities (e.g. &amp;auml;) resolve correctly.
- * Process &amp; first, then other named entities and numeric refs.
+ * double-encoded entities (e.g. `&amp;auml;`) resolve correctly.
+ * Process `&amp;` first, then other named entities and numeric refs.
  *
- * @param str - Input string (album title or layout header description)
+ * @param str - Input string (display use only)
  * @returns Decoded string, or '' for null/undefined
  */
 export function decodeHtmlEntities(str: string | null | undefined): string {

@@ -28,18 +28,6 @@
 - **Description:** Query results cast to `Record<string, unknown>` without field-level validation. `String(child.title)` on complex objects produces `[object Object]`. No length validation on strings.
 - **Fix:** Add explicit type checks per field. Add maximum length validation. Consider schema validation library (Zod).
 
-### LOGIC-06: ViewAbortContext controller cleanup race condition
-- **Severity:** Low
-- **Files:** `frontend/src/contexts/ViewAbortContext.tsx:41,48`
-- **Description:** If component unmounts and remounts quickly, cleanup from previous render may abort the new controller's signal. `location.key` may not change reliably with HashRouter.
-- **Fix:** Capture controller in closure: `const c = new AbortController(); setSignal(c.signal); return () => c.abort();`
-
-### LOGIC-07: PathResolverPage doesn't handle URL-encoded paths
-- **Severity:** Low
-- **Files:** `frontend/src/pages/PathResolverPage.tsx:28,32`
-- **Description:** Path normalization doesn't `decodeURIComponent()`. If path has `%20` or similar encoding, lookup fails against decoded index paths. Also, imageId not checked against MAX_SAFE_INTEGER.
-- **Fix:** Decode path before normalization. Add MAX_SAFE_INTEGER check.
-
 ### LOGIC-08: imagePreload.ts has no parallelism limit
 - **Severity:** Low
 - **Files:** `frontend/src/utils/imagePreload.ts:109`
@@ -55,12 +43,6 @@
 ---
 
 ## Architecture & DRY Improvements
-
-### ARCH-01: Duplicate decodeHtmlEntities across backend and frontend
-- **Impact:** High
-- **Files:** `backend/decodeHtmlEntities.ts`, `frontend/src/utils/decodeHtmlEntities.ts`
-- **Description:** Both files are byte-for-byte identical in implementation (same NAMED_ENTITIES array, same MAX_ITERATIONS, same loop-until-stable logic). Any bug fix must be applied to both.
-- **Fix:** Extract to a shared module (e.g., `/shared/decodeHtmlEntities.ts`) and import from both packages. Or use monorepo workspace dependency.
 
 ### ARCH-02: Implicit coupling in Nordic path normalization
 - **Impact:** Medium-High

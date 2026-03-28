@@ -1,5 +1,9 @@
 /**
- * PathResolverPage – resolves path-based URL to album (and optional image) and delegates to AlbumDetailPage or ImageDetailPage.
+ * PathResolverPage – resolves path-based URL to album (and optional image)
+ * and delegates to AlbumDetailPage or ImageDetailPage.
+ *
+ * Decodes URI-encoded path segments before index lookup to handle
+ * percent-encoded characters (spaces, Nordic characters, etc.).
  */
 
 import { useParams, useNavigate } from 'react-router-dom';
@@ -24,13 +28,23 @@ export function PathResolverPage() {
     let cancelled = false;
 
     (async () => {
-      const raw = (pathParam ?? '').trim();
+      let raw: string;
+      try {
+        raw = decodeURIComponent((pathParam ?? '').trim());
+      } catch {
+        if (!cancelled) navigate('/not-found', { replace: true });
+        return;
+      }
       const path = raw === '' ? '/' : `/${raw.replace(/^\/+/, '')}`;
       const imageMatch = path.match(IMAGE_PATH_RE);
       if (imageMatch) {
         const albumPath = path.slice(0, imageMatch.index);
         const imageId = parseInt(imageMatch[1], 10);
-        if (!Number.isFinite(imageId) || imageId <= 0) {
+        if (
+          !Number.isFinite(imageId) ||
+          imageId <= 0 ||
+          imageId > Number.MAX_SAFE_INTEGER
+        ) {
           if (!cancelled) navigate('/not-found', { replace: true });
           return;
         }
