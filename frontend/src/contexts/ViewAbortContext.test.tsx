@@ -5,13 +5,13 @@
  * the previous signal is aborted when navigating.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, render, screen } from '@testing-library/react';
-import React from 'react';
-import { MemoryRouter, useNavigate, Routes, Route } from 'react-router-dom';
-import { ViewAbortProvider, useViewAbortSignal } from './ViewAbortContext';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { renderHook, act, render, screen } from "@testing-library/react";
+import React from "react";
+import { MemoryRouter, useNavigate, Routes, Route } from "react-router-dom";
+import { ViewAbortProvider, useViewAbortSignal } from "./ViewAbortContext";
 
-function createWrapper(initialPath = '/') {
+function createWrapper(initialPath = "/") {
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <MemoryRouter initialEntries={[initialPath]}>
@@ -21,14 +21,14 @@ function createWrapper(initialPath = '/') {
   };
 }
 
-describe('ViewAbortContext', () => {
+describe("ViewAbortContext", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('provides a stable signal within the same view', () => {
+  it("provides a stable signal within the same view", () => {
     const { result, rerender } = renderHook(() => useViewAbortSignal(), {
-      wrapper: createWrapper('/album/1'),
+      wrapper: createWrapper("/album/1"),
     });
 
     const signal1 = result.current;
@@ -40,46 +40,56 @@ describe('ViewAbortContext', () => {
     expect(signal2).toBe(signal1);
   });
 
-  it('aborts previous signal when location changes', async () => {
-    let currentPath = '/album/1';
+  it("aborts previous signal when location changes", async () => {
+    const ref: { signal?: AbortSignal } = {};
 
-    function RouterWithNav({ children }: { children: React.ReactNode }) {
+    function PageOne() {
+      ref.signal = useViewAbortSignal();
+      const navigate = useNavigate();
       return (
-        <MemoryRouter initialEntries={[currentPath]}>
-          <ViewAbortProvider>{children}</ViewAbortProvider>
-        </MemoryRouter>
+        <button type="button" onClick={() => navigate("/album/2")}>
+          Nav
+        </button>
       );
     }
+    function PageTwo() {
+      ref.signal = useViewAbortSignal();
+      return <span>Page Two</span>;
+    }
 
-    const { result, rerender } = renderHook(() => useViewAbortSignal(), {
-      wrapper: RouterWithNav,
-    });
+    render(
+      <MemoryRouter initialEntries={["/album/1"]}>
+        <ViewAbortProvider>
+          <Routes>
+            <Route path="/album/1" element={<PageOne />} />
+            <Route path="/album/2" element={<PageTwo />} />
+          </Routes>
+        </ViewAbortProvider>
+      </MemoryRouter>
+    );
 
-    const signal1 = result.current;
+    const signal1 = ref.signal!;
     expect(signal1.aborted).toBe(false);
 
     const abortHandler = vi.fn();
-    signal1.addEventListener('abort', abortHandler);
-
-    currentPath = '/album/2';
-    rerender({});
+    signal1.addEventListener("abort", abortHandler);
 
     await act(async () => {
-      await Promise.resolve();
+      screen.getByText("Nav").click();
     });
 
     expect(signal1.aborted).toBe(true);
     expect(abortHandler).toHaveBeenCalled();
   });
 
-  it('provides a new non-aborted signal after navigation', async () => {
+  it("provides a new non-aborted signal after navigation", async () => {
     const ref: { signalA?: AbortSignal; signalB?: AbortSignal } = {};
 
     function PageA() {
       ref.signalA = useViewAbortSignal();
       const navigate = useNavigate();
       return (
-        <button type="button" onClick={() => navigate('/b')}>
+        <button type="button" onClick={() => navigate("/b")}>
           Go B
         </button>
       );
@@ -90,7 +100,7 @@ describe('ViewAbortContext', () => {
     }
 
     render(
-      <MemoryRouter initialEntries={['/a']}>
+      <MemoryRouter initialEntries={["/a"]}>
         <ViewAbortProvider>
           <Routes>
             <Route path="/a" element={<PageA />} />
@@ -105,12 +115,136 @@ describe('ViewAbortContext', () => {
     expect(signalA.aborted).toBe(false);
 
     await act(async () => {
-      screen.getByText('Go B').click();
+      screen.getByText("Go B").click();
     });
 
     expect(signalA.aborted).toBe(true);
     expect(ref.signalB).toBeDefined();
     expect(ref.signalB!.aborted).toBe(false);
     expect(ref.signalB).not.toBe(signalA);
+  });
+
+  it("produces non-aborted signal after rapid navigation A -> B -> C", async () => {
+    const ref: { signals: AbortSignal[] } = { signals: [] };
+
+    function PageA() {
+      ref.signals.push(useViewAbortSignal());
+      const navigate = useNavigate();
+      return (
+        <button type="button" onClick={() => navigate("/b")}>
+          Go B
+        </button>
+      );
+    }
+    function PageB() {
+      ref.signals.push(useViewAbortSignal());
+      const navigate = useNavigate();
+      return (
+        <button type="button" onClick={() => navigate("/c")}>
+          Go C
+        </button>
+      );
+    }
+    function PageC() {
+      ref.signals.push(useViewAbortSignal());
+      return <span>Page C</span>;
+    }
+
+    render(
+      <MemoryRouter initialEntries={["/a"]}>
+        <ViewAbortProvider>
+          <Routes>
+            <Route path="/a" element={<PageA />} />
+            <Route path="/b" element={<PageB />} />
+            <Route path="/c" element={<PageC />} />
+          </Routes>
+        </ViewAbortProvider>
+      </MemoryRouter>
+    );
+
+    await act(async () => {
+      screen.getByText("Go B").click();
+    });
+
+    await act(async () => {
+      screen.getByText("Go C").click();
+    });
+
+    // All intermediate signals should be aborted
+    // The final signal (page C) should NOT be aborted
+    const lastSignal = ref.signals[ref.signals.length - 1];
+    expect(lastSignal.aborted).toBe(false);
+  });
+
+  it("creates new signal when search params change on same path", async () => {
+    const ref: { signal?: AbortSignal } = {};
+
+    function Page() {
+      ref.signal = useViewAbortSignal();
+      const navigate = useNavigate();
+      return (
+        <button type="button" onClick={() => navigate("/a?q=test")}>
+          Search
+        </button>
+      );
+    }
+
+    render(
+      <MemoryRouter initialEntries={["/a"]}>
+        <ViewAbortProvider>
+          <Routes>
+            <Route path="/a" element={<Page />} />
+          </Routes>
+        </ViewAbortProvider>
+      </MemoryRouter>
+    );
+
+    const signalBefore = ref.signal!;
+    expect(signalBefore.aborted).toBe(false);
+
+    await act(async () => {
+      screen.getByText("Search").click();
+    });
+
+    expect(signalBefore.aborted).toBe(true);
+    expect(ref.signal!.aborted).toBe(false);
+    expect(ref.signal).not.toBe(signalBefore);
+  });
+
+  it("cleanup aborts only the previous controller, not the current one", async () => {
+    const ref: { signalA?: AbortSignal; signalB?: AbortSignal } = {};
+
+    function PageA() {
+      ref.signalA = useViewAbortSignal();
+      const navigate = useNavigate();
+      return (
+        <button type="button" onClick={() => navigate("/b")}>
+          Go B
+        </button>
+      );
+    }
+    function PageB() {
+      ref.signalB = useViewAbortSignal();
+      return <span>Page B</span>;
+    }
+
+    render(
+      <MemoryRouter initialEntries={["/a"]}>
+        <ViewAbortProvider>
+          <Routes>
+            <Route path="/a" element={<PageA />} />
+            <Route path="/b" element={<PageB />} />
+          </Routes>
+        </ViewAbortProvider>
+      </MemoryRouter>
+    );
+
+    await act(async () => {
+      screen.getByText("Go B").click();
+    });
+
+    // Previous signal aborted, current signal fresh
+    expect(ref.signalA!.aborted).toBe(true);
+    expect(ref.signalB!.aborted).toBe(false);
   });
 });

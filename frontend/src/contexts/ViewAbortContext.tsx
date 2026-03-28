@@ -2,18 +2,29 @@
  * View Abort Context
  *
  * Provides a navigation-scoped AbortSignal so that in-flight image GETs (and other
- * view-scoped requests) can be canceled when the user navigates away. The signal
- * is stable for the lifetime of the current view and aborts when location changes.
+ * view-scoped requests) can be canceled when the user navigates away. A new
+ * AbortController is created whenever the location pathname or search changes, and
+ * the previous controller is aborted in the effect cleanup.
  *
- * React Strict Mode: The controller is tied to location (view identity), not component
- * mount, so double-mount does not create a new controller or abort the current view's
- * requests prematurely.
+ * The controller is captured in the effect closure, so cleanup always aborts the
+ * specific controller that was created by that effect invocation -- not the current
+ * one. This prevents the race condition where a fast unmount/remount could abort a
+ * newly created controller.
+ *
+ * React Strict Mode: Effects re-run on simulated remount, creating a fresh controller.
+ * The cleanup from the simulated unmount correctly aborts only the first controller.
  *
  * @module frontend/src/contexts/ViewAbortContext
  */
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { useLocation } from "react-router-dom";
 
 export interface ViewAbortContextValue {
   /** AbortSignal for the current view; aborts when user navigates away */
@@ -22,23 +33,25 @@ export interface ViewAbortContextValue {
 
 const defaultSignal = new AbortController().signal;
 
-const ViewAbortContext = createContext<ViewAbortContextValue>({ signal: defaultSignal });
-ViewAbortContext.displayName = 'ViewAbortContext';
+const ViewAbortContext = createContext<ViewAbortContextValue>({
+  signal: defaultSignal,
+});
+ViewAbortContext.displayName = "ViewAbortContext";
 
 export interface ViewAbortProviderProps {
   children: React.ReactNode;
 }
 
 /**
- * Provider that creates a new AbortController whenever location (pathname or key) changes.
- * Aborts the previous controller before creating the new one so in-flight requests
- * for the previous view are canceled.
+ * Provider that creates a new AbortController whenever location pathname or search
+ * changes. The effect cleanup aborts the controller captured in its closure, ensuring
+ * that only the previous view's requests are canceled, not the current one.
  */
-export function ViewAbortProvider({ children }: ViewAbortProviderProps): React.ReactElement {
+export function ViewAbortProvider({
+  children,
+}: ViewAbortProviderProps): React.ReactElement {
   const location = useLocation();
   const [signal, setSignal] = useState<AbortSignal>(() => defaultSignal);
-
-  const viewIdentity = `${location.pathname}:${location.key}`;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -47,7 +60,7 @@ export function ViewAbortProvider({ children }: ViewAbortProviderProps): React.R
     return () => {
       controller.abort();
     };
-  }, [viewIdentity]);
+  }, [location.pathname, location.search]);
 
   const value = useMemo<ViewAbortContextValue>(() => ({ signal }), [signal]);
 
@@ -60,7 +73,7 @@ export function ViewAbortProvider({ children }: ViewAbortProviderProps): React.R
 
 /**
  * Returns the current view's AbortSignal. Stable for the lifetime of the current view;
- * aborts when the user navigates away (pathname or key change).
+ * aborts when the user navigates away (pathname or search change).
  * Must be used within ViewAbortProvider (inside Router).
  */
 export function useViewAbortSignal(): AbortSignal {
