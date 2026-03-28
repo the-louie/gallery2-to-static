@@ -40,6 +40,31 @@ function run(): void {
   // [tag=value] style
   assert.strictEqual(stripBBCode('[size=14]Big[/size]'), 'Big');
 
+  // Nested brackets: [[img]dangerous[/img]] → ""
+  assert.strictEqual(stripBBCode('[[img]dangerous[/img]]'), '');
+
+  // Double outer brackets: [[b]Bold[/b]] → ""
+  assert.strictEqual(stripBBCode('[[b]Bold[/b]]'), '');
+
+  // Text with nested brackets: Hello [[b]world[/b]] there → "Hello  there"
+  assert.strictEqual(stripBBCode('Hello [[b]world[/b]] there'), 'Hello  there');
+
+  // Triple nesting: [[[deep]]] → ""
+  assert.strictEqual(stripBBCode('[[[deep]]]'), '');
+
+  // Unmatched single bracket is left as-is (not a valid tag pair)
+  assert.strictEqual(stripBBCode('text [ more'), 'text [ more');
+
+  // Only ] bracket remains
+  assert.strictEqual(stripBBCode('text ] more'), 'text ] more');
+
+  // Deeply nested (11 levels): should strip up to 10 levels, one [] remains
+  const deep11 = '['.repeat(11) + 'x' + ']'.repeat(11);
+  const result = stripBBCode(deep11);
+  // After 10 iterations: iter 1 strips [x], iters 2-10 strip 9 empty [] pairs
+  // Leaves one [] pair (would need 11 iterations to fully strip)
+  assert.strictEqual(result, '[]');
+
   console.log('bbcode tests passed');
 }
 

@@ -58,12 +58,6 @@
 - **Description:** `indexOf()` on lruOrder array is O(n) on every cache access. With 50+ cached images, each hit triggers a linear scan.
 - **Fix:** Replace lruOrder array with `Map<string, number>` for O(1) lookups, or use doubly-linked list.
 
-### LOGIC-10: Incomplete BBCode parsing in backend
-- **Severity:** Low
-- **Files:** `backend/bbcode.ts:21-23`
-- **Description:** Regex `/\[[^\]]*\]/g` doesn't handle nested brackets properly. Input like `[[img]dangerous[/img]]` becomes `[img]dangerous[/img]` after one pass.
-- **Fix:** Use iterative stripping: loop `replace(/\[[^\[\]]*\]/g, '')` until stable (max 10 iterations).
-
 ---
 
 ## Architecture & DRY Improvements
