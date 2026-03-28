@@ -4,12 +4,6 @@
 
 ## Logic & Edge Case Fixes
 
-### LOGIC-01: Race condition in useAlbumData hook
-- **Severity:** Medium
-- **Files:** `frontend/src/hooks/useAlbumData.ts:119,151-157,177-185`
-- **Description:** `isMountedRef.current` check is non-atomic; component can unmount between check and `setData()`. Auto-retry can trigger double-retry when `!isLoading && !isRetryingRetry` are both false simultaneously.
-- **Fix:** Use AbortController instead of isMountedRef. Guard concurrent retries with state machine.
-
 ### LOGIC-02: Object URL memory leaks in useProgressiveImage
 - **Severity:** Medium
 - **Files:** `frontend/src/hooks/useProgressiveImage.ts:127,156,303-306`

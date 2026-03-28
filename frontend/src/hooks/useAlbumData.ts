@@ -9,15 +9,15 @@
  * - Automatic loading when ID changes
  * - Loading and error states
  * - Manual refetch capability
- * - Cleanup on unmount to prevent memory leaks (uses useRef to track mounted state)
+ * - Cleanup on unmount to prevent memory leaks (uses requestId counter to discard stale requests)
  * - Skips loading when ID is null
  *
  * ## Cleanup Strategy
  *
- * Uses `useRef` to track component mount state instead of AbortController.
- * This approach prevents state updates after unmount, which is the primary
- * goal for preventing memory leaks. The fetch request itself is not canceled,
- * but state updates are prevented, which is sufficient for this use case.
+ * Uses a request ID counter (`requestIdRef`) to discard results from stale
+ * requests. Each time the album ID changes or refetch is called, the counter
+ * increments, invalidating any in-flight requests from previous IDs. State
+ * updates only proceed if the request's captured ID matches the current counter.
  *
  * ## Usage
  *
@@ -111,27 +111,23 @@ export function useAlbumData(
   const [metadata, setMetadata] = useState<AlbumMetadata | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<DataLoadError | null>(null);
-  const isMountedRef = useRef(true);
+  const requestIdRef = useRef(0);
 
   const currentIdRef = useRef<number | null>(id);
 
-  const loadData = useCallback(async (albumId: number) => {
-    if (!isMountedRef.current) {
-      return;
-    }
+  const loadData = useCallback(
+    async (albumId: number, requestId: number) => {
+      setIsLoading(true);
+      setError(null);
 
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const file = await loadAlbum(albumId);
-      if (isMountedRef.current) {
+      try {
+        const file = await loadAlbum(albumId);
+        if (requestId !== requestIdRef.current) return; // stale request
         setData(file.children);
         setMetadata(file.metadata);
         setIsLoading(false);
-      }
-    } catch (err) {
-      if (isMountedRef.current) {
+      } catch (err) {
+        if (requestId !== requestIdRef.current) return; // stale request
         const loadError =
           err instanceof DataLoadError
             ? err
@@ -142,10 +138,11 @@ export function useAlbumData(
               );
         setError(loadError);
         setIsLoading(false);
+        throw err; // Re-throw for useRetry if enabled
       }
-      throw err; // Re-throw for useRetry if enabled
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Create stable load function for retry hook using ref
   const loadDataForRetry = useCallback(async () => {
@@ -153,7 +150,7 @@ export function useAlbumData(
     if (currentId === null) {
       return;
     }
-    await loadData(currentId);
+    await loadData(currentId, requestIdRef.current);
   }, [loadData]);
 
   // Set up retry mechanism if enabled
@@ -185,8 +182,6 @@ export function useAlbumData(
   }, [error, enableAutoRetry, id, isLoading, isRetryingRetry, canRetryRetry, retryFn]);
 
   useEffect(() => {
-    isMountedRef.current = true;
-
     // Don't load if id is null
     if (id === null) {
       setData(null);
@@ -199,18 +194,24 @@ export function useAlbumData(
       return;
     }
 
+    // Increment request ID to invalidate any in-flight requests
+    requestIdRef.current++;
+    const thisRequestId = requestIdRef.current;
+
     // Reset retry state when id changes
     if (enableAutoRetry) {
       resetRetry();
     }
 
-    loadData(id).catch(() => {
+    loadData(id, thisRequestId).catch(() => {
       // Error handled in loadData
     });
 
-    // Cleanup function
+    // Cleanup: invalidate this request so its results are discarded
     return () => {
-      isMountedRef.current = false;
+      if (requestIdRef.current === thisRequestId) {
+        requestIdRef.current++;
+      }
     };
   }, [id, loadData, enableAutoRetry, resetRetry]);
 
@@ -220,7 +221,8 @@ export function useAlbumData(
       if (enableAutoRetry) {
         resetRetry();
       }
-      loadData(id).catch(() => {
+      requestIdRef.current++;
+      loadData(id, requestIdRef.current).catch(() => {
         // Error handled in loadData
       });
     }
