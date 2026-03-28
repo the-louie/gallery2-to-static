@@ -22,12 +22,6 @@
 - **Description:** Album data cache and search results cache grow without bound. Visiting thousands of albums or searching many unique queries causes unbounded memory growth.
 - **Fix:** Implement LRU eviction: limit album cache to ~100 entries, search cache to ~100 results.
 
-### LOGIC-05: Insufficient database result validation in sqlUtils.ts
-- **Severity:** Medium
-- **Files:** `backend/sqlUtils.ts:95-169`
-- **Description:** Query results cast to `Record<string, unknown>` without field-level validation. `String(child.title)` on complex objects produces `[object Object]`. No length validation on strings.
-- **Fix:** Add explicit type checks per field. Add maximum length validation. Consider schema validation library (Zod).
-
 ---
 
 ## Architecture & DRY Improvements

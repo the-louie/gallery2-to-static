@@ -407,6 +407,76 @@ describe('ImageCache', () => {
     });
   });
 
+  describe('LRU ordering correctness', () => {
+    it('maintains correct LRU order with many entries', () => {
+      const cache = new ImageCache({ maxSize: 10 });
+
+      // Fill cache with 10 entries
+      for (let i = 0; i < 10; i++) {
+        cache.set(`/images/${i}.jpg`, new Image());
+      }
+
+      // Access all entries in order (0 through 9)
+      for (let i = 0; i < 10; i++) {
+        cache.get(`/images/${i}.jpg`);
+      }
+
+      // Now access all except entry 0, making it LRU
+      for (let i = 1; i < 10; i++) {
+        cache.get(`/images/${i}.jpg`);
+      }
+
+      // Add new entry, should evict entry 0
+      cache.set("/images/new.jpg", new Image());
+
+      expect(cache.has("/images/0.jpg")).toBe(false);
+      expect(cache.has("/images/new.jpg")).toBe(true);
+      for (let i = 1; i < 10; i++) {
+        expect(cache.has(`/images/${i}.jpg`)).toBe(true);
+      }
+    });
+
+    it('handles repeated access to same entry without corrupting LRU order', () => {
+      const cache = new ImageCache({ maxSize: 3 });
+      cache.set("/images/1.jpg", new Image());
+      cache.set("/images/2.jpg", new Image());
+      cache.set("/images/3.jpg", new Image());
+
+      // Access entry 1 many times
+      for (let i = 0; i < 20; i++) {
+        cache.get("/images/1.jpg");
+      }
+
+      // Entry 2 should be the LRU (oldest not accessed since insertion)
+      cache.set("/images/4.jpg", new Image());
+
+      expect(cache.has("/images/1.jpg")).toBe(true);
+      expect(cache.has("/images/2.jpg")).toBe(false);
+      expect(cache.has("/images/3.jpg")).toBe(true);
+      expect(cache.has("/images/4.jpg")).toBe(true);
+    });
+
+    it('handles delete of middle entry followed by correct eviction', () => {
+      const cache = new ImageCache({ maxSize: 3 });
+      cache.set("/images/1.jpg", new Image());
+      cache.set("/images/2.jpg", new Image());
+      cache.set("/images/3.jpg", new Image());
+
+      // Delete middle entry
+      cache.delete("/images/2.jpg");
+
+      // Add two new entries (one fills the gap, one triggers eviction of LRU = entry 1)
+      cache.set("/images/4.jpg", new Image());
+      cache.set("/images/5.jpg", new Image());
+
+      expect(cache.has("/images/1.jpg")).toBe(false); // evicted as LRU
+      expect(cache.has("/images/2.jpg")).toBe(false); // explicitly deleted
+      expect(cache.has("/images/3.jpg")).toBe(true);
+      expect(cache.has("/images/4.jpg")).toBe(true);
+      expect(cache.has("/images/5.jpg")).toBe(true);
+    });
+  });
+
   describe('edge cases', () => {
     it('handles empty cache gracefully', () => {
       const cache = new ImageCache();

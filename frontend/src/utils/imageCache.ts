@@ -7,8 +7,8 @@
  *
  * ## Features
  *
- * - In-memory cache using Map for O(1) lookups
- * - LRU eviction when cache size limit is reached
+ * - In-memory cache using Map for O(1) lookups and O(1) LRU ordering
+ * - LRU eviction via Map insertion-order semantics (delete + re-insert)
  * - Cache statistics (hit rate, miss count, eviction count)
  * - Configurable cache size limits
  * - Automatic cleanup of evicted entries
@@ -90,13 +90,13 @@ const DEFAULT_CONFIG: ImageCacheConfig = {
  * Image Cache Class
  *
  * Implements an in-memory image cache with LRU eviction.
- * Uses a Map for O(1) lookups and maintains insertion order for LRU tracking.
+ * Uses Map's guaranteed insertion-order iteration for O(1) LRU tracking.
+ * Accessing an entry deletes and re-inserts it, moving it to the end.
+ * The first key in iteration order is always the least recently used.
  */
 export class ImageCache {
   /** Cache storage: URL -> CacheEntry */
   private cache: Map<string, CacheEntry>;
-  /** LRU tracking: ordered list of URLs (most recently used at end) */
-  private lruOrder: string[];
   /** Cache configuration */
   private config: ImageCacheConfig;
   /** Cache statistics */
@@ -110,7 +110,6 @@ export class ImageCache {
   constructor(config: Partial<ImageCacheConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.cache = new Map();
-    this.lruOrder = [];
     this.stats = {
       hitCount: 0,
       missCount: 0,
@@ -135,8 +134,9 @@ export class ImageCache {
 
     const entry = this.cache.get(url);
     if (entry) {
-      // Update LRU order: move to end (most recently used)
-      this.updateLRUOrder(url);
+      // Move to end of Map iteration order (most recently used)
+      this.cache.delete(url);
+      this.cache.set(url, entry);
       entry.accessCount++;
       this.updateStats(true);
       return entry.image;
@@ -160,9 +160,12 @@ export class ImageCache {
       return;
     }
 
-    // If entry already exists, update it
+    // If entry already exists, update it and move to end of LRU order
     if (this.cache.has(url)) {
-      this.updateLRUOrder(url);
+      const existingEntry = this.cache.get(url)!;
+      existingEntry.image = image;
+      this.cache.delete(url);
+      this.cache.set(url, existingEntry);
       return;
     }
 
@@ -182,9 +185,8 @@ export class ImageCache {
       sizeEstimate,
     };
 
-    // Store in cache
+    // Store in cache (inserted at end of Map order = most recently used)
     this.cache.set(url, entry);
-    this.lruOrder.push(url);
     this.stats.size = this.cache.size;
   }
 
@@ -214,16 +216,12 @@ export class ImageCache {
     }
 
     const entry = this.cache.get(url);
-    if (entry?.image?.src?.startsWith?.('blob:')) {
+    if (entry?.image?.src?.startsWith?.("blob:")) {
       URL.revokeObjectURL(entry.image.src);
     }
 
     const removed = this.cache.delete(url);
     if (removed) {
-      const index = this.lruOrder.indexOf(url);
-      if (index !== -1) {
-        this.lruOrder.splice(index, 1);
-      }
       this.stats.size = this.cache.size;
     }
     return removed;
@@ -235,12 +233,11 @@ export class ImageCache {
    */
   clear(): void {
     for (const [, entry] of this.cache) {
-      if (entry?.image?.src?.startsWith?.('blob:')) {
+      if (entry?.image?.src?.startsWith?.("blob:")) {
         URL.revokeObjectURL(entry.image.src);
       }
     }
     this.cache.clear();
-    this.lruOrder = [];
     if (this.config.enableStats) {
       this.stats = {
         hitCount: 0,
@@ -273,40 +270,21 @@ export class ImageCache {
   }
 
   /**
-   * Update LRU order for an accessed URL
-   *
-   * Moves the URL to the end of the LRU order array (most recently used).
-   *
-   * @param url - URL to mark as recently used
-   */
-  private updateLRUOrder(url: string): void {
-    const index = this.lruOrder.indexOf(url);
-    if (index !== -1) {
-      // Remove from current position
-      this.lruOrder.splice(index, 1);
-    }
-    // Add to end (most recently used)
-    this.lruOrder.push(url);
-  }
-
-  /**
    * Evict least recently used entry
    *
-   * Removes the first entry in LRU order (least recently used).
+   * Removes the first entry in Map iteration order (least recently used).
    * Updates statistics.
    */
   private evictLRU(): void {
-    if (this.lruOrder.length === 0) {
+    if (this.cache.size === 0) {
       return;
     }
 
-    // Get least recently used URL (first in array)
-    const lruUrl = this.lruOrder[0];
+    // Get least recently used URL (first key in Map iteration order)
+    const lruUrl = this.cache.keys().next().value;
     if (lruUrl) {
-      // Remove from cache (use delete method to properly handle lruOrder removal)
       this.delete(lruUrl);
       this.stats.evictionCount++;
-      // Note: delete() already updates this.stats.size, so no need to update again
     }
   }
 
@@ -379,7 +357,9 @@ export function getImageCache(): ImageCache {
  * @param config - Cache configuration options
  * @returns The configured cache instance
  */
-export function configureImageCache(config: Partial<ImageCacheConfig>): ImageCache {
+export function configureImageCache(
+  config: Partial<ImageCacheConfig>,
+): ImageCache {
   cacheInstance = new ImageCache(config);
   return cacheInstance;
 }
