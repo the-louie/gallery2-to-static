@@ -22,12 +22,6 @@
 - **Description:** Album data cache and search results cache grow without bound. Visiting thousands of albums or searching many unique queries causes unbounded memory growth.
 - **Fix:** Implement LRU eviction: limit album cache to ~100 entries, search cache to ~100 results.
 
-### LOGIC-04: Integer overflow in sorting timestamp subtraction
-- **Severity:** Medium
-- **Files:** `frontend/src/utils/sorting.ts:37-38,136-137`
-- **Description:** `aTimestamp - bTimestamp` can lose precision for large timestamps. `width * height` can overflow for very large images.
-- **Fix:** Use comparison operators: `aTimestamp < bTimestamp ? -1 : aTimestamp > bTimestamp ? 1 : 0`. Cap dimensions before multiplication.
-
 ### LOGIC-05: Insufficient database result validation in sqlUtils.ts
 - **Severity:** Medium
 - **Files:** `backend/sqlUtils.ts:95-169`

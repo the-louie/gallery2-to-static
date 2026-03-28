@@ -341,6 +341,88 @@ describe('sorting', () => {
       });
     });
 
+    describe('large values and overflow protection', () => {
+      it('handles large timestamp values without precision loss', () => {
+        const items: Child[] = [
+          { ...mockPhoto, timestamp: 9007199254740990 },  // Near MAX_SAFE_INTEGER
+          { ...mockAlbum, timestamp: 1 },
+          { ...mockPhotoPortrait, timestamp: 9007199254740991 },  // MAX_SAFE_INTEGER
+        ];
+
+        const sorted = sortItems(items, 'date-asc');
+
+        expect(sorted[0].timestamp).toBe(1);
+        expect(sorted[1].timestamp).toBe(9007199254740990);
+        expect(sorted[2].timestamp).toBe(9007199254740991);
+      });
+
+      it('correctly sorts millisecond-precision timestamps', () => {
+        const items: Child[] = [
+          { ...mockPhoto, timestamp: 1711612800000 },    // 2024-03-28T12:00:00Z in ms
+          { ...mockAlbum, timestamp: 1711612800001 },     // 1ms later
+          { ...mockPhotoPortrait, timestamp: 1 },          // Epoch + 1ms
+        ];
+
+        const sorted = sortItems(items, 'date-asc');
+
+        expect(sorted[0].timestamp).toBe(1);
+        expect(sorted[1].timestamp).toBe(1711612800000);
+        expect(sorted[2].timestamp).toBe(1711612800001);
+      });
+
+      it('returns normalized -1/0/1 for date comparisons (stable sort)', () => {
+        const items: Child[] = [
+          { ...mockPhoto, id: 1, timestamp: 100 },
+          { ...mockAlbum, id: 2, timestamp: 100 },
+        ];
+
+        const sorted = sortItems(items, 'date-asc');
+
+        // Equal timestamps should maintain stable order
+        expect(sorted[0].id).toBe(1);
+        expect(sorted[1].id).toBe(2);
+      });
+
+      it('handles very large image dimensions without overflow', () => {
+        const items: Child[] = [
+          { ...mockPhoto, id: 1, width: 100000, height: 100000 },   // Would be 10B without cap
+          { ...mockPhotoPortrait, id: 2, width: 200, height: 200 },  // 40,000
+        ];
+
+        const sorted = sortItems(items, 'size-asc');
+
+        expect(sorted[0].id).toBe(2);  // Smaller image first
+        expect(sorted[1].id).toBe(1);  // Capped larger image second
+      });
+
+      it('does not affect sorting of normal-sized images', () => {
+        const items: Child[] = [
+          { ...mockPhoto, id: 1, width: 1920, height: 1080 },       // 2,073,600
+          { ...mockPhotoPortrait, id: 2, width: 3840, height: 2160 },  // 8,294,400
+          { ...mockPhotoNoThumb, id: 3, width: 640, height: 480 },     // 307,200
+        ];
+
+        const sorted = sortItems(items, 'size-asc');
+
+        expect(sorted[0].id).toBe(3);
+        expect(sorted[1].id).toBe(1);
+        expect(sorted[2].id).toBe(2);
+      });
+
+      it('caps dimensions at MAX_DIMENSION for size calculation', () => {
+        const items: Child[] = [
+          { ...mockPhoto, id: 1, width: 65535, height: 65535 },     // At cap: 4,294,836,225
+          { ...mockPhotoPortrait, id: 2, width: 100000, height: 100000 }, // Capped to same as above
+        ];
+
+        const sorted = sortItems(items, 'size-asc');
+
+        // Both capped to same size, stable sort preserves order
+        expect(sorted[0].id).toBe(1);
+        expect(sorted[1].id).toBe(2);
+      });
+    });
+
     describe('edge cases', () => {
       it('handles empty array', () => {
         const items: Child[] = [];

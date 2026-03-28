@@ -33,9 +33,10 @@ function sortByDate(a: Child, b: Child, ascending: boolean): number {
     return -1; // b is null, put it last
   }
 
-  // Compare timestamps
-  const diff = aTimestamp - bTimestamp;
-  return ascending ? diff : -diff;
+  // Compare timestamps using operators (avoids precision loss with large values)
+  if (aTimestamp < bTimestamp) return ascending ? -1 : 1;
+  if (aTimestamp > bTimestamp) return ascending ? 1 : -1;
+  return 0;
 }
 
 /**
@@ -93,6 +94,13 @@ function sortByName(a: Child, b: Child, ascending: boolean): number {
  * @param item - Item to calculate size for
  * @returns Size in pixels (width * height) or null if not applicable
  */
+/**
+ * Maximum dimension value for size calculations.
+ * Caps width/height to prevent overflow in width * height multiplication.
+ * 65535 (uint16 max) exceeds any real photograph dimension.
+ */
+const MAX_DIMENSION = 65_535;
+
 function calculateSize(item: Child): number | null {
   // Only images have width and height
   if (item.type === 'GalleryPhotoItem') {
@@ -100,7 +108,9 @@ function calculateSize(item: Child): number | null {
     const height = item.height ?? null;
 
     if (width !== null && height !== null) {
-      return width * height;
+      const cappedWidth = Math.min(width, MAX_DIMENSION);
+      const cappedHeight = Math.min(height, MAX_DIMENSION);
+      return cappedWidth * cappedHeight;
     }
   }
 
@@ -132,9 +142,10 @@ function sortBySize(a: Child, b: Child, ascending: boolean): number {
     return -1; // b has no size, put it last
   }
 
-  // Compare sizes
-  const diff = aSize - bSize;
-  return ascending ? diff : -diff;
+  // Compare sizes using operators (avoids precision loss with large products)
+  if (aSize < bSize) return ascending ? -1 : 1;
+  if (aSize > bSize) return ascending ? 1 : -1;
+  return 0;
 }
 
 /**
