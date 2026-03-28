@@ -3,6 +3,13 @@ import type { Child, Config, AlbumMetadata } from './types'
 import { stripBBCode } from './bbcode'
 import { decodeHtmlEntities } from '../shared/decodeHtmlEntities'
 import { normalizeOwnerDisplayName } from './ownerDisplayName'
+import {
+    validateNullableString,
+    validateRequiredString,
+    validateNullableNumber,
+    validateRequiredNumber,
+    MAX_LENGTHS,
+} from './validateRow'
 
 export default (connection: mysql.Connection, config: Config) => {
     const SQL_GET_CHILDREN = `
@@ -99,27 +106,75 @@ export default (connection: mysql.Connection, config: Config) => {
                 throw new Error('Unexpected query result format');
             }
             const children = results as Array<unknown>;
-            return children.map((row: unknown) => {
+            return children.map((row: unknown, index: number) => {
                 if (typeof row !== 'object' || row === null) {
                     throw new Error('Invalid row format in query results');
                 }
                 const child = row as Record<string, unknown>;
-                if (typeof child.id !== 'number' || typeof child.type !== 'string') {
-                    throw new Error('Missing required fields in query result row');
+                const rowContext = `album ${itemId}, child index ${index}`;
+
+                // Required fields - throw on failure
+                const id = validateRequiredNumber(child.id, 'id', rowContext);
+                const type = validateRequiredString(child.type, 'type', 255, rowContext);
+
+                // Validate type is a known entity type
+                if (type !== 'GalleryAlbumItem' && type !== 'GalleryPhotoItem') {
+                    throw new Error(`[${rowContext}] Unknown entity type: '${type}'`);
                 }
-                // Convert MySQL integer (0/1) to boolean
-                if (typeof child.hasChildren !== 'number' && typeof child.hasChildren !== 'boolean') {
-                    throw new Error('Invalid hasChildren field type in query result row');
+
+                // Boolean from MySQL integer
+                if (typeof child.hasChildren !== 'number' && typeof child.hasChildren !== 'boolean' && child.hasChildren != null) {
+                    throw new Error(`[${rowContext}] Invalid hasChildren field type: ${typeof child.hasChildren}`);
                 }
-                const hasChildren = typeof child.hasChildren === 'number' ? child.hasChildren !== 0 : child.hasChildren;
-                const rawOwnerName = child.ownerName == null ? null : (typeof child.ownerName === 'string' ? child.ownerName : null);
+                const hasChildren = child.hasChildren == null
+                    ? false
+                    : typeof child.hasChildren === 'number'
+                        ? child.hasChildren !== 0
+                        : Boolean(child.hasChildren);
+
+                // Nullable string fields with length limits
+                const rawTitle = validateNullableString(child.title, 'title', MAX_LENGTHS.title, rowContext);
+                const title = rawTitle != null ? stripBBCode(decodeHtmlEntities(rawTitle)) : null;
+                const description = validateNullableString(child.description, 'description', MAX_LENGTHS.description, rowContext);
+                const decodedDescription = description != null ? decodeHtmlEntities(description) : null;
+                const summary = validateNullableString(child.summary, 'summary', MAX_LENGTHS.summary, rowContext);
+                const decodedSummary = summary != null ? decodeHtmlEntities(summary) : null;
+                const pathComponent = validateNullableString(child.pathComponent, 'pathComponent', MAX_LENGTHS.pathComponent, rowContext);
+
+                // Owner name
+                const rawOwnerName = validateNullableString(child.ownerName, 'ownerName', MAX_LENGTHS.ownerName, rowContext);
                 const ownerName = normalizeOwnerDisplayName(rawOwnerName);
-                const summary = child.summary == null ? null : decodeHtmlEntities(String(child.summary));
-                const description = child.description == null ? null : decodeHtmlEntities(String(child.description));
-                const title = child.title != null ? stripBBCode(decodeHtmlEntities(String(child.title))) : null;
-                const { ownerId: _omit, ...rest } = child;
-                if ('ownerid' in rest) delete rest['ownerid'];
-                return { ...rest, title, description, hasChildren, ownerName, summary } as unknown as Child;
+
+                // Nullable number fields
+                const timestamp = validateNullableNumber(child.timestamp, 'timestamp', rowContext);
+                const width = validateNullableNumber(child.width, 'width', rowContext);
+                const height = validateNullableNumber(child.height, 'height', rowContext);
+                const thumb_width = validateNullableNumber(child.thumb_width, 'thumb_width', rowContext);
+                const thumb_height = validateNullableNumber(child.thumb_height, 'thumb_height', rowContext);
+                const order = validateNullableNumber(child.order, 'order', rowContext);
+
+                const result: Child = {
+                    id,
+                    type,
+                    hasChildren,
+                    title,
+                    description: decodedDescription,
+                    pathComponent,
+                    timestamp,
+                    width,
+                    height,
+                    thumb_width,
+                    thumb_height,
+                    ownerName,
+                    summary: decodedSummary,
+                };
+
+                // Only include order if present (optional field)
+                if (order != null) {
+                    result.order = order;
+                }
+
+                return result;
             });
         },
         getRootAlbumId: async (): Promise<number> => {
@@ -138,15 +193,19 @@ export default (connection: mysql.Connection, config: Config) => {
             if (!Array.isArray(results) || results.length === 0) {
                 throw new Error('Root album not found');
             }
-            const row = results[0] as { id: number; title: string | null; description: string | null; timestamp: number | null };
-            if (typeof row.id !== 'number') {
-                throw new Error('Invalid root album ID format');
-            }
+            const row = results[0] as Record<string, unknown>;
+            const rowContext = `root album ${rootId}`;
+
+            const id = validateRequiredNumber(row.id, 'id', rowContext);
+            const rawTitle = validateNullableString(row.title, 'title', MAX_LENGTHS.title, rowContext);
+            const rawDescription = validateNullableString(row.description, 'description', MAX_LENGTHS.description, rowContext);
+            const timestamp = validateNullableNumber(row.timestamp, 'timestamp', rowContext);
+
             return {
-                id: row.id,
-                title: row.title != null ? stripBBCode(decodeHtmlEntities(row.title)) : null,
-                description: row.description != null ? decodeHtmlEntities(row.description) : null,
-                timestamp: row.timestamp ?? null
+                id,
+                title: rawTitle != null ? stripBBCode(decodeHtmlEntities(rawTitle)) : null,
+                description: rawDescription != null ? decodeHtmlEntities(rawDescription) : null,
+                timestamp,
             };
         },
         getAlbumInfo: async (albumId: number): Promise<AlbumMetadata> => {
@@ -154,16 +213,21 @@ export default (connection: mysql.Connection, config: Config) => {
             if (!Array.isArray(results) || results.length === 0) {
                 throw new Error(`Album ${albumId} not found`);
             }
-            const row = results[0] as { id: number; title: string | null; description: string | null; timestamp: number | null; ownerName: string | null };
-            if (typeof row.id !== 'number') {
-                throw new Error('Invalid album ID format');
-            }
+            const row = results[0] as Record<string, unknown>;
+            const rowContext = `album info ${albumId}`;
+
+            const id = validateRequiredNumber(row.id, 'id', rowContext);
+            const rawTitle = validateNullableString(row.title, 'title', MAX_LENGTHS.title, rowContext);
+            const rawDescription = validateNullableString(row.description, 'description', MAX_LENGTHS.description, rowContext);
+            const timestamp = validateNullableNumber(row.timestamp, 'timestamp', rowContext);
+            const rawOwnerName = validateNullableString(row.ownerName, 'ownerName', MAX_LENGTHS.ownerName, rowContext);
+
             return {
-                albumId: row.id,
-                albumTitle: row.title != null ? stripBBCode(decodeHtmlEntities(row.title)) : null,
-                albumDescription: row.description != null ? decodeHtmlEntities(row.description) : null,
-                albumTimestamp: row.timestamp ?? null,
-                ownerName: normalizeOwnerDisplayName(row.ownerName == null ? null : (typeof row.ownerName === 'string' ? row.ownerName : null))
+                albumId: id,
+                albumTitle: rawTitle != null ? stripBBCode(decodeHtmlEntities(rawTitle)) : null,
+                albumDescription: rawDescription != null ? decodeHtmlEntities(rawDescription) : null,
+                albumTimestamp: timestamp,
+                ownerName: normalizeOwnerDisplayName(rawOwnerName),
             };
         }
     }
