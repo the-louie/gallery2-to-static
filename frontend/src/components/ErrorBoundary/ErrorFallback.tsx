@@ -95,5 +95,3 @@ export function ErrorFallback({
     </div>
   );
 }
-
-export default ErrorFallback;

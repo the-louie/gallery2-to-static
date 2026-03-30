@@ -18,9 +18,8 @@ function albumFile(albumId: number, children: Child[]): AlbumFile {
 }
 
 // Mock the dataLoader module
-vi.mock('../utils/dataLoader', () => ({
-  loadAlbum: vi.fn(),
-  DataLoadError: class DataLoadError extends Error {
+vi.mock('../utils/dataLoader', () => {
+  class DataLoadError extends Error {
     constructor(
       message: string,
       public code: string,
@@ -29,26 +28,33 @@ vi.mock('../utils/dataLoader', () => ({
       super(message);
       this.name = 'DataLoadError';
     }
-  },
-  NetworkError: class NetworkError extends Error {
+  }
+  class NetworkError extends DataLoadError {
     constructor(message: string, cause?: unknown) {
-      super(message);
+      super(message, 'NETWORK_ERROR', cause);
       this.name = 'NetworkError';
     }
-  },
-  NotFoundError: class NotFoundError extends Error {
+  }
+  class NotFoundError extends DataLoadError {
     constructor(message: string, cause?: unknown) {
-      super(message);
+      super(message, 'NOT_FOUND', cause);
       this.name = 'NotFoundError';
     }
-  },
-  ParseError: class ParseError extends Error {
+  }
+  class ParseError extends DataLoadError {
     constructor(message: string, cause?: unknown) {
-      super(message);
+      super(message, 'PARSE_ERROR', cause);
       this.name = 'ParseError';
     }
-  },
-}));
+  }
+  return {
+    loadAlbum: vi.fn(),
+    DataLoadError,
+    NetworkError,
+    NotFoundError,
+    ParseError,
+  };
+});
 
 const mockLoadAlbum = vi.mocked(loadAlbum);
 

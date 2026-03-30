@@ -55,6 +55,29 @@ import * as albumThemesConfig from '../utils/albumThemesConfig';
 
 const originalFetch = globalThis.fetch;
 
+/**
+ * Default fetch mock that handles /data/index.json (called by loadPathIndex in ThemeProvider).
+ * Returns a minimal valid index.json response so ThemeProvider's useEffect doesn't throw.
+ */
+function createDefaultFetchMock() {
+  return vi.fn().mockImplementation((input: RequestInfo | URL) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+    if (url?.includes('/data/index.json')) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ rootAlbumId: 7, rootAlbumFile: '7.json', pathIndex: {} }),
+      });
+    }
+    if (url?.includes('/album-themes.json')) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ defaultTheme: 'classic', albumThemes: {} }),
+      });
+    }
+    return Promise.resolve({ ok: false, status: 404, statusText: 'Not Found' });
+  });
+}
+
 // Helper to create wrapper with ThemeProvider and MemoryRouter (ThemeProvider uses useLocation)
 function createWrapper(
   defaultTheme?: ThemeName,
@@ -83,6 +106,9 @@ describe('ThemeContext', () => {
 
     // Clear album themes cache
     albumThemesConfig.clearAlbumThemesConfigCache();
+
+    // Set default fetch mock to handle loadPathIndex() calls from ThemeProvider
+    globalThis.fetch = createDefaultFetchMock();
   });
 
   afterEach(() => {
@@ -209,12 +235,21 @@ describe('ThemeContext', () => {
     });
 
     it('effectiveTheme applies album override when on album page', async () => {
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          defaultTheme: 'classic',
-          albumThemes: { '7': 'dark' },
-        }),
+      globalThis.fetch = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+        if (url?.includes('/data/index.json')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ rootAlbumId: 7, rootAlbumFile: '7.json', pathIndex: {} }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            defaultTheme: 'classic',
+            albumThemes: { '7': 'dark' },
+          }),
+        });
       });
 
       const { result } = renderHook(() => useTheme(), {
@@ -231,12 +266,21 @@ describe('ThemeContext', () => {
     });
 
     it('effectiveTheme uses user theme on home when no album override', async () => {
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          defaultTheme: 'classic',
-          albumThemes: {},
-        }),
+      globalThis.fetch = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+        if (url?.includes('/data/index.json')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ rootAlbumId: 7, rootAlbumFile: '7.json', pathIndex: {} }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            defaultTheme: 'classic',
+            albumThemes: {},
+          }),
+        });
       });
 
       const { result } = renderHook(() => useTheme(), {
@@ -248,12 +292,21 @@ describe('ThemeContext', () => {
     });
 
     it('effectiveTheme uses user theme when subalbum has no entry in album-themes.json', async () => {
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          defaultTheme: 'classic',
-          albumThemes: {},
-        }),
+      globalThis.fetch = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+        if (url?.includes('/data/index.json')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ rootAlbumId: 7, rootAlbumFile: '7.json', pathIndex: {} }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            defaultTheme: 'classic',
+            albumThemes: {},
+          }),
+        });
       });
 
       const { result } = renderHook(() => useTheme(), {
@@ -271,12 +324,21 @@ describe('ThemeContext', () => {
     it('effectiveTheme falls back to defaultTheme when album has invalid theme in config', async () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          defaultTheme: 'light',
-          albumThemes: { '7': 'invalid' },
-        }),
+      globalThis.fetch = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request).url;
+        if (url?.includes('/data/index.json')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ rootAlbumId: 7, rootAlbumFile: '7.json', pathIndex: {} }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            defaultTheme: 'light',
+            albumThemes: { '7': 'invalid' },
+          }),
+        });
       });
 
       const { result } = renderHook(() => useTheme(), {
@@ -529,9 +591,13 @@ describe('ThemeContext', () => {
     });
 
     it('handles document not available (SSR)', () => {
-      const originalDocument = global.document;
-      // @ts-expect-error - Testing SSR scenario
-      global.document = undefined;
+      // Instead of setting global.document to undefined (which breaks jsdom),
+      // test that applyTheme handles missing documentElement gracefully by
+      // temporarily making setAttribute throw.
+      const originalSetAttribute = document.documentElement.setAttribute;
+      document.documentElement.setAttribute = () => {
+        throw new Error('Simulated SSR: no document');
+      };
 
       const { result } = renderHook(() => useTheme(), {
         wrapper: createWrapper('dark'),
@@ -541,7 +607,7 @@ describe('ThemeContext', () => {
       expect(result.current.theme).toBe('dark');
 
       // Restore
-      global.document = originalDocument;
+      document.documentElement.setAttribute = originalSetAttribute;
     });
   });
 

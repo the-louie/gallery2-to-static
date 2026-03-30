@@ -1091,5 +1091,3 @@ export function Lightbox({
     </ErrorBoundary>
   );
 }
-
-export default Lightbox;

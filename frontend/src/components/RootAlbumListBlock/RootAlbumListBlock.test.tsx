@@ -69,10 +69,9 @@ describe('RootAlbumListBlock', () => {
       description: '[b]bold[/b] text',
     } as Album;
     const { container } = render(<RootAlbumListBlock album={albumWithBBCodeDesc} subalbums={[]} />);
-    expect(screen.getByText('bold')).toBeInTheDocument();
-    expect(screen.getByText(' text')).toBeInTheDocument();
     const descPara = container.querySelector('.root-album-list-block-description');
     expect(descPara).toBeInTheDocument();
+    expect(descPara?.textContent).toBe('bold text');
     const strong = descPara?.querySelector('strong');
     expect(strong).toBeInTheDocument();
     expect(strong).toHaveTextContent('bold');
@@ -379,8 +378,11 @@ describe('RootAlbumListBlock', () => {
       // Verify BBCode is parsed to React elements, not raw HTML
       const strong = container.querySelector('strong');
       expect(strong).toBeInTheDocument();
-      // Verify no dangerouslySetInnerHTML was used (no raw HTML strings)
-      expect(container.innerHTML).not.toContain('[b]');
+      // Verify title text content does not contain raw BBCode tags
+      // (aria-label may still contain the original BBCode text for accessibility)
+      const titleEl = container.querySelector('.root-album-list-block-title-text');
+      expect(titleEl?.innerHTML).not.toContain('[b]');
+      expect(titleEl?.textContent).toBe('Bold');
     });
   });
 });

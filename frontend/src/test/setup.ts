@@ -11,8 +11,35 @@ afterEach(() => {
   cleanup();
 });
 
-// Mock fetch globally
-global.fetch = vi.fn();
+// Mock useProgressiveImage globally — components get synchronous URLs instead of async blob fetching.
+// Uses the same fallback order as the real hook: thumbnailUrlPath > pathComponent.
+vi.mock('@/hooks/useProgressiveImage', () => ({
+  useProgressiveImage: vi.fn((image: any, useThumbnail: boolean = true) => {
+    if (!image) {
+      return { thumbnailUrl: '', fullImageUrl: '', state: 'thumbnail' as const, hasError: false, error: null };
+    }
+    const thumbPath = image.thumbnailUrlPath || image.pathComponent || '';
+    const fullPath = image.urlPath || image.pathComponent || '';
+    return {
+      thumbnailUrl: thumbPath ? `/g2data/thumbnails/${thumbPath}` : '',
+      fullImageUrl: fullPath ? `/g2data/albums/${fullPath}` : '',
+      state: (fullPath ? 'full-loaded' : 'thumbnail') as 'full-loaded' | 'thumbnail',
+      hasError: false,
+      error: null,
+    };
+  }),
+}));
+
+// Mock fetch globally – return a 404 response by default so code that
+// calls fetch() during tests doesn't crash with "Cannot read properties
+// of undefined (reading 'ok')".
+global.fetch = vi.fn().mockResolvedValue({
+  ok: false,
+  status: 404,
+  statusText: 'Not Found',
+  json: async () => ({}),
+  text: async () => '',
+});
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {

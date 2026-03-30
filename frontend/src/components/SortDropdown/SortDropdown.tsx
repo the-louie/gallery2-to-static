@@ -135,5 +135,3 @@ function SortDropdownComponent({
  * when props haven't changed.
  */
 export const SortDropdown = React.memo(SortDropdownComponent);
-
-export default SortDropdown;

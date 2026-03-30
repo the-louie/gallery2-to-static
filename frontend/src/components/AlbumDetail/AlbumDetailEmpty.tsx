@@ -83,5 +83,3 @@ export function AlbumDetailEmpty({
     </div>
   );
 }
-
-export default AlbumDetailEmpty;

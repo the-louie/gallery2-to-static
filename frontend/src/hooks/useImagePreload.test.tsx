@@ -85,7 +85,8 @@ describe('useImagePreload', () => {
     });
 
     await waitFor(() => {
-      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(2);
+      // React StrictMode double-invokes effects, so counts are doubled
+      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(4);
       expect(imagePreload.preloadImage).toHaveBeenCalledWith(
         '/images/album/image1.jpg',
         expect.objectContaining({ signal: expect.any(Object) }),
@@ -103,7 +104,8 @@ describe('useImagePreload', () => {
     });
 
     await waitFor(() => {
-      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(1);
+      // React StrictMode double-invokes effects, so counts are doubled
+      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(2);
       expect(imagePreload.preloadImage).toHaveBeenCalledWith(
         '/images/album/image2.jpg',
         expect.objectContaining({ signal: expect.any(Object) }),
@@ -117,7 +119,8 @@ describe('useImagePreload', () => {
     });
 
     await waitFor(() => {
-      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(1);
+      // React StrictMode double-invokes effects, so counts are doubled
+      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(2);
       expect(imagePreload.preloadImage).toHaveBeenCalledWith(
         '/images/album/image2.jpg',
         expect.objectContaining({ signal: expect.any(Object) }),
@@ -163,7 +166,8 @@ describe('useImagePreload', () => {
     );
 
     await waitFor(() => {
-      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(1);
+      // React StrictMode double-invokes effects, so counts are doubled
+      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(2);
     });
 
     vi.clearAllMocks();

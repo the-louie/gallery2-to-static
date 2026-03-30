@@ -49,7 +49,8 @@ describe('SearchResultsPage', () => {
 
     render(<SearchResultsPage />);
 
-    expect(screen.getByText(/search error/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /search error/i })).toBeInTheDocument();
+    expect(screen.getByText('Search error')).toBeInTheDocument();
   });
 
   it('displays empty state for empty query', () => {
@@ -60,7 +61,7 @@ describe('SearchResultsPage', () => {
 
     render(<SearchResultsPage />);
 
-    expect(screen.getByText(/enter a search query/i)).toBeInTheDocument();
+    expect(screen.getByText(/advanced search is a lie/i)).toBeInTheDocument();
   });
 
   it('displays loading state when searching', () => {
@@ -72,7 +73,7 @@ describe('SearchResultsPage', () => {
 
     render(<SearchResultsPage />);
 
-    expect(screen.getByText(/searching/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /searching/i })).toBeInTheDocument();
   });
 
   it('displays no results state', () => {
@@ -127,12 +128,13 @@ describe('SearchResultsPage', () => {
 
     render(<SearchResultsPage />);
 
-    expect(screen.getByText(/search results/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /search results/i })).toBeInTheDocument();
     expect(screen.getByText(/found 2 results/i)).toBeInTheDocument();
-    expect(screen.getByText('Test Album')).toBeInTheDocument();
-    expect(screen.getByText('Test Photo')).toBeInTheDocument();
-    expect(screen.getByText('Album summary')).toBeInTheDocument();
-    expect(screen.getByText('Photo summary')).toBeInTheDocument();
+    // SearchHighlight splits text across elements, so use function matchers
+    expect(screen.getByRole('heading', { level: 3, name: (_, el) => el?.textContent === 'Test Album' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: (_, el) => el?.textContent === 'Test Photo' })).toBeInTheDocument();
+    expect(screen.getByText((_, el) => el?.textContent === 'Album summary' && el?.tagName === 'P')).toBeInTheDocument();
+    expect(screen.getByText((_, el) => el?.textContent === 'Photo summary' && el?.tagName === 'P')).toBeInTheDocument();
     expect(screen.getByText(/Owner: Album Owner/)).toBeInTheDocument();
     expect(screen.getByText(/Owner: Photo Owner/)).toBeInTheDocument();
   });
@@ -313,7 +315,7 @@ describe('SearchResultsPage', () => {
 
     render(<SearchResultsPage />);
 
-    expect(screen.getByText('Test Album')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: (_, el) => el?.textContent === 'Test Album' })).toBeInTheDocument();
   });
 
   it('displays path for images section', () => {
@@ -545,8 +547,12 @@ describe('SearchResultsPage', () => {
 
       const { container } = render(<SearchResultsPage />);
 
-      // React should escape the decoded <script> tags
-      expect(screen.getByText('<script>alert("XSS")</script>')).toBeInTheDocument();
+      // React should escape the decoded <script> tags - SearchHighlight splits text across elements
+      const heading = screen.getByRole('heading', {
+        level: 3,
+        name: (_, el) => el?.textContent === '<script>alert("XSS")</script>',
+      });
+      expect(heading).toBeInTheDocument();
       // Verify no actual script tag exists in DOM
       expect(container.querySelector('script')).not.toBeInTheDocument();
     });

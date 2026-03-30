@@ -290,5 +290,3 @@ export function ThemeDropdown({ className }: ThemeDropdownProps): React.ReactEle
     </div>
   );
 }
-
-export default ThemeDropdown;

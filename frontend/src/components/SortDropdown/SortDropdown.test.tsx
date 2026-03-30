@@ -140,12 +140,12 @@ describe('SortDropdown', () => {
     select.focus();
     expect(select).toHaveFocus();
 
-    // Use arrow keys to navigate (native select behavior)
-    await user.keyboard('{ArrowDown}');
-    await user.keyboard('{Enter}');
+    // jsdom does not support native select keyboard navigation (ArrowDown/Enter)
+    // Use selectOptions to simulate changing the value
+    await user.selectOptions(select, 'name-asc');
 
-    // Should have called onChange
     expect(handleChange).toHaveBeenCalled();
+    expect(handleChange).toHaveBeenCalledWith('name-asc');
   });
 
   it('handles all sort options', () => {

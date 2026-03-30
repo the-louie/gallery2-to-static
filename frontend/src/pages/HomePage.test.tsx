@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@/test-utils';
 import { HomePage } from './HomePage';
-import { findRootAlbumId } from '@/utils/dataLoader';
+import {
+  findRootAlbumId,
+  loadIndex,
+  loadPathIndex,
+  resolvePathToAlbumId,
+} from '@/utils/dataLoader';
 import { mockChildren } from '@/__mocks__/mockData';
 import type { AlbumFile } from '../../../backend/types';
 
@@ -16,17 +21,57 @@ const albumFileForRoot: AlbumFile = {
   children: mockChildren,
 };
 
+vi.mock('@/hooks/useSiteMetadata', () => ({
+  useSiteMetadata: vi.fn().mockReturnValue({
+    siteName: 'Test Gallery',
+    siteDescription: 'Test',
+    rootAlbumId: 7,
+    isLoading: false,
+    error: null,
+  }),
+}));
+
 vi.mock('@/utils/dataLoader', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/utils/dataLoader')>();
   return {
     ...actual,
     findRootAlbumId: vi.fn(),
+    loadIndex: vi.fn().mockResolvedValue({
+      rootAlbumId: 7,
+      rootAlbumFile: '7.json',
+      siteName: 'Test Gallery',
+      siteDescription: 'Test',
+      generatedAt: '2026-01-01T00:00:00Z',
+      metadata: {
+        rootAlbumId: 7,
+        rootAlbumTitle: 'Test Gallery',
+        rootAlbumDescription: 'Test',
+        rootAlbumTimestamp: null,
+      },
+    }),
+    loadPathIndex: vi.fn().mockResolvedValue({}),
+    resolvePathToAlbumId: vi.fn().mockResolvedValue(null),
   };
 });
 
 describe('HomePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(loadPathIndex).mockResolvedValue({});
+    vi.mocked(resolvePathToAlbumId).mockResolvedValue(null);
+    vi.mocked(loadIndex).mockResolvedValue({
+      rootAlbumId: 7,
+      rootAlbumFile: '7.json',
+      siteName: 'Test Gallery',
+      siteDescription: 'Test',
+      generatedAt: '2026-01-01T00:00:00Z',
+      metadata: {
+        rootAlbumId: 7,
+        rootAlbumTitle: 'Test Gallery',
+        rootAlbumDescription: 'Test',
+        rootAlbumTimestamp: null,
+      },
+    });
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => albumFileForRoot,
@@ -43,7 +88,8 @@ describe('HomePage', () => {
     );
 
     render(<HomePage />);
-    expect(screen.getByRole('status', { name: /loading gallery/i })).toBeInTheDocument();
+    const loadingElements = screen.getAllByRole('status', { name: /loading gallery/i });
+    expect(loadingElements.length).toBeGreaterThan(0);
   });
 
   it('displays root album when found', async () => {

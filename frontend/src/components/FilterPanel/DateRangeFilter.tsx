@@ -249,5 +249,3 @@ export function DateRangeFilter({
     </div>
   );
 }
-
-export default DateRangeFilter;

@@ -422,5 +422,3 @@ export function AlbumDetail({
     </ErrorBoundary>
   );
 }
-
-export default AlbumDetail;

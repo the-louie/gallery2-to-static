@@ -67,7 +67,15 @@ function getSystemTheme(): SystemTheme {
     return 'light';
   }
 
-  return window.matchMedia(DARK_MODE_QUERY).matches ? 'dark' : 'light';
+  try {
+    const result = window.matchMedia(DARK_MODE_QUERY);
+    if (!result) {
+      return 'light';
+    }
+    return result.matches ? 'dark' : 'light';
+  } catch {
+    return 'light';
+  }
 }
 
 /**

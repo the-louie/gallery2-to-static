@@ -147,5 +147,3 @@ export function Layout({ children, className }: LayoutProps) {
     </div>
   );
 }
-
-export default Layout;

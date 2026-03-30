@@ -55,12 +55,12 @@ describe('useImageZoom', () => {
         useImageZoom(imageWidth, imageHeight),
       );
 
-      // Zoom to max
-      act(() => {
-        for (let i = 0; i < 20; i++) {
+      // Zoom to max - each call in its own act() so state updates between calls
+      for (let i = 0; i < 20; i++) {
+        act(() => {
           result.current.zoomIn();
-        }
-      });
+        });
+      }
 
       expect(result.current.zoom).toBeLessThanOrEqual(400);
       expect(result.current.canZoomIn).toBe(false);
@@ -71,12 +71,12 @@ describe('useImageZoom', () => {
         useImageZoom(imageWidth, imageHeight),
       );
 
-      // Zoom to max
-      act(() => {
-        for (let i = 0; i < 20; i++) {
+      // Zoom to max - each call in its own act() so state updates between calls
+      for (let i = 0; i < 20; i++) {
+        act(() => {
           result.current.zoomIn();
-        }
-      });
+        });
+      }
 
       const maxZoom = result.current.zoom;
 
@@ -94,8 +94,11 @@ describe('useImageZoom', () => {
         useImageZoom(imageWidth, imageHeight),
       );
 
+      // Each zoomIn in its own act() so state updates between calls
       act(() => {
         result.current.zoomIn();
+      });
+      act(() => {
         result.current.zoomIn();
       });
 

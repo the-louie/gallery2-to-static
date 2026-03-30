@@ -2,5 +2,5 @@
  * ThemeSwitcher Component Export
  */
 
-export { ThemeSwitcher, default } from './ThemeSwitcher';
+export { ThemeSwitcher } from './ThemeSwitcher';
 export type { ThemeSwitcherProps } from './ThemeSwitcher';

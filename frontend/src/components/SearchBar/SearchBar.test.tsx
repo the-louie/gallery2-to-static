@@ -8,7 +8,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@/test-utils';
 import userEvent from '@testing-library/user-event';
 import { SearchBar } from './SearchBar';
-import { BrowserRouter } from 'react-router-dom';
 
 // Mock useNavigate and useLocation (mockLocation is mutable for tests that simulate route change)
 const mockNavigate = vi.fn();
@@ -34,11 +33,7 @@ describe('SearchBar', () => {
   });
 
   const renderSearchBar = (props = {}) => {
-    return render(
-      <BrowserRouter>
-        <SearchBar {...props} />
-      </BrowserRouter>,
-    );
+    return render(<SearchBar {...props} />);
   };
 
   it('renders search input', () => {
@@ -97,12 +92,10 @@ describe('SearchBar', () => {
     // Should not navigate immediately
     expect(mockNavigate).not.toHaveBeenCalled();
 
-    // Fast-forward time
-    vi.advanceTimersByTime(300);
+    // Fast-forward time using async variant so promises can flush
+    await vi.advanceTimersByTimeAsync(300);
 
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/search?q=test');
-    });
+    expect(mockNavigate).toHaveBeenCalledWith('/search?q=test');
   });
 
   it('navigates immediately on form submit', async () => {
@@ -204,11 +197,7 @@ describe('SearchBar', () => {
 
     mockLocation.pathname = '/';
     mockLocation.search = '';
-    rerender(
-      <BrowserRouter>
-        <SearchBar />
-      </BrowserRouter>,
-    );
+    rerender(<SearchBar />);
 
     expect(screen.getByRole('searchbox')).toHaveValue('');
 

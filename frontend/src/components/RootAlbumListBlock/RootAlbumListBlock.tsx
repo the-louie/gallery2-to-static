@@ -206,5 +206,3 @@ export function RootAlbumListBlock({
     </article>
   );
 }
-
-export default RootAlbumListBlock;

@@ -225,8 +225,9 @@ describe('sorting', () => {
 
         const sorted = sortItems(items, 'size-asc');
 
-        expect(sorted[0].width).toBe(1080);
-        expect(sorted[1].width).toBe(1920);
+        // Both photos have the same size (2,073,600), stable sort preserves original order
+        expect(sorted[0].width).toBe(1920);
+        expect(sorted[1].width).toBe(1080);
         expect(sorted[2].width).toBeNull();
       });
 
@@ -442,8 +443,8 @@ describe('sorting', () => {
 
       it('does not mutate original array', () => {
         const items: Child[] = [
-          { ...mockPhoto, timestamp: 2000 },
-          { ...mockAlbum, timestamp: 1000 },
+          { ...mockPhoto, timestamp: 1000 },
+          { ...mockAlbum, timestamp: 2000 },
         ];
         const original = [...items];
 

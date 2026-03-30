@@ -41,5 +41,3 @@ export function AlbumGridEmpty({
     </div>
   );
 }
-
-export default AlbumGridEmpty;

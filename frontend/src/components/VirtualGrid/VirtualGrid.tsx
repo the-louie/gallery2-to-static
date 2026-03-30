@@ -146,5 +146,3 @@ export function VirtualGrid<T>({
     </div>
   );
 }
-
-export default VirtualGrid;

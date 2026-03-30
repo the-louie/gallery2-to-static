@@ -169,5 +169,3 @@ export function ImageGrid({
     </ErrorBoundary>
   );
 }
-
-export default ImageGrid;

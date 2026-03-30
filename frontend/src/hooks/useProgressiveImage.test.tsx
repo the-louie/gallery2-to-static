@@ -7,6 +7,10 @@
 
 import React from 'react';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+
+// Opt out of the global mock so these tests exercise the real hook
+vi.unmock('@/hooks/useProgressiveImage');
+
 import { renderHook, waitFor } from '@/test-utils';
 import { MemoryRouter } from 'react-router-dom';
 import { ViewAbortProvider } from '@/contexts/ViewAbortContext';

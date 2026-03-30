@@ -9,7 +9,7 @@
 
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test-utils';
+import { render, screen, fireEvent } from '@/test-utils';
 import userEvent from '@testing-library/user-event';
 import { DateRangeFilter } from './DateRangeFilter';
 import { FilterProvider } from '@/contexts/FilterContext';
@@ -87,7 +87,6 @@ describe('DateRangeFilter', () => {
 
   describe('User Interactions', () => {
     it('calls onCriteriaChange when start date is set and end date exists', async () => {
-      const user = userEvent.setup();
       const criteria: FilterCriteria = {
         dateRange: {
           start: new Date('2024-01-01').getTime(),
@@ -100,47 +99,41 @@ describe('DateRangeFilter', () => {
       );
 
       const startInput = screen.getByLabelText('Start Date');
-      await user.clear(startInput);
-      await user.type(startInput, '2024-06-01');
+      fireEvent.change(startInput, { target: { value: '2024-06-01' } });
 
       expect(mockOnCriteriaChange).toHaveBeenCalled();
-      const callArgs = mockOnCriteriaChange.mock.calls[0][0];
-      expect(callArgs.dateRange).toBeDefined();
-      expect(callArgs.dateRange?.start).toBe(new Date('2024-06-01').getTime());
+      const lastCall = mockOnCriteriaChange.mock.calls[mockOnCriteriaChange.mock.calls.length - 1][0] as FilterCriteria;
+      expect(lastCall.dateRange).toBeDefined();
+      expect(lastCall.dateRange?.start).toBe(new Date('2024-06-01').getTime());
     });
 
-    it('does not create dateRange when only start date is set', async () => {
-      const user = userEvent.setup();
-
+    it('does not create dateRange when only start date is set', () => {
       renderWithProvider(
         <DateRangeFilter criteria={{}} onCriteriaChange={mockOnCriteriaChange} />
       );
 
       const startInput = screen.getByLabelText('Start Date');
-      await user.type(startInput, '2024-06-01');
+      fireEvent.change(startInput, { target: { value: '2024-06-01' } });
 
       expect(mockOnCriteriaChange).toHaveBeenCalled();
-      const callArgs = mockOnCriteriaChange.mock.calls[0][0];
+      const callArgs = mockOnCriteriaChange.mock.calls[0][0] as FilterCriteria;
       expect(callArgs.dateRange).toBeUndefined();
     });
 
-    it('does not create dateRange when only end date is set', async () => {
-      const user = userEvent.setup();
-
+    it('does not create dateRange when only end date is set', () => {
       renderWithProvider(
         <DateRangeFilter criteria={{}} onCriteriaChange={mockOnCriteriaChange} />
       );
 
       const endInput = screen.getByLabelText('End Date');
-      await user.type(endInput, '2024-12-31');
+      fireEvent.change(endInput, { target: { value: '2024-12-31' } });
 
       expect(mockOnCriteriaChange).toHaveBeenCalled();
-      const callArgs = mockOnCriteriaChange.mock.calls[0][0];
+      const callArgs = mockOnCriteriaChange.mock.calls[0][0] as FilterCriteria;
       expect(callArgs.dateRange).toBeUndefined();
     });
 
-    it('creates dateRange when both dates are set', async () => {
-      const user = userEvent.setup();
+    it('creates dateRange when both dates are set', () => {
       const criteria: FilterCriteria = {
         dateRange: {
           start: new Date('2024-01-01').getTime(),
@@ -153,14 +146,13 @@ describe('DateRangeFilter', () => {
       );
 
       const endInput = screen.getByLabelText('End Date');
-      await user.clear(endInput);
-      await user.type(endInput, '2024-06-30');
+      fireEvent.change(endInput, { target: { value: '2024-06-30' } });
 
       expect(mockOnCriteriaChange).toHaveBeenCalled();
-      const callArgs = mockOnCriteriaChange.mock.calls[0][0];
-      expect(callArgs.dateRange).toBeDefined();
-      expect(callArgs.dateRange?.start).toBe(new Date('2024-01-01').getTime());
-      expect(callArgs.dateRange?.end).toBe(new Date('2024-06-30').getTime());
+      const lastCall = mockOnCriteriaChange.mock.calls[mockOnCriteriaChange.mock.calls.length - 1][0] as FilterCriteria;
+      expect(lastCall.dateRange).toBeDefined();
+      expect(lastCall.dateRange?.start).toBe(new Date('2024-01-01').getTime());
+      expect(lastCall.dateRange?.end).toBe(new Date('2024-06-30').getTime());
     });
 
     it('clears dateRange when clear button is clicked', async () => {
@@ -184,8 +176,7 @@ describe('DateRangeFilter', () => {
       expect(callArgs.dateRange).toBeUndefined();
     });
 
-    it('adjusts end date when start date is after end date', async () => {
-      const user = userEvent.setup();
+    it('adjusts end date when start date is after end date', () => {
       const criteria: FilterCriteria = {
         dateRange: {
           start: new Date('2024-01-01').getTime(),
@@ -198,14 +189,13 @@ describe('DateRangeFilter', () => {
       );
 
       const startInput = screen.getByLabelText('Start Date');
-      await user.clear(startInput);
-      await user.type(startInput, '2024-12-01');
+      fireEvent.change(startInput, { target: { value: '2024-12-01' } });
 
       expect(mockOnCriteriaChange).toHaveBeenCalled();
-      const callArgs = mockOnCriteriaChange.mock.calls[0][0];
-      expect(callArgs.dateRange).toBeDefined();
-      expect(callArgs.dateRange?.start).toBe(new Date('2024-12-01').getTime());
-      expect(callArgs.dateRange?.end).toBeGreaterThan(callArgs.dateRange.start);
+      const lastCall = mockOnCriteriaChange.mock.calls[mockOnCriteriaChange.mock.calls.length - 1][0] as FilterCriteria;
+      expect(lastCall.dateRange).toBeDefined();
+      expect(lastCall.dateRange?.start).toBe(new Date('2024-12-01').getTime());
+      expect(lastCall.dateRange!.end).toBeGreaterThan(lastCall.dateRange!.start);
     });
   });
 

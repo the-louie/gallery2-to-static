@@ -2,6 +2,12 @@
 
 ---
 
+## Test Fixes
+
+(All 219 failing tests have been resolved — 1,421/1,421 tests now pass)
+
+---
+
 ## Logic & Edge Case Fixes
 
 ---

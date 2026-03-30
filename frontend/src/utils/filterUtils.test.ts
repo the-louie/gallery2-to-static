@@ -235,8 +235,8 @@ describe('applyFilters', () => {
         albumType: 'GalleryPhotoItem',
       };
       const result = applyFilters(items, criteria);
-      expect(result).toHaveLength(1);
-      expect(result[0].type).toBe('GalleryPhotoItem');
+      // Album is in date range but wrong type; image is right type but out of date range
+      expect(result).toHaveLength(0);
     });
   });
 

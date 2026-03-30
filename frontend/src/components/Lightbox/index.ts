@@ -5,4 +5,3 @@
  */
 
 export { Lightbox, type LightboxProps } from './Lightbox';
-export { default } from './Lightbox';

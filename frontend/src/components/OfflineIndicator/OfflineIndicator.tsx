@@ -58,5 +58,3 @@ export function OfflineIndicator({ className }: OfflineIndicatorProps): JSX.Elem
     </div>
   );
 }
-
-export default OfflineIndicator;

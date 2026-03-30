@@ -549,7 +549,7 @@ describe('dataLoader', () => {
       const pathIndex = { '/': 7, '/albums': 8, '/albums/events': 9 };
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({ rootAlbumId: 7, pathIndex }),
+        json: async () => ({ rootAlbumId: 7, rootAlbumFile: '7.json', pathIndex }),
       });
 
       const result = await loadPathIndex();
@@ -561,7 +561,7 @@ describe('dataLoader', () => {
     it('returns empty object when index has no pathIndex', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({ rootAlbumId: 7 }),
+        json: async () => ({ rootAlbumId: 7, rootAlbumFile: '7.json' }),
       });
 
       const result = await loadPathIndex();
@@ -587,7 +587,7 @@ describe('dataLoader', () => {
       const pathIndex = { '/': 7, '/albums': 8, '/albums/events': 9 };
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({ rootAlbumId: 7, pathIndex }),
+        json: async () => ({ rootAlbumId: 7, rootAlbumFile: '7.json', pathIndex }),
       });
 
       expect(await resolvePathToAlbumId('/albums')).toBe(8);
@@ -599,7 +599,7 @@ describe('dataLoader', () => {
       const pathIndex = { '/albums': 8 };
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({ rootAlbumId: 7, pathIndex }),
+        json: async () => ({ rootAlbumId: 7, rootAlbumFile: '7.json', pathIndex }),
       });
 
       expect(await resolvePathToAlbumId('albums')).toBe(8);
@@ -609,7 +609,7 @@ describe('dataLoader', () => {
     it('returns null when path not in pathIndex', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({ rootAlbumId: 7, pathIndex: { '/': 7 } }),
+        json: async () => ({ rootAlbumId: 7, rootAlbumFile: '7.json', pathIndex: { '/': 7 } }),
       });
 
       expect(await resolvePathToAlbumId('/nonexistent')).toBeNull();
@@ -619,7 +619,7 @@ describe('dataLoader', () => {
     it('returns null when pathIndex is empty', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({ rootAlbumId: 7 }),
+        json: async () => ({ rootAlbumId: 7, rootAlbumFile: '7.json' }),
       });
 
       expect(await resolvePathToAlbumId('/any')).toBeNull();

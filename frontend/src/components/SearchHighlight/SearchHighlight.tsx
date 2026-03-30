@@ -88,5 +88,3 @@ export function SearchHighlight({
     </Component>
   );
 }
-
-export default SearchHighlight;

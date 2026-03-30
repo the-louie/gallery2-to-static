@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest';
  * This is a simple function to demonstrate unit testing patterns
  */
 function formatAlbumTitle(title: string): string {
-  if (!title) return 'Untitled Album';
+  if (!title || !title.trim()) return 'Untitled Album';
   return title.trim();
 }
 

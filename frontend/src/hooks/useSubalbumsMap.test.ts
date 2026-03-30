@@ -124,7 +124,7 @@ describe('useSubalbumsMap', () => {
     expect(result.current.subalbumsMap.get(1)).toHaveLength(1);
     expect(result.current.subalbumsMap.get(2)).toHaveLength(0);
     expect(result.current.error).not.toBeNull();
-    expect(result.current.error?.message).toContain('2');
+    expect(result.current.error?.message).toBe('Not found');
   });
 
   it('filters to albums only (excludes photos)', async () => {

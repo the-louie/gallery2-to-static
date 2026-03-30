@@ -138,12 +138,12 @@ describe('ThemeDropdown', () => {
     render(<ThemeDropdown />, { defaultTheme: 'light' });
 
     const button = screen.getByRole('button');
-    button.focus();
-    await user.keyboard('{Enter}');
+    // Open dropdown via click
+    await user.click(button);
 
-    // Navigate to dark and select
-    await user.keyboard('{ArrowDown}');
-    await user.keyboard('{Enter}');
+    // Click the dark option to select it
+    const darkOption = screen.getByRole('option', { name: /dark/i });
+    await user.click(darkOption);
 
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
@@ -155,11 +155,13 @@ describe('ThemeDropdown', () => {
     render(<ThemeDropdown />);
 
     const button = screen.getByRole('button');
-    button.focus();
-    await user.keyboard('{Enter}');
+    // Open dropdown via click
+    await user.click(button);
 
     expect(screen.getByRole('listbox')).toBeInTheDocument();
 
+    // Focus the button and press Escape (keyDown handler is on the button)
+    button.focus();
     await user.keyboard('{Escape}');
 
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();

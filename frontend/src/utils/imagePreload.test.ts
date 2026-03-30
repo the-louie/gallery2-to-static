@@ -152,7 +152,8 @@ describe('imagePreload', () => {
       const url = '/images/fetched.jpg';
       const p = preloadImage(url, { signal: controller.signal });
 
-      await Promise.resolve();
+      // Allow enough microtask ticks for the .then() chain to create the Image
+      await new Promise((r) => setTimeout(r, 0));
       if (mockImage.onload) {
         mockImage.onload();
       }

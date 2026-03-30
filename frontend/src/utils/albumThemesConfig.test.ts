@@ -191,7 +191,7 @@ describe('albumThemesConfig utilities', () => {
 
       globalThis.fetch = vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({ invalid: 'structure' }),
+        json: async () => ({ defaultTheme: 123 }),
       });
 
       const config = await loadAlbumThemesConfig();

@@ -164,5 +164,3 @@ export function AlbumGrid({
     </ErrorBoundary>
   );
 }
-
-export default AlbumGrid;

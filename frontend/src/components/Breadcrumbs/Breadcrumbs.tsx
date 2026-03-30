@@ -139,5 +139,3 @@ export const Breadcrumbs = React.memo(BreadcrumbsComponent, (prevProps, nextProp
     return item.id === nextItem.id && item.path === nextItem.path && item.title === nextItem.title;
   }) && prevProps.className === nextProps.className && prevProps.onItemClick === nextProps.onItemClick;
 });
-
-export default Breadcrumbs;

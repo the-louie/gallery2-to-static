@@ -48,5 +48,3 @@ export function ImageGridSkeleton({
     </div>
   );
 }
-
-export default ImageGridSkeleton;

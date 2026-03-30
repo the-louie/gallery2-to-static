@@ -51,8 +51,8 @@ describe('AlbumCard', () => {
     });
 
     it('renders placeholder when no thumbnail available', () => {
-      render(<AlbumCard album={mockAlbum} />);
-      const placeholder = screen.getByText('📁');
+      const { container } = render(<AlbumCard album={mockAlbum} />);
+      const placeholder = container.querySelector('.album-card-thumbnail-placeholder');
       expect(placeholder).toBeInTheDocument();
     });
 
@@ -144,8 +144,8 @@ describe('AlbumCard', () => {
         thumb_width: null,
         thumb_height: null,
       };
-      render(<AlbumCard album={albumNoThumb} />);
-      const placeholder = screen.getByText('📁');
+      const { container } = render(<AlbumCard album={albumNoThumb} />);
+      const placeholder = container.querySelector('.album-card-thumbnail-placeholder');
       expect(placeholder).toBeInTheDocument();
     });
 
@@ -155,8 +155,8 @@ describe('AlbumCard', () => {
         thumb_width: 0,
         thumb_height: 0,
       };
-      render(<AlbumCard album={albumZeroThumb} />);
-      const placeholder = screen.getByText('📁');
+      const { container } = render(<AlbumCard album={albumZeroThumb} />);
+      const placeholder = container.querySelector('.album-card-thumbnail-placeholder');
       expect(placeholder).toBeInTheDocument();
     });
 
@@ -297,10 +297,12 @@ describe('AlbumCard', () => {
       const albumWithEntities: Album = {
         ...mockAlbum,
         title: 'Album &amp; Photos',
+        thumbnailUrlPath: 'path/to/thumb.jpg',
       };
       const { container } = render(<AlbumCard album={albumWithEntities} />);
       const img = container.querySelector('img');
-      expect(img).toHaveAttribute('alt', 'Album & Photos thumbnail');
+      expect(img).toBeInTheDocument();
+      expect(img).toHaveAttribute('alt', 'Album & Photos');
     });
 
     it('decodes HTML entities with BBCode formatting', () => {
@@ -356,8 +358,9 @@ describe('AlbumCard', () => {
       // Verify BBCode is parsed to React elements, not raw HTML
       const strong = container.querySelector('strong');
       expect(strong).toBeInTheDocument();
-      // Verify no dangerouslySetInnerHTML was used (no raw HTML strings)
-      expect(container.innerHTML).not.toContain('[b]');
+      // Verify title content does not contain raw BBCode tags
+      const titleEl = container.querySelector('.album-card-title');
+      expect(titleEl?.innerHTML).not.toContain('[b]');
     });
 
     it('safely handles malicious entities in aria-label', () => {

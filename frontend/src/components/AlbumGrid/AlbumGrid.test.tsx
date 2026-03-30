@@ -178,7 +178,7 @@ describe('AlbumGrid', () => {
 
       render(<AlbumGrid albumId={7} />);
       expect(screen.getByText(/Error loading albums/)).toBeInTheDocument();
-      expect(screen.getByText('Failed to load')).toBeInTheDocument();
+      expect(screen.getByText(/Failed to load/)).toBeInTheDocument();
     });
 
     it('handles empty data from hook', () => {

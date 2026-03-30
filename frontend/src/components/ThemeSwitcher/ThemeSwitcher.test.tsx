@@ -130,7 +130,7 @@ describe('ThemeSwitcher', () => {
     const button = screen.getByRole('button');
     expect(button).toHaveAttribute(
       'aria-label',
-      'Theme: Dark mode. Click to switch to original mode.'
+      'Theme: Dark mode. Click to switch to classic mode.'
     );
   });
 

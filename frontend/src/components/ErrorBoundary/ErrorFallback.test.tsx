@@ -126,9 +126,9 @@ describe('ErrorFallback', () => {
 
   describe('Error Details (Development Mode)', () => {
     it('shows error details in development mode', () => {
-      // Mock development mode
-      const originalEnv = import.meta.env.MODE;
-      vi.stubGlobal('import.meta.env.MODE', 'development');
+      // Stub import.meta.env.MODE to 'development'
+      const originalMode = import.meta.env.MODE;
+      import.meta.env.MODE = 'development';
 
       renderWithRouter(
         <ErrorFallback
@@ -139,16 +139,16 @@ describe('ErrorFallback', () => {
       );
 
       expect(screen.getByText(/Error Details/i)).toBeInTheDocument();
-      expect(screen.getByText(/Test error message/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Test error message/i).length).toBeGreaterThanOrEqual(1);
 
       // Restore
-      vi.stubGlobal('import.meta.env.MODE', originalEnv);
+      import.meta.env.MODE = originalMode;
     });
 
     it('hides error details in production mode', () => {
-      // Mock production mode
-      const originalEnv = import.meta.env.MODE;
-      vi.stubGlobal('import.meta.env.MODE', 'production');
+      // Stub import.meta.env.MODE to 'production'
+      const originalMode = import.meta.env.MODE;
+      import.meta.env.MODE = 'production';
 
       renderWithRouter(
         <ErrorFallback
@@ -161,7 +161,7 @@ describe('ErrorFallback', () => {
       expect(screen.queryByText(/Error Details/i)).not.toBeInTheDocument();
 
       // Restore
-      vi.stubGlobal('import.meta.env.MODE', originalEnv);
+      import.meta.env.MODE = originalMode;
     });
   });
 });

@@ -131,5 +131,3 @@ export function RootAlbumListView({
     </ErrorBoundary>
   );
 }
-
-export default RootAlbumListView;

@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useLoadingState } from './useLoadingState';
 
 describe('useLoadingState', () => {
@@ -31,7 +31,9 @@ describe('useLoadingState', () => {
     it('sets loading to true when startLoading is called', async () => {
       const { result } = renderHook(() => useLoadingState({ delay: 0 }));
 
-      result.current.startLoading();
+      act(() => {
+        result.current.startLoading();
+      });
 
       expect(result.current.isLoading).toBe(true);
     });
@@ -39,20 +41,28 @@ describe('useLoadingState', () => {
     it('sets loading to false when stopLoading is called', async () => {
       const { result } = renderHook(() => useLoadingState({ delay: 0 }));
 
-      result.current.startLoading();
+      act(() => {
+        result.current.startLoading();
+      });
       expect(result.current.isLoading).toBe(true);
 
-      result.current.stopLoading();
+      act(() => {
+        result.current.stopLoading();
+      });
       expect(result.current.isLoading).toBe(false);
     });
 
     it('sets loading state with setLoading', () => {
       const { result } = renderHook(() => useLoadingState({ delay: 0 }));
 
-      result.current.setLoading(true);
+      act(() => {
+        result.current.setLoading(true);
+      });
       expect(result.current.isLoading).toBe(true);
 
-      result.current.setLoading(false);
+      act(() => {
+        result.current.setLoading(false);
+      });
       expect(result.current.isLoading).toBe(false);
     });
   });
@@ -121,10 +131,14 @@ describe('useLoadingState', () => {
     it('resets loading state', () => {
       const { result } = renderHook(() => useLoadingState({ delay: 0 }));
 
-      result.current.startLoading();
+      act(() => {
+        result.current.startLoading();
+      });
       expect(result.current.isLoading).toBe(true);
 
-      result.current.reset();
+      act(() => {
+        result.current.reset();
+      });
       expect(result.current.isLoading).toBe(false);
       expect(result.current.isTimeout).toBe(false);
     });

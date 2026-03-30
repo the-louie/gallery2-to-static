@@ -325,6 +325,11 @@ function parseTag(tagText: string): { name: string; isClosing: boolean; attribut
   let attributes: Record<string, string> | null = null;
   if (attrString && config.supportsAttributes) {
     attributes = parseAttribute(attrString, tagName);
+    // If attribute string was provided but validation failed, reject the tag entirely
+    // so that e.g. [color=invalidcolor] or [size=invalid] renders as literal text
+    if (attributes === null) {
+      return null;
+    }
   }
 
   return { name: tagName, isClosing: false, attributes };

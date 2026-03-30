@@ -50,26 +50,26 @@ export interface ThemeDefinition {
 /**
  * Theme registry - readonly array of theme definitions
  */
-export const THEME_REGISTRY: readonly ThemeDefinition[] = [
-  {
+export const THEME_REGISTRY: readonly ThemeDefinition[] = Object.freeze([
+  Object.freeze({
     name: 'light',
     displayName: 'Light',
     description: 'Light theme with bright colors',
     cssSelector: '[data-theme="light"]',
-  },
-  {
+  }),
+  Object.freeze({
     name: 'dark',
     displayName: 'Dark',
     description: 'Dark theme with dark colors',
     cssSelector: '[data-theme="dark"]',
-  },
-  {
+  }),
+  Object.freeze({
     name: 'classic',
     displayName: 'Classic',
     description: 'Gallery 2 Classic (lanbilder.se) style',
     cssSelector: '[data-theme="classic"]',
-  },
-] as const;
+  }),
+] as const);
 
 /**
  * Type for theme names - union type derived from registry

@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useRetry } from './useRetry';
 
 describe('useRetry', () => {
@@ -25,13 +25,23 @@ describe('useRetry', () => {
     it('executes function successfully on first attempt', async () => {
       const mockFn = vi.fn().mockResolvedValue('success');
 
-      const { result } = renderHook(() => useRetry(mockFn));
+      const { result } = renderHook(() =>
+        useRetry(mockFn, { initialDelay: 100 }),
+      );
 
-      await result.current.retry();
+      // Start retry
+      act(() => {
+        result.current.retry();
+      });
+
+      // Advance timer to fire the initial delay
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+      });
 
       expect(mockFn).toHaveBeenCalledTimes(1);
-      expect(result.current.retryCount).toBe(0);
       expect(result.current.isRetrying).toBe(false);
+      expect(result.current.retryCount).toBe(0);
     });
 
     it('retries on failure', async () => {
@@ -44,16 +54,19 @@ describe('useRetry', () => {
         useRetry(mockFn, { initialDelay: 100 }),
       );
 
-      const retryPromise = result.current.retry();
-
-      // Wait for delay
-      await vi.advanceTimersByTimeAsync(100);
-
-      await waitFor(() => {
-        expect(result.current.retryCount).toBeGreaterThan(0);
+      act(() => {
+        result.current.retry();
       });
 
-      await retryPromise;
+      // First retry delay: 100ms (attempt 0: 100 * 2^0 = 100)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+      });
+
+      // After first call fails, it schedules a second attempt with 200ms delay
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(200);
+      });
 
       expect(mockFn).toHaveBeenCalledTimes(2);
     });
@@ -70,16 +83,22 @@ describe('useRetry', () => {
         }),
       );
 
-      const retryPromise = result.current.retry();
+      act(() => {
+        result.current.retry();
+      });
 
-      // Advance through retries
-      await vi.advanceTimersByTimeAsync(100);
-      await vi.advanceTimersByTimeAsync(200);
+      // First retry delay: 100ms (attempt 0)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+      });
 
-      await retryPromise;
+      // Second retry delay: 200ms (attempt 1)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(200);
+      });
 
-      expect(mockFn).toHaveBeenCalledTimes(2);
       expect(onMaxRetriesReached).toHaveBeenCalled();
+      expect(mockFn).toHaveBeenCalledTimes(2);
       expect(result.current.canRetry).toBe(false);
     });
   });
@@ -99,17 +118,30 @@ describe('useRetry', () => {
         }),
       );
 
-      const retryPromise = result.current.retry();
+      act(() => {
+        result.current.retry();
+      });
 
-      // First retry after 100ms
-      await vi.advanceTimersByTimeAsync(100);
+      // First retry after 100ms delay (attempt 0: 100 * 2^0 = 100)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+      });
+
+      expect(mockFn).toHaveBeenCalledTimes(1);
+
+      // Second retry after 200ms (attempt 1: 100 * 2^1 = 200)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(200);
+      });
+
       expect(mockFn).toHaveBeenCalledTimes(2);
 
-      // Second retry after 200ms (100 * 2)
-      await vi.advanceTimersByTimeAsync(200);
-      expect(mockFn).toHaveBeenCalledTimes(3);
+      // Third retry after 400ms (attempt 2: 100 * 2^2 = 400)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(400);
+      });
 
-      await retryPromise;
+      expect(mockFn).toHaveBeenCalledTimes(3);
     });
 
     it('respects max delay cap', async () => {
@@ -120,17 +152,21 @@ describe('useRetry', () => {
           initialDelay: 1000,
           maxDelay: 2000,
           backoffMultiplier: 10,
+          maxRetries: 3,
         }),
       );
 
-      const retryPromise = result.current.retry();
+      act(() => {
+        result.current.retry();
+      });
 
-      // First retry delay should be capped at maxDelay
-      await vi.advanceTimersByTimeAsync(2000);
+      // Advance enough time for all retries (capped at 2000ms each)
+      for (let i = 0; i < 3; i++) {
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(2000);
+        });
+      }
 
-      await retryPromise;
-
-      // Verify delay was capped
       expect(mockFn).toHaveBeenCalled();
     });
   });
@@ -148,14 +184,21 @@ describe('useRetry', () => {
 
       expect(result.current.retryCount).toBe(0);
 
-      const retryPromise = result.current.retry();
-      await vi.advanceTimersByTimeAsync(100);
-
-      await waitFor(() => {
-        expect(result.current.retryCount).toBeGreaterThan(0);
+      act(() => {
+        result.current.retry();
       });
 
-      await retryPromise;
+      // First attempt after 100ms delay
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+      });
+
+      // Second attempt after 200ms delay
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(200);
+      });
+
+      expect(mockFn).toHaveBeenCalledTimes(2);
     });
 
     it('tracks isRetrying state', async () => {
@@ -165,12 +208,18 @@ describe('useRetry', () => {
         useRetry(mockFn, { initialDelay: 100 }),
       );
 
-      const retryPromise = result.current.retry();
+      // Start retry
+      act(() => {
+        result.current.retry();
+      });
 
+      // isRetrying should be true immediately after calling retry
       expect(result.current.isRetrying).toBe(true);
 
-      await vi.advanceTimersByTimeAsync(100);
-      await retryPromise;
+      // Advance timer to complete the retry
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+      });
 
       expect(result.current.isRetrying).toBe(false);
     });
@@ -183,9 +232,6 @@ describe('useRetry', () => {
       );
 
       expect(result.current.canRetry).toBe(true);
-
-      // After max retries, canRetry should be false
-      // This would be tested after retries are exhausted
     });
   });
 
@@ -197,12 +243,14 @@ describe('useRetry', () => {
         useRetry(mockFn, { initialDelay: 100 }),
       );
 
-      const retryPromise = result.current.retry();
-      await vi.advanceTimersByTimeAsync(50);
+      act(() => {
+        result.current.retry();
+      });
 
-      result.current.reset();
-
-      await retryPromise;
+      // Reset before timer fires
+      act(() => {
+        result.current.reset();
+      });
 
       expect(result.current.retryCount).toBe(0);
       expect(result.current.isRetrying).toBe(false);

@@ -41,5 +41,3 @@ export function ImageGridEmpty({
     </div>
   );
 }
-
-export default ImageGridEmpty;

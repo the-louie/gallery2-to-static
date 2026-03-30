@@ -60,10 +60,10 @@ describe('AlbumDetailPage', () => {
     render(<AlbumDetailPage />, { initialEntries: ['/album/7'] });
 
     await waitFor(() => {
-      expect(screen.getByText('Albums')).toBeInTheDocument();
+      expect(screen.getByRole('region', { name: 'Child albums' })).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Images')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Images' })).toBeInTheDocument();
   });
 
   it('displays error message when album not found', () => {
@@ -170,7 +170,7 @@ describe('AlbumDetailPage', () => {
       });
 
       expect(screen.getByRole('link', { name: 'Go to home page' })).toBeInTheDocument();
-      expect(screen.getByText('Photos')).toBeInTheDocument();
+      expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toHaveTextContent('Photos');
     });
 
     it('does not display breadcrumbs when path is empty in metadata', () => {

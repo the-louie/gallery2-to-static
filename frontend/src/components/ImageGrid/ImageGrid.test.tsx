@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test-utils';
+import { render, screen, waitFor } from '@/test-utils';
 import userEvent from '@testing-library/user-event';
 import { ImageGrid } from './ImageGrid';
 import { mockPhotos, mockChildren, mockEmptyChildren } from '@/__mocks__/mockData';
@@ -78,7 +78,7 @@ describe('ImageGrid', () => {
   });
 
   describe('Component Rendering with Images Prop', () => {
-    it('renders images from props', () => {
+    it('renders images from props', async () => {
       mockUseAlbumData.mockReturnValue({
         data: null,
         isLoading: false,
@@ -88,8 +88,11 @@ describe('ImageGrid', () => {
       });
 
       render(<ImageGrid images={mockPhotos} />);
-      expect(screen.getByAltText('Test Photo')).toBeInTheDocument();
-      expect(screen.getByAltText('Portrait Photo')).toBeInTheDocument();
+      // Images render after lazy-load fallback timeout
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Test Photo' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Portrait Photo' })).toBeInTheDocument();
+      });
     });
 
     it('renders loading state when isLoading prop is true', () => {
@@ -133,7 +136,7 @@ describe('ImageGrid', () => {
       expect(mockUseAlbumData).toHaveBeenCalledWith(7);
     });
 
-    it('filters images from loaded data', () => {
+    it('filters images from loaded data', async () => {
       mockUseAlbumData.mockReturnValue({
         data: mockChildren,
         isLoading: false,
@@ -143,9 +146,10 @@ describe('ImageGrid', () => {
       });
 
       render(<ImageGrid albumId={7} />);
-      // Should only show images, not albums
-      expect(screen.getByAltText('Test Photo')).toBeInTheDocument();
-      // Albums don't render as images, so we check that no album title appears
+      // Should only show images, not albums (wait for lazy load)
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Test Photo' })).toBeInTheDocument();
+      });
       expect(screen.queryByText('Test Album')).not.toBeInTheDocument();
     });
 
@@ -178,7 +182,7 @@ describe('ImageGrid', () => {
 
       render(<ImageGrid albumId={7} />);
       expect(screen.getByText(/Error loading images/)).toBeInTheDocument();
-      expect(screen.getByText('Failed to load')).toBeInTheDocument();
+      expect(screen.getByText(/Failed to load/)).toBeInTheDocument();
     });
 
     it('handles empty data from hook', () => {
@@ -236,6 +240,10 @@ describe('ImageGrid', () => {
 
       render(<ImageGrid images={mockPhotos} onImageClick={handleClick} />);
 
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Test Photo' })).toBeInTheDocument();
+      });
+
       const imageThumbnail = screen.getByRole('button', { name: 'Test Photo' });
       await user.click(imageThumbnail);
       expect(handleClick).toHaveBeenCalledWith(mockPhotos[0]);
@@ -243,7 +251,7 @@ describe('ImageGrid', () => {
   });
 
   describe('Accessibility', () => {
-    it('has proper ARIA attributes', () => {
+    it('has proper ARIA attributes', async () => {
       mockUseAlbumData.mockReturnValue({
         data: null,
         isLoading: false,
@@ -286,7 +294,7 @@ describe('ImageGrid', () => {
       expect(mockUseAlbumData).toHaveBeenCalledWith(null);
     });
 
-    it('prioritizes images prop over loaded data', () => {
+    it('prioritizes images prop over loaded data', async () => {
       mockUseAlbumData.mockReturnValue({
         data: mockChildren,
         isLoading: false,
@@ -296,12 +304,14 @@ describe('ImageGrid', () => {
       });
 
       render(<ImageGrid images={mockPhotos} albumId={7} />);
-      // Should show images from prop, not from loaded data
-      expect(screen.getByAltText('Test Photo')).toBeInTheDocument();
-      expect(screen.getByAltText('Portrait Photo')).toBeInTheDocument();
+      // Should show images from prop, not from loaded data (wait for lazy load)
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Test Photo' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Portrait Photo' })).toBeInTheDocument();
+      });
     });
 
-    it('handles mixed data with albums and photos', () => {
+    it('handles mixed data with albums and photos', async () => {
       mockUseAlbumData.mockReturnValue({
         data: mockChildren,
         isLoading: false,
@@ -311,14 +321,16 @@ describe('ImageGrid', () => {
       });
 
       render(<ImageGrid albumId={7} />);
-      // Should only show images
-      expect(screen.getByAltText('Test Photo')).toBeInTheDocument();
+      // Should only show images (wait for lazy load)
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Test Photo' })).toBeInTheDocument();
+      });
       expect(screen.queryByText('Test Album')).not.toBeInTheDocument();
     });
   });
 
   describe('Filter Integration', () => {
-    it('applies date range filter to images', () => {
+    it('applies date range filter to images', async () => {
       const criteria: FilterCriteria = {
         dateRange: {
           start: new Date('2024-01-01').getTime(),
@@ -359,11 +371,13 @@ describe('ImageGrid', () => {
         </FilterProvider>
       );
 
-      // Should only show image within date range
-      expect(screen.getByText('Test Photo')).toBeInTheDocument();
+      // Should only show image within date range (wait for lazy load)
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Test Photo' })).toBeInTheDocument();
+      });
     });
 
-    it('applies type filter to images', () => {
+    it('applies type filter to images', async () => {
       const criteria: FilterCriteria = {
         albumType: 'GalleryPhotoItem',
       };
@@ -389,8 +403,10 @@ describe('ImageGrid', () => {
         </FilterProvider>
       );
 
-      // Should only show images
-      expect(screen.getByText('Test Photo')).toBeInTheDocument();
+      // Should only show images (wait for lazy load)
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Test Photo' })).toBeInTheDocument();
+      });
       expect(screen.queryByText('Test Album')).not.toBeInTheDocument();
     });
 

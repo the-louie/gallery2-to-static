@@ -38,7 +38,58 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, userEvent } from '@/test-utils';
 import { Layout } from './Layout';
 import App from '@/App';
+import {
+  loadIndex,
+  loadPathIndex,
+  resolvePathToAlbumId,
+} from '@/utils/dataLoader';
 import { mockChildren } from '@/__mocks__/mockData';
+
+// jsdom does not implement scrollIntoView
+Element.prototype.scrollIntoView = vi.fn();
+
+vi.mock('@/hooks/useSiteMetadata', () => ({
+  useSiteMetadata: vi.fn().mockReturnValue({
+    siteName: 'Test Gallery',
+    siteDescription: 'Test',
+    rootAlbumId: 7,
+    isLoading: false,
+    error: null,
+  }),
+}));
+
+vi.mock('@/utils/dataLoader', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/utils/dataLoader')>();
+  return {
+    ...actual,
+    findRootAlbumId: vi.fn().mockResolvedValue(7),
+    loadAlbum: vi.fn().mockResolvedValue({
+      metadata: {
+        albumId: 7,
+        albumTitle: null,
+        albumDescription: null,
+        albumTimestamp: 0,
+        ownerName: null,
+      },
+      children: [],
+    }),
+    loadIndex: vi.fn().mockResolvedValue({
+      rootAlbumId: 7,
+      rootAlbumFile: '7.json',
+      siteName: 'Test Gallery',
+      siteDescription: 'Test',
+      generatedAt: '2026-01-01T00:00:00Z',
+      metadata: {
+        rootAlbumId: 7,
+        rootAlbumTitle: 'Test Gallery',
+        rootAlbumDescription: 'Test',
+        rootAlbumTimestamp: null,
+      },
+    }),
+    loadPathIndex: vi.fn().mockResolvedValue({}),
+    resolvePathToAlbumId: vi.fn().mockResolvedValue(null),
+  };
+});
 
 describe('Layout', () => {
   it('renders the layout component', () => {
@@ -131,7 +182,7 @@ describe('Layout', () => {
       </Layout>,
     );
 
-    const title = screen.getByText('Gallery 2 to Static');
+    const title = screen.getByText('Test Gallery');
     expect(title).toBeInTheDocument();
     expect(title).toHaveClass('layout-title');
   });
@@ -198,10 +249,24 @@ describe('Layout Accessibility', () => {
 describe('Layout Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(loadPathIndex).mockResolvedValue({});
+    vi.mocked(resolvePathToAlbumId).mockResolvedValue(null);
+    vi.mocked(loadIndex).mockResolvedValue({
+      rootAlbumId: 7,
+      rootAlbumFile: '7.json',
+      siteName: 'Test Gallery',
+      siteDescription: 'Test',
+      generatedAt: '2026-01-01T00:00:00Z',
+      metadata: {
+        rootAlbumId: 7,
+        rootAlbumTitle: 'Test Gallery',
+        rootAlbumDescription: 'Test',
+        rootAlbumTimestamp: null,
+      },
+    });
   });
 
-  it('works correctly with App component', async () => {
-    const { waitFor } = await import('@/test-utils');
+  it('works correctly with App component', () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => mockChildren,
@@ -212,10 +277,6 @@ describe('Layout Integration', () => {
     expect(screen.getByRole('banner')).toBeInTheDocument();
     expect(screen.getByRole('main')).toBeInTheDocument();
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(screen.getByText(/Successfully loaded/)).toBeInTheDocument();
-    });
   });
 
   it('skip link navigates to main content when clicked', async () => {

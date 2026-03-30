@@ -52,5 +52,3 @@ export function AlbumGridSkeleton({
     </div>
   );
 }
-
-export default AlbumGridSkeleton;

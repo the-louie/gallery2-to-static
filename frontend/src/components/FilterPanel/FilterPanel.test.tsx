@@ -46,7 +46,8 @@ describe('FilterPanel', () => {
 
       expect(screen.getByLabelText('Date range filter')).toBeInTheDocument();
       expect(screen.getByRole('radiogroup', { name: 'Type filter' })).toBeInTheDocument();
-      expect(screen.getByRole('group', { name: 'Active filters' })).toBeInTheDocument();
+      // Active filters section renders without role="group" when no filters are active
+      expect(screen.getByLabelText('Active filters')).toBeInTheDocument();
     });
 
     it('renders collapsed by default', () => {

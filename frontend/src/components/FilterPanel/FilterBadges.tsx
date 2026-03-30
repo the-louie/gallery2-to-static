@@ -161,5 +161,3 @@ export function FilterBadges({
     </div>
   );
 }
-
-export default FilterBadges;

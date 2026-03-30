@@ -122,5 +122,3 @@ export function ThemeSwitcher({ className }: ThemeSwitcherProps): React.ReactEle
     </button>
   );
 }
-
-export default ThemeSwitcher;

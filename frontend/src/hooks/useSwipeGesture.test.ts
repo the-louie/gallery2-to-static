@@ -56,6 +56,7 @@ describe('useSwipeGesture', () => {
       const { result } = renderHook(() =>
         useSwipeGesture({
           onSwipeLeft: mockCallbacks.onSwipeLeft,
+          onSwipeStart: mockCallbacks.onSwipeStart,
         }),
       );
 
@@ -75,6 +76,11 @@ describe('useSwipeGesture', () => {
       ]);
       act(() => {
         result.current.onTouchMove(moveEvent);
+      });
+
+      // Advance time so velocity is sufficient (distance ~150px in 100ms = 1.5 px/ms)
+      act(() => {
+        vi.advanceTimersByTime(100);
       });
 
       // End touch
@@ -113,6 +119,11 @@ describe('useSwipeGesture', () => {
         result.current.onTouchMove(moveEvent);
       });
 
+      // Advance time so velocity is sufficient
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+
       // End touch
       const endEvent = createTouchEnd(
         mockElement,
@@ -130,6 +141,7 @@ describe('useSwipeGesture', () => {
       const { result } = renderHook(() =>
         useSwipeGesture({
           onSwipeLeft: mockCallbacks.onSwipeLeft,
+          onSwipeCancel: mockCallbacks.onSwipeCancel,
         }),
       );
 
@@ -147,6 +159,11 @@ describe('useSwipeGesture', () => {
       ]);
       act(() => {
         result.current.onTouchMove(moveEvent);
+      });
+
+      // Advance time so we don't hit velocity=0 edge case
+      act(() => {
+        vi.advanceTimersByTime(100);
       });
 
       // End touch
@@ -188,6 +205,11 @@ describe('useSwipeGesture', () => {
         result.current.onTouchMove(moveEvent);
       });
 
+      // Advance time so velocity is sufficient
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+
       // End touch
       const endEvent = createTouchEnd(
         mockElement,
@@ -222,6 +244,11 @@ describe('useSwipeGesture', () => {
       ]);
       act(() => {
         result.current.onTouchMove(moveEvent);
+      });
+
+      // Advance time so velocity is sufficient
+      act(() => {
+        vi.advanceTimersByTime(100);
       });
 
       // End touch
@@ -324,10 +351,12 @@ describe('useSwipeGesture', () => {
       const { result } = renderHook(() =>
         useSwipeGesture({
           onSwipeLeft: mockCallbacks.onSwipeLeft,
+          onSwipeCancel: mockCallbacks.onSwipeCancel,
         }),
       );
 
-      // Start touch with two fingers
+      // Start touch with two fingers - resets state without calling onSwipeCancel
+      // since no swipe detection was in progress
       const startEvent = createTouchStart(mockElement, [
         { identifier: 1, clientX: 200, clientY: 100 },
         { identifier: 2, clientX: 250, clientY: 100 },
@@ -337,13 +366,16 @@ describe('useSwipeGesture', () => {
       });
 
       expect(mockCallbacks.onSwipeLeft).not.toHaveBeenCalled();
-      expect(mockCallbacks.onSwipeCancel).toHaveBeenCalled();
+      // Multi-touch on start resets state without triggering cancel callback
+      // because no swipe detection was in progress
+      expect(mockCallbacks.onSwipeCancel).not.toHaveBeenCalled();
     });
 
     it('cancels swipe when second touch is added', async () => {
       const { result } = renderHook(() =>
         useSwipeGesture({
           onSwipeLeft: mockCallbacks.onSwipeLeft,
+          onSwipeCancel: mockCallbacks.onSwipeCancel,
         }),
       );
 

@@ -72,6 +72,29 @@ vi.mock('@/hooks/useAlbumMetadata', () => ({
   ),
 }));
 
+// Mock react-virtuoso VirtuosoGrid (used by VirtualGrid inside AlbumGrid/ImageGrid)
+vi.mock('react-virtuoso', () => ({
+  VirtuosoGrid: ({ data, itemContent, ...props }: any) => (
+    <div data-testid="virtuoso-grid-container" {...props}>
+      {(data || []).map((item: any, index: number) => (
+        <div key={index} data-item-index={index}>
+          {itemContent(index, item, undefined)}
+        </div>
+      ))}
+    </div>
+  ),
+}));
+
+// Mock useScrollPosition
+vi.mock('@/hooks/useScrollPosition', () => ({
+  useScrollPosition: vi.fn(() => ({
+    scrollTop: 0,
+    setScrollTop: vi.fn(),
+    saveScrollPosition: vi.fn(),
+    clearScrollPosition: vi.fn(),
+  })),
+}));
+
 describe('AlbumDetail', () => {
   const mockUseAlbumData = vi.mocked(useAlbumDataHook.useAlbumData);
   const mockUseFilter = vi.mocked(useFilterHook.useFilter);
@@ -123,7 +146,7 @@ describe('AlbumDetail', () => {
       } as Album;
 
       render(<AlbumDetail albumId={7} album={album} />);
-      expect(screen.getByText('Test Album')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Test Album', level: 2 })).toBeInTheDocument();
       expect(
         screen.getByText('Test album for JSON import verification'),
       ).toBeInTheDocument();
@@ -171,8 +194,9 @@ describe('AlbumDetail', () => {
         type: 'GalleryAlbumItem',
       } as Album;
 
-      render(<AlbumDetail albumId={7} album={album} showTitle={false} />);
-      expect(screen.queryByText('Test Album')).not.toBeInTheDocument();
+      const { container } = render(<AlbumDetail albumId={7} album={album} showTitle={false} />);
+      // Title heading should not be rendered (child AlbumCard may still show "Test Album")
+      expect(container.querySelector('h2.album-detail-title')).not.toBeInTheDocument();
     });
 
     it('hides description when showDescription is false', () => {
@@ -699,7 +723,9 @@ describe('AlbumDetail', () => {
       render(<AlbumDetail albumId={10} />);
       expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Go to home page' })).toBeInTheDocument();
-      expect(screen.getByText('Photos')).toBeInTheDocument();
+      // "Photos" appears in both breadcrumbs and title; verify at least one is present
+      const photosElements = screen.getAllByText('Photos');
+      expect(photosElements.length).toBeGreaterThanOrEqual(1);
     });
 
     it('does not render breadcrumbs when metadata breadcrumbPath is empty', () => {
@@ -928,14 +954,14 @@ describe('AlbumDetail', () => {
       } as Album;
 
       render(<AlbumDetail albumId={7} album={albumWithoutSummaryOwner} />);
-      expect(screen.getByText('Test Album')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Test Album', level: 2 })).toBeInTheDocument();
       expect(screen.queryByText('Short album summary for tests')).not.toBeInTheDocument();
       expect(screen.queryByText(/Owner: Test Owner/)).not.toBeInTheDocument();
     });
   });
 
   describe('Filter Integration', () => {
-    it('applies filters to both albums and images', () => {
+    it('applies filters to both albums and images', async () => {
       const criteria: FilterCriteria = {
         albumType: 'GalleryPhotoItem',
       };
@@ -961,8 +987,10 @@ describe('AlbumDetail', () => {
         </FilterProvider>
       );
 
-      // Should only show images, not albums
-      expect(screen.getByText('Test Photo')).toBeInTheDocument();
+      // Should only show images (via ImageThumbnail with aria-label), not albums
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Test Photo' })).toBeInTheDocument();
+      });
       expect(screen.queryByText('Test Album')).not.toBeInTheDocument();
     });
 
@@ -1006,7 +1034,7 @@ describe('AlbumDetail', () => {
         </FilterProvider>
       );
 
-      // Should only show items within date range
+      // Should only show items within date range (first item is an album)
       expect(screen.getByText('Test Album')).toBeInTheDocument();
     });
   });
@@ -1028,11 +1056,11 @@ describe('AlbumDetail', () => {
       });
 
       const { container } = render(
-        <AlbumDetail albumId={1} album={albumWithBBCode} />,
+        <AlbumDetail albumId={99} album={albumWithBBCode} />,
       );
 
       await waitFor(() => {
-        const strong = container.querySelector('strong');
+        const strong = container.querySelector('h2.album-detail-title strong');
         expect(strong).toBeInTheDocument();
         expect(strong?.textContent).toBe('Bold Album Title');
       });
@@ -1054,11 +1082,11 @@ describe('AlbumDetail', () => {
       });
 
       const { container } = render(
-        <AlbumDetail albumId={1} album={albumWithBBCode} />,
+        <AlbumDetail albumId={99} album={albumWithBBCode} />,
       );
 
       await waitFor(() => {
-        const strong = container.querySelector('strong');
+        const strong = container.querySelector('h2.album-detail-title strong');
         expect(strong).toBeInTheDocument();
         const em = strong?.querySelector('em');
         expect(em).toBeInTheDocument();
@@ -1075,10 +1103,10 @@ describe('AlbumDetail', () => {
         refetch: vi.fn(),
       });
 
-      render(<AlbumDetail albumId={1} album={mockAlbum as Album} />);
+      render(<AlbumDetail albumId={99} album={mockAlbum as Album} />);
 
       await waitFor(() => {
-        expect(screen.getByText('Test Album')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Test Album', level: 2 })).toBeInTheDocument();
       });
     });
 

@@ -107,6 +107,14 @@ function getSearchIndex(): SearchIndex {
 }
 
 /**
+ * Reset the singleton search index instance.
+ * Only used for testing to ensure a clean state between tests.
+ */
+export function resetSearchIndexInstance(): void {
+  searchIndexInstance = null;
+}
+
+/**
  * Hook to manage search state and index building
  *
  * @returns Object with search function, results, and loading states

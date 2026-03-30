@@ -439,8 +439,11 @@ describe('Breadcrumbs', () => {
       // Verify BBCode is parsed to React elements, not raw HTML
       const strong = container.querySelector('strong');
       expect(strong).toBeInTheDocument();
-      // Verify no dangerouslySetInnerHTML was used (no raw HTML strings)
-      expect(container.innerHTML).not.toContain('[b]');
+      // Verify the breadcrumbs current text does not contain raw BBCode tags
+      // (aria-label may still contain original BBCode text, which is fine)
+      const currentSpan = container.querySelector('.breadcrumbs-current');
+      expect(currentSpan?.querySelector('strong')).toBeInTheDocument();
+      expect(currentSpan?.textContent).toBe('Bold');
     });
   });
 });

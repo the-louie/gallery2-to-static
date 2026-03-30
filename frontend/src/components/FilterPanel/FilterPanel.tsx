@@ -105,5 +105,3 @@ export function FilterPanel({
     </div>
   );
 }
-
-export default FilterPanel;

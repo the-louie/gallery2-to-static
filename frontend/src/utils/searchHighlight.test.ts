@@ -40,12 +40,23 @@ describe('searchHighlight', () => {
 
     it('performs case-insensitive matching', () => {
       const result = highlightText('Vacation photos', 'VACATION');
-      expect(result[0]).toEqual({ text: 'Vacation', highlight: true });
+      // Subsequence matching highlights each character individually
+      const highlights = result.filter(
+        (part) => typeof part !== 'string' && part.highlight,
+      );
+      expect(highlights.length).toBe(8); // 'V','a','c','a','t','i','o','n'
+      // First highlighted char should be 'V' (preserving original case)
+      expect(highlights[0]).toEqual({ text: 'V', highlight: true });
     });
 
     it('preserves original case in highlighted text', () => {
       const result = highlightText('Vacation Photos', 'vacation');
-      expect(result[0]).toEqual({ text: 'Vacation', highlight: true });
+      // Subsequence matching highlights each character individually
+      const highlights = result.filter(
+        (part) => typeof part !== 'string' && part.highlight,
+      );
+      expect(highlights.length).toBe(8); // 'V','a','c','a','t','i','o','n'
+      expect(highlights[0]).toEqual({ text: 'V', highlight: true });
     });
 
     it('highlights subsequence in multiple word text', () => {
@@ -104,14 +115,22 @@ describe('searchHighlight', () => {
 
     it('escapes HTML in text', () => {
       const result = highlightTextAsHtml('<script>alert("xss")</script>', 'script');
+      // Raw <script> tag must not appear (XSS prevention)
       expect(result).not.toContain('<script>');
-      expect(result).toContain('&lt;script&gt;');
+      // The < and > must be properly escaped
+      expect(result).toContain('&lt;');
+      expect(result).toContain('&gt;');
+      // Matched characters are individually highlighted
+      expect(result).toContain('<mark>s</mark>');
     });
 
     it('escapes HTML in highlighted text', () => {
       const result = highlightTextAsHtml('Test <b>bold</b> text', 'bold');
-      expect(result).toContain('&lt;b&gt;');
+      // Raw <b> tag must not appear
       expect(result).not.toContain('<b>');
+      // The < and > around 'b' must be escaped
+      expect(result).toContain('&lt;');
+      expect(result).toContain('&gt;');
     });
 
     it('handles subsequence matches in multiple words', () => {

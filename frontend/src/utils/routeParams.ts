@@ -28,6 +28,11 @@ export function parseAlbumId(albumIdParam: string | undefined): number | null {
     return null;
   }
 
+  // Reject strings that are not purely digits (e.g. '7abc', '7.5', 'Infinity')
+  if (!/^\d+$/.test(albumIdParam)) {
+    return null;
+  }
+
   const parsed = Number.parseInt(albumIdParam, 10);
 
   // Check if parsing resulted in a valid positive integer
@@ -56,6 +61,11 @@ export function parseAlbumId(albumIdParam: string | undefined): number | null {
  */
 export function parseImageId(imageIdParam: string | undefined): number | null {
   if (imageIdParam === undefined || imageIdParam === '') {
+    return null;
+  }
+
+  // Reject strings that are not purely digits (e.g. '7abc', '7.5', 'Infinity')
+  if (!/^\d+$/.test(imageIdParam)) {
     return null;
   }
 

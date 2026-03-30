@@ -5,13 +5,9 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import {
-  supportsWebP,
-  supportsAVIF,
-  detectWebPSupportAsync,
-  detectAVIFSupportAsync,
-  getBestFormat,
-} from './imageFormat';
+
+// We use dynamic imports after vi.resetModules() to get a fresh module each test.
+type ImageFormatModule = typeof import('./imageFormat');
 
 describe('imageFormat', () => {
   let mockImage: {
@@ -20,8 +16,10 @@ describe('imageFormat', () => {
     src: string;
   };
 
-  beforeEach(() => {
-    // Reset cache by clearing module
+  let mod: ImageFormatModule;
+
+  beforeEach(async () => {
+    // Reset module registry so the module-level cache is recreated
     vi.resetModules();
 
     // Mock Image constructor
@@ -32,23 +30,26 @@ describe('imageFormat', () => {
     };
 
     global.Image = vi.fn(() => mockImage as any) as any;
+
+    // Dynamically import a fresh copy of the module
+    mod = await import('./imageFormat');
   });
 
   describe('supportsWebP', () => {
     it('returns false when not cached', () => {
-      expect(supportsWebP()).toBe(false);
+      expect(mod.supportsWebP()).toBe(false);
     });
   });
 
   describe('supportsAVIF', () => {
     it('returns false when not cached', () => {
-      expect(supportsAVIF()).toBe(false);
+      expect(mod.supportsAVIF()).toBe(false);
     });
   });
 
   describe('detectWebPSupportAsync', () => {
     it('detects WebP support when image loads successfully', async () => {
-      const promise = detectWebPSupportAsync();
+      const promise = mod.detectWebPSupportAsync();
 
       // Simulate successful load
       if (mockImage.onload) {
@@ -57,11 +58,11 @@ describe('imageFormat', () => {
 
       const result = await promise;
       expect(result).toBe(true);
-      expect(supportsWebP()).toBe(true);
+      expect(mod.supportsWebP()).toBe(true);
     });
 
     it('detects no WebP support when image fails to load', async () => {
-      const promise = detectWebPSupportAsync();
+      const promise = mod.detectWebPSupportAsync();
 
       // Simulate load error
       if (mockImage.onerror) {
@@ -70,19 +71,19 @@ describe('imageFormat', () => {
 
       const result = await promise;
       expect(result).toBe(false);
-      expect(supportsWebP()).toBe(false);
+      expect(mod.supportsWebP()).toBe(false);
     });
 
     it('uses cached result on subsequent calls', async () => {
       // First call - simulate success
-      const promise1 = detectWebPSupportAsync();
+      const promise1 = mod.detectWebPSupportAsync();
       if (mockImage.onload) {
         mockImage.onload();
       }
       await promise1;
 
       // Second call should use cache
-      const result = await detectWebPSupportAsync();
+      const result = await mod.detectWebPSupportAsync();
       expect(result).toBe(true);
       // Image should not be created again
       expect(global.Image).toHaveBeenCalledTimes(1);
@@ -93,7 +94,11 @@ describe('imageFormat', () => {
       const originalCanvas = global.HTMLCanvasElement;
       (global as any).HTMLCanvasElement = undefined;
 
-      const result = await detectWebPSupportAsync();
+      // Need a fresh module import after changing HTMLCanvasElement
+      vi.resetModules();
+      const freshMod: ImageFormatModule = await import('./imageFormat');
+
+      const result = await freshMod.detectWebPSupportAsync();
       expect(result).toBe(false);
 
       // Restore
@@ -103,7 +108,7 @@ describe('imageFormat', () => {
 
   describe('detectAVIFSupportAsync', () => {
     it('detects AVIF support when image loads successfully', async () => {
-      const promise = detectAVIFSupportAsync();
+      const promise = mod.detectAVIFSupportAsync();
 
       // Simulate successful load
       if (mockImage.onload) {
@@ -112,11 +117,11 @@ describe('imageFormat', () => {
 
       const result = await promise;
       expect(result).toBe(true);
-      expect(supportsAVIF()).toBe(true);
+      expect(mod.supportsAVIF()).toBe(true);
     });
 
     it('detects no AVIF support when image fails to load', async () => {
-      const promise = detectAVIFSupportAsync();
+      const promise = mod.detectAVIFSupportAsync();
 
       // Simulate load error
       if (mockImage.onerror) {
@@ -125,70 +130,87 @@ describe('imageFormat', () => {
 
       const result = await promise;
       expect(result).toBe(false);
-      expect(supportsAVIF()).toBe(false);
+      expect(mod.supportsAVIF()).toBe(false);
     });
 
     it('uses cached result on subsequent calls', async () => {
       // First call - simulate success
-      const promise1 = detectAVIFSupportAsync();
+      const promise1 = mod.detectAVIFSupportAsync();
       if (mockImage.onload) {
         mockImage.onload();
       }
       await promise1;
 
       // Second call should use cache
-      const result = await detectAVIFSupportAsync();
+      const result = await mod.detectAVIFSupportAsync();
       expect(result).toBe(true);
     });
   });
 
   describe('getBestFormat', () => {
     it('returns avif when AVIF is supported', async () => {
-      // Mock AVIF support
-      const promise = detectAVIFSupportAsync();
+      // Mock AVIF support - detectAVIFSupportAsync creates an Image
+      const promise = mod.detectAVIFSupportAsync();
       if (mockImage.onload) {
         mockImage.onload();
       }
       await promise;
 
-      const format = await getBestFormat();
+      const format = await mod.getBestFormat();
       expect(format).toBe('avif');
     });
 
     it('returns webp when WebP is supported but AVIF is not', async () => {
       // Mock AVIF failure
-      const avifPromise = detectAVIFSupportAsync();
+      const avifPromise = mod.detectAVIFSupportAsync();
       if (mockImage.onerror) {
         mockImage.onerror();
       }
       await avifPromise;
 
+      // Reset mockImage for next Image() call
+      mockImage = {
+        onload: null,
+        onerror: null,
+        src: '',
+      };
+      global.Image = vi.fn(() => mockImage as any) as any;
+
       // Mock WebP success
-      const webpPromise = detectWebPSupportAsync();
+      const webpPromise = mod.detectWebPSupportAsync();
       if (mockImage.onload) {
         mockImage.onload();
       }
       await webpPromise;
 
-      const format = await getBestFormat();
+      const format = await mod.getBestFormat();
       expect(format).toBe('webp');
     });
 
     it('returns original when neither format is supported', async () => {
-      // Mock both failures
-      const avifPromise = detectAVIFSupportAsync();
+      // Mock AVIF failure
+      const avifPromise = mod.detectAVIFSupportAsync();
       if (mockImage.onerror) {
         mockImage.onerror();
       }
       await avifPromise;
 
-      const webpPromise = detectWebPSupportAsync();
+      // Reset mockImage for next Image() call
+      mockImage = {
+        onload: null,
+        onerror: null,
+        src: '',
+      };
+      global.Image = vi.fn(() => mockImage as any) as any;
+
+      // Mock WebP failure
+      const webpPromise = mod.detectWebPSupportAsync();
       if (mockImage.onerror) {
         mockImage.onerror();
       }
       await webpPromise;
 
-      const format = await getBestFormat();
+      const format = await mod.getBestFormat();
       expect(format).toBe('original');
     });
   });

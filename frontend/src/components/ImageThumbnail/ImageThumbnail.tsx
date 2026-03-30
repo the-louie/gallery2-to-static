@@ -369,5 +369,3 @@ export const ImageThumbnail = React.memo(ImageThumbnailComponent, (prevProps, ne
     prevProps.onClick === nextProps.onClick
   );
 });
-
-export default ImageThumbnail;

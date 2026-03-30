@@ -142,5 +142,3 @@ export function TypeFilter({
     </div>
   );
 }
-
-export default TypeFilter;

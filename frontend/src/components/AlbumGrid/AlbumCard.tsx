@@ -133,5 +133,3 @@ function AlbumCardComponent({
  * when props haven't changed.
  */
 export const AlbumCard = React.memo(AlbumCardComponent);
-
-export default AlbumCard;
