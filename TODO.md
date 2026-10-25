@@ -187,6 +187,7 @@ _Progress 2026-10-25 (Sprint 04 T-05): React 19.3.1, react-dom 19.3.1, @types/re
 _Progress 2026-10-25 (Sprint 04 T-06): react-router-dom 7.18.4 (re-exports react-router 7). `npm audit --omit=dev`: **0**. No relative `to`/`navigate` paths in the app, so v7's splat-route resolution change does not apply; the two v7 future-flag warnings are gone from the test log. dist 611 KB._
 _Progress 2026-10-25 (Sprint 04 T-07): ESLint 9.39.5 (flat config `eslint.config.js`), typescript-eslint 8.72.0 (replaces the two @typescript-eslint packages), eslint-plugin-react 7.37.5, react-hooks 7.1.1, react-refresh 0.5.7, eslint-config-prettier 10.1.8, globals 17. **ESLint 10 not possible yet:** eslint-plugin-react 7.37.5 (latest) supports ESLint ≤ 9. Remaining full-audit items (14 high: basic-ftp, extract-zip, nanoid, zod 3) all come from size-limit's puppeteer chain (T-09)._
 _Progress 2026-10-25 (Sprint 04 T-08): TypeScript 6.0.3 in frontend and backend. **TypeScript 7 (7.0.2, latest) not possible yet:** it is the native compiler and has no classic JS API (`typescript` exports only a version and `unstable/*`); typescript-eslint 8.72 requires `typescript <6.1.0` and ts-node needs the JS API. TS 6 deprecations fixed rather than silenced (frontend `baseUrl` removed; backend `module`/`moduleResolution` `node16`, `types: ["node"]` because TS 6 no longer includes all `@types` by default; the dynamic `import('./generateThumbnail')` became a static import, which `node16` requires)._
+_Progress 2026-10-25 (Sprint 04 T-09): size-limit 14.3.0 with `@size-limit/file` 14.3.0 (preset-app dropped: its `@size-limit/time` pulled puppeteer + Chrome and all remaining dev advisories), web-vitals 6.2.3. **Frontend full `npm audit`: 0.** `npm outdated` lists only the two blocked majors: eslint/@eslint/js 10 (eslint-plugin-react) and typescript 7 (typescript-eslint, ts-node). Backend: `@types/node` stays on 22.x on purpose (Node 22 runtime)._
 Verify with `npm outdated` (empty) + `npm audit` (0) in both folders, `npm run build`, the full
 vitest run and the backend tests. Add `engines` (HYGIENE-01) so the Node version is pinned too.
 Supersedes the "can wait" note in ARCH-08 and the version part of SEC-14.
@@ -285,7 +286,9 @@ animation is lost, and the server sends `image/png` for JPEG bytes (browsers sni
 `nosniff` plus a strict MIME check can break it). Fix: write `.jpg` thumbnails and record the path,
 or keep the format (`.png()`/`.webp()` for alpha).
 
-### BUILD-04: `size-limit` patterns don't match the build
+### ~~BUILD-04: `size-limit` patterns don't match the build~~
+
+**CLOSED, verified 2026-10-25 (Sprint 04 T-09):** `frontend/package.json` `size-limit`: one entry per real chunk name (initial load = `index-*` + `rolldown-runtime-*` + `react-vendor-*` + `vendor-*`, `Lightbox-*`, 5 route chunks, total). `@size-limit/preset-app` (which adds the puppeteer/Chrome timing step) replaced by `@size-limit/file`. `npx size-limit` exits 0: initial 120.95 KB, Lightbox 4.9 KB, routes 0.8–4.2 KB, total 147.2 KB (brotli). Original row kept for the record:
 
 `frontend/package.json:9-24`: `dist/assets/js/lightbox*.js` matches no file (Vite names it
 `Lightbox-<hash>.js`, and the case differs), and `*-*.js` matches every chunk and size-limit adds

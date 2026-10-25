@@ -339,11 +339,11 @@ The backend strips BBCode and decodes entities during extraction, so frontend ti
 
 ## Bundle Size Budgets
 
-Enforced via `size-limit` in `frontend/package.json`:
-- Initial bundle: 200 KB (gzipped)
-- Route chunks: 50 KB each
+Enforced via `size-limit` (`@size-limit/file`: brotli size only, no browser) in `frontend/package.json`, `npm run size-check` after a build:
+- Initial load (entry + runtime + react-vendor + vendor, what index.html loads): 200 KB
+- Each route chunk (HomePage, AlbumDetailPage, ImageDetailPage, SearchResultsPage, PathResolverPage): 50 KB
 - Lightbox chunk: 30 KB
-- Total: 500 KB
+- Total JavaScript: 500 KB
 
 ## Key Configuration Files
 
