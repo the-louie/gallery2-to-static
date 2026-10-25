@@ -3,8 +3,8 @@
 Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–4h) and end on a demo.
 
 **Active sprint:** [Sprint 02](./sprints/sprint-02.md) — in progress.
-**Current ticket:** [Sprint 02 T-05](./sprints/sprint-02.md) (`in-progress` — Thumbnails: failOn: 'truncated', keep the photo when its thumbnail fai)
-**Last completed:** Sprint 02 T-04 (commit `899f4bc`).
+**Current ticket:** [Sprint 02 T-06](./sprints/sprint-02.md) (`todo` — .rotate()/autoOrient before resize; thumbnail dimensions from sharp's )
+**Last completed:** Sprint 02 T-05 (commit `c53b0ca`).
 
 | Sprint | Goal |
 |---|---|
