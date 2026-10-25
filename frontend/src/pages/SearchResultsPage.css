@@ -108,6 +108,7 @@
   margin: 0;
   color: var(--color-text-secondary, #666);
   line-height: 1.5;
+  overflow-wrap: anywhere; /* long URLs in descriptions widened the page on phones (T-11) */
 }
 
 .search-results-item-summary {

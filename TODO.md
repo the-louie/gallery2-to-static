@@ -39,6 +39,10 @@ _Progress 2026-10-25 (Sprint 11 T-02, T-06): `?page=N` landed with the pager in 
 
 ## P3 — Quality, hygiene and latent bugs
 
+### SEARCH-01: search results show raw BBCode in descriptions (found 2026-10-25, Sprint 11 T-11)
+
+`frontend/src/pages/SearchResultsPage.tsx:171-176` renders `album.description` through `SearchHighlight` as plain text, so `[url=http://…]here[/url]` and `[b]` show as typed (e.g. album 23281 "DH-Photo"). The album page parses it (`parseBBCodeDecoded`). Fix: strip or parse BBCode for the result text (the search index already carries it stripped for matching?: check `backend/extract.ts` searchItem) and keep highlighting on the stripped text.
+
 ## Added 2026-10-25: second pass of the review, verified at `c750fbf`
 
 These come from the full review (`code-review-rc1.md`, items B1–B16 and C), which was written

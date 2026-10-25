@@ -21,6 +21,7 @@
 .g2-matrix .giDescription {
   font-size: 1.1em;
   line-height: 1.4em;
+  overflow-wrap: anywhere; /* long URLs must not widen the page on phones */
 }
 
 .g2-matrix .giInfo {
@@ -124,4 +125,66 @@
   display: inline-block;
   width: 150px;
   line-height: 150px;
+}
+
+/* Phones (theme-matrix.md "Phones", Sprint 11 T-11): 2 columns, stacked header, 44px tap targets */
+@media (max-width: 699px) {
+  .g2-matrix .gsThumbMatrix,
+  .g2-matrix .gsThumbMatrix tbody {
+    display: block;
+  }
+
+  .g2-matrix .gsThumbMatrix tr {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .g2-matrix .gsThumbMatrix td {
+    display: block;
+    box-sizing: border-box;
+    width: 50%;
+    padding: 0.7em 0.3em;
+  }
+
+  /* the cells Gallery 2 used to fill a short row */
+  .g2-matrix .gsThumbMatrix td:not(.giItemCell):not(.giAlbumCell) {
+    display: none;
+  }
+
+  .g2-matrix .gbHeader,
+  .g2-matrix .gbHeader tbody,
+  .g2-matrix .gbHeader tr,
+  .g2-matrix .gbHeader td {
+    display: block;
+    width: auto;
+  }
+
+  .g2-matrix .gbHeaderInfo {
+    margin-top: 0.5em;
+  }
+
+  .g2-matrix .giInfo {
+    font-size: 12px;
+  }
+
+  .g2-matrix .gbNavigator a,
+  .g2-matrix .gsPages a,
+  .g2-matrix .gsPages span span {
+    display: inline-block;
+    min-height: 44px;
+    line-height: 44px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .g2-matrix .gsPages a,
+  .g2-matrix .gsPages span span {
+    min-width: 32px;
+    text-align: center;
+  }
+
+  .g2-matrix .gbNavigator .next-and-last {
+    float: none;
+    text-align: right;
+  }
 }

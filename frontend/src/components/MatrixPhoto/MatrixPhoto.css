@@ -37,3 +37,10 @@
 .g2-matrix .block-core-PhotoSizes select {
   font-size: 1em;
 }
+
+@media (max-width: 699px) {
+  .g2-matrix .block-core-PhotoSizes select {
+    min-height: 44px;
+    font-size: 16px;
+  }
+}

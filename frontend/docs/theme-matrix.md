@@ -77,7 +77,9 @@ Operator: "create detailed notes about the login/register links, we will need it
 
 ## Phones
 
-Gallery 2 had no small-screen layout. Below 700px wide: the sidebar moves under the content, the matrix drops to 2 columns, and text is set so the smallest (`.giInfo`) is at least 12px. Checked per device in Sprint 11 T-11.
+Gallery 2 had no small-screen layout. Below 700px wide (`@media (max-width: 699px)` in the Matrix CSS files): the sidebar moves under the content, the matrix drops to 2 columns (the table rows become flex rows), the album/photo header stacks, the smallest text (`.giInfo`) is 12px, the search box and size select are 44px tall with 16px text (no iOS zoom), and nav/pager/sidebar links are 44px tap targets. Long URLs in descriptions wrap (`overflow-wrap: anywhere`; one widened the search page to 548px).
+
+**Checked 2026-10-25 (Sprint 11 T-11)** with `scratchpad/mobilecheck.cjs` (puppeteer device presets): iPhone SE, iPhone 15 Pro, Pixel 5, Galaxy S8, iPad Mini, each portrait and landscape, and a 320px viewport; pages: root, album page 1 and 24, photo, search, an old `/v/` URL. Per page: no horizontal scroll, no image wider than the viewport, no console errors; on phones also tap targets ≥ 44px, text ≥ 12px, sidebar below the content. **66/66 pass.** Screenshots and `results.json`: `/srv/share/lanbilder2/inspo/screens/mobile/`. Tablets (≥ 700px) get the desktop layout with the 2006 sizes (9px info text), as intended.
 
 ## Status after Sprint 11 T-10 (2026-10-25)
 

@@ -75,3 +75,22 @@
 .g2-matrix .block-core-PeerList span.current {
   color: #0b6cff;
 }
+
+/* Phones: 44px tap targets in the sidebar */
+@media (max-width: 699px) {
+  .g2-matrix .block-core-PeerList a,
+  .g2-matrix .block-core-PeerList span,
+  .g2-matrix .block-core-ItemLinks a,
+  .g2-matrix .block-search-SearchBlock a.advanced {
+    padding-top: 13px;
+    padding-bottom: 13px;
+    line-height: 18px; /* 13 + 18 + 13 = 44px tap target */
+  }
+
+  .g2-matrix .block-search-SearchBlock .textbox {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 44px;
+    font-size: 16px; /* iOS zooms into smaller text boxes */
+  }
+}

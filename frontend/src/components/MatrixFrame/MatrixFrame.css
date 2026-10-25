@@ -164,3 +164,15 @@
 .g2-matrix *::after {
   box-sizing: content-box;
 }
+
+@media (max-width: 699px) {
+  .g2-matrix .gbBreadCrumb a,
+  .g2-matrix .gbBreadCrumb span {
+    display: inline-block;
+    line-height: 32px;
+  }
+
+  .g2-matrix .gsFooter {
+    padding: 8px 0;
+  }
+}
