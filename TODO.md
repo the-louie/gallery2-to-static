@@ -494,6 +494,23 @@ throws `NetworkError` on a 5xx, on a network failure or on bad JSON. That reject
 lanbilder.se album links) depends on this. Fix: catch the error and render an error state with
 Retry. Treat `null` (404) as not-found, as today.
 
+### DECISION-01: hosting model — Cloudflare Pages + image server, or one nginx host (needs operator)
+
+Operator, 2026-10-25: the code was written for the frontend on **Cloudflare Pages** (load speed)
+with the **images on a second server**; feasibility was never finished. The current plan in
+`/code/misc/hosting` deploys everything on **lanbilder2** (nginx behind a Cloudflare tunnel). Several
+code choices follow from the Pages idea (HashRouter, fixed `/g2data` paths, JSON shipped as static
+files) and work on either model. Points to settle before deploy:
+- Pages limits (as of writing: 20,000 files per deployment, 25 MiB per file): `dist/` + `data/`
+  (~1,400 JSON) fits; the 60,851 images and thumbnails do not, so they need an image origin either way.
+- Same-origin vs. a separate image host: `IMAGE_BASE_URL`/`THUMBNAIL_BASE_URL` are fixed `/g2data/…`
+  today, so a second host means a Cloudflare route/Worker in front, or making the base URL
+  configurable (and CSP `img-src` gets that host).
+- Old lanbilder.se direct image links need a server that can serve the legacy tree (nginx can; Pages
+  cannot serve 57 GB).
+
+Until decided, tickets keep both models working (e.g. BUILD-02 serves `/g2data/` outside `dist/`).
+
 ### DEPS-01: all dependencies on their latest version (operator, 2026-10-25)
 
 Operator requirement before deploy: every dependency in `frontend/package.json` and
