@@ -1,7 +1,7 @@
 # Sprint 02: backend output you can trust
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-02 (`todo` — Empty / . / .. segments fall back to an id segment; index insertion as)
+**Current ticket:** T-02 (`in-progress` — Empty / . / .. segments fall back to an id segment; index insertion as)
 **Last completed:** T-01 (`done` — commit `da9d9f6`)
 
 **Goal:** the extractor's output is correct and complete for the real tree: every album reachable by
@@ -20,7 +20,7 @@ heavy job at a time); commit locally to `master`.
 | # | Ticket | Backlog | Est | Deps | Status | Acceptance / Notes |
 |---|---|---|---|---|---|---|
 | T-01 | Backend `npm ci`; fix `pathSegments.test.ts` stale expectation (dots stay legal, parity with frontend) | TEST-02 | 1h | – | done | all backend test files pass. Landed in `da9d9f6` |
-| T-02 | Empty / `.` / `..` segments fall back to an id segment; index insertion asserts on collision | LOGIC-11 (part 1) | 2h | T-01 | todo | tests for "", "[b][/b]", ".", "..", null title |
+| T-02 | Empty / `.` / `..` segments fall back to an id segment; index insertion asserts on collision | LOGIC-11 (part 1) | 2h | T-01 | in-progress | tests for "", "[b][/b]", ".", "..", null title |
 | T-03 | Compute each child's segment once in the parent and pass it to both the index key and the emitted link; post-extraction invariant check | LOGIC-11 (part 2) | 4h | T-02 | todo | invariant check on fixture tree with duplicate-named siblings passes deterministically |
 | T-04 | sharp → latest (0.35.x+), mysql2 → latest; adapt `failOnError` call site | SEC-14, DEPS-01 (backend runtime) | 2h | T-01 | todo | backend `npm audit` 0 high; tests pass |
 | T-05 | Thumbnails: `failOn: 'truncated'`, keep the photo when its thumbnail fails, temp file + rename, skip only if size > 0 and newer than source | LOGIC-12 | 3h | T-04 | todo | truncated-JPEG fixture: photo kept, no 0-byte file, rerun regenerates |
