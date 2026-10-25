@@ -1,10 +1,6 @@
 # TODO Summarized
 
-Generated 2026-10-25 from `TODO.md` (Sprint 11). Closed rows: `docs/planning/done.md`.
-
-## P3 — Quality, hygiene and latent bugs
-
-- **SEARCH-01**: search results show raw BBCode in descriptions (found 2026-10-25, Sprint 11 T-11)
+Generated 2026-10-25 from `TODO.md` (Sprint 12). Closed rows: `docs/planning/done.md`.
 
 ## FUTURE (after production deploy)
 
@@ -18,4 +14,4 @@ Generated 2026-10-25 from `TODO.md` (Sprint 11). Closed rows: `docs/planning/don
 
 ## Summary
 
-**Open rows:** 6
+**Open rows:** 5

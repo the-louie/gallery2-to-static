@@ -1,6 +1,6 @@
 # Sprint 12: the data behind the 2006 look (PRIO-THEME-01..05, SEARCH-01)
 
-**Status:** in progress (opened 2026-10-25)
+**Status:** done (opened and closed 2026-10-25/26)
 **Current ticket:** —
 **Last completed:** T-07 (`done` — commit `06c7380`)
 
@@ -28,3 +28,13 @@ Total ≈ 28h.
 - **T-05** decided (operator, 2026-10-25): show "Gallery Administrator".
 - **T-02 / T-04** re-export on lanbilder2 (thumbnails and new resizes: about 1.2 GB + ~5 GB for 57k resizes at ~100 KB; `/mnt/storage` has 51 GB free).
 - The 2006 root used the Classic list layout, so T-07 compares its highlights by album name, not by position.
+
+## Retro
+**Worked:** the Gallery 2 database answered every "data behind the look" question (derivative chains for highlights, squarethumb for crops, `scale|1024` for the resize), so three rows closed by export changes and one by measurement alone; the measured comparison (`compare.cjs`) caught a 16px regression from the banner slot within minutes; the modern redesign as a scoped override stylesheet (`modern.css` + a test that enforces the scope) changed the look of two themes without touching the third or any component code.
+**Didn't:** three deploy mistakes in one evening (an empty tarball from `git stash create` next to a concurrent commit, a deploy script that moved the live `dist` before extracting, `sh -c` quoting through the ssh helper) — now `deploy-dist.sh` stages first, and the pitfalls are in memory; one data export ran with a stale backend copy (T-05's change was committed after the last backend deploy) and had to be repeated.
+**Found:** nothing new for the backlog; the operator's three mid-sprint additions (T-09 banner, T-10 theme link, T-11 redesign) were absorbed as tickets.
+**Backlog grooming:** PRIO-THEME-01..05, SEARCH-01, HIDE-02, BANNER-01 closed. Open rows: 13 → 5 (FUT-01..05, all after the production deploy).
+
+## Demo notes
+https://lanbilder-new.phetast.nu/ — classic theme: Gallery 2's own album highlights (root page 10/10 as in 2006), "(N items total)" with sub-albums, "Owner: Gallery Administrator", 1024px photo-page resizes (175 KB instead of 1.7 MB), BBCode-free search results, DHW07 "Inofficiella" gone, the glitched.se banner above the nav bar, "Theme: modern" at the bottom of the sidebar; measured against 2006: 0 block differences on the album and photo pages (sidebar 32px taller by design). Modern themes: new light and dark design (screenshots `/srv/share/lanbilder2/inspo/screens/modern/`). Gates: vitest 1593/1593 (103 files), lint 0/0, typecheck 0 (app, tests, backend), backend 16/16, `npm audit` 0, check:dist OK (763 KB), check-brotli OK.
+

@@ -280,13 +280,13 @@ Three themes available, selected via `ThemeDropdown` or `ThemeSwitcher`:
 
 | Theme | Description | CSS Selector |
 |-------|-------------|--------------|
-| `light` | Warm greys, terracotta/navy accents | `[data-theme="light"]` |
-| `dark` | Dark greys, purple accents, reduced contrast | `[data-theme="dark"]` |
+| `light` | Modern light (Sprint 12 T-11): off-white page, white cards, blue accent; `src/styles/modern.css` | `[data-theme="light"]` |
+| `dark` | Modern dark: deep navy, sky-blue accent; same layout as light (`modern.css`) | `[data-theme="dark"]` |
 | `classic` | Gallery 2 Matrix theme as lanbilder.se ran it in 2006 (`MatrixFrame`; spec `frontend/docs/theme-matrix.md`) | `[data-theme="classic"]` |
 
 - Default theme: `classic`
 - Per-album theme overrides via `frontend/public/album-themes.json`
-- Theme preference stored in localStorage key `"gallery-theme-preference"`
+- Theme preference stored in localStorage key `"gallery-theme"` (the old key `"gallery-theme-preference"` is migrated once)
 - Legacy `"original"` value auto-migrated to `"classic"`
 - `ThemeContext` exposes: `theme`, `effectiveTheme`, `setTheme`, `isDark`, `isLight`, `isClassic`
 
