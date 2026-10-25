@@ -468,6 +468,217 @@ Minor, noticed while verifying BUILD-02/03:
 
 ---
 
+## Added 2026-10-25: second pass of the review, verified at `c750fbf`
+
+These come from the full review (`code-review-rc1.md`, items B1–B16 and C), which was written
+against the older `9790743`. Each one was re-checked against `c750fbf`; only items that are still
+open are listed here. The items already fixed are at the end of "Not reproduced / no action".
+
+### P1 additions
+
+### LOGIC-15: a failed `index.json` load leaves path URLs spinning forever
+
+`frontend/src/pages/PathResolverPage.tsx:30-66`: the async IIFE wraps only `decodeURIComponent`
+in a try/catch. `resolvePathToAlbumId` → `loadPathIndex` → `loadIndex` (`dataLoader.ts:380-395`)
+throws `NetworkError` on a 5xx, on a network failure or on bad JSON. That rejection is unhandled,
+`resolved` stays `undefined`, and the spinner never ends. Every path-based URL (all the old
+lanbilder.se album links) depends on this. Fix: catch the error and render an error state with
+Retry. Treat `null` (404) as not-found, as today.
+
+### P2 additions
+
+### PERF-02: every path navigation re-downloads and re-parses the whole `index.json`
+
+`loadIndex()` (`dataLoader.ts:380`) has no cache. `loadPathIndex()` (`:515`) calls it on every
+resolve, and `PathResolverPage.tsx:27` runs `setResolved(undefined)` first, so the page unmounts.
+Pressing → in the lightbox on a path URL shows a spinner flash, refetches the full path index
+(1,388+ entries), remounts the Lightbox (zoom reset, focus jumps) and drops the neighbour preloads.
+Fix: memoise the `loadIndex()` promise at module level (drop it on failure so Retry works), and keep
+the previous `resolved` until the new one is ready.
+
+### PERF-03: the image cache is wiped and fetches aborted on every lightbox step
+
+`components/Layout/Layout.tsx:48-55` runs `getImageCache().clear()` on every `pathname`/`key`
+change, and `ViewAbortContext` aborts its controller on every `pathname` change. Each lightbox
+next/previous changes the path, so the neighbours that `useImagePreload` just fetched are aborted
+or revoked. Fix: don't clear or abort when only the image id changes within the same album.
+
+### LOGIC-16: the lightbox ignores the grid's sort and filters
+
+`pages/ImageDetailPage.tsx:83` builds the lightbox list as `albumData.filter(isImage)`, in raw JSON
+order. To reproduce: sort by date descending, open the 3rd thumbnail, press →. You get the next
+image in JSON order, and "N of M" counts images the filter hid. Fix: build the list with the same
+`applyFilters` + sort the grid uses (`useSort('images')`, `FilterContext`).
+
+### LOGIC-17: closing the lightbox pushes history; album scroll position is lost
+
+`hooks/useLightbox.ts:196-197`: `closeLightbox` calls `navigate(pathForAlbum(), { replace: false })`.
+History becomes [album, image, album], so Back reopens the lightbox. The album page is unmounted
+while the image is open. `useScrollPosition` only saves (its own doc comment, lines 6 and 15, leaves
+restore to "React Router/browser"), but `HashRouter` has no `<ScrollRestoration>`, so nothing
+restores it. Closing lands at an arbitrary spot in a 500-image album. Fix: `navigate(-1)` when the
+lightbox was opened from the album (track it in location state), otherwise `replace: true`. Restore
+the saved scroll position on album mount.
+
+### LOGIC-18: date filter can't be enabled, and would hide everything
+
+- **Can't be enabled:** `components/FilterPanel/DateRangeFilter.tsx:105-140` sets
+  `dateRange = undefined` when only one date is set ("Only start date provided, don't create
+  dateRange yet"). The inputs are controlled by `criteria.dateRange`, so the first date clears
+  itself and the second can never be entered.
+- **Would hide everything:** `dateStringToTimestamp` (`:73`) returns `getTime()` (milliseconds).
+  `utils/filterUtils.ts` `matchesDateRange` compares that with `item.timestamp`, which is Unix
+  **seconds** (`Lightbox.tsx:341` multiplies by 1000). Every item would fail the filter.
+- **End date:** it is start-of-day, so the last day is excluded.
+
+Fix: keep both input values in local state, store seconds, and make `end` inclusive (end of day).
+
+### LOGIC-19: zoom limit is ~2500% instead of 400%
+
+`hooks/useImageZoom.ts:121-128`: `fitZoom = Math.min(scaleX, scaleY) * 100` with scales that are
+already percentages, then `Math.max(fitZoom, ZOOM_MAX)`. A 4000 px image in a 1000 px container
+allows 2500%. Fix: `maxZoom = ZOOM_MAX`, or the ratio without `* 100`.
+
+### LOGIC-20: `DataLoadError` imported as a type but used as a value
+
+`hooks/useSiteMetadata.ts:19` has `import { loadIndex, type DataLoadError }`, and `:65,67,97,99` use
+`instanceof DataLoadError` / `new DataLoadError(...)`. esbuild drops type-only imports, so the
+error path throws `ReferenceError: DataLoadError is not defined`, the site name never loads and
+loading never ends. It probably also appears among BUILD-01's 87 production errors (TS1361).
+Fix: a value import.
+
+### LOGIC-21: backend: one failing subtree crashes the run without cleanup
+
+`backend/index.ts:312-387`: the `recursivePromises` (child `main()` calls) start at `:316` but are
+only awaited at `:387`, after `await Promise.all(processedChildrenRaw)` (`:338`). If a subtree
+rejects while the thumbnails are still running, it is an unhandled rejection, and Node 22 exits
+without running the catch/finally or writing `index.json`. Fix: `Promise.allSettled` (or attach a
+handler right away), log the failing album id, and exit non-zero at the end.
+
+### LOGIC-22: backend: JSON for removed or excluded albums is never removed, and writes are not atomic
+
+`backend/index.ts:550,719,754` write in place with `fs.writeFile`; nothing deletes or reports
+`data/<id>.json` files that a run did not produce. An album deleted, added to `ignoreAlbums` or
+excluded by SEC-12 stays published under its old id. A crash mid-run leaves a mix of old and new
+files. Fix: write to a fresh directory and swap it in at the end; list stale files (don't delete
+silently; production data has a no-delete policy).
+
+### LOGIC-23: backend: non-numeric concurrency silently does nothing
+
+`backend/index.ts:650` `Math.max(1, config.thumbnailConcurrency ?? 5)` and `verifyImagePaths.ts:352`
+`Math.max(1, rawConcurrency)` give `NaN` for a string or other bad value. The semaphore never
+grants, and the run exits 0 having written nothing / "0 deviations". The `Number.isFinite` guard
+at `:22` only covers `ignoreAlbums`. Fix: validate the numeric config fields once, at load time.
+
+### P3 additions
+
+### LOGIC-24: image URLs are not encoded per segment
+
+`frontend/src/utils/imageUrl.ts:178` (`getImageUrl`) and `backend/pathResolution.ts` join raw
+`pathComponent`s. There is no `encodeURIComponent` anywhere in either. A filename containing
+`#`, `?` or `%` gives a broken URL: `#` cuts the path, `%xx` is decoded to another file. The
+backend's local verify uses `fs.realpath` on the raw path, so it reports "ok". Fix: encode each
+segment when building URLs. Grep the real file list (`backend/all-lanbilder-files.txt`) for
+`[#?%]` to see how many are affected.
+
+### SEC-15: BBCode parse is quadratic, with no length or depth cap
+
+`frontend/src/utils/bbcode.ts` (`parseBBCode` at `:581`) has no input length or nesting limit. For
+each open tag it scans to the end and re-parses the nested content: `[b]`×16000 renders in 7.6 s,
+×4000 in 0.5 s (measured at `9790743`, the parser is unchanged in this respect). The content is
+frozen, so this is low risk. Fix: cap the input (e.g. 8 KB) and the depth (e.g. 20), falling back
+to plain text.
+
+### LOGIC-25: stored sort value is not validated
+
+`hooks/useSort.ts:68-72` passes whatever `useLocalStorage` parses straight through, and
+`utils/sorting.ts:217` calls `sortOption.split('-')`. A stored non-string (`5`, `{}`) throws and
+takes down the page. A string that is not a known option silently sorts nothing. Fix: validate
+against the `SortOption` list and fall back to `DEFAULT_SORT_OPTION`, as `ThemeContext` already does.
+
+### LOGIC-26: thumbnail object URL revoked while it is displayed
+
+`hooks/useProgressiveImage.ts:224-232`: the thumbnail effect has `state` in its dependencies, and
+its cleanup revokes `thumbnailObjectUrlRef.current`. `setState('thumbnail-loaded')` (`:221`)
+re-runs the effect, so the cleanup revokes the URL the `<img>` is showing. It works today only
+because the browser keeps the decoded pixels; any re-mount or `src` re-assignment shows a broken
+image. Fix: revoke only on image change or unmount, not on state change (LOGIC-02 added the
+cleanup, but it is too eager).
+
+### LOGIC-27: nested links in the root album list
+
+`components/RootAlbumListBlock/RootAlbumListBlock.tsx:105-132`: the album description is rendered
+with `parseBBCodeDecoded` **inside** the block-level `<Link>`, so any `[url]` in a description
+gives `<a>` inside `<a>`. That is invalid HTML: the click goes to the inner link or the outer one
+depending on the browser, and it triggers React hydration warnings. Fix: render the description
+outside the link, or strip links (`[url]` → text) in this view.
+
+### SEC-16: `url("…")` escaping in the album block is incomplete
+
+`RootAlbumListBlock.tsx:87` escapes only `"`: `url("${highlightImageUrl.replace(/"/g, '\\"')}")`.
+A path containing `\"` or a newline breaks out of `url()`. It needs a crafted Gallery 2 filename,
+and a strict CSP blocks external images, so this is low risk. Fix: `encodeURI` the path (or
+`CSS.escape`), or pass it as a CSS custom property.
+
+### LOGIC-28: album named `image` with a numeric child is unreachable
+
+`pages/PathResolverPage.tsx:16,39`: `IMAGE_PATH_RE = /\/image\/(\d+)$/` is checked before the
+path index, so `/x/image/2005` (album "image", sub-album "2005") is read as image 2005 in album
+`/x`. Fix: look up the full path in `pathIndex` first; use the image regex only if that misses.
+
+### LOGIC-29: Swedish name sort is wrong
+
+`utils/sorting.ts:66-75` compares `toLowerCase()` strings with `<`/`>` (code point order):
+ä (U+00E4) < å (U+00E5) < ö, but Swedish order is å, ä, ö, and accented letters sort after z
+inconsistently. Fix: `aTitle.localeCompare(bTitle, 'sv', { sensitivity: 'base' })`, or an
+`Intl.Collator('sv')` created once.
+
+### SEC-17: backend: config prefixes go into SQL unvalidated; login names published
+
+- **Prefixes:** `backend/sqlUtils.ts` interpolates `gallerySettings.tablePrefix`/`columnPrefix`
+  into every query. Only trusted config sets them, but validate with `/^\w*$/` at load time.
+- **Login names:** `sqlUtils.ts:25,94` use `COALESCE(fullName, userName)`, so a user with NULL
+  `fullName` is published by their **login name**, and an empty `''` fullName isn't replaced
+  either. Decide whether owners should be shown at all; otherwise use `NULLIF(fullName,'')` and
+  show nothing when it is missing.
+
+### LOGIC-30: thumbnails are always JPEG but keep the source extension
+
+`backend/generateThumbnail.ts:69` `.jpeg(...)` is used for every source, while the destination
+keeps the original name (`t__photo.png`, `t__anim.gif`). PNG transparency turns black, GIF
+animation is lost, and the server sends `image/png` for JPEG bytes (browsers sniff it, but
+`nosniff` plus a strict MIME check can break it). Fix: write `.jpg` thumbnails and record the path,
+or keep the format (`.png()`/`.webp()` for alpha).
+
+### BUILD-04: `size-limit` patterns don't match the build
+
+`frontend/package.json:9-24`: `dist/assets/js/lightbox*.js` matches no file (Vite names it
+`Lightbox-<hash>.js`, and the case differs), and `*-*.js` matches every chunk and size-limit adds
+them up (118 KB brotli vs the 50 KB "per chunk" limit). The check fails because of the globs, not
+the bundle. Fix the globs (one entry per named chunk). Note: `size-limit` starts headless Chrome
+(puppeteer) for its timing step. Run it with `--why`/without the time plugin, or only in CI.
+
+### HYGIENE-01: repo and package tidy-up
+
+- Delete the root `package-lock.json` stub (97 bytes, there is no root `package.json`),
+  `report_fail_20260130.md` (4.6 MB) and the empty `report_20260130.md`. Add `report_*.md` and
+  `frontend/coverage` to `.gitignore`.
+- `frontend/public/` still ships `*.example*`, `image-config.json` (frontend never reads it) and
+  `IMAGES-LOCAL.md` into `dist/`: move them out of `public/`.
+- Backend: add `typescript` to `devDependencies` (today it arrives only as ts-node's peer).
+  Add `"engines": { "node": ">=22" }` to both `package.json`s.
+- README: add `npm ci` in both folders and the frontend build/deploy steps (the current README
+  only shows the backend run).
+
+### ARCH-08: toolchain upgrade (dev-only, not blocking)
+
+`npm audit` (full) reports 43 issues (5 critical), all in build/test tools that don't ship:
+vite 5 (→ 8), vitest 1 (→ 5), eslint 8 (EOL, → 9 flat config), `@typescript-eslint` 6 (→ 8),
+puppeteer via size-limit. React 18.3 can stay. Plan it after BUILD-01, since the type and lint
+burn-down touches the same files.
+
+---
+
 ## Not reproduced / no action
 
 - **"No XSS path and no committed secrets"** — confirmed for secrets. `backend/config.json`
@@ -476,3 +687,10 @@ Minor, noticed while verifying BUILD-02/03:
   tracked among the 375 tracked files. Note the file does hold a plaintext password on disk,
   which is why SEC-14's `mysql2` advisory matters.
 - **"214 of 1249 tests fail"** — see TEST-01. Not reproducible; please confirm the source.
+- **Already fixed at `c750fbf` (from the second pass, no action):**
+  - stale album response after fast back/forward: `useAlbumData` `requestIdRef` (LOGIC-01);
+  - thumbnail path traversal: `validateNoTraversal` (SEC-05) and component checks (SEC-11);
+  - `/album/7abc` accepted: strict `/^\d+$/` in `routeParams.ts`;
+  - raw `ownerId` in the output: rows are now mapped field by field (LOGIC-05), `ownerId` is not emitted.
+- **Not re-verified:** per-album themes for paths with é/æ/ø (`albumThemesConfig.ts`, depends on
+  whether `location.pathname` is percent-encoded under `HashRouter`). Check in a browser.
