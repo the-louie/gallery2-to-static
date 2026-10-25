@@ -7,7 +7,6 @@
  * @module frontend/src/components/FilterPanel
  */
 
-import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test-utils';
 import userEvent from '@testing-library/user-event';

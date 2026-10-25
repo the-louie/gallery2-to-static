@@ -6,12 +6,11 @@
  * @module frontend/src/contexts/FilterContext
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import {
   FilterProvider,
   useFilter,
-  FilterContext,
   type FilterContextValue,
 } from './FilterContext';
 import type { FilterCriteria } from '@/types';

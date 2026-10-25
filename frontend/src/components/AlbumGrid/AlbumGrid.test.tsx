@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test-utils';
+import { render, screen } from '@/test-utils';
 import userEvent from '@testing-library/user-event';
 import { AlbumGrid } from './AlbumGrid';
 import { mockAlbums, mockChildren, mockEmptyChildren } from '@/__mocks__/mockData';

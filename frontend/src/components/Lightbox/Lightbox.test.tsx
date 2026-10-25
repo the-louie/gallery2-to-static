@@ -439,7 +439,7 @@ describe('Lightbox', () => {
       };
 
       render(<TestComponent />);
-      const triggerButton = screen.getByTestId('trigger-button');
+      screen.getByTestId('trigger-button');
       const toggleButton = screen.getByText('Toggle');
 
       // Open modal

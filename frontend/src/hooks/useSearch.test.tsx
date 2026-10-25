@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useSearch, MAX_SEARCH_CACHE_SIZE, resetSearchIndexInstance } from './useSearch';
 import { SearchIndex } from '../utils/searchIndex';
-import { findRootAlbumId, loadAlbum } from '../utils/dataLoader';
+import { findRootAlbumId } from '../utils/dataLoader';
 
 // Mock dependencies
 vi.mock('../utils/searchIndex');

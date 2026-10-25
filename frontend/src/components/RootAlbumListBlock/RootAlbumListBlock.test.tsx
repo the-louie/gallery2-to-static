@@ -219,7 +219,7 @@ describe('RootAlbumListBlock', () => {
 
   describe('Block link and exclusions', () => {
     it('block link exists with href to album and contains no duplicate album link', () => {
-      const { container } = render(<RootAlbumListBlock album={baseAlbum} subalbums={[]} />);
+      render(<RootAlbumListBlock album={baseAlbum} subalbums={[]} />);
       const blockLink = screen.getByRole('link', { name: /open album: test album/i });
       expect(blockLink).toHaveAttribute('href', '/test_album');
       const albumLinksInside = blockLink.querySelectorAll('a[href="/test_album"]');

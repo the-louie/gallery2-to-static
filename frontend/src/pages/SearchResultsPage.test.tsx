@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@/test-utils';
+import { render, screen } from '@/test-utils';
 import { SearchResultsPage } from './SearchResultsPage';
 import { useSearch } from '@/hooks/useSearch';
 import { useSearchParams } from 'react-router-dom';

@@ -494,7 +494,7 @@ export function Lightbox({
           ) {
             previousActiveElementRef.current.focus();
           }
-        } catch (error) {
+        } catch {
           // Silently fail if focus restoration fails (element may be removed from DOM)
         }
       }

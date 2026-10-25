@@ -15,7 +15,7 @@
 import type { BreadcrumbPath } from '@/types';
 
 /** Illegal URL characters replaced with underscore. No bare hyphen inside the class (would create a char range). */
-const RE_ILLEGAL = /[\[\]\\\/\?%:|"'><#\s&]/gi;
+const RE_ILLEGAL = /[[\]\\/?%:|"'><#\s&]/gi; // same set as backend/cleanupUipath.ts (no redundant escapes)
 /** BBCode markup tags, stripped defensively (titles are pre-stripped by backend). */
 const RE_MARKUP = /\[.*?\]/g;
 

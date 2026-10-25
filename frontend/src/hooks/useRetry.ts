@@ -126,7 +126,7 @@ export function useRetry<T>(
         // Success - reset retry count
         setRetryCount(0);
         setIsRetrying(false);
-      } catch (error) {
+      } catch {
         // Increment retry count
         const newRetryCount = attempt + 1;
         setRetryCount(newRetryCount);

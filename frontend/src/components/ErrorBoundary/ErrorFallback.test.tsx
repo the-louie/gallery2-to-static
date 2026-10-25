@@ -83,7 +83,7 @@ describe('ErrorFallback', () => {
 
     it('navigates to home when "Go to Home" button is clicked', async () => {
       const user = userEvent.setup();
-      const { container } = renderWithRouter(
+      renderWithRouter(
         <ErrorFallback error={mockError} resetError={mockResetError} />,
       );
 

@@ -55,7 +55,7 @@ const defaultCriteria: FilterCriteria = {};
 /**
  * Filter context value interface
  */
-export interface FilterContextValue extends FilterState {}
+export type FilterContextValue = FilterState;
 
 /**
  * Default context value (used when outside provider)

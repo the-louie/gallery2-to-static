@@ -195,14 +195,11 @@ describe('Browser Compatibility', () => {
     });
 
     it('supports nullish coalescing', () => {
-      const value1 = null ?? 'default';
-      expect(value1).toBe('default');
-
-      const value2 = undefined ?? 'default';
-      expect(value2).toBe('default');
-
-      const value3 = 'actual' ?? 'default';
-      expect(value3).toBe('actual');
+      // through a function, so the operands are not compile-time constants (no-constant-binary-expression)
+      const maybe = <T,>(v: T): T | null | undefined => v;
+      expect(maybe<string | null>(null) ?? 'default').toBe('default');
+      expect(maybe<string | undefined>(undefined) ?? 'default').toBe('default');
+      expect(maybe('actual') ?? 'default').toBe('actual');
     });
 
     it('supports async/await', async () => {

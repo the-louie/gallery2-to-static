@@ -244,7 +244,7 @@ describe('useSystemThemePreference', () => {
       const { result } = renderHook(() => useSystemThemePreference());
 
       // Mock setState to throw (simulating React error)
-      const originalState = result.current;
+      void result.current;
 
       // The hook should handle errors gracefully
       // We can't easily test React state update errors, but the hook has try-catch

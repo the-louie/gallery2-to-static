@@ -84,7 +84,7 @@ async function detectWebPSupport(): Promise<boolean> {
       };
       img.src = webpDataUrl;
     });
-  } catch (error) {
+  } catch {
     // If detection fails, assume no support
     formatSupportCache.webp = false;
     return false;
@@ -132,7 +132,7 @@ async function detectAVIFSupport(): Promise<boolean> {
       };
       img.src = avifDataUrl;
     });
-  } catch (error) {
+  } catch {
     // If detection fails, assume no support
     formatSupportCache.avif = false;
     return false;

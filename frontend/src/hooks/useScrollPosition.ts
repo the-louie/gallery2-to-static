@@ -82,7 +82,7 @@ function loadScrollPosition(key: string): number | null {
     }
 
     return typeof data.scrollTop === 'number' && data.scrollTop >= 0 ? data.scrollTop : null;
-  } catch (error) {
+  } catch {
     // Invalid data or parse error - remove it
     try {
       sessionStorage.removeItem(key);
@@ -110,7 +110,7 @@ function saveScrollPositionToStorage(key: string, scrollTop: number): void {
       timestamp: Date.now(),
     };
     sessionStorage.setItem(key, JSON.stringify(data));
-  } catch (error) {
+  } catch {
     // Storage quota exceeded or other error - ignore
     // Don't log to avoid console spam
   }
@@ -155,7 +155,7 @@ function cleanupOldScrollPositions(): void {
         // Ignore removal errors
       }
     });
-  } catch (error) {
+  } catch {
     // Ignore cleanup errors
   }
 }

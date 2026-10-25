@@ -14,7 +14,7 @@ afterEach(() => {
 // Mock useProgressiveImage globally — components get synchronous URLs instead of async blob fetching.
 // Uses the same fallback order as the real hook: thumbnailUrlPath > pathComponent.
 vi.mock('@/hooks/useProgressiveImage', () => ({
-  useProgressiveImage: vi.fn((image: any, useThumbnail: boolean = true, options: { loadFull?: boolean } = {}) => {
+  useProgressiveImage: vi.fn((image: any, _useThumbnail: boolean = true, options: { loadFull?: boolean } = {}) => {
     if (!image) {
       return { thumbnailUrl: '', fullImageUrl: '', state: 'thumbnail' as const, hasError: false, error: null };
     }
