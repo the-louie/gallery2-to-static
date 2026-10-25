@@ -1,0 +1,974 @@
+/*
+ * The modern themes (light / dark), redesigned 2026-10-25 (Sprint 12 T-11, operator: "modern and
+ * fresh, easy to navigate").
+ *
+ * Loaded after themes.css. Two layers:
+ *   1. token values for [data-theme="light"] and [data-theme="dark"] (same variable names the
+ *      components already consume, so every component picks the palette up);
+ *   2. component restyles, every selector scoped with :is([data-theme="light"], [data-theme="dark"])
+ *      so the classic (Gallery 2 Matrix) theme is never touched. modern.test.ts checks the scoping.
+ *
+ * Design: one accent per theme, soft elevated surfaces, 12–16px radii, compact sticky header,
+ * cards with cover photos, calm type (system sans, tight headings). Dark is the hero: deep navy
+ * with a faint cyan/magenta glow, a nod to the LAN halls in the photos.
+ */
+
+/* ---------- 1. Tokens ---------- */
+
+[data-theme="light"] {
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 6px 16px rgba(15, 23, 42, 0.1);
+  --shadow-lg: 0 18px 40px rgba(15, 23, 42, 0.16);
+  --header-height: 64px;
+
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-active: #1e40af;
+  --color-primary-light: #dbeafe;
+  --color-primary-dark: #1e3a8a;
+  --color-secondary: #475569;
+  --color-secondary-hover: #334155;
+  --color-secondary-active: #1e293b;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --gradient-cta-start: #2563eb;
+  --gradient-cta-end: #4f46e5;
+
+  --color-background-primary: #f4f6fb;
+  --color-background-secondary: #ffffff;
+  --color-background-tertiary: #e9edf5;
+  --color-background: #f4f6fb;
+  --gradient-bg-start: #f7f8fc;
+  --gradient-bg-end: #eef2f9;
+  --gradient-card-start: #ffffff;
+  --gradient-card-end: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-glass: rgba(255, 255, 255, 0.78);
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748b;
+  --color-text-muted: #64748b;
+  --color-text: #0f172a;
+  --color-text-inverse: #ffffff;
+  --color-on-primary: #ffffff;
+  --color-hover: #eef2f9;
+  --color-background-hover: #eef2f9;
+  --color-border: #e2e8f0;
+  --color-border-light: #eef2f7;
+  --color-border-dark: #cbd5e1;
+  --color-focus: #2563eb;
+  --color-focus-ring: rgba(37, 99, 235, 0.35);
+  --focus-color: #2563eb;
+
+  --header-bg: rgba(255, 255, 255, 0.78);
+  --header-border: #e2e8f0;
+  --header-text: #0f172a;
+  --footer-bg: transparent;
+  --footer-border: #e2e8f0;
+  --footer-text: #64748b;
+  --skip-link-bg: #0f172a;
+  --skip-link-color: #ffffff;
+
+  --album-card-bg: #ffffff;
+  --album-card-border: #e2e8f0;
+  --album-card-focus: #2563eb;
+  --album-card-thumbnail-bg: #e9edf5;
+  --album-card-placeholder-bg: #e9edf5;
+  --album-card-placeholder-text: #64748b;
+  --album-card-title-color: #0f172a;
+  --image-bg: #e9edf5;
+  --image-border: #e2e8f0;
+  --image-focus: #2563eb;
+  --image-error-bg: #f1f5f9;
+  --image-error-text: #64748b;
+  --skeleton-bg-1: #e9edf5;
+  --skeleton-bg-2: #f6f8fc;
+
+  --breadcrumb-link-color: #475569;
+  --breadcrumb-link-hover-bg: #e9edf5;
+  --breadcrumb-link-hover-color: #0f172a;
+  --breadcrumb-link-focus: #2563eb;
+  --breadcrumb-link-focus-bg: #dbeafe;
+  --breadcrumb-link-active-bg: #dbeafe;
+  --breadcrumb-current-color: #0f172a;
+  --breadcrumb-separator-color: #cbd5e1;
+  --album-detail-back-button-bg: #ffffff;
+  --album-detail-back-button-border: #e2e8f0;
+  --album-detail-back-button-color: #0f172a;
+  --album-detail-back-button-hover-bg: #eef2f9;
+  --album-detail-back-button-active-bg: #e2e8f0;
+  --album-detail-title-color: #0f172a;
+  --album-detail-text-muted: #64748b;
+
+  --theme-switcher-bg: #ffffff;
+  --theme-switcher-border: #e2e8f0;
+  --theme-switcher-color: #0f172a;
+  --theme-switcher-bg-hover: #eef2f9;
+  --theme-switcher-border-hover: #cbd5e1;
+  --theme-switcher-focus: #2563eb;
+  --sort-dropdown-bg: #ffffff;
+  --sort-dropdown-border: #e2e8f0;
+  --sort-dropdown-color: #0f172a;
+  --sort-dropdown-bg-hover: #eef2f9;
+  --sort-dropdown-border-hover: #cbd5e1;
+  --sort-dropdown-bg-active: #e9edf5;
+  --sort-dropdown-option-bg: #ffffff;
+  --sort-dropdown-option-color: #0f172a;
+  --sort-dropdown-focus: #2563eb;
+  --sort-dropdown-arrow-color: #475569;
+  --search-highlight-bg: #fef08a;
+  --search-highlight-text: #0f172a;
+
+  --lightbox-focus: #93c5fd;
+  --lightbox-breadcrumb-bg: rgba(15, 23, 42, 0.55);
+  --lightbox-breadcrumb-link-color: rgba(255, 255, 255, 0.9);
+  --lightbox-breadcrumb-link-hover-bg: rgba(255, 255, 255, 0.14);
+  --lightbox-breadcrumb-link-hover-color: #ffffff;
+  --lightbox-breadcrumb-current-color: #ffffff;
+  --lightbox-breadcrumb-separator-color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] {
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 24px 48px rgba(0, 0, 0, 0.55);
+  --header-height: 64px;
+
+  --color-primary: #38bdf8;
+  --color-primary-hover: #7dd3fc;
+  --color-primary-active: #0ea5e9;
+  --color-primary-light: #0c2a3a;
+  --color-primary-dark: #0284c7;
+  --color-secondary: #a9b4c6;
+  --color-secondary-hover: #c7d0dd;
+  --color-secondary-active: #e6edf7;
+  --color-accent: #38bdf8;
+  --color-accent-hover: #7dd3fc;
+  --gradient-cta-start: #38bdf8;
+  --gradient-cta-end: #818cf8;
+
+  --color-background-primary: #0b0f19;
+  --color-background-secondary: #121826;
+  --color-background-tertiary: #1a2236;
+  --color-background: #0b0f19;
+  --gradient-bg-start: #0b0f19;
+  --gradient-bg-end: #0e1422;
+  --gradient-card-start: #121826;
+  --gradient-card-end: #121826;
+  --color-surface: #121826;
+  --color-surface-raised: #1a2236;
+  --color-surface-glass: rgba(11, 15, 25, 0.72);
+
+  --color-text-primary: #e6edf7;
+  --color-text-secondary: #a9b4c6;
+  --color-text-tertiary: #8391a7;
+  --color-text-muted: #8391a7;
+  --color-text: #e6edf7;
+  --color-text-inverse: #0b0f19;
+  --color-on-primary: #0b0f19;
+  --color-hover: #1a2236;
+  --color-background-hover: #1a2236;
+  --color-border: #263044;
+  --color-border-light: #1e2738;
+  --color-border-dark: #334155;
+  --color-focus: #38bdf8;
+  --color-focus-ring: rgba(56, 189, 248, 0.4);
+  --focus-color: #38bdf8;
+
+  --header-bg: rgba(11, 15, 25, 0.72);
+  --header-border: #1e2738;
+  --header-text: #e6edf7;
+  --footer-bg: transparent;
+  --footer-border: #1e2738;
+  --footer-text: #8391a7;
+  --skip-link-bg: #38bdf8;
+  --skip-link-color: #0b0f19;
+
+  --album-card-bg: #121826;
+  --album-card-border: #263044;
+  --album-card-focus: #38bdf8;
+  --album-card-thumbnail-bg: #1a2236;
+  --album-card-placeholder-bg: #1a2236;
+  --album-card-placeholder-text: #8391a7;
+  --album-card-title-color: #e6edf7;
+  --image-bg: #1a2236;
+  --image-border: #263044;
+  --image-focus: #38bdf8;
+  --image-error-bg: #1a2236;
+  --image-error-text: #8391a7;
+  --skeleton-bg-1: #1a2236;
+  --skeleton-bg-2: #232d44;
+
+  --breadcrumb-link-color: #a9b4c6;
+  --breadcrumb-link-hover-bg: #1a2236;
+  --breadcrumb-link-hover-color: #e6edf7;
+  --breadcrumb-link-focus: #38bdf8;
+  --breadcrumb-link-focus-bg: #0c2a3a;
+  --breadcrumb-link-active-bg: #0c2a3a;
+  --breadcrumb-current-color: #e6edf7;
+  --breadcrumb-separator-color: #334155;
+  --album-detail-back-button-bg: #121826;
+  --album-detail-back-button-border: #263044;
+  --album-detail-back-button-color: #e6edf7;
+  --album-detail-back-button-hover-bg: #1a2236;
+  --album-detail-back-button-active-bg: #232d44;
+  --album-detail-title-color: #e6edf7;
+  --album-detail-text-muted: #8391a7;
+
+  --theme-switcher-bg: #121826;
+  --theme-switcher-border: #263044;
+  --theme-switcher-color: #e6edf7;
+  --theme-switcher-bg-hover: #1a2236;
+  --theme-switcher-border-hover: #334155;
+  --theme-switcher-focus: #38bdf8;
+  --sort-dropdown-bg: #121826;
+  --sort-dropdown-border: #263044;
+  --sort-dropdown-color: #e6edf7;
+  --sort-dropdown-bg-hover: #1a2236;
+  --sort-dropdown-border-hover: #334155;
+  --sort-dropdown-bg-active: #232d44;
+  --sort-dropdown-option-bg: #121826;
+  --sort-dropdown-option-color: #e6edf7;
+  --sort-dropdown-focus: #38bdf8;
+  --sort-dropdown-arrow-color: #a9b4c6;
+  --search-highlight-bg: #854d0e;
+  --search-highlight-text: #fef9c3;
+
+  --lightbox-focus: #7dd3fc;
+  --lightbox-breadcrumb-bg: rgba(11, 15, 25, 0.6);
+  --lightbox-breadcrumb-link-color: rgba(230, 237, 247, 0.9);
+  --lightbox-breadcrumb-link-hover-bg: rgba(255, 255, 255, 0.12);
+  --lightbox-breadcrumb-link-hover-color: #ffffff;
+  --lightbox-breadcrumb-current-color: #ffffff;
+  --lightbox-breadcrumb-separator-color: rgba(230, 237, 247, 0.45);
+}
+
+/* ---------- 2. Page ---------- */
+
+:is([data-theme="light"], [data-theme="dark"]) body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(900px 420px at 8% -10%, var(--color-primary-light) 0%, transparent 60%),
+    radial-gradient(700px 360px at 100% 0%, color-mix(in srgb, var(--gradient-cta-end) 18%, transparent) 0%, transparent 60%),
+    var(--color-background);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .layout-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+  box-sizing: border-box;
+}
+
+/* Header: compact, sticky, frosted */
+:is([data-theme="light"], [data-theme="dark"]) .layout-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 0;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
+  backdrop-filter: saturate(160%) blur(14px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .layout-header-content {
+  max-width: 1440px;
+  min-height: var(--header-height);
+  padding: 0.6rem 1.25rem;
+  gap: 1rem;
+  flex-wrap: nowrap;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .layout-header-branding {
+  gap: 0.1rem;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .layout-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--header-text);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .layout-title::before {
+  content: "";
+  display: inline-block;
+  width: 0.62em;
+  height: 0.62em;
+  margin-right: 0.45em;
+  border-radius: 3px;
+  background: linear-gradient(135deg, var(--gradient-cta-start), var(--gradient-cta-end));
+  vertical-align: 0.02em;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .layout-title-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .layout-header-description {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--color-text-muted);
+  max-width: 60ch;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .layout-header-actions {
+  gap: 0.6rem;
+  flex-wrap: nowrap;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .layout-header-dropdowns {
+  gap: 0.6rem;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .layout-footer {
+  background: transparent;
+  border-top: 1px solid var(--footer-border);
+  color: var(--footer-text);
+  font-size: 0.8rem;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .layout-footer-content {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+/* ---------- 3. Controls: search, dropdowns, buttons ---------- */
+
+:is([data-theme="light"], [data-theme="dark"]) .search-bar-input-wrapper {
+  height: 40px;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .search-bar-input-wrapper:focus-within {
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .search-bar-input {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--color-text);
+  background: transparent;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .search-bar-icon {
+  color: var(--color-text-muted);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .theme-dropdown button,
+:is([data-theme="light"], [data-theme="dark"]) .sort-dropdown button,
+:is([data-theme="light"], [data-theme="dark"]) .sort-dropdown select,
+:is([data-theme="light"], [data-theme="dark"]) .album-detail-back,
+:is([data-theme="light"], [data-theme="dark"]) .filter-panel-toggle,
+:is([data-theme="light"], [data-theme="dark"]) .filter-panel-clear {
+  min-height: 40px;
+  padding: 0 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .theme-dropdown button:hover,
+:is([data-theme="light"], [data-theme="dark"]) .sort-dropdown button:hover,
+:is([data-theme="light"], [data-theme="dark"]) .sort-dropdown select:hover,
+:is([data-theme="light"], [data-theme="dark"]) .album-detail-back:hover,
+:is([data-theme="light"], [data-theme="dark"]) .filter-panel-toggle:hover,
+:is([data-theme="light"], [data-theme="dark"]) .filter-panel-clear:hover {
+  background: var(--color-hover);
+  border-color: var(--color-border-dark);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .theme-dropdown button:focus-visible,
+:is([data-theme="light"], [data-theme="dark"]) .sort-dropdown button:focus-visible,
+:is([data-theme="light"], [data-theme="dark"]) .sort-dropdown select:focus-visible,
+:is([data-theme="light"], [data-theme="dark"]) .album-detail-back:focus-visible,
+:is([data-theme="light"], [data-theme="dark"]) a:focus-visible,
+:is([data-theme="light"], [data-theme="dark"]) .image-thumbnail-container:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--color-focus-ring);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .theme-dropdown-menu,
+:is([data-theme="light"], [data-theme="dark"]) .sort-dropdown-menu {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  padding: 0.35rem;
+  overflow: hidden;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .theme-dropdown-option,
+:is([data-theme="light"], [data-theme="dark"]) .sort-dropdown-option {
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .theme-dropdown-option:hover,
+:is([data-theme="light"], [data-theme="dark"]) .sort-dropdown-option:hover {
+  background: var(--color-hover);
+}
+
+/* ---------- 4. Root page: album cards with cover photos ---------- */
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-view-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-view-list > li:not(:first-child) {
+  margin-top: 0;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-border-dark);
+}
+
+/* The highlight photo (the old blurred backdrop) becomes a cover band at the top of the card,
+   fading into the card surface */
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: auto;
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  filter: none;
+  opacity: 1;
+  transform: none;
+  transition: transform 0.5s ease;
+  z-index: 0;
+  /* fade the photo into the card surface (independent of the old ::after overlay) */
+  -webkit-mask-image: linear-gradient(to bottom, #000 45%, rgba(0, 0, 0, 0.55) 75%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 45%, rgba(0, 0, 0, 0.55) 75%, transparent 100%);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block:hover .root-album-list-block-bg {
+  transform: scale(1.04);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: none;
+  backdrop-filter: none;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  height: 100%;
+  padding: 160px 0 0;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-main {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-block-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 0;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: 0;
+  overflow: hidden;
+  background: var(--album-card-thumbnail-bg);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(11, 15, 25, 0.55), rgba(11, 15, 25, 0) 55%);
+  pointer-events: none;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block:hover .root-album-list-block-thumb-img {
+  transform: scale(1.04);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-thumb-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--album-card-placeholder-text);
+  font-size: 0.85rem;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-content {
+  padding: 1rem 1.1rem 0.25rem;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--color-text);
+  text-shadow: 0 1px 0 var(--color-surface);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-description {
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Date · Owner · Images as one quiet line */
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.9rem;
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-meta > div {
+  display: flex;
+  gap: 0.35rem;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-meta-dt {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-meta-dd {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-website {
+  margin: 0.4rem 1.1rem 0;
+  font-size: 0.8rem;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-website-link {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-website-link:hover {
+  text-decoration: underline;
+}
+
+/* Sub-albums as chips */
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-subalbums {
+  width: auto;
+  max-width: none;
+  margin: auto 0 0;
+  padding: 0.75rem 1.1rem 1rem;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-subalbums-heading {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-subalbums-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  grid-template-columns: none;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-subalbums-list li {
+  margin: 0;
+  break-inside: auto;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-subalbum-link,
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-subalbums-more {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-background-tertiary);
+  color: var(--color-text);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-subalbum-link:hover,
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-subalbums-more:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-text);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-subalbums-more {
+  color: var(--color-primary);
+  background: transparent;
+}
+
+/* ---------- 5. Album page ---------- */
+
+:is([data-theme="light"], [data-theme="dark"]) .album-detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.75rem;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .breadcrumbs-link,
+:is([data-theme="light"], [data-theme="dark"]) .breadcrumbs-current {
+  min-height: 32px;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .breadcrumbs-link:hover {
+  text-decoration: none;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .breadcrumbs-current {
+  background: var(--color-background-tertiary);
+  font-weight: 600;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .breadcrumbs-separator {
+  font-size: 0.8rem;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .album-detail-header {
+  margin: 0.75rem 0 1.5rem;
+  padding: 0 0 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .album-detail-title {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--color-text);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .album-detail-description,
+:is([data-theme="light"], [data-theme="dark"]) .album-detail-summary {
+  margin: 0 0 0.5rem;
+  max-width: 70ch;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .album-detail-owner,
+:is([data-theme="light"], [data-theme="dark"]) .album-detail-images-total {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  width: auto;
+  margin: 0.4rem 0.5rem 0 0;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  background: var(--color-background-tertiary);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .album-detail-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 0 0 0.75rem;
+}
+
+/* Sub-album cards */
+:is([data-theme="light"], [data-theme="dark"]) .album-card {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .album-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .album-card-thumbnail {
+  aspect-ratio: 4 / 3;
+  background: var(--album-card-thumbnail-bg);
+  overflow: hidden;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .album-card-thumbnail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .album-card:hover .album-card-thumbnail-image {
+  transform: scale(1.04);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .album-card-content {
+  padding: 0.75rem 0.9rem 0.9rem;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .album-card-title {
+  margin: 0 0 0.2rem;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--color-text);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .album-card-images-total {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+/* Photos */
+:is([data-theme="light"], [data-theme="dark"]) .image-thumbnail-container {
+  border-radius: var(--radius-md);
+  background: var(--image-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .image-thumbnail-container[role="button"]:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .image-thumbnail-container[role="button"] .image-thumbnail-full {
+  transition: opacity 0.4s ease-in-out, transform 0.4s ease;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .image-thumbnail-container[role="button"]:hover .image-thumbnail-full {
+  transform: scale(1.03);
+}
+
+/* ---------- 6. Search results and filters ---------- */
+
+:is([data-theme="light"], [data-theme="dark"]) .search-results-item {
+  border-radius: var(--radius-md);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .search-results-link {
+  display: block;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .search-results-link:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .filter-panel {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+/* ---------- 7. Lightbox chrome ---------- */
+
+:is([data-theme="light"], [data-theme="dark"]) .lightbox-overlay {
+  z-index: 2000; /* above the sticky header */
+  background: rgba(5, 8, 15, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .lightbox-nav,
+:is([data-theme="light"], [data-theme="dark"]) .lightbox-close,
+:is([data-theme="light"], [data-theme="dark"]) .lightbox-zoom-btn {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  backdrop-filter: blur(6px);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .lightbox-nav:hover,
+:is([data-theme="light"], [data-theme="dark"]) .lightbox-close:hover,
+:is([data-theme="light"], [data-theme="dark"]) .lightbox-zoom-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .lightbox-image {
+  border-radius: 6px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .lightbox-metadata {
+  border-radius: var(--radius-md);
+  background: rgba(11, 15, 25, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .lightbox-title {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- 8. Phones ---------- */
+
+@media (max-width: 767px) {
+  :is([data-theme="light"], [data-theme="dark"]) .layout-header-content {
+    flex-wrap: wrap;
+    padding: 0.6rem 1rem;
+  }
+
+  :is([data-theme="light"], [data-theme="dark"]) .layout-header-description {
+    display: none;
+  }
+
+  :is([data-theme="light"], [data-theme="dark"]) .layout-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  :is([data-theme="light"], [data-theme="dark"]) .layout-header-actions .search-bar {
+    width: 100%;
+  }
+
+  :is([data-theme="light"], [data-theme="dark"]) .layout-main {
+    padding: 1rem 1rem 2rem;
+  }
+
+  :is([data-theme="light"], [data-theme="dark"]) .root-album-list-view-list {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is([data-theme="light"], [data-theme="dark"]) .root-album-list-block,
+  :is([data-theme="light"], [data-theme="dark"]) .album-card,
+  :is([data-theme="light"], [data-theme="dark"]) .image-thumbnail-container,
+  :is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-thumb-img,
+  :is([data-theme="light"], [data-theme="dark"]) .album-card-thumbnail-image,
+  :is([data-theme="light"], [data-theme="dark"]) .image-thumbnail-full {
+    transition: none;
+    transform: none;
+  }
+}

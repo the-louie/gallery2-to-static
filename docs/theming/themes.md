@@ -2,37 +2,17 @@
 
 ## Light
 
-**Identifier:** `light`
+**Identifier:** `light` (operator's "modern" themes, redesigned 2026-10-25, Sprint 12 T-11)
 
-**Description:** Light theme with bright, warm backgrounds and dark text. Uses a 2026-inspired colour palette with muted bases and vivid accents (Terracotta, Navy, Mocha Mousse).
+Soft off-white page (`#f4f6fb`) with white elevated cards, ink text (`#0f172a`), one accent (blue `#2563eb`) used for links, focus rings and the title mark; a faint blue/indigo glow at the top of the page. System sans stack (`--font-sans`), tight bold headings, 12–16px radii, light shadows. The tokens live in `src/styles/modern.css` (`[data-theme="light"]`), the component restyles under `:is([data-theme="light"], [data-theme="dark"]) …` so the classic theme is untouched (`modern.test.ts` checks every selector).
 
-**Characteristics:**
-- Background: warm greys (#f5f3ef, #ebe8e2)
-- Text: dark brown (#2e2a26)
-- Links/accents: Terracotta (#E2725B), Navy (#101585)
-- Gradients on cards and backgrounds
-- Header and footer: light grey
-
-**CSS selector:** `[data-theme="light"]`
-
----
+**Layout:** compact sticky frosted header (site name with a gradient mark, one-line description, search pill, theme and sort dropdowns); content up to 1440px. Root page: a card grid (`auto-fill, minmax(340px, 1fr)`) with the album's highlight photo as a cover band that fades into the card, title, 2-line description, "Date · Owner · Images" line, sub-albums as chips. Album page: breadcrumb pills, "← Up" pill, large title, description, owner/count chips, sub-album cards with 4:3 covers, photo tiles with 12px radius and a hover lift. Lightbox: dark frosted overlay, round translucent buttons. Phones: header wraps with a full-width search, one card per row.
 
 ## Dark
 
-**Identifier:** `dark`
+**Identifier:** `dark` (Sprint 12 T-11)
 
-**Description:** Dark theme with dark backgrounds and light text for low-light environments.
-
-**Characteristics:**
-- Background: dark greys (#1a1816, #0d0c0b)
-- Text: light grey/white
-- Accents: purple/violet (#A78BFA)
-- Reduced contrast for comfort in dark settings
-- Error states: dark red variants
-
-**CSS selector:** `[data-theme="dark"]`
-
----
+Same layout and components as Light with the dark palette: deep navy page (`#0b0f19`) with surfaces `#121826` / `#1a2236`, light text (`#e6edf7`), sky-blue accent (`#38bdf8`), a faint cyan/indigo glow at the top, deeper shadows. Search highlights in amber. Switching: the header dropdown (Light / Dark / Classic); from the classic theme the sidebar's "Theme: modern" button lands in Light.
 
 ## Classic (Gallery 2 Matrix, as lanbilder.se ran it)
 

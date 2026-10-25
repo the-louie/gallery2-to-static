@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import App from './App';
 import './styles/themes.css';
 import './styles/global.css';
+import './styles/modern.css'; // light/dark redesign, scoped to those two themes (Sprint 12 T-11)
 import { legacyUrlToCleanPath } from './utils/legacyPathRedirect';
 import { initErrorReporting } from './utils/errorReporting';
 
