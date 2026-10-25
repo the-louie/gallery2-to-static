@@ -34,7 +34,8 @@ export default (connection: mysql.Connection, config: Config) => {
             di.${config.gallerySettings.columnPrefix}width as thumb_width,
             di.${config.gallerySettings.columnPrefix}height as thumb_height,
 
-            iam.${config.gallerySettings.columnPrefix}orderWeight as \`order\`
+            iam.${config.gallerySettings.columnPrefix}orderWeight as \`order\`,
+            iam.${config.gallerySettings.columnPrefix}viewCount as viewCount
 
         -- relations table
         FROM ${config.gallerySettings.tablePrefix}ChildEntity ce
@@ -55,7 +56,7 @@ export default (connection: mysql.Connection, config: Config) => {
         -- thumbinfo
         LEFT JOIN ${config.gallerySettings.tablePrefix}DerivativeImage di on di.${config.gallerySettings.columnPrefix}id = ce.${config.gallerySettings.columnPrefix}id
 
-        -- item attributes (order weight)
+        -- item attributes (order weight, view count)
         LEFT JOIN ${config.gallerySettings.tablePrefix}ItemAttributesMap iam ON iam.${config.gallerySettings.columnPrefix}itemId = ce.${config.gallerySettings.columnPrefix}id
 
         WHERE
@@ -155,6 +156,7 @@ export default (connection: mysql.Connection, config: Config) => {
                 const thumb_width = validateNullableNumber(child.thumb_width, 'thumb_width', rowContext);
                 const thumb_height = validateNullableNumber(child.thumb_height, 'thumb_height', rowContext);
                 const order = validateNullableNumber(child.order, 'order', rowContext);
+                const viewCount = validateNullableNumber(child.viewCount, 'viewCount', rowContext);
 
                 const result: Child = {
                     id,
@@ -175,6 +177,10 @@ export default (connection: mysql.Connection, config: Config) => {
                 // Only include order if present (optional field)
                 if (order != null) {
                     result.order = order;
+                }
+                // Gallery 2's view counter, frozen at export time (THEME-01: "Views: 1074" in the matrix)
+                if (viewCount != null) {
+                    result.viewCount = viewCount;
                 }
 
                 return result;

@@ -15,6 +15,10 @@ export interface Child {
      */
     order?: number | null;
     /**
+     * Gallery 2 view count (g2_ItemAttributesMap.g_viewCount) at export time. Only present when Gallery 2 has one.
+     */
+    viewCount?: number | null;
+    /**
      * Relative URL path for full-size image (pathComponent-based, e.g. album/subalbum/photo.jpg).
      */
     urlPath?: string | null;
