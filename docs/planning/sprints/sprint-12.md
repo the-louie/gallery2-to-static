@@ -1,8 +1,8 @@
 # Sprint 12: the data behind the 2006 look (PRIO-THEME-01..05, SEARCH-01)
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-06 (`in-progress` — Search results without raw BBCode)
-**Last completed:** T-05 (`done` — commit `313d548`)
+**Current ticket:** T-07 (`todo` — Re-run the measured comparison)
+**Last completed:** T-06 (`done` — commit `c16ed7f`)
 
 **Goal:** the album and photo pages show what Gallery 2 showed — its chosen highlights, its thumbnail crops, its item counts and a resized photo — so the remaining visible differences from the 2006 pages are gone.
 
@@ -15,7 +15,7 @@
 | T-03 | "(N items total)" counts sub-albums too | PRIO-THEME-04 | 1.5h | – | done | `descendantImageCount.ts` → also a `totalDescendantCount` (photos + exported albums); `MatrixThumbMatrix`/`MatrixAlbum` show it in "(… items total)". DH-Photo: 878 as in 2006. Landed in `688bfcb` |
 | T-04 | 1024px resize for photo pages | PRIO-THEME-05 | 4h | – | done | export writes `<dir>/r__<file>` (longest side 1024, quality as thumbnails) next to the thumbnail; `Child.resizeUrlPath`; `publishImages` links them; nginx `/g2data/resized/` or same tree; `MatrixPhoto` shows the resize by default, `?size=full` the original. Photos ≤ 1024px: no resize. Size check: CIMG0053_.JPG resize ≈ 100 KB. Landed in `7590bc0`; the resize export (57k photos, ~1 h) runs on lanbilder2, checked in T-07 |
 | T-05 | Owner name: "Gallery Administrator" or "Unknown" | PRIO-THEME-01 | 0.5h | – | done | **Operator decided 2026-10-25: "Gallery Administrator"** (1:1 with 2006). `ownerDisplayName.ts` stops mapping it to "Unknown"; test; re-export. Landed in `313d548` |
-| T-06 | Search results without raw BBCode | SEARCH-01 | 1.5h | – | in-progress | `SearchResultsPage`: descriptions through the BBCode stripper (or the search index carries stripped text); highlighting on the stripped text; test with the DH-Photo description |
+| T-06 | Search results without raw BBCode | SEARCH-01 | 1.5h | – | done | `SearchResultsPage`: descriptions through the BBCode stripper (or the search index carries stripped text); highlighting on the stripped text; test with the DH-Photo description. Landed in `c16ed7f` |
 | T-07 | Re-run the measured comparison | – | 1h | T-01..T-06, T-08, T-09 | todo | `compare.cjs` at 1280px for root, album p1, photo; the 2006 root (Classic layout) compared cell by cell for highlights; results into `theme-matrix.md`; any new difference → PRIO-THEME row |
 | T-08 | DHW07 "Inofficiella" hidden everywhere | HIDE-02 | 0.5h | T-05 | todo | Operator, 2026-10-25. Album 493032 (empty in the DB, so already absent from the export): add to `ignoreAlbums` (config on lanbilder2 + `config_example.json`); nginx 404 on the old-site vhost for `/dreamhack/dreamhack_winter_07/inofficiella/`; check the origin's directory; re-export with T-05's run |
 | T-09 | 2013-style banner for glitched.se/sv | BANNER-01 | 3h | – | todo | Operator, 2026-10-25 ("is the modernized ad banner included in the current sprint? if not please add it"). Compose with PIL from one of the five photos (full size on lanbilder2 under `g2data/albums/`), like `inspo/dh-banner.jpg`: purple-tinted crowd photo, wordmark left, white rounded box with bold black text right ("LÄS MER" unless the operator says otherwise), link https://glitched.se/sv/. Sizes 970×90, 728×90, 468×60, each at 2×, JPEG. Files to `/srv/share/lanbilder2/banner/` for review and served by nginx at `/banner/` (no images in `dist/`: `check:dist`); the Matrix frame shows it in `#gsHeader` above the nav bar when `VITE_BANNER_SRC`/`VITE_BANNER_HREF` are set (`.env.production.local`), `<picture>` picks the 468 variant below 760px. Test |
