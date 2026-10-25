@@ -1,7 +1,7 @@
 # Sprint 07: lint clean, so it can gate
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-01 (`todo` — review the 10 exhaustive-deps warnings)
+**Current ticket:** T-01 (`in-progress` — Review the 10 exhaustive-deps warnings: fix real gaps, document delibe)
 **Last completed:** —
 
 **Goal:** `npm run lint` (with `--max-warnings 0`) passes, every remaining hook-dependency choice is
@@ -11,7 +11,7 @@ either fixed or documented in place.
 
 | # | Ticket | Backlog | Est | Deps | Status | Acceptance / Notes |
 |---|---|---|---|---|---|---|
-| T-01 | Review the 10 exhaustive-deps warnings: fix real gaps, document deliberate ones in place | LINT-01 | 3h | – | todo | 0 exhaustive-deps; tests green |
+| T-01 | Review the 10 exhaustive-deps warnings: fix real gaps, document deliberate ones in place | LINT-01 | 3h | – | in-progress | 0 exhaustive-deps; tests green |
 | T-02 | only-export-components: ThemeIcons constant out of the component file; contexts/test-utils (provider + hook files) exempted in config | LINT-01 | 1h | – | todo | 0 warnings |
 | T-03 | `npm run lint` passes; note in CLAUDE.md that lint gates | LINT-01 | 0.5h | T-01, T-02 | todo | exit 0 |
 
