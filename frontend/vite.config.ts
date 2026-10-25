@@ -123,18 +123,18 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'analyze',
     // minify: Vite 8 default (Oxc); 'esbuild' would need esbuild installed separately
     cssMinify: true, // Minify CSS
+    chunkSizeWarningLimit: 500, // build option (was inside rollupOptions, where it was ignored)
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Split vendor chunks
+          // Split vendor chunks by package directory (ARCH-07: a substring test for 'react' also
+          // caught react-router, so router-vendor never existed, and any path containing "react")
           if (id.includes('node_modules')) {
-            // React and React DOM
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-vendor';
-            }
-            // React Router
-            if (id.includes('react-router')) {
+            if (/[\\/]node_modules[\\/](react-router|react-router-dom)[\\/]/.test(id)) {
               return 'router-vendor';
+            }
+            if (/[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id)) {
+              return 'react-vendor';
             }
             // Web Vitals (code-split, loaded dynamically)
             if (id.includes('web-vitals')) {
@@ -148,7 +148,6 @@ export default defineConfig(({ mode }) => ({
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
       },
-      chunkSizeWarningLimit: 500,
     },
   },
 }));

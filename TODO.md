@@ -120,7 +120,9 @@ insurance: move the early return below the hooks.
 Do the `rules-of-hooks` fix now; schedule the `any`/unused-vars burn-down with BUILD-01,
 since both touch the same fixture-typing problem.
 
-### ARCH-07: two ineffective `vite.config.ts` settings
+### ~~ARCH-07: two ineffective `vite.config.ts` settings~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-08):** `chunkSizeWarningLimit` moved to `build` (no warning; it was ignored inside `rollupOptions`); `manualChunks` matches package directories (`/node_modules/(react-router|react-router-dom)/` before `/node_modules/(react|react-dom|scheduler)/`), so `router-vendor` now exists (index.html preloads it) and other packages containing "react" no longer land in `react-vendor`. size-limit's initial-load entry includes `router-vendor-*`; still passes. Original row kept for the record:
 
 Minor, noticed while verifying BUILD-02/03:
 

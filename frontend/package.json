@@ -11,6 +11,7 @@
         "dist/assets/js/index-*.js",
         "dist/assets/js/rolldown-runtime-*.js",
         "dist/assets/js/react-vendor-*.js",
+        "dist/assets/js/router-vendor-*.js",
         "dist/assets/js/vendor-*.js"
       ],
       "limit": "200 KB"
