@@ -666,7 +666,9 @@ excluded by SEC-12 stays published under its old id. A crash mid-run leaves a mi
 files. Fix: write to a fresh directory and swap it in at the end; list stale files (don't delete
 silently; production data has a no-delete policy).
 
-### LOGIC-23: backend: non-numeric concurrency silently does nothing
+### ~~LOGIC-23: backend: non-numeric concurrency silently does nothing~~
+
+**CLOSED, verified 2026-10-25 (Sprint 02 T-08):** `backend/configValidation.ts` `findConfigErrors` checks `rootId`, both concurrencies, `verifyTimeoutMs`, thumbnail width/height/quality are integers in range (or absent); `index.ts` stops at config load and lists every invalid field. `verifyImagePaths.ts:352` falls back to the default on a non-finite value too. Tests `configValidation.test.ts` ("x", "5", 0, 101, 2.5, -1, multiple errors). Docs: 02-configuration.md. Original row kept for the record:
 
 `backend/index.ts:650` `Math.max(1, config.thumbnailConcurrency ?? 5)` and `verifyImagePaths.ts:352`
 `Math.max(1, rawConcurrency)` give `NaN` for a string or other bad value. The semaphore never

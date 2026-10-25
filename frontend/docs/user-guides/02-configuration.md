@@ -185,6 +185,13 @@ This prefix is used when processing image paths. The export pipeline (extract.py
 "verifyImagePaths": true
 ```
 
+### Numeric settings are checked at start
+
+`rootId`, `thumbnailConcurrency`, `verifyConcurrency` (1–64), `verifyTimeoutMs` (1–600000),
+`thumbnailMaxWidth`, `thumbnailMaxHeight` (1–10000) and `thumbnailQuality` (1–100) must be JSON
+integers (not strings) in range, or absent. Otherwise the backend stops before connecting to the
+database and lists every invalid field (`backend/configValidation.ts`).
+
 ### verifyTimeoutMs
 
 - **Type**: Number

@@ -6,6 +6,7 @@ import { Config, Child, AlbumFile, BreadcrumbItem, AlbumMetadata } from './types
 import { cleanup_uipathcomponent } from './cleanupUipath'
 import { getSegmentForAlbum, appendSegment, addToPathIndex, findPathIndexProblems } from './pathSegments'
 import { settleSubtree, formatSubtreeFailures, type SubtreeFailure } from './subtreeFailures'
+import { findConfigErrors } from './configValidation'
 import { computeAllDescendantImageCounts } from './descendantImageCount'
 import { runVerification } from './verifyImagePaths'
 import { buildPathsFromPathComponent } from './pathResolution'
@@ -587,6 +588,10 @@ let connection: mysql.Connection | null = null;
             }
             if (!config.gallerySettings.tablePrefix || !config.gallerySettings.columnPrefix) {
                 throw new Error('Missing required gallerySettings fields: tablePrefix or columnPrefix');
+            }
+            const configErrors = findConfigErrors(config);
+            if (configErrors.length > 0) {
+                throw new Error(`Invalid config.json values:\n  - ${configErrors.join('\n  - ')}`);
             }
         } catch (error) {
             console.error('Error loading config.json:', error);

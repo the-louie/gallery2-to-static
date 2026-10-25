@@ -349,7 +349,8 @@ export async function verifyUrls(
 ): Promise<DeviationEntry[]> {
     const timeoutMs = options.timeoutMs ?? options.verifyTimeoutMs ?? DEFAULT_TIMEOUT_MS;
     const rawConcurrency = options.concurrency ?? options.verifyConcurrency ?? DEFAULT_CONCURRENCY;
-    const concurrency = Math.max(1, rawConcurrency);
+    // Number.isFinite guard: a NaN here started 0 workers and reported "0 deviations" (LOGIC-23).
+    const concurrency = Number.isFinite(rawConcurrency) ? Math.max(1, Math.floor(rawConcurrency)) : DEFAULT_CONCURRENCY;
     const deviations: DeviationEntry[] = [];
 
     const projectRoot = options.projectRoot;
