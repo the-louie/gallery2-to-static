@@ -158,6 +158,8 @@ Supersedes the "can wait" note in ARCH-08 and the version part of SEC-14.
 
 ### TEST-03: no end-to-end test of the backend extraction (found 2026-10-25, Sprint 02 T-03)
 
+_Progress 2026-10-25 (Sprint 06 T-02): `main()` and its helpers moved unchanged into `backend/extract.ts`; `runExtraction({ sql, config, projectRoot, verify? })` returns `{ ok, finalDataDir, dataDir }` instead of setting `process.exitCode`; `index.ts` is the 59-line CLI. The end-to-end test is T-03._
+
 `backend/index.ts` runs everything in a top-level IIFE (`index.ts:563`) and `main()` is not exported,
 so the tree walk (segments, path index, child links, thumbnails, JSON writing) has no test; Sprint 02
 T-03 could only test the pure helpers. Fix: move `main()` and its helpers into a module that takes

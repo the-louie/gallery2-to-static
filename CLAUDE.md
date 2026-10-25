@@ -60,7 +60,8 @@ Gallery 2 MySQL DB
   test-vectors/
     nordic-path-normalization.json  # Shared test vectors for backend/frontend path normalization parity
   backend/
-    index.ts             # Main extraction entry point (supports env var overrides for DB credentials)
+    index.ts             # CLI: config.json + MYSQL_* env overrides, MySQL connection, exit code
+    extract.ts           # The extraction (runExtraction({ sql, config, projectRoot })); tested with a fake sql
     types.ts             # Shared type definitions (source of truth)
     config.json          # DB credentials (gitignored)
     config_example.json  # Template config
