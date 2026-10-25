@@ -1,7 +1,7 @@
 # Sprint 05: the remaining correctness and hygiene rows
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-06 (`todo` — Backend thumbnails written as .jpg (path recorded), frontend uses the )
+**Current ticket:** T-06 (`in-progress` — Backend thumbnails written as .jpg (path recorded), frontend uses the )
 **Last completed:** T-05 (`done` — commit `c7f4867`)
 
 **Goal:** close the remaining P3 correctness rows (URLs, BBCode, links, routing, thumbnails) and the
@@ -19,7 +19,7 @@ the stray files are gone from the repo and from `dist/`.
 | T-03 | Root list: description links not nested inside the block link | LOGIC-27 | 2h | – | done | test: no `a a` in DOM. Landed in `2183442` |
 | T-04 | Safe background-image URL in the album block | SEC-16 | 1h | T-01 | done | test with `\"`, `\\`, newline. Landed in `47e11ce` |
 | T-05 | Path index lookup before the `/image/<n>` rule | LOGIC-28 | 1h | – | done | test: album "image" + child "2005". Landed in `c7f4867` |
-| T-06 | Backend thumbnails written as `.jpg` (path recorded), frontend uses the recorded thumbnail path | LOGIC-30 | 3h | – | todo | PNG/GIF sources → `t__x.jpg`, URL matches |
+| T-06 | Backend thumbnails written as `.jpg` (path recorded), frontend uses the recorded thumbnail path | LOGIC-30 | 3h | – | in-progress | PNG/GIF sources → `t__x.jpg`, URL matches |
 | T-07 | Photo without thumbnail: backend flag, frontend placeholder | LOGIC-31 | 2h | T-06 | todo | test: no error tile |
 | T-08 | vite.config: `chunkSizeWarningLimit` placement, `manualChunks` router order | ARCH-07 | 1h | – | todo | router-vendor chunk exists; no warning |
 | T-09 | Repo tidy-up (stray lock, reports, gitignore, public/ extras, engines, README steps) | HYGIENE-01 | 2h | – | todo | per row |
