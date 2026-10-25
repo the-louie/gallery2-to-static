@@ -17,6 +17,8 @@ const files = [];
 
 if (files.some((f) => f.startsWith('g2data' + path.sep) || f === 'g2data')) problems.push('g2data/ (image tree) is in dist');
 if (files.some((f) => /\.(jpe?g|png|gif|webp|avif|tiff?|bmp)$/i.test(f))) problems.push('image files are in dist');
+if (files.some((f) => f.endsWith('.map'))) problems.push('sourcemaps (*.map) are in dist');
+if (files.includes('stats.html')) problems.push('bundle report stats.html is in dist (use npm run build:analyze only locally)');
 for (const f of ['index.html', 'album-themes.json']) if (!files.includes(f)) problems.push(`missing ${f}`);
 
 const bytes = files.reduce((n, f) => n + fs.statSync(path.join(dist, f)).size, 0);

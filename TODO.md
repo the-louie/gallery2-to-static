@@ -217,7 +217,9 @@ backtracking) — this is the real fix and it is small. Then additionally cap th
 (≤ 32 chars, plus a `maxLength` on the `SearchBar` input, which has none today) and
 consider moving `search()` off the main thread.
 
-### BUILD-03: production builds ship source maps and a bundle report
+### ~~BUILD-03: production builds ship source maps and a bundle report~~
+
+**CLOSED, verified 2026-10-25 (Sprint 01 T-06):** `frontend/vite.config.ts` is now `defineConfig(({ mode }) => …)`: `sourcemap: mode === 'analyze'` and the visualizer is only added for `mode === 'analyze'`; `build:analyze` = `vite build --mode analyze` (explicit mode, as the row advised, not `production`). `npm run build` → `dist/` 27 files, 487 KB (was 3.4 MB), no `*.map`, no `stats.html`, no `sourceMappingURL`; `build:analyze` still writes both, and `check:dist` now fails on them. Original row kept for the record:
 
 **Confirms list item 10.**
 

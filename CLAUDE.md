@@ -168,7 +168,8 @@ npm run lint             # ESLint (zero warnings enforced)
 npm run lint:fix         # ESLint autofix
 npm run format           # Prettier write
 npm run format:check     # Prettier check
-npm run build:analyze    # Build with bundle visualizer
+npm run build:analyze    # Build with bundle visualizer + sourcemaps (--mode analyze; never deploy this)
+npm run check:dist       # Fail if dist/ has images, g2data/, *.map or stats.html
 npm run size-check       # Check bundle size limits
 ```
 

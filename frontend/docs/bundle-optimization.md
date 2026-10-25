@@ -80,11 +80,14 @@ npm run build:analyze
 ```
 
 This will:
-1. Build the application in production mode
-2. Generate `dist/stats.html` with a visual representation of the bundle
+1. Build the application with `--mode analyze` (production build plus analysis output)
+2. Generate `dist/stats.html` with a visual representation of the bundle, and sourcemaps
 3. Show chunk sizes, dependencies, and gzipped sizes
 
 Open `dist/stats.html` in a browser to view the interactive bundle visualization.
+
+**Do not deploy an analyze build.** A normal `npm run build` writes neither `stats.html` nor
+sourcemaps; `npm run check:dist` fails if either is present.
 
 ### Bundle Size Monitoring
 

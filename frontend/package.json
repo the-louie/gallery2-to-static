@@ -41,7 +41,7 @@
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "build:analyze": "vite build --mode production",
+    "build:analyze": "vite build --mode analyze",
     "size-check": "size-limit",
     "size-check:build": "vite build --mode production && size-limit"
   },

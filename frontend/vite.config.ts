@@ -77,17 +77,23 @@ function copyPublicFilesPlugin(): Plugin {
 }
 
 // https://vitejs.dev/config/
-export default defineConfig({
+// `vite build --mode analyze` (npm run build:analyze) adds the bundle report (dist/stats.html) and
+// sourcemaps; a normal production build ships neither (they expose the full source).
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     serveDataPlugin(),
     copyPublicFilesPlugin(),
-    visualizer({
-      filename: './dist/stats.html',
-      open: false,
-      gzipSize: true,
-      brotliSize: true,
-    }),
+    ...(mode === 'analyze'
+      ? [
+          visualizer({
+            filename: './dist/stats.html',
+            open: false,
+            gzipSize: true,
+            brotliSize: true,
+          }),
+        ]
+      : []),
   ],
   resolve: {
     alias: {
@@ -114,7 +120,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     copyPublicDir: false, // see PUBLIC_FILES_TO_SHIP
-    sourcemap: true,
+    sourcemap: mode === 'analyze',
     minify: 'esbuild', // Use esbuild for faster minification
     cssMinify: true, // Minify CSS
     rollupOptions: {
@@ -145,4 +151,4 @@ export default defineConfig({
       chunkSizeWarningLimit: 500,
     },
   },
-});
+}));
