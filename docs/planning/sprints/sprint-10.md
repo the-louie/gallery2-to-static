@@ -1,8 +1,8 @@
 # Sprint 10: state effects → derived or initial state (REFAC-01)
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-08 (`in-progress` — Rule on; REFAC-01 struck)
-**Last completed:** T-07 (`done` — commit `8bf0f0a`)
+**Current ticket:** —
+**Last completed:** T-08 (`done` — commit `349cb9d`)
 
 **Goal:** no effect sets state only to reset or mirror an input; `@eslint-react/set-state-in-effect` on.
 
@@ -17,6 +17,6 @@
 | T-05 | ThemeContext, ViewAbortContext | REFAC-01 | 1h | – | done | 2 hits. Landed in `1262b15` |
 | T-06 | useLightbox | REFAC-01 | 2h | – | done | 8 hits. Landed in `e9dcf95` |
 | T-07 | useProgressiveImage | REFAC-01 | 3h | – | done | 14 hits. Landed in `8bf0f0a` |
-| T-08 | Rule on; REFAC-01 struck | REFAC-01 | 0.5h | T-01..T-07 | in-progress | lint 0/0 |
+| T-08 | Rule on; REFAC-01 struck | REFAC-01 | 0.5h | T-01..T-07 | done | lint 0/0. Landed in `349cb9d` |
 
 Total ≈ 12h.
