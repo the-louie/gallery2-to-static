@@ -64,7 +64,7 @@ export async function generateThumbnail(
     await fs.mkdir(destDir, { recursive: true });
 
     try {
-        await sharp(sourcePath, { failOnError: true })
+        await sharp(sourcePath, { failOn: 'warning' }) // = sharp <0.35 failOnError: true; level revisited in LOGIC-12
             .resize(opts.maxWidth, opts.maxHeight, { fit: 'inside', withoutEnlargement: true })
             .jpeg({ quality: opts.quality })
             .toFile(destPath);

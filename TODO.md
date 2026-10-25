@@ -335,7 +335,9 @@ literal string `'not an image'` (line 44), which fails at metadata level, the on
 leaves no remnant and that fails at every `failOn` level. Needs a valid-header-but-truncated
 JPEG fixture.
 
-### SEC-14: upgrade `sharp` (3 high advisories) and `mysql2`
+### ~~SEC-14: upgrade `sharp` (3 high advisories) and `mysql2`~~
+
+**CLOSED, verified 2026-10-25 (Sprint 02 T-04):** `backend/package.json`: `sharp ^0.35.5` (libvips 8.18.7, libheif 1.23.5, librsvg 2.63.2 per `sharp.versions`), `mysql2 ^3.24.6`, `@types/node ^22.20.5`; `npm audit` in backend: **0 vulnerabilities** (was 2 high). `failOnError: true` (removed in 0.35) → `failOn: 'warning'`, the same level; the level itself is LOGIC-12. Clean `npm ci` + backend tests 10/10, tsc clean. (`npm ls` lists `@img/sharp-wasm32`/`@emnapi/runtime`/`tslib` as extraneous: optional wasm fallback that npm installs but does not match this platform; harmless.) Original row kept for the record:
 
 **Confirms list item 6's substance; the 59 GB figure is not substantiated in-repo.**
 
@@ -538,6 +540,7 @@ SEC-14 and ARCH-08 list:
   Node major we deploy on (22).
 
 Split per toolchain (build, test, lint, runtime libraries, backend) so each step lands green.
+_Progress 2026-10-25 (Sprint 02 T-04): backend runtime libraries done (sharp 0.35.5, mysql2 3.24.6, @types/node 22.20.5). Backend open: typescript (7.x latest; ts-node 10.9.2 needs checking against it) and ts-node._
 Verify with `npm outdated` (empty) + `npm audit` (0) in both folders, `npm run build`, the full
 vitest run and the backend tests. Add `engines` (HYGIENE-01) so the Node version is pinned too.
 Supersedes the "can wait" note in ARCH-08 and the version part of SEC-14.
@@ -554,6 +557,7 @@ through the runtimes and native libraries. Check each place and record the versi
    confirm against the Node security release notes for CVE-2026-111497.
 2. **sharp/libvips bundle** (`@img/sharp-libvips-*`, `versions.json`): libvips, libheif, librsvg,
    fonts/woff2 — confirm whether any of them links or bundles brotli, and its version after DEPS-01.
+   _2026-10-25 (Sprint 02 T-04): sharp 0.35.5 `sharp.versions` lists no brotli (aom, archive, cairo, cgif, exif, expat, ffi, fontconfig, freetype 2.14.3, fribidi, glib, harfbuzz, heif, highway, imagequant, lcms, mozjpeg, pango, pixman, png, rsvg, tiff, uhdr, vips, webp, xml2, zlib-ng). Still to check: whether the bundled freetype was built with WOFF2 (brotli) — `strings`/`ldd` on `libvips-cpp.so`._
 3. **Build and dev tools** that decompress (Vite's compressed-size report, size-limit, puppeteer's
    Chrome download): Node's zlib, so item 1 covers them; list anything that bundles its own copy.
 4. **The shipped `dist/`**: no WASM or JS Brotli decoder in the bundle (grep the build output), and
