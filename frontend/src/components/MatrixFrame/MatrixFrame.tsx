@@ -56,8 +56,30 @@ export function MatrixFrame({ children }: MatrixFrameProps) {
   const isAlbumPage = location !== null || pathname === '/';
   const crumbs = trail.map((c, i) => (isAlbumPage && i === trail.length - 1 ? { ...c, path: null } : c));
 
+  // The banner slot above the nav bar, where lanbilder.se had its ad in 2006 (BANNER-01): set at build
+  const banner = import.meta.env.VITE_BANNER_SRC && import.meta.env.VITE_BANNER_HREF ? {
+    src: import.meta.env.VITE_BANNER_SRC,
+    src2x: import.meta.env.VITE_BANNER_SRC_2X,
+    small: import.meta.env.VITE_BANNER_SRC_SMALL,
+    small2x: import.meta.env.VITE_BANNER_SRC_SMALL_2X,
+    href: import.meta.env.VITE_BANNER_HREF,
+    alt: import.meta.env.VITE_BANNER_ALT ?? '',
+  } : null;
+
   return (
     <div id="gallery" className="g2-matrix">
+      {banner && (
+        <div id="gsHeader" className="gsHeader">
+          <a href={banner.href} target="_blank" rel="noopener noreferrer">
+            <picture>
+              {banner.small && (
+                <source media="(max-width: 759px)" srcSet={banner.small2x ? `${banner.small}, ${banner.small2x} 2x` : banner.small} />
+              )}
+              <img src={banner.src} srcSet={banner.src2x ? `${banner.src}, ${banner.src2x} 2x` : undefined} alt={banner.alt} />
+            </picture>
+          </a>
+        </div>
+      )}
       <div className="gsNavBar gcBorder1">
         <div className="gbBreadCrumb">
           <nav className="block-core-BreadCrumb" aria-label="Breadcrumb">

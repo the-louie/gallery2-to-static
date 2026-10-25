@@ -68,6 +68,18 @@
   border-color: #ccc;
 }
 
+/* Banner slot (2006: the ad text block above the nav bar) */
+.g2-matrix .gsHeader {
+  text-align: center;
+  padding: 6px 0 10px;
+}
+
+.g2-matrix .gsHeader img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
 /* Nav bar: breadcrumb with the » separator image */
 .g2-matrix .gsNavBar {
   border-top-width: 1px;

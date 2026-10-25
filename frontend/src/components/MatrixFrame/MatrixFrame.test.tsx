@@ -67,6 +67,26 @@ describe('MatrixFrame (THEME-01)', () => {
     expect(document.title).toBe('lanbilder.se');
   });
 
+  it('shows the banner slot only when the build sets VITE_BANNER_SRC and VITE_BANNER_HREF', () => {
+    render(<MatrixFrame>page</MatrixFrame>);
+    expect(document.getElementById('gsHeader')).toBeNull();
+    vi.stubEnv('VITE_BANNER_SRC', '/banner/glitched-728x90.jpg');
+    vi.stubEnv('VITE_BANNER_SRC_2X', '/banner/glitched-728x90@2x.jpg');
+    vi.stubEnv('VITE_BANNER_SRC_SMALL', '/banner/glitched-468x60.jpg');
+    vi.stubEnv('VITE_BANNER_HREF', 'https://glitched.se/sv/');
+    vi.stubEnv('VITE_BANNER_ALT', 'Glitched');
+    render(<MatrixFrame>page</MatrixFrame>);
+    const link = document.querySelector('#gsHeader a')!;
+    expect(link).toHaveAttribute('href', 'https://glitched.se/sv/');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    const img = link.querySelector('img')!;
+    expect(img).toHaveAttribute('src', '/banner/glitched-728x90.jpg');
+    expect(img).toHaveAttribute('srcset', '/banner/glitched-728x90.jpg, /banner/glitched-728x90@2x.jpg 2x');
+    expect(img).toHaveAttribute('alt', 'Glitched');
+    expect(link.querySelector('source')).toHaveAttribute('media', '(max-width: 759px)');
+    vi.unstubAllEnvs();
+  });
+
   it('pages without an album show the site name only', () => {
     at(null);
     render(<MatrixFrame>page</MatrixFrame>, { initialEntries: ['/not-found'] });
