@@ -37,7 +37,8 @@
  */
 
 import { useEffect, useMemo, useCallback, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { isFromAlbumState } from '@/utils/albumScroll';
 import { parseAlbumImageParams, parseImageId } from '@/utils/routeParams';
 import type { RouteParams } from '@/types';
 import type { Image } from '@/types';
@@ -93,6 +94,7 @@ export function useLightbox(
   resolvedImageId?: number | null,
 ): UseLightboxReturn {
   const navigate = useNavigate();
+  const location = useLocation();
   const params = useParams<RouteParams>();
 
   const pathBase =
@@ -187,18 +189,25 @@ export function useLightbox(
       setCurrentImage(image);
       setAlbumId(albumIdParam);
       setAlbumImages(imagesParam);
-      navigate(pathForImage(image.id), { replace: false });
+      navigate(pathForImage(image.id), { replace: false, state: { fromAlbum: true } });
     },
     [navigate, pathForImage],
   );
 
   // Function to close lightbox
+  // Opened from the album (state.fromAlbum, kept through next/previous): go Back, so the history
+  // is [album] again and the album restores its scroll position. Opened from a link or deep link:
+  // replace the image entry with the album (LOGIC-17).
   const closeLightbox = useCallback(() => {
-    navigate(pathForAlbum(), { replace: false });
+    if (isFromAlbumState(location.state)) {
+      navigate(-1);
+    } else {
+      navigate(pathForAlbum(), { replace: true });
+    }
     setCurrentImage(null);
     setAlbumId(null);
     setAlbumImages([]);
-  }, [navigate, pathForAlbum]);
+  }, [navigate, pathForAlbum, location.state]);
 
   // Function to navigate to next image
   const navigateToNext = useCallback(() => {
@@ -206,9 +215,9 @@ export function useLightbox(
     const currentIndex = albumImages.findIndex((img) => img.id === currentImage.id);
     if (currentIndex >= 0 && currentIndex < albumImages.length - 1) {
       const nextImage = albumImages[currentIndex + 1];
-      navigate(pathForImage(nextImage.id), { replace: true });
+      navigate(pathForImage(nextImage.id), { replace: true, state: location.state });
     }
-  }, [currentImage, albumImages, navigate, pathForImage]);
+  }, [currentImage, albumImages, navigate, pathForImage, location.state]);
 
   // Function to navigate to previous image
   const navigateToPrevious = useCallback(() => {
@@ -216,9 +225,9 @@ export function useLightbox(
     const currentIndex = albumImages.findIndex((img) => img.id === currentImage.id);
     if (currentIndex > 0) {
       const previousImage = albumImages[currentIndex - 1];
-      navigate(pathForImage(previousImage.id), { replace: true });
+      navigate(pathForImage(previousImage.id), { replace: true, state: location.state });
     }
-  }, [currentImage, albumImages, navigate, pathForImage]);
+  }, [currentImage, albumImages, navigate, pathForImage, location.state]);
 
   return {
     isOpen,

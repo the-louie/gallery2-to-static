@@ -12,8 +12,9 @@
  * @module frontend/src/components/AlbumDetail
  */
 
-import { useMemo, useCallback, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useCallback, useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation, useNavigationType } from 'react-router-dom';
+import { rememberAlbumScroll, takeAlbumScroll } from '@/utils/albumScroll';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useSort } from '@/hooks/useSort';
@@ -79,7 +80,20 @@ export function AlbumDetail({
   showDescription = true,
 }: AlbumDetailProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigationType = useNavigationType();
   const { data, metadata, isLoading, error, refetch } = useAlbumData(albumId);
+
+  // Back from the lightbox (POP): restore the scroll position remembered when the image was
+  // opened, once the album's content is rendered (LOGIC-17).
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current || isLoading || !data) return;
+    restoredRef.current = true;
+    if (navigationType !== 'POP') return;
+    const y = takeAlbumScroll(location.pathname);
+    if (y !== null) requestAnimationFrame(() => window.scrollTo(0, y));
+  }, [isLoading, data, navigationType, location.pathname]);
   const [isNavigatingUp, setIsNavigatingUp] = useState(false);
   const isNavigatingRef = useRef(false);
   const { rootAlbumId } = useSiteMetadata();
@@ -175,10 +189,11 @@ export function AlbumDetail({
           breadcrumbPath != null
             ? getImagePath(breadcrumbPath, clickedImage.id)
             : `/album/${albumId}/image/${clickedImage.id}`;
-        navigate(path);
+        rememberAlbumScroll(location.pathname, window.scrollY);
+        navigate(path, { state: { fromAlbum: true } });
       }
     },
-    [onImageClick, navigate, albumId, breadcrumbPath],
+    [onImageClick, navigate, albumId, breadcrumbPath, location.pathname],
   );
 
   const handleBackClick = useCallback(() => {

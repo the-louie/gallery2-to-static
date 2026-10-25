@@ -1393,4 +1393,37 @@ describe('AlbumDetail', () => {
       });
     });
   });
+
+  describe('scroll position across the lightbox (LOGIC-17)', () => {
+    const loaded = () =>
+      mockUseAlbumData.mockReturnValue({
+        data: mockChildren,
+        isLoading: false,
+        error: null,
+        metadata: null,
+        refetch: vi.fn(),
+      });
+
+    it('restores the remembered scroll position when returning (POP)', async () => {
+      loaded();
+      sessionStorage.setItem('album-scroll:/album/7', '850');
+      const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+      render(<AlbumDetail albumId={7} />, { initialEntries: ['/album/7'] });
+      await waitFor(() => expect(scrollTo).toHaveBeenCalledWith(0, 850));
+      expect(sessionStorage.getItem('album-scroll:/album/7')).toBeNull();
+      scrollTo.mockRestore();
+    });
+
+    it('opening an image remembers the scroll position and marks the lightbox as opened from the album', async () => {
+      loaded();
+      Object.defineProperty(window, 'scrollY', { value: 420, configurable: true });
+      render(<AlbumDetail albumId={7} />, { initialEntries: ['/album/7'] });
+      const images = screen.getByRole('region', { name: 'Images' });
+      const first = images.querySelector('[role="button"]') as HTMLElement;
+      await userEvent.click(first);
+      expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/image/'), { state: { fromAlbum: true } });
+      expect(sessionStorage.getItem('album-scroll:/album/7')).toBe('420');
+      sessionStorage.clear();
+    });
+  });
 });

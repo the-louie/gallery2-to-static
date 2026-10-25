@@ -257,7 +257,9 @@ order. To reproduce: sort by date descending, open the 3rd thumbnail, press →.
 image in JSON order, and "N of M" counts images the filter hid. Fix: build the list with the same
 `applyFilters` + sort the grid uses (`useSort('images')`, `FilterContext`).
 
-### LOGIC-17: closing the lightbox pushes history; album scroll position is lost
+### ~~LOGIC-17: closing the lightbox pushes history; album scroll position is lost~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-05):** opening an image from the album (`AlbumDetail.tsx` `handleImageClick`, and `useLightbox.openLightbox`) navigates with state `{ fromAlbum: true }` and remembers `window.scrollY` per album path (`utils/albumScroll.ts`, sessionStorage, guarded); next/previous keep that state; `closeLightbox` goes `navigate(-1)` when it is set, else replaces the image entry with the album. `AlbumDetail` restores the remembered position on a POP once its data is shown. Tests: `useLightbox.test.tsx` (close → POP to album; next then close → POP; deep link → REPLACE), `albumScroll.test.ts`, `AlbumDetail.test.tsx` (restore on POP, click remembers + state). Not done: scroll-to-top on forward navigation (not in the row's fix). Original row kept for the record:
 
 `hooks/useLightbox.ts:196-197`: `closeLightbox` calls `navigate(pathForAlbum(), { replace: false })`.
 History becomes [album, image, album], so Back reopens the lightbox. The album page is unmounted
