@@ -138,7 +138,7 @@ Gallery 2 MySQL DB
     aliases.config.ts     # Shared path alias definitions (imported by both vite and vitest configs)
     vitest.config.ts      # Test config (jsdom, v8 coverage, imports aliases.config.ts)
     vite.config.ts        # Build config (custom data plugin, chunk splitting, imports aliases.config.ts)
-    eslint.config.js      # ESLint 9 flat config (recommended + typescript-eslint + react + hooks + prettier)
+    eslint.config.js      # ESLint 10 flat config (recommended + typescript-eslint + @eslint-react + hooks + prettier)
     .prettierrc           # Prettier config
   docs/
     theming/              # Theme system documentation
@@ -270,7 +270,7 @@ npx ts-node <file>.test.ts  # Run individual test files
 ### Formatting
 
 - Prettier: semicolons, double quotes, 2-space indent, trailing commas (es5), 80 char width, always parens on arrows
-- ESLint 9 (flat config `frontend/eslint.config.js`, .ts/.tsx only): recommended + typescript-eslint recommended + React + React hooks (rules-of-hooks, exhaustive-deps) + react-refresh + Prettier. ESLint 10 waits on eslint-plugin-react (supports up to 9).
+- ESLint 10 (flat config `frontend/eslint.config.js`, .ts/.tsx only): recommended + typescript-eslint recommended + @eslint-react recommended-typescript (rules beyond the former eslint-plugin-react set are off, LINT-02) + React hooks (rules-of-hooks, exhaustive-deps) + react-refresh + Prettier.
 
 ## Theme System
 

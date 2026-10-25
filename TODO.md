@@ -20,11 +20,9 @@ Nothing below this line can be validated until the build runs.
 
 `backend/config_example.json:13` ships `"ignoreAlbums": []`. The review text cites `99283, 362248` from an older config; the operator confirms the full list. Check after extraction: none of the IDs (or their titles) appears in `data/search/index.json` or under `data/`.
 
-### ~~OWNER-01: owner name = trimmed fullName, else trimmed userName (operator, 2026-10-25)~~
+### LINT-02: review the @eslint-react rules that are off (Sprint 08 T-02)
 
-**CLOSED, verified 2026-10-25 (Sprint 08 T-01):** `backend/sqlUtils.ts` selects `fullName as ownerFullName`, `userName as ownerUserName` in both queries; `backend/ownerDisplayName.ts` `resolveOwnerName` returns the trimmed full name, else the trimmed user name, else null; tests in `backend/ownerDisplayName.test.ts` (full, padded, NULL, `''`, spaces, both blank, Gallery Administrator). Not run against MySQL (no DB). Original row kept for the record:
-
-Reverses the SEC-17 privacy choice. `backend/sqlUtils.ts:25,94` select `NULLIF(TRIM(fullName), '')`, so a user without a full name shows no owner. Operator: keep the old fallback to `userName`, but a blank/space-only fullName must also fall back; future logins are not username-based, so userName is a nickname that an optional fullName overrides.
+Moving to ESLint 10 replaced eslint-plugin-react with @eslint-react, whose `recommended-typescript` set adds rules the old set did not have. They fired 75 times and are off in `frontend/eslint.config.js` so the lint coverage stays as before: `set-state-in-effect` 49, `no-array-index-key` 7, `use-state` 5, `no-context-provider` 3, `no-use-context` 3, `naming-convention-ref-name` 2, `web-api-no-leaked-intersection-observer` 1 (`exhaustive-deps` 5 duplicates react-hooks and stays off). Review each: fix real bugs (the leaked IntersectionObserver first), turn the rule on, or keep it off with a reason.
 
 ## P2 — Correctness and cost
 
@@ -39,6 +37,8 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
 ### P1 additions
 
 ### DEPS-01 (remaining): two majors blocked upstream — ESLint 10, TypeScript 7 (operator, 2026-10-25)
+
+_Sprint 08 T-02 (2026-10-25): **ESLint 10 done** — eslint 10.13.0, @eslint/js 10.0.1, eslint-plugin-react replaced by @eslint-react/eslint-plugin 5.28.8 (`frontend/eslint.config.js`); new core rule `preserve-caught-error` fixed in `frontend/src/utils/searchIndexLoader.ts` (`cause`, lib `ES2022.Error`). TypeScript 7 open (T-03)._
 
 _Groomed 2026-10-25 (Sprint 04 retro): everything else is on its latest release and `npm audit` is 0 in both folders (see the progress notes below). Open: **eslint 10 / @eslint/js 10** — waits for eslint-plugin-react to support ESLint 10 (7.37.5 supports ≤ 9); **typescript 7** — waits for typescript-eslint (< 6.1.0) and ts-node (needs the JS API; alternative: run the backend with Node's type stripping or tsx instead of ts-node). Recheck both at each sprint start._ Original title: all dependencies on their latest version.
 

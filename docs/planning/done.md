@@ -2,6 +2,14 @@
 
 Rows pruned from `TODO.md` after each sprint, with the proof they were closed on. Newest first.
 
+## Pruned 2026-10-25 (Sprint 08): 1 rows
+
+### ~~OWNER-01: owner name = trimmed fullName, else trimmed userName (operator, 2026-10-25)~~
+
+**CLOSED, verified 2026-10-25 (Sprint 08 T-01):** `backend/sqlUtils.ts` selects `fullName as ownerFullName`, `userName as ownerUserName` in both queries; `backend/ownerDisplayName.ts` `resolveOwnerName` returns the trimmed full name, else the trimmed user name, else null; tests in `backend/ownerDisplayName.test.ts` (full, padded, NULL, `''`, spaces, both blank, Gallery Administrator). Not run against MySQL (no DB). Original row kept for the record:
+
+Reverses the SEC-17 privacy choice. `backend/sqlUtils.ts:25,94` select `NULLIF(TRIM(fullName), '')`, so a user without a full name shows no owner. Operator: keep the old fallback to `userName`, but a blank/space-only fullName must also fall back; future logins are not username-based, so userName is a nickname that an optional fullName overrides.
+
 ## Pruned 2026-10-25 (operator 2026-10-25): 1 rows
 
 ### ~~SEC-12: no Gallery 2 permission check anywhere — private albums are exported~~

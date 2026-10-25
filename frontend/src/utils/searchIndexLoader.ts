@@ -116,6 +116,7 @@ export async function loadSearchIndex(): Promise<SearchIndexFile | null> {
     } catch (error) {
       throw new Error(
         `Failed to parse search index JSON: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        { cause: error },
       );
     }
 
@@ -141,6 +142,7 @@ export async function loadSearchIndex(): Promise<SearchIndexFile | null> {
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error(
         `Network error loading search index: ${error.message}`,
+        { cause: error },
       );
     }
 
@@ -152,6 +154,7 @@ export async function loadSearchIndex(): Promise<SearchIndexFile | null> {
     // Unknown error, wrap it
     throw new Error(
       `Unexpected error loading search index: ${String(error)}`,
+      { cause: error },
     );
   }
 }
