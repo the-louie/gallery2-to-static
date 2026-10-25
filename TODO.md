@@ -37,6 +37,27 @@ _Progress 2026-10-25 (Sprint 11 T-02, T-06): `?page=N` landed with the pager in 
 
 ## P2 — Correctness and cost
 
+### PRIO-THEME-01: "Owner: Unknown" where Gallery 2 showed "Gallery Administrator" (Sprint 11 T-13, 2026-10-25)
+
+`backend/ownerDisplayName.ts` `normalizeOwnerDisplayName` maps "Gallery Administrator" to "Unknown"; the 2006 root page showed "Owner: Gallery Administrator". Decide: show the Gallery 2 name (1:1) or keep "Unknown". Seen on the root album header and on every album the admin owned.
+
+### PRIO-THEME-02: album highlight = Gallery 2's chosen highlight, not the first photo (Sprint 11 T-13)
+
+The export takes the first photo of the subtree as an album's thumbnail (`findFirstPhotoRecursive`, `backend/extract.ts`); Gallery 2 used the highlight the owner picked. The pick is in the database: the album item's thumbnail derivative (`g2_Derivative` row whose `g_id` = the album's `g2_DerivativeImage` id, `g_derivativeSourceId` → the source photo). Join it in `sqlUtils.ts` and prefer it; fall back to the first photo. Root page in 2006 vs now: 9 of 12 cells show a different image.
+
+### PRIO-THEME-03: thumbnails with Gallery 2's crop (Sprint 11 T-13)
+
+The 2006 thumbnails were 150×150 crops made by Gallery 2 (`g2_Derivative.g_derivativeOperations`, e.g. `crop|x,y,w,h;thumbnail|150`, percentages, sometimes chosen by hand). We generate 300px thumbnails of the whole photo and crop them to a square with `object-fit: cover` (centre), so most cells show a slightly different cut. Export the crop operation per photo and apply it in `generateThumbnail.ts` (sharp `extract`), keeping the 2× size.
+
+### PRIO-THEME-04: "(N items total)" should count sub-albums too (Sprint 11 T-13)
+
+Gallery 2's `descendentCount` counted every item below an album; `totalDescendantImageCount` counts photos. 2006: "Size: 9 items (878 items total)"; now "(864 items total)" for DH-Photo (14 sub-albums not counted). Export a `totalDescendantCount` (photos + albums) next to it and show that.
+
+### PRIO-THEME-05: serve a 1024px resize on photo pages, as Gallery 2 did (Sprint 11 T-13)
+
+The 2006 photo page served a 768×1024 resized JPEG (`g2_imageViewsIndex=0`, about 100 KB) and linked the original as "Full size". `MatrixPhoto` shows the original scaled to 1024px with CSS (1–2 MB per photo), so the page is slower than the old one on the same photo. Generate the resize in the export (`sharp`, longest side 1024, next to the thumbnail) and use it as the default view; `?size=full` keeps the original.
+
+
 ## P3 — Quality, hygiene and latent bugs
 
 ### SEARCH-01: search results show raw BBCode in descriptions (found 2026-10-25, Sprint 11 T-11)

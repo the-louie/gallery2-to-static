@@ -59,12 +59,13 @@
   border: 0 solid #ccc;
 }
 
-/* .gbBlock: content and sidebar sections, a 1px rule under each */
+/* .gbBlock: content and sidebar sections, a 1px rule under each. Gallery 2 inherited style and
+   colour from the .gcBorder1 column; our blocks sit in a page wrapper, so they are set here. */
 .g2-matrix .gbBlock {
   padding: 0.7em;
   border-width: 0 0 1px 0;
-  border-style: inherit;
-  border-color: inherit;
+  border-style: solid;
+  border-color: #ccc;
 }
 
 /* Nav bar: breadcrumb with the » separator image */
@@ -125,7 +126,7 @@
 }
 
 .g2-matrix .gsFooter {
-  line-height: 0;
+  padding-top: 4px; /* measured on the 2006 page: 21px tall with the 15px badges */
 }
 
 .g2-matrix .gsFooter img {
@@ -173,6 +174,6 @@
   }
 
   .g2-matrix .gsFooter {
-    padding: 8px 0;
+    padding: 8px 0 4px;
   }
 }

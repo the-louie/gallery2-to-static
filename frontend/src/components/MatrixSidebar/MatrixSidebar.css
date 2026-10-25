@@ -7,7 +7,7 @@
   /* The browser's own text box, as in 2006: the global reset removed its padding and border */
   padding: 1px 2px;
   border: 2px inset #eee;
-  font: 13.333px Arial, Helvetica, sans-serif;
+  font: 13.333px Arial; /* the browser's default text box font, as the 2006 page left it */
   color: #000;
   background: #fff;
 }

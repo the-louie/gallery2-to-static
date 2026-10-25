@@ -44,3 +44,9 @@
     font-size: 16px;
   }
 }
+
+/* Gallery 2's photo.tpl gave #gsContent no gcBorder1 class, so photo-page blocks inherited no
+   border style: no rules under the header, navigator and image blocks (measured on the 2006 page) */
+.g2-matrix .g2-matrix-photo .gbBlock {
+  border-style: none;
+}

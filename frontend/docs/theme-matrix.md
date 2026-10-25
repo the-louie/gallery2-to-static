@@ -107,7 +107,7 @@ Deployed on the test host. Side-by-side with the 2006 captures at 1280px (`/srv/
 
 | # | Where | 2006 | Now | Note |
 |---|---|---|---|---|
-| 1 | Matrix rows | 225px per row | a few px taller | measure in T-13 |
+| 1 | Matrix rows | 225px per row | same (223px rows, document 1118px on both) | fixed in T-13: `.gbBlock` borders and the footer padding |
 | 2 | Root page | Classic list layout | Matrix layout | by decision (operator): the template applies to every album |
 | 3 | Root "Owner" | "Gallery Administrator" | "Unknown" | `backend/ownerDisplayName.ts` maps it; decide in T-13 |
 | 4 | Album cells | Gallery 2's chosen highlight, 150×150 | first photo, cropped to 150×150 | the export has no highlightId (schema) |
@@ -115,5 +115,19 @@ Deployed on the test host. Side-by-side with the 2006 captures at 1280px (`/srv/
 | 6 | Nav bar | Login / Register right | — | left out (operator) |
 | 7 | Sidebar | "Add Comment" | — | left out (operator) |
 | 8 | Header / below footer | ad text, About us | — | left out (operator) |
-| 9 | Phone (390px) | n/a | matrix keeps 3 columns: page 573px wide | **fix in T-11** (2 columns below 700px, as planned) |
+| 9 | Phone (390px) | n/a | 2 columns, 66/66 device checks pass | fixed in T-11 |
+
+## Measured comparison (Sprint 11 T-13, 2026-10-25)
+
+`scratchpad/compare.cjs` (copy in `/srv/share/lanbilder2/inspo/screens/compare/`) renders the 2006 Wayback page and the new page in the same Chrome at 1280px and 1920px, removes the 2006 ads / Login / Add Comment / About (left out by decision), measures every Gallery 2 block (position, size, 10 computed style properties) and writes screenshots, a 50% overlay, a diff image and `index.html` with the results.
+
+| Page | 1280px | 1920px |
+|---|---|---|
+| Album, page 1 (dhphotos 2006-02-08 vs battlefrag.com) | 0 block differences; document 1118px on both; 0.2% of pixels differ (the photos and view counts) | same, 0.1% |
+| Album, page 2 (2006-02-15) | 0 block differences; 1118px on both; 0.2% | — |
+| Photo (CIMG0053_.JPG, 2006-02-15) | 0 block differences above the image; the 2006 capture's photo is a broken 92×16 image, so everything below sits 1024px higher there | same |
+
+Found and fixed in T-13: the 1px rule under content blocks (`border-style` was inherited from a wrapper the 2006 page did not have), the footer's 4px padding, and that Gallery 2's photo page has **no** rules under its blocks (`photo.tpl` gives `#gsContent` no `gcBorder1` class). The search box uses the browser's default `Arial` like the 2006 page. Both sides render with the machine's fonts (Verdana → DejaVu Sans here; the operator's Windows browser shows real Verdana on both).
+
+What still differs is data and export logic, now backlog rows **PRIO-THEME-01..05** in `TODO.md`: owner "Unknown" vs "Gallery Administrator", the album highlight picked by Gallery 2, Gallery 2's thumbnail crops, "(N items total)" counting sub-albums, and a 1024px resize for photo pages instead of the scaled original.
 
