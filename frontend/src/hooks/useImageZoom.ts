@@ -117,18 +117,10 @@ export function useImageZoom(
   // Pan position state (x, y coordinates, default centered)
   const [pan, setPanState] = useState<PanPosition>({ x: 0, y: 0 });
 
-  // Calculate maximum zoom based on fit-to-screen or fixed max
-  const maxZoom = useMemo(() => {
-    if (containerWidth && containerHeight && imageWidth > 0 && imageHeight > 0) {
-      // Calculate fit-to-screen zoom
-      const scaleX = (containerWidth / imageWidth) * 100;
-      const scaleY = (containerHeight / imageHeight) * 100;
-      const fitZoom = Math.min(scaleX, scaleY) * 100;
-      // Use the larger of fit-to-screen or fixed max
-      return Math.max(fitZoom, ZOOM_MAX);
-    }
-    return ZOOM_MAX;
-  }, [imageWidth, imageHeight, containerWidth, containerHeight]);
+  // Zoom is relative to the fitted image (100% = fit), so the limit is a fixed 400%. The previous
+  // "fit-to-screen" term multiplied a percentage by 100 again and allowed ~2500%, or over 10000%
+  // for small images (LOGIC-19).
+  const maxZoom = ZOOM_MAX;
 
   // Reset zoom and pan when image dimensions change
   useEffect(() => {

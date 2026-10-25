@@ -66,6 +66,18 @@ describe('useImageZoom', () => {
       expect(result.current.canZoomIn).toBe(false);
     });
 
+    it('caps zoom at 400% when container dimensions are known (LOGIC-19)', () => {
+      // 4000 px image in a 1000 px container: the old formula allowed 2500%
+      const { result } = renderHook(() => useImageZoom(4000, 3000, 1000, 750));
+      for (let i = 0; i < 50; i++) {
+        act(() => {
+          result.current.zoomIn();
+        });
+      }
+      expect(result.current.zoom).toBe(400);
+      expect(result.current.canZoomIn).toBe(false);
+    });
+
     it('does not zoom in when at max', () => {
       const { result } = renderHook(() =>
         useImageZoom(imageWidth, imageHeight),

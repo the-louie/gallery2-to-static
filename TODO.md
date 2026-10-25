@@ -239,7 +239,9 @@ placeholder (or the downscaled full image) instead of the error state.
 
 ### P2 additions
 
-### LOGIC-19: zoom limit is ~2500% instead of 400%
+### ~~LOGIC-19: zoom limit is ~2500% instead of 400%~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-07):** `frontend/src/hooks/useImageZoom.ts` `maxZoom = ZOOM_MAX` (400; zoom is relative to the fitted image). New test with container dimensions (4000×3000 in 1000×750, 50 zoom-ins → 400, `canZoomIn` false) fails on the old code (checked) and passes now. Original row kept for the record:
 
 `hooks/useImageZoom.ts:121-128`: `fitZoom = Math.min(scaleX, scaleY) * 100` with scales that are
 already percentages, then `Math.max(fitZoom, ZOOM_MAX)`. A 4000 px image in a 1000 px container
