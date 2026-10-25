@@ -62,6 +62,8 @@ export function MatrixFrame({ children }: MatrixFrameProps) {
     src2x: import.meta.env.VITE_BANNER_SRC_2X,
     small: import.meta.env.VITE_BANNER_SRC_SMALL,
     small2x: import.meta.env.VITE_BANNER_SRC_SMALL_2X,
+    large: import.meta.env.VITE_BANNER_SRC_LARGE,
+    large2x: import.meta.env.VITE_BANNER_SRC_LARGE_2X,
     href: import.meta.env.VITE_BANNER_HREF,
     alt: import.meta.env.VITE_BANNER_ALT ?? '',
   } : null;
@@ -74,6 +76,9 @@ export function MatrixFrame({ children }: MatrixFrameProps) {
             <picture>
               {banner.small && (
                 <source media="(max-width: 759px)" srcSet={banner.small2x ? `${banner.small}, ${banner.small2x} 2x` : banner.small} />
+              )}
+              {banner.large && (
+                <source media="(min-width: 1024px)" srcSet={banner.large2x ? `${banner.large}, ${banner.large2x} 2x` : banner.large} />
               )}
               <img src={banner.src} srcSet={banner.src2x ? `${banner.src}, ${banner.src2x} 2x` : undefined} alt={banner.alt} />
             </picture>

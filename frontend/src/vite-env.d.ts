@@ -11,6 +11,8 @@ interface ImportMetaEnv {
   readonly VITE_BANNER_SRC_2X?: string;
   readonly VITE_BANNER_SRC_SMALL?: string;
   readonly VITE_BANNER_SRC_SMALL_2X?: string;
+  readonly VITE_BANNER_SRC_LARGE?: string;
+  readonly VITE_BANNER_SRC_LARGE_2X?: string;
   readonly VITE_BANNER_HREF?: string;
   readonly VITE_BANNER_ALT?: string;
   readonly VITE_SENTRY_DSN?: string;

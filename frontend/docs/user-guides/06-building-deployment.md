@@ -351,7 +351,7 @@ Build-time settings (all optional; set them in the environment or in `frontend/.
 | --- | --- |
 | `VITE_SITE_NAME` | `<title>` of `index.html` before the app sets the page title (default `Gallery`, from `frontend/.env`). lanbilder.se: `lanbilder.se`. |
 | `VITE_META_DESCRIPTION`, `VITE_META_KEYWORDS` | Add `<meta name="description">` / `<meta name="keywords">` to `index.html` (none when unset). lanbilder.se uses its 2006 values, see `frontend/docs/theme-matrix.md`. |
-| `VITE_BANNER_SRC`, `VITE_BANNER_HREF` | Show a linked banner above the nav bar in the classic theme (the 2006 site's ad slot). Optional `VITE_BANNER_SRC_2X` (retina), `VITE_BANNER_SRC_SMALL`/`_SMALL_2X` (below 760px), `VITE_BANNER_ALT`. The image files are served by the web server (e.g. `/banner/`), not shipped in `dist/`. |
+| `VITE_BANNER_SRC`, `VITE_BANNER_HREF` | Show a linked banner above the nav bar in the classic theme (the 2006 site's ad slot). Optional `VITE_BANNER_SRC_2X` (retina), `VITE_BANNER_SRC_SMALL`/`_SMALL_2X` (below 760px), `VITE_BANNER_SRC_LARGE`/`_LARGE_2X` (1024px and wider), `VITE_BANNER_ALT`. The image files are served by the web server (e.g. `/banner/`), not shipped in `dist/`. |
 | `VITE_SENTRY_DSN` | Turns on error reporting to Sentry (`src/utils/errorReporting.ts`). Without it the SDK is never loaded. With it, a separate chunk (about 27 KB compressed) loads after start; the initial load is unchanged. |
 | `VITE_SENTRY_ENVIRONMENT` | Sentry environment name (default: the Vite mode, `production`). |
 | `VITE_SENTRY_RELEASE` | Release name, e.g. the git commit (`git rev-parse --short HEAD`). |

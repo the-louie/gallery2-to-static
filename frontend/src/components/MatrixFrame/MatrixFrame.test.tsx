@@ -73,6 +73,8 @@ describe('MatrixFrame (THEME-01)', () => {
     vi.stubEnv('VITE_BANNER_SRC', '/banner/glitched-728x90.jpg');
     vi.stubEnv('VITE_BANNER_SRC_2X', '/banner/glitched-728x90@2x.jpg');
     vi.stubEnv('VITE_BANNER_SRC_SMALL', '/banner/glitched-468x60.jpg');
+    vi.stubEnv('VITE_BANNER_SRC_LARGE', '/banner/glitched-970x90.jpg');
+    vi.stubEnv('VITE_BANNER_SRC_LARGE_2X', '/banner/glitched-970x90@2x.jpg');
     vi.stubEnv('VITE_BANNER_HREF', 'https://glitched.se/sv/');
     vi.stubEnv('VITE_BANNER_ALT', 'Glitched');
     render(<MatrixFrame>page</MatrixFrame>);
@@ -83,7 +85,10 @@ describe('MatrixFrame (THEME-01)', () => {
     expect(img).toHaveAttribute('src', '/banner/glitched-728x90.jpg');
     expect(img).toHaveAttribute('srcset', '/banner/glitched-728x90.jpg, /banner/glitched-728x90@2x.jpg 2x');
     expect(img).toHaveAttribute('alt', 'Glitched');
-    expect(link.querySelector('source')).toHaveAttribute('media', '(max-width: 759px)');
+    const sources = link.querySelectorAll('source');
+    expect(sources[0]).toHaveAttribute('media', '(max-width: 759px)');
+    expect(sources[1]).toHaveAttribute('media', '(min-width: 1024px)');
+    expect(sources[1]).toHaveAttribute('srcset', '/banner/glitched-970x90.jpg, /banner/glitched-970x90@2x.jpg 2x');
     vi.unstubAllEnvs();
   });
 

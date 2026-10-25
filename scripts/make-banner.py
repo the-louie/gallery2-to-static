@@ -43,6 +43,22 @@ def tint(im: Image.Image) -> Image.Image:
     return im.filter(ImageFilter.GaussianBlur(0.6))
 
 
+def logo(im: Image.Image, logo_png: str, x: int, cy: int, h: int) -> int:
+    """The real wordmark (white SVG rasterised to PNG with alpha), 46% of the banner height, with a
+    soft dark shadow so it reads on bright screens. Returns the width used."""
+    mark = Image.open(logo_png).convert('RGBA')
+    lh = round(h * 0.46)
+    mark = mark.resize((round(mark.width * lh / mark.height), lh), Image.LANCZOS)
+    shadow = Image.new('RGBA', (mark.width + 24, mark.height + 24), (0, 0, 0, 0))
+    alpha = mark.split()[3]
+    shadow.paste((0, 0, 0, 170), (12, 12), alpha)
+    shadow = shadow.filter(ImageFilter.GaussianBlur(max(2, h * 0.04)))
+    y = cy - mark.height // 2
+    im.alpha_composite(shadow, (x - 12, y - 12 + round(h * 0.02)))
+    im.alpha_composite(mark, (x, y))
+    return mark.width
+
+
 def wordmark(draw: ImageDraw.ImageDraw, x: int, cy: int, h: int, scale: float):
     """GLITCHED in heavy caps with a small 'glitch': cyan/magenta copies offset by a few pixels."""
     size = round(h * 0.56)
@@ -71,7 +87,7 @@ def button(draw: ImageDraw.ImageDraw, right: int, cy: int, h: int, label: str, s
     draw.text((x0 + pad_x - bbox[0], y0 + (bh - th) / 2 - bbox[1]), label, font=font, fill=(10, 10, 10))
 
 
-def make(photo: Image.Image, w: int, h: int, scale: float, label: str, focus: float) -> Image.Image:
+def make(photo: Image.Image, w: int, h: int, scale: float, label: str, focus: float, logo_png: str | None = None) -> Image.Image:
     W, H = round(w * scale), round(h * scale)
     im = tint(cover(photo, W, H, focus))
     # darken the left end for the wordmark and the right end for the button
@@ -82,9 +98,15 @@ def make(photo: Image.Image, w: int, h: int, scale: float, label: str, focus: fl
         grad.putpixel((x, 0), v)
     grad = grad.resize((W, H)).filter(ImageFilter.GaussianBlur(W * 0.04))
     im = Image.composite(Image.new('RGB', (W, H), (12, 6, 26)), im, grad)
-    draw = ImageDraw.Draw(im)
     margin = round(H * 0.18)
-    wordmark(draw, margin, H // 2 - round(H * 0.1), H, scale)
+    if logo_png:
+        im = im.convert('RGBA')
+        logo(im, logo_png, margin, H // 2, H)
+        im = im.convert('RGB')
+        draw = ImageDraw.Draw(im)
+    else:
+        draw = ImageDraw.Draw(im)
+        wordmark(draw, margin, H // 2 - round(H * 0.1), H, scale)
     button(draw, W - margin, H // 2, H, label, scale)
     return im
 
@@ -94,12 +116,13 @@ def main():
     ap.add_argument('photo'); ap.add_argument('outdir')
     ap.add_argument('--text', default='LÄS MER'); ap.add_argument('--focus', type=float, default=0.5)
     ap.add_argument('--name', default='glitched')
+    ap.add_argument('--logo', default=None, help='white wordmark PNG with alpha (rasterised SVG)')
     a = ap.parse_args()
     os.makedirs(a.outdir, exist_ok=True)
     photo = Image.open(a.photo).convert('RGB')
     for w, h in ((970, 90), (728, 90), (468, 60)):
         for scale in (1, 2):
-            im = make(photo, w, h, scale, a.text, a.focus)
+            im = make(photo, w, h, scale, a.text, a.focus, a.logo)
             suffix = '' if scale == 1 else '@2x'
             out = os.path.join(a.outdir, f'{a.name}-{w}x{h}{suffix}.jpg')
             im.save(out, quality=90, optimize=True, progressive=True)
