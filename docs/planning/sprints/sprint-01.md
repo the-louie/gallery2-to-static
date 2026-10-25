@@ -1,7 +1,7 @@
 # Sprint 01: green, safe production build
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-07 (`todo` — Linear subsequence match, query cap 32, maxLength on SearchBar)
+**Current ticket:** T-07 (`in-progress` — Linear subsequence match, query cap 32, maxLength on SearchBar)
 **Last completed:** T-06 (`done` — commit `f9138be`)
 
 **Goal:** `npm run build` passes from a clean checkout and produces a deployable `dist/` without
@@ -22,7 +22,7 @@ returning 500 shows an error with Retry instead of a spinner.
 | T-04 | `App.test.tsx` backend/types import; `fetchImageAsObjectUrl` URL stubs in setup | BUILD-01 4, TEST-01 | 1h | T-01 | done | both suites collect and pass. Landed in `be78370` |
 | T-05 | Don't copy `public/` image tree into `dist/` (`copyPublicDir:false` + explicit copy of small files); docs | BUILD-02 | 2h | T-03 | done | build with a `g2data` symlink present: `dist/` has no images; docs updated. Landed in `efbf0c6` |
 | T-06 | No sourcemaps / `stats.html` in production; visualizer behind `ANALYZE=1` | BUILD-03 | 1h | T-03 | done | `dist/` has no `*.map`, no `stats.html`; `build:analyze` still writes it. Landed in `f9138be` |
-| T-07 | Linear subsequence match, query cap 32, `maxLength` on SearchBar | SEC-13 | 2h | – | todo | regression test: `eeeeeeeeeezz` vs real-size text < 50 ms; existing search tests pass |
+| T-07 | Linear subsequence match, query cap 32, `maxLength` on SearchBar | SEC-13 | 2h | – | in-progress | regression test: `eeeeeeeeeezz` vs real-size text < 50 ms; existing search tests pass |
 | T-08 | PathResolverPage error state + Retry on index load failure | LOGIC-15 | 2h | – | todo | test: 500 → error + Retry; retry success → album |
 
 Total ≈ 16h.
