@@ -36,7 +36,7 @@
  * @module frontend/src/hooks/useImageZoom
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 /**
  * Zoom limits configuration
@@ -122,11 +122,15 @@ export function useImageZoom(
   // for small images (LOGIC-19).
   const maxZoom = ZOOM_MAX;
 
-  // Reset zoom and pan when image dimensions change
-  useEffect(() => {
+  // Reset zoom and pan when the image dimensions change: adjusted during render, so the new image
+  // never renders with the previous zoom (was an effect, one render late; REFAC-01)
+  const sizeKey = `${imageWidth}x${imageHeight}`;
+  const [zoomedSizeKey, setZoomedSizeKey] = useState(sizeKey);
+  if (zoomedSizeKey !== sizeKey) {
+    setZoomedSizeKey(sizeKey);
     setZoomState(100);
     setPanState({ x: 0, y: 0 });
-  }, [imageWidth, imageHeight]);
+  }
 
   // Calculate zoom limits
   const canZoomIn = useMemo(() => zoom < maxZoom, [zoom, maxZoom]);

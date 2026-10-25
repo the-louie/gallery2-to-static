@@ -32,7 +32,7 @@
  * @module frontend/src/components/FilterPanel
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import type { FilterCriteria } from '@/types';
 import { DATE_RANGE_OPEN_START, DATE_RANGE_OPEN_END, dateInputsToRange } from '@/utils/dateRange';
 import './DateRangeFilter.css';
@@ -93,13 +93,17 @@ export function DateRangeFilter({
     rangeEnd != null && rangeEnd !== DATE_RANGE_OPEN_END ? timestampToDateString(rangeEnd) : '',
   );
 
-  // Follow outside changes (clear button, filter badges)
-  useEffect(() => {
+  // Follow outside changes (clear button, filter badges): adjusted during render when the range
+  // changes to none (was an effect, one render late; REFAC-01)
+  const rangeKey = `${rangeStart ?? ''}-${rangeEnd ?? ''}`;
+  const [seenRangeKey, setSeenRangeKey] = useState(rangeKey);
+  if (seenRangeKey !== rangeKey) {
+    setSeenRangeKey(rangeKey);
     if (rangeStart == null && rangeEnd == null) {
       setStartDate('');
       setEndDate('');
     }
-  }, [rangeStart, rangeEnd]);
+  }
 
   const apply = useCallback(
     (nextStart: string, nextEnd: string) => {

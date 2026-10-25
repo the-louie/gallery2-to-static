@@ -60,6 +60,8 @@ _Sprint 10 T-01 (2026-10-25): `frontend/src/hooks/useSiteMetadata.ts` takes cach
 
 _Sprint 10 T-02: `useAlbumMetadata` only copied its `albumProp` into state one render late: removed, `AlbumDetail.tsx` uses `albumPropToUse ?? null` directly (and its test no longer mocks the hook). `useAlbumData`: `id === null` now nulls the returned values directly instead of resetting state in the effect; new test (no render with the previous album's data; fails on the previous code). 6 hits gone._
 
+_Sprint 10 T-03: `AlbumCard` stores the failed URL (a new URL is tried without a reset), `PathResolverPage` stores the failed (attempt, path) key, `useImageZoom` and `DateRangeFilter` adjust state during render when the image size / range changes (React's documented pattern instead of an effect one render late). New tests for the AlbumCard retry and the outside clear of DateRangeFilter. 6 hits gone._
+
 ## FUTURE (after production deploy)
 
 Operator, 2026-10-25. Not scheduled until lanbilder.se runs on the new code. The notes under each

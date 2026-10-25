@@ -13,6 +13,19 @@ import type { Album } from '@/types';
 import { mockAlbum } from '@/__mocks__/mockData';
 
 describe('AlbumCard', () => {
+  it('tries a new thumbnail URL after the previous one failed', () => {
+    const a1 = { ...mockAlbum, highlightThumbnailUrlPath: 'a/t__one.jpg' } as Album;
+    const a2 = { ...mockAlbum, highlightThumbnailUrlPath: 'a/t__two.jpg' } as Album;
+    const { container, rerender } = render(<AlbumCard album={a1} />);
+    const img = container.querySelector('img');
+    expect(img).not.toBeNull();
+    img!.dispatchEvent(new Event('error'));
+    rerender(<AlbumCard album={a1} />);
+    expect(container.querySelector('img')).toBeNull();
+    rerender(<AlbumCard album={a2} />);
+    expect(container.querySelector('img')?.getAttribute('src')).toContain('t__two.jpg');
+  });
+
   describe('Component Rendering', () => {
     it('renders album with title', () => {
       render(<AlbumCard album={mockAlbum} />);

@@ -11,7 +11,7 @@
  * @module frontend/src/components/AlbumGrid
  */
 
-import React, { useCallback, useState, useEffect, useMemo } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder } from '@fortawesome/free-solid-svg-icons';
 import type { Album } from '@/types';
@@ -49,14 +49,10 @@ function AlbumCardComponent({
   className,
   'aria-label': ariaLabel,
 }: AlbumCardProps) {
-  const [imageError, setImageError] = useState(false);
   const thumbnailUrl = getAlbumThumbnailUrl(album);
-  const shouldShowThumbnail = thumbnailUrl !== null && !imageError;
-
-  // Reset error state when thumbnail URL changes
-  useEffect(() => {
-    setImageError(false);
-  }, [thumbnailUrl]);
+  // The URL that failed to load: a new thumbnail URL is tried again without resetting state
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const shouldShowThumbnail = thumbnailUrl !== null && failedUrl !== thumbnailUrl;
 
   const handleClick = useCallback(() => {
     if (onClick) {
@@ -75,8 +71,8 @@ function AlbumCardComponent({
   );
 
   const handleImageError = useCallback(() => {
-    setImageError(true);
-  }, []);
+    setFailedUrl(thumbnailUrl);
+  }, [thumbnailUrl]);
 
   const defaultAriaLabel = decodeHtmlEntities(album.title || 'Album');
   const cardAriaLabel = ariaLabel || defaultAriaLabel;

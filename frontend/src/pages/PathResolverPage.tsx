@@ -26,14 +26,17 @@ export function PathResolverPage() {
     albumId: number;
     imageId?: number;
   } | undefined>(undefined);
-  const [loadFailed, setLoadFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  // The (path, attempt) whose path-index load failed: a new path or a retry clears it by itself
+  const [failedKey, setFailedKey] = useState<string | null>(null);
+  const loadKey = `${attempt}:${pathParam}`;
+  const loadFailed = failedKey === loadKey;
 
   useEffect(() => {
     // Keep showing the previous resolution until the new one is known: resetting to undefined here
     // unmounted the page (spinner flash, Lightbox remount) on every path change (PERF-02).
-    setLoadFailed(false);
     let cancelled = false;
+    const key = `${attempt}:${pathParam}`;
 
     const resolveOrFail = async (albumPath: string): Promise<number | null | undefined> => {
       try {
@@ -41,7 +44,7 @@ export function PathResolverPage() {
       } catch (err) {
         if (!cancelled) {
           console.error('PathResolverPage: could not load the path index', err);
-          setLoadFailed(true);
+          setFailedKey(key);
         }
         return undefined;
       }

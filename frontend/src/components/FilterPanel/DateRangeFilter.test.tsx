@@ -33,6 +33,24 @@ describe('DateRangeFilter', () => {
     vi.clearAllMocks();
   });
 
+  describe('Outside changes', () => {
+    it('empties both inputs when the range is cleared from outside', () => {
+      const start = new Date('2005-11-19T00:00:00Z').getTime() / 1000;
+      const end = new Date('2005-11-23T00:00:00Z').getTime() / 1000;
+      const { rerender } = renderWithProvider(
+        <DateRangeFilter criteria={{ dateRange: { start, end } }} onCriteriaChange={mockOnCriteriaChange} />,
+      );
+      expect((screen.getByLabelText('Start Date') as HTMLInputElement).value).not.toBe('');
+      rerender(
+        <FilterProvider defaultCriteria={{}}>
+          <DateRangeFilter criteria={{}} onCriteriaChange={mockOnCriteriaChange} />
+        </FilterProvider>,
+      );
+      expect((screen.getByLabelText('Start Date') as HTMLInputElement).value).toBe('');
+      expect((screen.getByLabelText('End Date') as HTMLInputElement).value).toBe('');
+    });
+  });
+
   describe('Component Rendering', () => {
     it('renders date range filter with start and end date inputs', () => {
       renderWithProvider(
