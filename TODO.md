@@ -257,7 +257,9 @@ and a strict CSP blocks external images, so this is low risk. Fix: `encodeURI` t
 path index, so `/x/image/2005` (album "image", sub-album "2005") is read as image 2005 in album
 `/x`. Fix: look up the full path in `pathIndex` first; use the image regex only if that misses.
 
-### LOGIC-30: thumbnails are always JPEG but keep the source extension
+### ~~LOGIC-30: thumbnails are always JPEG but keep the source extension~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-06):** `thumbnailFileName(prefix, name)` in `backend/pathResolution.ts` and (same rule) `frontend/src/utils/imageUrl.ts`: JPEG sources keep their name (`t__photo.jpg`, so existing thumbnails stay valid), other sources get `.jpg` appended (`t__anim.gif.jpg`), which also prevents `a.png`/`a.jpg` colliding. Used for the generated file (`buildPathsFromPathComponent`), backend verification URLs and frontend thumbnail URLs. Thumbnails stay JPEG (PNG transparency on a JPEG background, GIF first frame): keeping alpha/animation would be a format change, not done. Tests both sides. Original row kept for the record:
 
 `backend/generateThumbnail.ts:69` `.jpeg(...)` is used for every source, while the destination
 keeps the original name (`t__photo.png`, `t__anim.gif`). PNG transparency turns black, GIF

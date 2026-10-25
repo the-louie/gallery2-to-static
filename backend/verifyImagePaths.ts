@@ -6,6 +6,7 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { thumbnailFileName } from './pathResolution';
 
 const THUMB_PREFIX = 't__';
 const DEFAULT_TIMEOUT_MS = 10_000;
@@ -63,7 +64,7 @@ function getAlbumThumbnailUrl(child: { thumbnailUrlPath?: string | null; highlig
         const lastSlash = p.lastIndexOf('/');
         const dir = lastSlash === -1 ? '' : p.slice(0, lastSlash + 1);
         const file = lastSlash === -1 ? p : p.slice(lastSlash + 1);
-        return buildImageUrl(thumbBase, dir + THUMB_PREFIX + file);
+        return buildImageUrl(thumbBase, dir + thumbnailFileName(THUMB_PREFIX, file));
     }
     if (child.highlightImageUrl && child.highlightImageUrl.length > 0)
         return buildImageUrl(imageBase, child.highlightImageUrl);
@@ -85,7 +86,7 @@ function getPhotoThumbUrl(child: { thumbnailUrlPath?: string | null; urlPath?: s
     const lastSlash = p.lastIndexOf('/');
     const dir = lastSlash === -1 ? '' : p.slice(0, lastSlash + 1);
     const file = lastSlash === -1 ? p : p.slice(lastSlash + 1);
-    return buildImageUrl(baseUrl, dir + THUMB_PREFIX + file);
+    return buildImageUrl(baseUrl, dir + thumbnailFileName(THUMB_PREFIX, file));
 }
 
 function isImageContentType(contentType: string | null | undefined): boolean {

@@ -56,6 +56,15 @@ function toUrlPath(path: string): string {
 }
 
 /**
+ * Thumbnail file name for a source file name (LOGIC-30), same rule as the backend
+ * (backend/pathResolution.ts thumbnailFileName): thumbnails are always JPEG, so a non-JPEG source
+ * gets ".jpg" appended (t__anim.gif.jpg); JPEG sources keep their name (t__photo.jpg).
+ */
+export function thumbnailFileName(thumbPrefix: string, filename: string): string {
+  return /\.jpe?g$/i.test(filename) ? thumbPrefix + filename : `${thumbPrefix}${filename}.jpg`;
+}
+
+/**
  * Construct thumbnail URL from pathComponent
  *
  * Applies the thumbnail prefix to the filename portion of the pathComponent.
@@ -104,9 +113,11 @@ function constructThumbnailUrl(
   // baseUrl is normalized (no trailing slash)
   // directory already includes trailing slash if present, or is empty string
   // For absolute URLs, we need to ensure proper concatenation
-  const pathPart = directory
-    ? `${directory}${thumbPrefix}${filenameWithFormat}`
-    : `${thumbPrefix}${filenameWithFormat}`;
+  const thumbName =
+    format === 'original'
+      ? thumbnailFileName(thumbPrefix, filenameWithFormat)
+      : `${thumbPrefix}${filenameWithFormat}`;
+  const pathPart = directory ? `${directory}${thumbName}` : thumbName;
   return `${baseUrl}/${encodePathSegments(pathPart)}`;
 }
 

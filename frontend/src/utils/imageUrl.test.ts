@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { getImageUrl, getImageUrlWithFormat, getAlbumThumbnailUrl, getAlbumHighlightImageUrl } from './imageUrl';
+import { getImageUrl, getImageUrlWithFormat, getAlbumThumbnailUrl, getAlbumHighlightImageUrl, thumbnailFileName } from './imageUrl';
 import type { Image, Album } from '../types';
 
 const IMAGE_BASE = '/g2data/albums';
@@ -106,7 +106,8 @@ describe('imageUrl utilities', () => {
         pathComponent: 'album/image.jpeg',
       };
 
-      expect(getImageUrl(pngImage, true)).toBe(`${THUMB_BASE}/album/t__image.png`);
+      // thumbnails are JPEG (LOGIC-30)
+      expect(getImageUrl(pngImage, true)).toBe(`${THUMB_BASE}/album/t__image.png.jpg`);
       expect(getImageUrl(jpegImage, true)).toBe(`${THUMB_BASE}/album/t__image.jpeg`);
     });
 
@@ -422,6 +423,16 @@ describe('imageUrl utilities', () => {
     it('allows pathComponent with Nordic characters', () => {
       const img: Image = { ...mockImage, pathComponent: 'nässlan/gård/photo.jpg' };
       expect(() => getImageUrl(img)).not.toThrow();
+    });
+  });
+
+  describe('thumbnailFileName (LOGIC-30, same rule as the backend)', () => {
+    it('keeps JPEG names and appends .jpg to other formats', () => {
+      expect(thumbnailFileName('t__', 'photo.jpg')).toBe('t__photo.jpg');
+      expect(thumbnailFileName('t__', 'photo.JPEG')).toBe('t__photo.JPEG');
+      expect(thumbnailFileName('t__', 'anim.gif')).toBe('t__anim.gif.jpg');
+      expect(thumbnailFileName('t__', 'logo.png')).toBe('t__logo.png.jpg');
+      expect(thumbnailFileName('t__', 'a.png')).not.toBe(thumbnailFileName('t__', 'a.jpg'));
     });
   });
 });

@@ -3,7 +3,7 @@
  */
 
 import assert from 'assert';
-import { buildPathsFromPathComponent } from './pathResolution';
+import { thumbnailFileName, buildPathsFromPathComponent } from './pathResolution';
 
 const THUMB_PREFIX = 't__';
 
@@ -44,6 +44,14 @@ function run(): void {
     const emptyMiddle = buildPathsFromPathComponent(['a', '', 'b.jpg'], THUMB_PREFIX);
     assert.strictEqual(emptyMiddle.urlPath, 'a/b.jpg');
     assert.strictEqual(emptyMiddle.thumbnailUrlPath, 'a/t__b.jpg');
+
+    // LOGIC-30: thumbnails are JPEG; non-JPEG sources get .jpg appended (no collisions)
+    assert.strictEqual(buildPathsFromPathComponent(['a', 'anim.gif'], THUMB_PREFIX).thumbnailUrlPath, 'a/t__anim.gif.jpg');
+    assert.strictEqual(buildPathsFromPathComponent(['a', 'logo.PNG'], THUMB_PREFIX).thumbnailUrlPath, 'a/t__logo.PNG.jpg');
+    assert.strictEqual(buildPathsFromPathComponent(['a', 'x.JPEG'], THUMB_PREFIX).thumbnailUrlPath, 'a/t__x.JPEG');
+    assert.strictEqual(thumbnailFileName('t__', 'a.png'), 't__a.png.jpg');
+    assert.notStrictEqual(thumbnailFileName('t__', 'a.png'), thumbnailFileName('t__', 'a.jpg'));
+    assert.strictEqual(buildPathsFromPathComponent(['a', 'anim.gif'], THUMB_PREFIX).urlPath, 'a/anim.gif', 'full image path unchanged');
 
     // SEC-11: path component validation
     assert.throws(
