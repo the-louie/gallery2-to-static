@@ -111,7 +111,7 @@ Deployed on the test host. Side-by-side with the 2006 captures at 1280px (`/srv/
 | 2 | Root page | Classic list layout | Matrix layout | by decision (operator): the template applies to every album |
 | 3 | Root "Owner" | "Gallery Administrator" | "Unknown" | `backend/ownerDisplayName.ts` maps it; decide in T-13 |
 | 4 | Album cells | Gallery 2's chosen highlight, 150×150 | first photo, cropped to 150×150 | the export has no highlightId (schema) |
-| 5 | Album cell "Size" | "9 items (878 items total)" | "9 items (864 items total)" | the total counts photos only; Gallery 2 counted sub-albums too |
+| 5 | Album cell "Size" | "9 items (878 items total)" | "9 items (873 items total)" | fixed in Sprint 12 T-03: the total counts photos and sub-albums (`totalDescendantCount`); the DB holds 867 photos + 9 albums under DH-Photo today, 3 photos are not exported, and 2006's 878 reflects the data of 2006 |
 | 6 | Nav bar | Login / Register right | — | left out (operator) |
 | 7 | Sidebar | "Add Comment" | — | left out (operator) |
 | 8 | Header / below footer | ad text, About us | — | left out (operator) |
