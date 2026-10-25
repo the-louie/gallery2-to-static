@@ -3,7 +3,7 @@
  * Maps the Gallery 2 default owner label to a display name used in the static output.
  */
 
-/** Value from Gallery 2 DB (fullName/userName) that is replaced in output. */
+/** Value from Gallery 2 DB (User.fullName) that is replaced in output. */
 export const OWNER_DISPLAY_NAME_GALLERY_ADMIN = 'Gallery Administrator';
 
 /** Display name written to album metadata and children when source is Gallery Administrator. */

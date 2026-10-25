@@ -1,5 +1,6 @@
 /**
- * Validation of config.json values that the run does arithmetic with (LOGIC-23).
+ * Validation of config.json values that the run does arithmetic with (LOGIC-23), and of the SQL
+ * table/column prefixes, which are interpolated into every query (SEC-17).
  *
  * JSON gives no type guarantees: `"thumbnailConcurrency": "x"` used to become NaN, the semaphore
  * never granted, and the run exited 0 having written nothing. Each optional numeric field must be
@@ -24,9 +25,18 @@ const INT_RULES: IntRule[] = [
     { field: 'thumbnailQuality', min: 1, max: 100 },
 ];
 
+/** Table and column prefixes are interpolated into every SQL statement, so only word characters. */
+const SQL_PREFIX_RE = /^\w*$/;
+
 /** Returns one message per invalid field; empty when the config is usable. */
 export function findConfigErrors(config: Config): string[] {
     const errors: string[] = [];
+    for (const field of ['tablePrefix', 'columnPrefix'] as const) {
+        const value = (config.gallerySettings as unknown as Record<string, unknown> | undefined)?.[field];
+        if (typeof value !== 'string' || !SQL_PREFIX_RE.test(value)) {
+            errors.push(`gallerySettings.${field} may only contain letters, digits and _ (got ${JSON.stringify(value)})`);
+        }
+    }
     for (const { field, min, max } of INT_RULES) {
         const value = config[field] as unknown;
         if (value === undefined || value === null) continue;

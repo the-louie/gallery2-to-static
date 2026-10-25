@@ -30,6 +30,15 @@ function run(): void {
     assert.strictEqual(bad({ rootId: 'seven' }).length, 1);
     assert.strictEqual(bad({ thumbnailConcurrency: 'x', verifyConcurrency: 'y' }).length, 2, 'all errors reported');
 
+    // SEC-17: SQL prefixes
+    const prefix = (tablePrefix: unknown, columnPrefix: unknown) =>
+        findConfigErrors({ ...base, gallerySettings: { tablePrefix, columnPrefix } } as unknown as Config);
+    assert.deepStrictEqual(prefix('g2_', 'g_'), []);
+    assert.deepStrictEqual(prefix('', ''), [], 'empty prefixes allowed');
+    assert.match(prefix('g2_; DROP TABLE x; --', 'g_')[0], /^gallerySettings.tablePrefix may only contain letters, digits and _/);
+    assert.strictEqual(prefix('g2_', 'g.`x`').length, 1);
+    assert.strictEqual(prefix(5, 'g_').length, 1, 'non-string rejected');
+
     console.log('configValidation tests passed');
 }
 

@@ -22,7 +22,7 @@ export default (connection: mysql.Connection, config: Config) => {
             i.${config.gallerySettings.columnPrefix}description as description,
             i.${config.gallerySettings.columnPrefix}ownerId as ownerId,
             i.${config.gallerySettings.columnPrefix}summary as summary,
-            COALESCE(u.${config.gallerySettings.columnPrefix}fullName, u.${config.gallerySettings.columnPrefix}userName) as ownerName,
+            NULLIF(TRIM(u.${config.gallerySettings.columnPrefix}fullName), '') as ownerName,
 
             fse.${config.gallerySettings.columnPrefix}pathComponent as pathComponent,
             i.${config.gallerySettings.columnPrefix}originationTimestamp as timestamp,
@@ -91,7 +91,7 @@ export default (connection: mysql.Connection, config: Config) => {
             i.${config.gallerySettings.columnPrefix}title as title,
             i.${config.gallerySettings.columnPrefix}description as description,
             i.${config.gallerySettings.columnPrefix}originationTimestamp as timestamp,
-            COALESCE(u.${config.gallerySettings.columnPrefix}fullName, u.${config.gallerySettings.columnPrefix}userName) as ownerName
+            NULLIF(TRIM(u.${config.gallerySettings.columnPrefix}fullName), '') as ownerName
         FROM ${config.gallerySettings.tablePrefix}ChildEntity ce
         LEFT JOIN ${config.gallerySettings.tablePrefix}Entity e ON e.${config.gallerySettings.columnPrefix}id=ce.${config.gallerySettings.columnPrefix}id
         LEFT JOIN ${config.gallerySettings.tablePrefix}Item i ON i.${config.gallerySettings.columnPrefix}id=ce.${config.gallerySettings.columnPrefix}id

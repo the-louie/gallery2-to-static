@@ -740,7 +740,9 @@ path index, so `/x/image/2005` (album "image", sub-album "2005") is read as imag
 inconsistently. Fix: `aTitle.localeCompare(bTitle, 'sv', { sensitivity: 'base' })`, or an
 `Intl.Collator('sv')` created once.
 
-### SEC-17: backend: config prefixes go into SQL unvalidated; login names published
+### ~~SEC-17: backend: config prefixes go into SQL unvalidated; login names published~~
+
+**CLOSED, verified 2026-10-25 (Sprint 02 T-10):** `backend/configValidation.ts` rejects `tablePrefix`/`columnPrefix` that are not `/^\w*$/` (tests: `g2_; DROP TABLE x; --`, backticks, non-string). `backend/sqlUtils.ts:25,94` now select `NULLIF(TRIM(fullName), '') as ownerName`: no login-name fallback, and an empty/blank full name is null (shown as no owner). **Choice made for privacy, reversible:** the operator may prefer the old fallback to `userName`; say so and it goes back. Not run against MySQL here (no DB); `NULLIF`/`TRIM` are standard MySQL. Original row kept for the record:
 
 - **Prefixes:** `backend/sqlUtils.ts` interpolates `gallerySettings.tablePrefix`/`columnPrefix`
   into every query. Only trusted config sets them, but validate with `/^\w*$/` at load time.

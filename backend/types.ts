@@ -58,7 +58,7 @@ export interface Child {
      */
     totalDescendantImageCount?: number | null;
     /**
-     * Owner display name resolved from Item.ownerId → User (fullName or userName). Null when user missing or ownerId invalid.
+     * Owner display name resolved from Item.ownerId → User.fullName (trimmed; never the login name). Null when the user is missing or has no full name.
      */
     ownerName?: string | null;
     /**
