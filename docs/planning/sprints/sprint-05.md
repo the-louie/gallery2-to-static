@@ -1,7 +1,7 @@
 # Sprint 05: the remaining correctness and hygiene rows
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-08 (`todo` — vite.config: chunkSizeWarningLimit placement, manualChunks router orde)
+**Current ticket:** T-08 (`in-progress` — vite.config: chunkSizeWarningLimit placement, manualChunks router orde)
 **Last completed:** T-07 (`done` — commit `eaa3d44`)
 
 **Goal:** close the remaining P3 correctness rows (URLs, BBCode, links, routing, thumbnails) and the
@@ -21,7 +21,7 @@ the stray files are gone from the repo and from `dist/`.
 | T-05 | Path index lookup before the `/image/<n>` rule | LOGIC-28 | 1h | – | done | test: album "image" + child "2005". Landed in `c7f4867` |
 | T-06 | Backend thumbnails written as `.jpg` (path recorded), frontend uses the recorded thumbnail path | LOGIC-30 | 3h | – | done | PNG/GIF sources → `t__x.jpg`, URL matches. Landed in `a0af0a1` |
 | T-07 | Photo without thumbnail: backend flag, frontend placeholder | LOGIC-31 | 2h | T-06 | done | test: no error tile. Landed in `eaa3d44` |
-| T-08 | vite.config: `chunkSizeWarningLimit` placement, `manualChunks` router order | ARCH-07 | 1h | – | todo | router-vendor chunk exists; no warning |
+| T-08 | vite.config: `chunkSizeWarningLimit` placement, `manualChunks` router order | ARCH-07 | 1h | – | in-progress | router-vendor chunk exists; no warning |
 | T-09 | Repo tidy-up (stray lock, reports, gitignore, public/ extras, engines, README steps) | HYGIENE-01 | 2h | – | todo | per row |
 
 Total ≈ 16h.
