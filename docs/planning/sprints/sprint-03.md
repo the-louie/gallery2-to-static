@@ -1,7 +1,7 @@
 # Sprint 03: browsing that behaves
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-03 (`todo` — Don't clear image cache / abort when only the image id changes in the )
+**Current ticket:** T-03 (`in-progress` — Don't clear image cache / abort when only the image id changes in the )
 **Last completed:** T-02 (`done` — commit `3d19978`)
 
 **Goal:** browsing the gallery fetches only what is shown, the lightbox follows the grid and
@@ -18,7 +18,7 @@ filters correctly; zoom stops at 400%; a broken stored sort value falls back to 
 |---|---|---|---|---|---|---|
 | T-01 | Grid cells fetch only the thumbnail; full image only for lightbox/detail; honour `useThumbnail`/`shouldLoad` | PERF-01 | 3h | – | done | test: grid mount → no full-size fetch. Landed in `fe49444` |
 | T-02 | Cache the `loadIndex` promise (reset on failure); keep previous `resolved` while re-resolving | PERF-02 | 2h | – | done | test: 3 navigations → 1 fetch; no spinner flash. Landed in `3d19978` |
-| T-03 | Don't clear image cache / abort when only the image id changes in the same album | PERF-03 | 2h | T-02 | todo | test: next/prev keeps preloaded neighbour |
+| T-03 | Don't clear image cache / abort when only the image id changes in the same album | PERF-03 | 2h | T-02 | in-progress | test: next/prev keeps preloaded neighbour |
 | T-04 | Lightbox list uses the grid's sort + filters | LOGIC-16 | 2h | – | todo | test: date-desc sort → → gives grid's next |
 | T-05 | Close via `navigate(-1)` when opened from the album; restore album scroll position | LOGIC-17 | 3h | T-04 | todo | test: open/close → history length same, scroll restored |
 | T-06 | Date filter: local input state, seconds, inclusive end | LOGIC-18 | 2h | – | todo | test: start only, end only, both; last day included |
