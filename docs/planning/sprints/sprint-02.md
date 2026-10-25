@@ -1,7 +1,7 @@
 # Sprint 02: backend output you can trust
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-07 (`todo` — Subtree failures: allSettled/handled rejections, album id logged, non-)
+**Current ticket:** T-07 (`in-progress` — Subtree failures: allSettled/handled rejections, album id logged, non-)
 **Last completed:** T-06 (`done` — commit `6cb04d0`)
 
 **Goal:** the extractor's output is correct and complete for the real tree: every album reachable by
@@ -25,7 +25,7 @@ heavy job at a time); commit locally to `master`.
 | T-04 | sharp → latest (0.35.x+), mysql2 → latest; adapt `failOnError` call site | SEC-14, DEPS-01 (backend runtime) | 2h | T-01 | done | backend `npm audit` 0 high; tests pass. Landed in `899f4bc` |
 | T-05 | Thumbnails: `failOn: 'truncated'`, keep the photo when its thumbnail fails, temp file + rename, skip only if size > 0 and newer than source | LOGIC-12 | 3h | T-04 | done | truncated-JPEG fixture: photo kept, no 0-byte file, rerun regenerates. Landed in `c53b0ca` |
 | T-06 | `.rotate()`/`autoOrient` before resize; thumbnail dimensions from sharp's output | LOGIC-13 | 2h | T-04 | done | EXIF-6 fixture → portrait thumb, dims recorded. Landed in `6cb04d0` |
-| T-07 | Subtree failures: `allSettled`/handled rejections, album id logged, non-zero exit | LOGIC-21 | 2h | T-01 | todo | test: a rejecting subtree → summary lists it, exit code 1 |
+| T-07 | Subtree failures: `allSettled`/handled rejections, album id logged, non-zero exit | LOGIC-21 | 2h | T-01 | in-progress | test: a rejecting subtree → summary lists it, exit code 1 |
 | T-08 | Validate numeric config (concurrency etc.) at load | LOGIC-23 | 1h | T-01 | todo | "x" → clear error, exit 1 |
 | T-09 | Write output to a fresh dir and swap at the end; report stale files (no silent delete) | LOGIC-22 | 3h | T-07 | todo | crash mid-run leaves previous output intact; stale ids listed |
 | T-10 | Validate table/column prefixes; `NULLIF(fullName,'')`, no login-name fallback | SEC-17 | 1h | T-01 | todo | bad prefix rejected; owner null when fullName empty |
