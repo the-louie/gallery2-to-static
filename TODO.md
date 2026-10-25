@@ -94,9 +94,12 @@ never leaves MySQL. Treat any already-published `data/` output as leaked.
 
 ## P3 — Quality, hygiene and latent bugs
 
-### LINT-01: 117 lint errors — including 6 real conditional-hook violations
+### LINT-01 (remaining): 18 lint warnings — exhaustive-deps 10, only-export-components 8
+
+_Original title: 117 lint errors — including 6 real conditional-hook violations. Errors are at 0 since Sprint 06 T-06._
 
 _Progress 2026-10-25 (Sprint 06 T-05): no-unused-vars, no-useless-escape, no-constant-binary-expression, no-empty-object-type at 0 (eslint config: `_`-prefixed names are the project's "deliberately unused" convention; unused `catch (error)` → `catch {`; unused test imports removed; `RE_ILLEGAL` without redundant escapes, same 12,288-char set). Lint now 86: no-explicit-any 68, exhaustive-deps 10, only-export-components 8._
+_Progress 2026-10-25 (Sprint 06 T-06): all 68 `no-explicit-any` were in tests/mocks (production code has none); turned off for test files only (`eslint.config.js`). **Lint: 0 errors, 18 warnings** (exhaustive-deps 10, only-export-components 8); `npm run lint` (`--max-warnings 0`) still fails on those: each exhaustive-deps warning needs a look at the effect, not a blind dependency add._
 
 _Progress 2026-10-25 (Sprint 06 T-04): the 6 `rules-of-hooks` errors fixed (`ThemeDropdown.tsx` early return moved below the hooks; new `ThemeDropdown.empty.test.tsx` fails on the old code with a hook-order error). Lint now: 122 {'@typescript-eslint/no-unused-vars': 29, '@typescript-eslint/no-explicit-any': 68, 'react-hooks/exhaustive-deps': 10, 'react-refresh/only-export-components': 8, '@typescript-eslint/no-empty-object-type': 1, 'no-useless-escape': 3, 'no-constant-binary-expression': 3}._
 

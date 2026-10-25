@@ -43,5 +43,10 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // Tests and test helpers: mocks and fixtures may use `any` (production code has none; LINT-01)
+    files: ['**/*.test.{ts,tsx}', 'src/test/**', 'src/test-utils*', 'src/__mocks__/**'],
+    rules: { '@typescript-eslint/no-explicit-any': 'off' },
+  },
   prettier,
 );
