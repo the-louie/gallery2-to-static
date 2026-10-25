@@ -1,7 +1,7 @@
 # Sprint 03: browsing that behaves
 
-**Status:** open (planned 2026-10-25)
-**Current ticket:** T-01 (`todo` — album grid loads thumbnails only)
+**Status:** in progress (opened 2026-10-25)
+**Current ticket:** T-01 (`in-progress` — Grid cells fetch only the thumbnail; full image only for lightbox/deta)
 **Last completed:** —
 
 **Goal:** browsing the gallery fetches only what is shown, the lightbox follows the grid and
@@ -16,7 +16,7 @@ filters correctly; zoom stops at 400%; a broken stored sort value falls back to 
 
 | # | Ticket | Backlog | Est | Deps | Status | Acceptance / Notes |
 |---|---|---|---|---|---|---|
-| T-01 | Grid cells fetch only the thumbnail; full image only for lightbox/detail; honour `useThumbnail`/`shouldLoad` | PERF-01 | 3h | – | todo | test: grid mount → no full-size fetch |
+| T-01 | Grid cells fetch only the thumbnail; full image only for lightbox/detail; honour `useThumbnail`/`shouldLoad` | PERF-01 | 3h | – | in-progress | test: grid mount → no full-size fetch |
 | T-02 | Cache the `loadIndex` promise (reset on failure); keep previous `resolved` while re-resolving | PERF-02 | 2h | – | todo | test: 3 navigations → 1 fetch; no spinner flash |
 | T-03 | Don't clear image cache / abort when only the image id changes in the same album | PERF-03 | 2h | T-02 | todo | test: next/prev keeps preloaded neighbour |
 | T-04 | Lightbox list uses the grid's sort + filters | LOGIC-16 | 2h | – | todo | test: date-desc sort → → gives grid's next |

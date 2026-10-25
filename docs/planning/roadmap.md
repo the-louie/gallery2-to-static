@@ -2,8 +2,8 @@
 
 Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–4h) and end on a demo.
 
-**Active sprint:** [Sprint 03](./sprints/sprint-03.md) — open.
-**Current ticket:** [Sprint 03 T-01](./sprints/sprint-03.md) (`todo` — album grid loads thumbnails only).
+**Active sprint:** [Sprint 03](./sprints/sprint-03.md) — in progress.
+**Current ticket:** [Sprint 03 T-01](./sprints/sprint-03.md) (`in-progress` — Grid cells fetch only the thumbnail; full image only for lightbox/deta)
 **Last completed:** Sprint 02 T-10 (commit `702873c`).
 
 | Sprint | Goal |
