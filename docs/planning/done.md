@@ -2,6 +2,41 @@
 
 Rows pruned from `TODO.md` after each sprint, with the proof they were closed on. Newest first.
 
+## Pruned 2026-10-25 (operator 2026-10-25): 1 rows
+
+### ~~SEC-12: no Gallery 2 permission check anywhere — private albums are exported~~
+
+**CLOSED, operator answer 2026-10-25:** the old site had no permission-restricted albums; the only private albums were blacklisted ones. The blacklist is `config.ignoreAlbums`: `backend/extract.ts:615` builds the set, `:88,137,291` skip those subtrees in traversal, the image-count pre-pass and the output (search index included, since it is built from the same traversal). Covered by `backend/extract.test.ts` and `backend/descendantImageCount.test.ts:86-101`. Open follow-up: the blacklisted album IDs must be in `config.json` before the production extraction (CONF-01). Original row kept for the record:
+
+
+**Confirms list item 2.**
+
+All SQL lives in `backend/sqlUtils.ts` and there are exactly four queries.
+`SQL_GET_CHILDREN` (`sqlUtils.ts:15-63`) joins eight tables and filters on nothing but:
+
+```sql
+WHERE e.g_entityType in ('GalleryAlbumItem', 'GalleryPhotoItem') AND ce.g_parentId = ?
+```
+
+A repo-wide search for `g2_PermissionSetMap`, `g2_AccessMap`, `g2_AccessSubscriberMap`,
+`g2_UserGroupMap`, `g_isLinkable` and `g_viewedSinceTimestamp` returns **zero hits** in any
+`.ts`/`.tsx`/`.json`/`.md` file. The only filtering that exists is a hand-written numeric
+blacklist, `config.ignoreAlbums: [99283, 362248]` (applied at `backend/index.ts:276-280`),
+and empty-album pruning. (`onlyAlbums` is declared in `types.ts:136` but never read — there
+is no allowlist mechanism, live or dead.)
+
+Worse, the output carries nothing the frontend could filter on: neither `Child`
+(`types.ts:1-72`), `AlbumMetadata` (`types.ts:90-108`) nor `SearchIndexItem`
+(`index.ts:245-254`) has a visibility, ACL or owner-group field. Album titles, descriptions
+and full ancestor paths go into `data/search/index.json` unconditionally
+(`index.ts:476-490`, written at `:711-719`), so restricted content is not just browsable
+but keyword-searchable.
+
+Fix: join the Gallery 2 permission tables in `SQL_GET_CHILDREN` and resolve effective view
+permission for the anonymous/"everybody" group, excluding anything that group cannot view.
+Re-extraction is required — this cannot be patched in the frontend, because the information
+never leaves MySQL. Treat any already-published `data/` output as leaked.
+
 ## Pruned 2026-10-25 (Sprint 07): 1 rows
 
 ### ~~LINT-01 (remaining): 18 lint warnings — exhaustive-deps 10, only-export-components 8~~
