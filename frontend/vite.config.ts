@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import fs from 'fs';
@@ -53,11 +53,35 @@ function serveDataPlugin() {
   };
 }
 
+/**
+ * Files from public/ that ship in dist/. public/ is NOT copied wholesale (build.copyPublicDir is
+ * false): it holds the g2data image symlink (the whole photo tree) plus example and backend-only
+ * config files. The dev server still serves all of public/.
+ */
+const PUBLIC_FILES_TO_SHIP = ['album-themes.json'];
+
+function copyPublicFilesPlugin(): Plugin {
+  return {
+    name: 'copy-public-files',
+    apply: 'build',
+    generateBundle() {
+      for (const fileName of PUBLIC_FILES_TO_SHIP) {
+        this.emitFile({
+          type: 'asset',
+          fileName,
+          source: fs.readFileSync(path.resolve(__dirname, 'public', fileName)),
+        });
+      }
+    },
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     serveDataPlugin(),
+    copyPublicFilesPlugin(),
     visualizer({
       filename: './dist/stats.html',
       open: false,
@@ -89,6 +113,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    copyPublicDir: false, // see PUBLIC_FILES_TO_SHIP
     sourcemap: true,
     minify: 'esbuild', // Use esbuild for faster minification
     cssMinify: true, // Minify CSS

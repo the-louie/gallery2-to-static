@@ -2,6 +2,8 @@
 
 All images load from `frontend/public/g2data` (symlink). No configuration is required.
 
+This is for the dev server: the production build does not copy `g2data` into `dist/` (`build.copyPublicDir: false`), so serve `/g2data/` from the web server or an image host with the same paths.
+
 ## Path structure
 
 - **Full-size images:** `g2data/albums/...` (URL `/g2data/albums/...`)

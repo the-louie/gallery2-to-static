@@ -54,7 +54,9 @@ Steps:
 3. Fix the 87 production-source errors — these are real and ship today.
 4. Fix the `backend/types` import path in `App.test.tsx`.
 
-### BUILD-02: the build copies the whole image tree into `dist/` (and currently just fails)
+### ~~BUILD-02: the build copies the whole image tree into `dist/` (and currently just fails)~~
+
+**CLOSED, verified 2026-10-25 (Sprint 01 T-05):** `frontend/vite.config.ts` sets `build.copyPublicDir: false` and emits only `PUBLIC_FILES_TO_SHIP` (`album-themes.json`, the one public file the app fetches, `albumThemesConfig.ts:163`). Tested with a `public/g2data` symlink to a 1 MB scratch tree: old config → `dist/g2data/albums/a/x.jpg` + 6 example/config files; new config → `dist/` = `index.html`, `album-themes.json`, `assets/`, `stats.html` (T-06). New `npm run check:dist` (`frontend/scripts/check-dist.mjs`) fails on images or `g2data/` in `dist/`. Docs: 06-building-deployment.md, 08-local-images.md, public/IMAGES-LOCAL.md. The `frontend/public/data/` copy noted below does not exist in this checkout. Original row kept for the record:
 
 **Confirms list item 4.**
 

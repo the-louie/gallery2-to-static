@@ -31,6 +31,7 @@
     "build": "tsc -p tsconfig.json && vite build",
     "typecheck": "tsc -p tsconfig.json",
     "typecheck:test": "tsc -p tsconfig.test.json",
+    "check:dist": "node scripts/check-dist.mjs dist",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",

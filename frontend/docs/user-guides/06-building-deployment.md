@@ -120,7 +120,9 @@ Local-only model: all images load from `frontend/public/g2data` (symlink). No co
 - Full-size images: `/g2data/albums/{pathComponent}`
 - Thumbnails: `/g2data/thumbnails/{thumbnailUrlPath}`
 
-Ensure `g2data` (or symlink target) is present under `frontend/public/` before build. Copy or symlink your image tree so paths match the JSON data.
+The image tree is **not** part of the build: `vite build` does not copy `public/` (`build.copyPublicDir: false`; only the files in `PUBLIC_FILES_TO_SHIP` in `vite.config.ts`, today `album-themes.json`, are emitted). The `public/g2data` symlink is for the dev server only. In production, serve `/g2data/` next to `dist/` (e.g. an nginx `location /g2data/ { alias /path/to/g2data/; try_files $uri =404; }`) or from a separate image host with the same paths.
+
+After a build, `npm run check:dist` fails if `dist/` contains `g2data/`, image files, or lacks `index.html` / `album-themes.json`.
 
 ### Base Path Configuration
 
