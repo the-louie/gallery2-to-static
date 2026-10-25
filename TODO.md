@@ -141,7 +141,9 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
 
 ### P1 additions
 
-### DECISION-01: hosting model — Cloudflare Pages + image server, or one nginx host (needs operator)
+### ~~DECISION-01: hosting model — Cloudflare Pages + image server, or one nginx host (needs operator)~~
+
+**DECIDED 2026-10-25 (operator):** start **self-hosted on lanbilder2** for both the JS application and the images (nginx behind the Cloudflare tunnel). A later move (e.g. frontend on Cloudflare Pages, images elsewhere) is not ruled out, so keep the code working for both: fixed same-origin `/g2data/` paths today, images outside `dist/` (BUILD-02). Original row kept for the record:
 
 Operator, 2026-10-25: the code was written for the frontend on **Cloudflare Pages** (load speed)
 with the **images on a second server**; feasibility was never finished. The current plan in
