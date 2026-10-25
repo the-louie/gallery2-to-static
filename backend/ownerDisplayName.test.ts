@@ -9,8 +9,8 @@ function run(): void {
   // null → null
   assert.strictEqual(normalizeOwnerDisplayName(null), null);
 
-  // "Gallery Administrator" → "Unknown"
-  assert.strictEqual(normalizeOwnerDisplayName('Gallery Administrator'), 'Unknown');
+  // "Gallery Administrator" stays (operator decision 2026-10-25, PRIO-THEME-01; was "Unknown")
+  assert.strictEqual(normalizeOwnerDisplayName('Gallery Administrator'), 'Gallery Administrator');
 
   // "Unknown" → "Unknown" (idempotent)
   assert.strictEqual(normalizeOwnerDisplayName('Unknown'), 'Unknown');
@@ -34,7 +34,7 @@ function run(): void {
   assert.strictEqual(resolveOwnerName('   ', ' nick '), 'nick');
   assert.strictEqual(resolveOwnerName(null, '  '), null);
   assert.strictEqual(resolveOwnerName(null, null), null);
-  assert.strictEqual(normalizeOwnerDisplayName(resolveOwnerName('Gallery Administrator', 'admin')), 'Unknown');
+  assert.strictEqual(normalizeOwnerDisplayName(resolveOwnerName('Gallery Administrator', 'admin')), 'Gallery Administrator');
 
   console.log('ownerDisplayName tests passed');
 }

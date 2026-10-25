@@ -16,10 +16,12 @@ export const OWNER_DISPLAY_NAME_UNKNOWN = 'Unknown';
  * @param name - Raw owner name from DB (string or null)
  * @returns Normalized display name for emitted JSON
  */
+/**
+ * Gallery 2's own names are shown as they were (operator, 2026-10-25, PRIO-THEME-01): the 2006 pages
+ * said "Owner: Gallery Administrator" on the root and admin-owned albums. Until Sprint 12 this
+ * mapped that name to "Unknown"; the constants stay for callers and tests.
+ */
 export function normalizeOwnerDisplayName(name: string | null): string | null {
-  if (name === OWNER_DISPLAY_NAME_GALLERY_ADMIN) {
-    return OWNER_DISPLAY_NAME_UNKNOWN;
-  }
   return name;
 }
 
