@@ -18,7 +18,7 @@ Nothing below this line can be validated until the build runs.
 
 ## P2 — Correctness and cost
 
-### HIDE-02: DreamHack Winter 07 "Inofficiella" must not be on the new site (operator, 2026-10-25)
+### ~~HIDE-02: DreamHack Winter 07 "Inofficiella" must not be on the new site (operator, 2026-10-25)~~ — **CLOSED, verified 2026-10-25 (Sprint 12 T-08):** album 493032 is empty in the DB (the origin's directory answers 403, the old tree's is empty) and absent from `data/index.json`; `backend/config_example.json` + lanbilder2 `config.json` `ignoreAlbums` hold 493032; old-site vhost `/dreamhack/dreamhack_winter_07/inofficiella/` → 404 (checked through the tunnel). Original row kept for the record:
 
 Operator: "on the original site (lanbilder.se) there is for dreamhack winter 07 some 'inofficial' albums, they should not be on the new site". In `www_lanbilder2` the only DHW07 match is album **493032** "Inofficiella" (`inofficiella`, parent 492497 DreamHack Winter 07), with **no children**, so the new app already leaves it out (no image descendants). The old static tree (`/mnt/storage/lanbilder.se/g2extractor/test4/dreamhack/dreamhack_winter_07/inofficiella/`, the rollback site on lanbilder2) and the origin still have the directory. Do: add 493032 to `ignoreAlbums` (lanbilder2 `backend/config.json` + `config_example.json`) so it stays out whatever the data; nginx 404 for `/dreamhack/dreamhack_winter_07/inofficiella/` on the old-site vhost like `dreamhack_summer_07/inofficial/`; check whether the origin's directory holds photos that the 2020 DB does not know (if so, they are not exported anyway). Only other "inofficial" album in the DB: 362248 (DHS07), already in `ignoreAlbums`.
 
