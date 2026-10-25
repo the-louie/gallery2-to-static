@@ -382,6 +382,16 @@ export function Lightbox({
   // Determine loading and error states from progressive image hook
   const isLoading = progressiveImage.state === 'thumbnail' || progressiveImage.state === 'thumbnail-loaded';
   const isFullLoaded = progressiveImage.state === 'full-loaded';
+  // While the full image loads, the blurred thumbnail fills the box the full image will take
+  // (same aspect ratio, same size limits), instead of showing at its own 400 px size.
+  const thumbnailPlaceholderStyle = useMemo<React.CSSProperties | undefined>(() => {
+    if (!image?.width || !image?.height) return undefined;
+    return {
+      aspectRatio: `${image.width} / ${image.height}`,
+      width: `min(100%, ${image.width}px, calc((90vh - 200px) * ${image.width / image.height}))`,
+      height: 'auto',
+    };
+  }, [image?.width, image?.height]);
   const hasError = progressiveImage.hasError;
 
   // Debug: log when image or progressive state changes (DEV only)
@@ -1020,7 +1030,8 @@ export function Lightbox({
                   ref={thumbnailImgRef}
                   src={progressiveImage.thumbnailUrl}
                   alt=""
-                  className="lightbox-image lightbox-image-thumb"
+                  className={`lightbox-image lightbox-image-thumb${isFullLoaded ? '' : ' lightbox-image-thumb-placeholder'}`}
+                  style={thumbnailPlaceholderStyle}
                   onLoad={handleThumbnailLoad}
                   onError={handleImageError}
                   loading="eager"

@@ -381,6 +381,16 @@
   object-position: center;
 }
 
+/* Until the full image is shown, the blurred thumbnail is in the flow and sized like the full
+   image (inline style from width/height), so the box does not jump when the full image arrives */
+.lightbox-image-thumb-placeholder {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: scale(1.05);
+  max-width: 100%;
+}
+
 /* Progressive loading: Full image (visible as soon as rendered for cross-origin reliability) */
 .lightbox-image-full {
   position: relative;

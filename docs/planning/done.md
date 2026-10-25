@@ -4,6 +4,14 @@ Rows pruned from `TODO.md` after each sprint, with the proof they were closed on
 
 ## Pruned 2026-10-25 (operator 2026-10-25): 1 rows
 
+### ~~UX-01: show the thumbnail blurred while the full-size image loads (operator, 2026-10-25)~~
+
+**CLOSED, verified 2026-10-25:** the lightbox already drew a blurred thumbnail (`.lightbox-image-thumb`, blur 15px), but at the thumbnail's own size (≤ 400 px) in the middle of the box, so it was not visible as a preview. `frontend/src/components/Lightbox/Lightbox.tsx` now sizes it like the full image (aspect ratio from `image.width/height`, same limits: `min(100%, <width>px, (90vh - 200px) × aspect)`) and keeps it in the flow (`.lightbox-image-thumb-placeholder`, `Lightbox.css`) until the full image is shown, so the box does not jump. Unknown size: unchanged. Tests in `Lightbox.test.tsx`. Not checked in a real browser here (no Chrome without asking): check on https://lanbilder-new.phetast.nu/. Original row kept for the record:
+
+Operator: "Some images take some seconds to load, we should show the thumbnail blurred while loading the fullsize image".
+
+## Pruned 2026-10-25 (operator 2026-10-25): 1 rows
+
 ### ~~SEC-18: Gallery 2 has private items outside the blacklist — decide whether to export them (found 2026-10-25 in the real DB)~~
 
 **CLOSED, verified 2026-10-25:** operator: 507799 visible; 99283, 541802 and the 8 single photos hidden. `backend/config_example.json` `ignoreAlbums` [99283, 362248, 541802], new `ignoreItems` [53524, 55006, 56278, 56498, 338946, 367373, 495604, 498851]; `backend/extract.ts` `runExtraction` drops `ignoreItems` from every `getChildren` result (so: not written, not thumbnailed, not album thumbnail, not counted); test `backend/extract.test.ts` (fails on the previous code); docs `frontend/docs/user-guides/02-configuration.md`. Real-DB rerun (data only, 82 s): 0 references to the 11 hidden IDs, 507799 exported. Old static site on lanbilder2: nginx 404 for the hidden albums/photos. Original row kept for the record:

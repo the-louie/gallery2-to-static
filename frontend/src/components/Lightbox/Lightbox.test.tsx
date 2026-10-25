@@ -169,6 +169,46 @@ describe('Lightbox', () => {
       expect(loading).toBeInTheDocument();
     });
 
+    it('shows the blurred thumbnail at the full image size while the full image loads', () => {
+      vi.mocked(useProgressiveImage).mockReturnValue({
+        thumbnailUrl: '/g2data/thumbnails/test-album/t__test-photo.jpg',
+        fullImageUrl: '',
+        state: 'thumbnail-loaded',
+        hasError: false,
+        error: null,
+      });
+      const { rerender } = render(
+        <Lightbox isOpen={true} image={{ ...mockPhoto, width: 1600, height: 1200 }} onClose={mockOnClose} />,
+      );
+      const thumb = document.querySelector('.lightbox-image-thumb') as HTMLImageElement;
+      expect(thumb).toHaveClass('lightbox-image-thumb-placeholder');
+      expect(thumb.style.aspectRatio).toBe('1600 / 1200');
+      expect(thumb.style.width).toContain('1600px');
+
+      vi.mocked(useProgressiveImage).mockReturnValue({
+        thumbnailUrl: '/g2data/thumbnails/test-album/t__test-photo.jpg',
+        fullImageUrl: '/g2data/albums/test-album/test-photo.jpg',
+        state: 'full-loaded',
+        hasError: false,
+        error: null,
+      });
+      rerender(<Lightbox isOpen={true} image={{ ...mockPhoto, width: 1600, height: 1200 }} onClose={mockOnClose} />);
+      expect(document.querySelector('.lightbox-image-thumb')).not.toHaveClass('lightbox-image-thumb-placeholder');
+    });
+
+    it('keeps the thumbnail at its own size when the image size is unknown', () => {
+      vi.mocked(useProgressiveImage).mockReturnValue({
+        thumbnailUrl: '/g2data/thumbnails/test-album/t__test-photo.jpg',
+        fullImageUrl: '',
+        state: 'thumbnail',
+        hasError: false,
+        error: null,
+      });
+      render(<Lightbox isOpen={true} image={{ ...mockPhoto, width: null, height: null }} onClose={mockOnClose} />);
+      const thumb = document.querySelector('.lightbox-image-thumb') as HTMLImageElement;
+      expect(thumb.style.aspectRatio).toBe('');
+    });
+
     it('hides loading state after image loads', async () => {
       render(<Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />);
       const img = screen.getByAltText('Test Photo') as HTMLImageElement;
