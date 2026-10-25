@@ -142,6 +142,8 @@ export interface Config {
     /** Single items (photos) to leave out of the export, by Gallery 2 ID (SEC-18). */
     ignoreItems?: Array<string | number>;
     onlyAlbums?: Array<string>;
+    /** Symlink tree of the exported full-size images only, served at /g2data/albums/ (publishImages.ts, SEC-18). */
+    publishedAlbumsRoot?: string;
     /** If true (default), verify image paths after extraction; requires image-config.json baseUrl. */
     verifyImagePaths?: boolean;
     /** Override path to image-config.json (default: frontend/public/image-config.json). */

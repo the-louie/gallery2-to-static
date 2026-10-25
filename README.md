@@ -29,8 +29,10 @@ Requires Node.js 22.23.4 or later (earlier 22.x releases bundle a Brotli decoder
    npm run check:dist   # fails if dist/ contains images, sourcemaps or the bundle report
    npm run size-check   # bundle size budgets
    ```
-3. **Deploy**: serve `frontend/dist/` as the site root, `data/` at `/data/` and the image tree at
-   `/g2data/` (full images in `albums/`, thumbnails in `thumbnails/`). Answer unknown paths with
+3. **Deploy**: serve `frontend/dist/` as the site root, `data/` at `/data/` and the images at
+   `/g2data/`: full images from the tree `cd backend && node publishImages.ts` builds after each export
+   (`g2data/published/`: links to the exported images only, so ignored and orphaned files in the
+   Gallery 2 tree are not reachable) at `/g2data/albums/`, thumbnails from `g2data/thumbnails/`. Answer unknown paths with
    `index.html`: old path links (`/dreamhack/...`) are moved into the app's hash URLs (`/#/dreamhack/...`). See [Building & Deployment](frontend/docs/user-guides/06-building-deployment.md).
 4. **Release checks**: `node scripts/check-brotli.mjs` (Brotli decoders on this host and in the build).
 

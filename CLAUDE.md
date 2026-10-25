@@ -181,6 +181,7 @@ npm run size-check       # Check bundle size limits
 cd backend
 npm install              # Install dependencies
 node index.ts            # Run extraction (requires config.json with DB credentials)
+node publishImages.ts     # After an export: link tree of the exported full images only (serve it at /g2data/albums/)
 npm test                 # Run all backend *.test.ts (runTests.mjs); npm test -- <name> for a subset
 node <file>.test.ts      # Run individual test files
 npm run typecheck        # Type-check the backend (TypeScript 7; Node only strips types)

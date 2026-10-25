@@ -18,6 +18,7 @@
     "verifyTimeoutMs": 10000,
     "verifyConcurrency": 5,
     "albumsRoot": "frontend/public/g2data/albums",
+    "publishedAlbumsRoot": "frontend/public/g2data/published",
     "thumbnailsRoot": "frontend/public/g2data/thumbnails",
     "skipThumbnailGeneration": false,
     "thumbnailMaxWidth": 400,
