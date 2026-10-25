@@ -1,8 +1,8 @@
 # Sprint 12: the data behind the 2006 look (PRIO-THEME-01..05, SEARCH-01)
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-05 (`in-progress` — Owner name: "Gallery Administrator" or "Unknown")
-**Last completed:** T-04 (`done` — commit `7590bc0`)
+**Current ticket:** T-06 (`todo` — Search results without raw BBCode)
+**Last completed:** T-05 (`done` — commit `313d548`)
 
 **Goal:** the album and photo pages show what Gallery 2 showed — its chosen highlights, its thumbnail crops, its item counts and a resized photo — so the remaining visible differences from the 2006 pages are gone.
 
@@ -14,7 +14,7 @@
 | T-02 | Export Gallery 2's thumbnail crop and apply it | PRIO-THEME-03 | 4h | – | done | `g_derivativeOperations` of each photo's thumbnail derivative (`crop\|x,y,w,h` percentages + `thumbnail\|150`); `generateThumbnail.ts` applies the crop with sharp `extract` before resizing to 300px; `thumb_width/height` follow. No crop → as today. Re-export regenerates only changed thumbnails? (check `skipped` logic; else a full regeneration, 25 min on lanbilder2). Landed in `aaa3341` |
 | T-03 | "(N items total)" counts sub-albums too | PRIO-THEME-04 | 1.5h | – | done | `descendantImageCount.ts` → also a `totalDescendantCount` (photos + exported albums); `MatrixThumbMatrix`/`MatrixAlbum` show it in "(… items total)". DH-Photo: 878 as in 2006. Landed in `688bfcb` |
 | T-04 | 1024px resize for photo pages | PRIO-THEME-05 | 4h | – | done | export writes `<dir>/r__<file>` (longest side 1024, quality as thumbnails) next to the thumbnail; `Child.resizeUrlPath`; `publishImages` links them; nginx `/g2data/resized/` or same tree; `MatrixPhoto` shows the resize by default, `?size=full` the original. Photos ≤ 1024px: no resize. Size check: CIMG0053_.JPG resize ≈ 100 KB. Landed in `7590bc0`; the resize export (57k photos, ~1 h) runs on lanbilder2, checked in T-07 |
-| T-05 | Owner name: "Gallery Administrator" or "Unknown" | PRIO-THEME-01 | 0.5h | – | in-progress | **Operator decided 2026-10-25: "Gallery Administrator"** (1:1 with 2006). `ownerDisplayName.ts` stops mapping it to "Unknown"; test; re-export |
+| T-05 | Owner name: "Gallery Administrator" or "Unknown" | PRIO-THEME-01 | 0.5h | – | done | **Operator decided 2026-10-25: "Gallery Administrator"** (1:1 with 2006). `ownerDisplayName.ts` stops mapping it to "Unknown"; test; re-export. Landed in `313d548` |
 | T-06 | Search results without raw BBCode | SEARCH-01 | 1.5h | – | todo | `SearchResultsPage`: descriptions through the BBCode stripper (or the search index carries stripped text); highlighting on the stripped text; test with the DH-Photo description |
 | T-07 | Re-run the measured comparison | – | 1h | T-01..T-06, T-08 | todo | `compare.cjs` at 1280px for root, album p1, photo; the 2006 root (Classic layout) compared cell by cell for highlights; results into `theme-matrix.md`; any new difference → PRIO-THEME row |
 | T-08 | DHW07 "Inofficiella" hidden everywhere | HIDE-02 | 0.5h | T-05 | todo | Operator, 2026-10-25. Album 493032 (empty in the DB, so already absent from the export): add to `ignoreAlbums` (config on lanbilder2 + `config_example.json`); nginx 404 on the old-site vhost for `/dreamhack/dreamhack_winter_07/inofficiella/`; check the origin's directory; re-export with T-05's run |
