@@ -38,7 +38,7 @@ The export takes the first photo of the subtree as an album's thumbnail (`findFi
 
 The 2006 thumbnails were 150×150 crops made by Gallery 2 (`g2_Derivative.g_derivativeOperations`, e.g. `crop|x,y,w,h;thumbnail|150`, percentages, sometimes chosen by hand). We generate 300px thumbnails of the whole photo and crop them to a square with `object-fit: cover` (centre), so most cells show a slightly different cut. Export the crop operation per photo and apply it in `generateThumbnail.ts` (sharp `extract`), keeping the 2× size.
 
-### PRIO-THEME-04: "(N items total)" should count sub-albums too (Sprint 11 T-13)
+### ~~PRIO-THEME-04: "(N items total)" should count sub-albums too (Sprint 11 T-13)~~ — **CLOSED, verified 2026-10-25 (Sprint 12 T-03):** `backend/descendantImageCount.ts` `computeAllDescendantCounts` (`items` map), `Child.totalDescendantCount` + `AlbumMetadata.totalDescendantCount` (`types.ts`), `extract.ts`; `frontend/src/components/MatrixAlbum/MatrixThumbMatrix.tsx` and `MatrixAlbum.tsx` show it; tests in both. Original row kept for the record:
 
 Gallery 2's `descendentCount` counted every item below an album; `totalDescendantImageCount` counts photos. 2006: "Size: 9 items (878 items total)"; now "(864 items total)" for DH-Photo (14 sub-albums not counted). Export a `totalDescendantCount` (photos + albums) next to it and show that.
 
