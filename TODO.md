@@ -26,7 +26,7 @@ Nothing below this line can be validated until the build runs.
 
 The export takes the first photo of the subtree as an album's thumbnail (`findFirstPhotoRecursive`, `backend/extract.ts`); Gallery 2 used the highlight the owner picked. The pick is in the database: the album item's thumbnail derivative (`g2_Derivative` row whose `g_id` = the album's `g2_DerivativeImage` id, `g_derivativeSourceId` → the source photo). Join it in `sqlUtils.ts` and prefer it; fall back to the first photo. Root page in 2006 vs now: 9 of 12 cells show a different image.
 
-### PRIO-THEME-03: thumbnails with Gallery 2's crop (Sprint 11 T-13)
+### ~~PRIO-THEME-03: thumbnails with Gallery 2's crop (Sprint 11 T-13)~~ — **CLOSED (disproved), verified 2026-10-25 (Sprint 12 T-02):** in `www_lanbilder2`, 57,741 of 58,574 thumbnail derivatives are 150×150 from the `squarethumb` module (a centre crop: what `frontend/src/components/MatrixAlbum/MatrixAlbum.css` `.giThumbnail { object-fit: cover }` does), 630 are plain `thumbnail|150/200/250` (non-square), and exactly 1 photo (517094, `IMG_2019.jpg`) has a hand crop. Nothing worth exporting. Original row kept for the record:
 
 The 2006 thumbnails were 150×150 crops made by Gallery 2 (`g2_Derivative.g_derivativeOperations`, e.g. `crop|x,y,w,h;thumbnail|150`, percentages, sometimes chosen by hand). We generate 300px thumbnails of the whole photo and crop them to a square with `object-fit: cover` (centre), so most cells show a slightly different cut. Export the crop operation per photo and apply it in `generateThumbnail.ts` (sharp `extract`), keeping the 2× size.
 

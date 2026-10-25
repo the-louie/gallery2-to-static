@@ -52,7 +52,7 @@ Ported from Gallery 2.3.2 (`utils/matrixPeers.ts`): the window of `core.LoadPeer
 | Item cell | `td.giItemCell`: padding 1em, centered |
 | Navigator | next/last float right (`text-align: right` when there is no previous); links get 27px padding with the 27×11 arrow gifs (`nav_first/prev/next/last.gif`) |
 | Pager | `#gsPages span`: padding 0 0.3em |
-| Thumbnails | Gallery 2 made 150px thumbnails (longest side); ours are 300px for 2× screens, shown in a 150px box |
+| Thumbnails | 150×150 centre-cropped squares from Gallery 2's `squarethumb` module (57,741 of 58,574 thumbnails; 630 plain `thumbnail|150/200/250`, 1 hand crop) | ours are 300px for 2× screens, cropped to a 150px square with `object-fit: cover` (same centre crop) |
 | Date format | US, `MM/DD/YYYY` ("Date: 11/26/2005") |
 | Items per page | 12 (3 columns × 4 rows), the site's Matrix setting (287 items → 24 pages) |
 
