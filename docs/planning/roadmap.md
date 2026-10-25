@@ -5,8 +5,8 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 **After every sprint (operator, 2026-10-25):** prune `TODO.md` and regenerate `TODO-summarized.md`: `python3 docs/planning/prune_todo.py . "Sprint NN"` moves closed (~~struck~~) rows, with their proof, to `docs/planning/done.md`.
 
 **Active sprint:** [Sprint 05](./sprints/sprint-05.md) — in progress.
-**Current ticket:** [Sprint 05 T-09](./sprints/sprint-05.md) (`in-progress` — Repo tidy-up (stray lock, reports, gitignore, public/ extras, engines,)
-**Last completed:** Sprint 05 T-08 (commit `b91050f`).
+**Current ticket:** —
+**Last completed:** Sprint 05 T-09 (commit `db6a567`).
 
 | Sprint | Goal |
 |---|---|
