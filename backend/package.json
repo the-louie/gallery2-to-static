@@ -10,6 +10,7 @@
     "unidecode": "^1.1.0"
   },
   "scripts": {
-    "start": "ts-node index.ts"
+    "start": "ts-node index.ts",
+    "test": "node runTests.mjs"
   }
 }

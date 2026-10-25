@@ -179,6 +179,7 @@ npm run size-check       # Check bundle size limits
 cd backend
 npm install              # Install dependencies
 npx ts-node index.ts     # Run extraction (requires config.json with DB credentials)
+npm test                 # Run all backend *.test.ts (runTests.mjs); npm test -- <name> for a subset
 npx ts-node <file>.test.ts  # Run individual test files
 ```
 

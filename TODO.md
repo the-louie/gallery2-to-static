@@ -435,7 +435,9 @@ The two collection failures are both trivial:
 Because both files fail at *collection*, their tests never run — so the true total is above
 1,421, and neither suite has been exercised since January.
 
-### TEST-02: backend `pathSegments.test.ts` fails on a stale expectation
+### ~~TEST-02: backend `pathSegments.test.ts` fails on a stale expectation~~
+
+**CLOSED, verified 2026-10-25 (Sprint 02 T-01):** decided dots stay legal (old lanbilder.se URLs contain them, e.g. `/badalan/badalan_v1.0/`; `test-vectors/nordic-path-normalization.json:24` and `frontend/src/utils/albumPath.test.ts:31` already expect `backspace_2.0`); `backend/pathSegments.test.ts:21` now expects `backspace_2.0`. `.`/`..` as whole segments are handled in LOGIC-11. New `npm test` in backend (`runTests.mjs`): 10/10 test files pass (`verifyImagePaths.test.ts` now runs in ~1 s). Original row kept for the record:
 
 9 of 10 backend test files pass. `pathSegments.test.ts:20` asserts
 `titleToSegment('Backspace 2.0') === 'backspace_2_0'`; actual is `'backspace_2.0'`.

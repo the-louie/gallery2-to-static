@@ -17,7 +17,8 @@ function run(): void {
   assert.strictEqual(titleToSegment(undefined), '');
   assert.strictEqual(titleToSegment(''), '');
   assert.strictEqual(titleToSegment('Photos'), 'photos');
-  assert.strictEqual(titleToSegment('Backspace 2.0'), 'backspace_2_0');
+  // Dots stay legal (old lanbilder.se URLs use them, e.g. /badalan/badalan_v1.0/); same as test-vectors/nordic-path-normalization.json
+  assert.strictEqual(titleToSegment('Backspace 2.0'), 'backspace_2.0');
   assert.ok(/^[a-z0-9_\-]+$/.test(titleToSegment('A/B\\C?')), 'illegal chars → _');
 
   // getSegmentForAlbum – no collision
