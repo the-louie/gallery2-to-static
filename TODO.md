@@ -64,6 +64,8 @@ _Sprint 10 T-03: `AlbumCard` stores the failed URL (a new URL is tried without a
 
 _Sprint 10 T-04: `ImageThumbnail` and `Lightbox` reset their load state during render when the image key changes (the observer disconnect stays an effect, without state); `ImageThumbnail` no longer sets `shouldLoad` when IntersectionObserver is missing (already derived where used); `SearchBar` takes its initial text from the URL and follows location changes during render (the debounce-timer clear stays an effect). Covered by the existing reset/navigation tests. 7 hits gone._
 
+_Sprint 10 T-05: `ThemeContext` clears the album override during render when leaving an album. `ViewAbortContext` keeps its effect on purpose: the AbortController must live exactly as long as the effect run (created in render, StrictMode's double effect would abort it and keep the aborted signal); reason in place, exemption added when the rule goes on (T-08)._
+
 ## FUTURE (after production deploy)
 
 Operator, 2026-10-25. Not scheduled until lanbilder.se runs on the new code. The notes under each

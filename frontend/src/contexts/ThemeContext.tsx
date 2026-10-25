@@ -378,11 +378,15 @@ export function ThemeProvider({
     null,
   );
 
+  // Leaving an album clears its override during render (was an effect, one render late; REFAC-01)
+  const [seenAlbumId, setSeenAlbumId] = useState(albumId);
+  if (seenAlbumId !== albumId) {
+    setSeenAlbumId(albumId);
+    if (albumId === null) setAlbumOverrideTheme(null);
+  }
+
   useEffect(() => {
-    if (albumId === null) {
-      setAlbumOverrideTheme(null);
-      return;
-    }
+    if (albumId === null) return;
     let cancelled = false;
     loadAlbumThemesConfig().then((config) => {
       if (!cancelled) {

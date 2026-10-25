@@ -58,6 +58,8 @@ export function ViewAbortProvider({
 
   useEffect(() => {
     const controller = new AbortController();
+    // The controller lives exactly as long as this effect run: created in render (useMemo), the
+    // StrictMode double-run would abort it and keep the aborted signal (REFAC-01: kept on purpose)
     setSignal(controller.signal);
 
     return () => {
