@@ -2,6 +2,8 @@
 
 Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–4h) and end on a demo.
 
+**After every sprint (operator, 2026-10-25):** prune `TODO.md` and regenerate `TODO-summarized.md`: `python3 docs/planning/prune_todo.py . "Sprint NN"` moves closed (~~struck~~) rows, with their proof, to `docs/planning/done.md`.
+
 **Active sprint:** [Sprint 03](./sprints/sprint-03.md) — in progress.
 **Current ticket:** [Sprint 03 T-03](./sprints/sprint-03.md) (`todo` — Don't clear image cache / abort when only the image id changes in the )
 **Last completed:** Sprint 03 T-02 (commit `3d19978`).
