@@ -648,7 +648,9 @@ error path throws `ReferenceError: DataLoadError is not defined`, the site name 
 loading never ends. It probably also appears among BUILD-01's 87 production errors (TS1361).
 Fix: a value import.
 
-### LOGIC-21: backend: one failing subtree crashes the run without cleanup
+### ~~LOGIC-21: backend: one failing subtree crashes the run without cleanup~~
+
+**CLOSED, verified 2026-10-25 (Sprint 02 T-07):** every child walk in `backend/index.ts` is wrapped in `settleSubtree` (`backend/subtreeFailures.ts`) as it starts, so the rejection is handled at once (no unhandled rejection while the parent awaits its photos); the failure (album id + message) is collected, the rest of the tree is still extracted, and the run prints "N album subtree(s) FAILED (output incomplete)" with the list and exits 1. Test `subtreeFailures.test.ts`: an immediately rejecting walk + 50 ms parent delay → no `unhandledRejection`, failure recorded and reported. Original row kept for the record:
 
 `backend/index.ts:312-387`: the `recursivePromises` (child `main()` calls) start at `:316` but are
 only awaited at `:387`, after `await Promise.all(processedChildrenRaw)` (`:338`). If a subtree

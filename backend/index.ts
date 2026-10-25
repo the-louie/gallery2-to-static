@@ -5,6 +5,7 @@ import sqlUtils from './sqlUtils'
 import { Config, Child, AlbumFile, BreadcrumbItem, AlbumMetadata } from './types'
 import { cleanup_uipathcomponent } from './cleanupUipath'
 import { getSegmentForAlbum, appendSegment, addToPathIndex, findPathIndexProblems } from './pathSegments'
+import { settleSubtree, formatSubtreeFailures, type SubtreeFailure } from './subtreeFailures'
 import { computeAllDescendantImageCounts } from './descendantImageCount'
 import { runVerification } from './verifyImagePaths'
 import { buildPathsFromPathComponent } from './pathResolution'
@@ -272,6 +273,8 @@ const main = async (
     ownPath: string,
     /** Every child link emitted into a parent's JSON: album id → path (for the post-run invariant check). */
     emittedChildPaths: Map<number, string>,
+    /** Child album walks that failed; collected so one bad subtree doesn't crash the run (LOGIC-21). */
+    failures: SubtreeFailure[],
     thumbnailContext: { albumsRoot: string; thumbnailsRoot: string; sem: ReturnType<typeof createSemaphore>; options: { maxWidth: number; maxHeight: number; quality: number }; skip: boolean; generatedCount: number; skippedCount: number; excludedCount: number } | null,
 ) => {
     const children = await sql.getChildren(root);
@@ -319,7 +322,7 @@ const main = async (
         filtered.forEach((child) => {
             if (child.hasChildren && child.pathComponent) {
                 const title = cleanup_uipathcomponent(child.title ?? child.pathComponent ?? '');
-                recursivePromises.push(
+                recursivePromises.push(settleSubtree(
                     main(
                         sql,
                         child.id,
@@ -337,9 +340,12 @@ const main = async (
                         pathIndex,
                         pathForChild(child.id),
                         emittedChildPaths,
+                        failures,
                         thumbnailContext,
                     ),
-                );
+                    child.id,
+                    failures,
+                ));
             }
         });
         const processedChildrenRaw = await Promise.all(
@@ -684,6 +690,7 @@ let connection: mysql.Connection | null = null;
         );
         const pathIndex = new Map<string, number>();
         const emittedChildPaths = new Map<number, string>();
+        const failures: SubtreeFailure[] = [];
         await main(
             sql,
             rootId,
@@ -701,6 +708,7 @@ let connection: mysql.Connection | null = null;
             pathIndex,
             '/',
             emittedChildPaths,
+            failures,
             thumbnailContext,
         );
 
@@ -727,6 +735,12 @@ let connection: mysql.Connection | null = null;
         } catch (error) {
             console.error('Error generating search index:', error);
             // Don't fail extraction if search index generation fails
+        }
+
+        const failureLines = formatSubtreeFailures(failures);
+        if (failureLines.length > 0) {
+            for (const line of failureLines) console.error(line);
+            process.exitCode = 1;
         }
 
         // Every emitted child link must resolve to its own album, and every album must have one path.
