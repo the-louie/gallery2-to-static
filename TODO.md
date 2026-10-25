@@ -52,6 +52,8 @@ never leaves MySQL. Treat any already-published `data/` output as leaked.
 
 ### LINT-01 (remaining): 18 lint warnings — exhaustive-deps 10, only-export-components 8
 
+_Progress 2026-10-25 (Sprint 07 T-01): exhaustive-deps 10 → 0. Fixed (6): Lightbox title memo, DOM-reset and zoom-reset effects, wheel and touch handlers (they name exactly what they use: `imageTitle`, `hasImage`/identity fields, `resetZoom`/`setZoom`/`setPan`/`zoomLevel`), useImageCache `stats` memo (`[cache]`, a stable singleton). Documented as deliberate (4): useProgressiveImage's 3 effects are keyed on image identity fields so re-sorted lists don't restart fetches; useAlbumData's cleanup reads the request counter ref on purpose._
+
 _Original title: 117 lint errors — including 6 real conditional-hook violations. Errors are at 0 since Sprint 06 T-06._
 
 _Progress 2026-10-25 (Sprint 06 T-05): no-unused-vars, no-useless-escape, no-constant-binary-expression, no-empty-object-type at 0 (eslint config: `_`-prefixed names are the project's "deliberately unused" convention; unused `catch (error)` → `catch {`; unused test imports removed; `RE_ILLEGAL` without redundant escapes, same 12,288-char set). Lint now 86: no-explicit-any 68, exhaustive-deps 10, only-export-components 8._

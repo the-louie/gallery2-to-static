@@ -84,7 +84,7 @@ export function useImageCache(): UseImageCacheReturn {
 
   // Get statistics (memoized, but will update when cache changes)
   // Note: stats are not reactive - they update when cache operations occur
-  const stats = useMemo(() => cache.getStats(), []);
+  const stats = useMemo(() => cache.getStats(), [cache]); // cache is the stable singleton
 
   // Memoize cache operations
   const cacheOperations = useMemo(

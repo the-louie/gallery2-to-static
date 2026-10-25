@@ -233,6 +233,8 @@ export function Lightbox({
     containerDimensions.width,
     containerDimensions.height,
   );
+  // Stable members of the zoom API, so hook dependency lists name exactly what each hook uses
+  const { zoom: zoomLevel, setZoom, setPan, resetZoom } = zoom;
 
   // Determine if navigation is available
   const canNavigate = useMemo(() => {
@@ -325,12 +327,13 @@ export function Lightbox({
   }, [image]);
 
   // Parse BBCode in image title for display
+  const imageTitle = image?.title;
   const parsedTitle = useMemo(() => {
-    if (!image || !image.title) {
+    if (!imageTitle) {
       return null;
     }
-    return parseBBCodeDecoded(image.title);
-  }, [image?.title]);
+    return parseBBCodeDecoded(imageTitle);
+  }, [imageTitle]);
 
   // Format date from timestamp
   const formattedDate = useMemo(() => {
@@ -399,18 +402,23 @@ export function Lightbox({
   }
 
   // Reset DOM image load state when image changes
+  // Keyed on the identifying fields, not the object: a new object for the same image must not reset.
+  const hasImage = image != null;
+  const imagePathComponent = image?.pathComponent;
+  const imageUrlPath = image?.urlPath;
   useEffect(() => {
-    if (image) {
+    if (hasImage) {
       setDomFullImageLoaded(false);
     }
-  }, [image?.id, image?.pathComponent, image?.urlPath]);
+  }, [hasImage, image?.id, imagePathComponent, imageUrlPath]);
 
   // Reset zoom when image ID changes (separate effect to avoid dependency issues)
+  const imageId = image?.id;
   useEffect(() => {
-    if (isOpen && image && image.id !== undefined) {
-      zoom.resetZoom();
+    if (isOpen && imageId !== undefined) {
+      resetZoom();
     }
-  }, [isOpen, image?.id, zoom.resetZoom]);
+  }, [isOpen, imageId, resetZoom]);
 
   // Handle body scroll lock when modal opens/closes
   useEffect(() => {
@@ -551,7 +559,7 @@ export function Lightbox({
       const centerY = event.clientY - rect.top;
 
       // Get current zoom state
-      const currentZoom = zoom.zoom;
+      const currentZoom = zoomLevel;
 
       // Calculate zoom delta from wheel delta
       const zoomDelta = -event.deltaY * 0.5; // Adjust sensitivity
@@ -560,7 +568,7 @@ export function Lightbox({
         Math.min(400, currentZoom + zoomDelta),
       );
 
-      zoom.setZoom(newZoom, centerX, centerY);
+      setZoom(newZoom, centerX, centerY);
     };
 
     const container = imageContainerRef.current;
@@ -569,7 +577,7 @@ export function Lightbox({
     return () => {
       container.removeEventListener('wheel', handleWheel);
     };
-  }, [isOpen, zoom.zoom, zoom.setZoom]);
+  }, [isOpen, zoomLevel, setZoom]);
 
   // Handle mouse drag pan
   const handleMouseDown = useCallback(
@@ -715,7 +723,7 @@ export function Lightbox({
         const deltaX = touch.clientX - dragStateRef.current.startX;
         const deltaY = touch.clientY - dragStateRef.current.startY;
 
-        zoom.setPan(
+        setPan(
           dragStateRef.current.startPanX + deltaX,
           dragStateRef.current.startPanY + deltaY,
         );
@@ -745,12 +753,12 @@ export function Lightbox({
           if (rect) {
             const relativeX = centerX - rect.left;
             const relativeY = centerY - rect.top;
-            zoom.setZoom(newZoom, relativeX, relativeY);
+            setZoom(newZoom, relativeX, relativeY);
           }
         }
       }
     },
-    [zoom.setPan, zoom.setZoom, swipeHandlers],
+    [setPan, setZoom, swipeHandlers],
   );
 
   const handleTouchEnd = useCallback(

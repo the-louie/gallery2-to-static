@@ -209,7 +209,10 @@ export function useAlbumData(
 
     // Cleanup: invalidate this request so its results are discarded
     return () => {
+      // requestIdRef is a request counter, not a DOM node: reading its *current* value here is the
+      // point (only invalidate if no newer request has started since).
       if (requestIdRef.current === thisRequestId) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         requestIdRef.current++;
       }
     };

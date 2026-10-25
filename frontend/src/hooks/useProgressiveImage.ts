@@ -140,6 +140,9 @@ export function useProgressiveImage(
       thumbnailImgRef.current = null;
       fullImgRef.current = null;
     };
+    // Keyed on the image's identity fields, not the object: a new object for the same image
+    // (re-sorted or re-filtered lists) must not restart the fetches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [image?.id, image?.pathComponent, image?.urlPath, signal]);
 
   // Load thumbnail (fetch + object URL when signal provided)
@@ -238,6 +241,9 @@ export function useProgressiveImage(
     return () => {
       thumbnailImgRef.current = null;
     };
+    // Keyed on the image's identity fields, not the object: a new object for the same image
+    // (re-sorted or re-filtered lists) must not restart the fetches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [image?.id, image?.pathComponent, image?.urlPath, useThumbnail, thumbnailUrl, state, signal, enabled]);
 
   // Load full image (fetch + object URL)
@@ -330,6 +336,9 @@ export function useProgressiveImage(
       }
       fullImgRef.current = null;
     };
+    // Keyed on the image's identity fields, not the object: a new object for the same image
+    // (re-sorted or re-filtered lists) must not restart the fetches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [image?.id, image?.pathComponent, image?.urlPath, fullImageUrl, state, signal, loadFull, enabled]);
 
   useEffect(() => {
