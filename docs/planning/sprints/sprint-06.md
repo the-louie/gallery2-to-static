@@ -1,7 +1,7 @@
 # Sprint 06: old links work; tests and lint you can trust
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-07 (`todo` — Test types: mockData fixtures typed as Album/Image)
+**Current ticket:** T-07 (`in-progress` — Test types: mockData fixtures typed as Album/Image)
 **Last completed:** T-06 (`done` — commit `2c8e0d6`)
 
 **Goal:** every old lanbilder.se album link opens its album (LOGIC-32, before cutover); the backend
@@ -19,7 +19,7 @@ writes a data tree whose path index passes the invariant check; `npm run lint` a
 | T-04 | Fix the 6 rules-of-hooks errors (ThemeDropdown) | LINT-01 | 1h | – | done | 0 rules-of-hooks. Landed in `2d79f31` |
 | T-05 | Lint: unused vars, useless escapes, constant expressions, empty object type | LINT-01 | 2h | T-04 | done | those rules at 0. Landed in `5a8b739` |
 | T-06 | Lint: no-explicit-any in production code | LINT-01 | 3h | T-05 | done | 0 in src (tests may keep a file-level override). Landed in `2c8e0d6` |
-| T-07 | Test types: mockData fixtures typed as Album/Image | BUILD-01 | 3h | – | todo | typecheck:test drops by the fixture share (~120) |
+| T-07 | Test types: mockData fixtures typed as Album/Image | BUILD-01 | 3h | – | in-progress | typecheck:test drops by the fixture share (~120) |
 | T-08 | Test types: TouchEvent helpers, Vitest mock types, rest | BUILD-01 | 3h | T-07 | todo | typecheck:test 0 |
 
 Total ≈ 20h.
