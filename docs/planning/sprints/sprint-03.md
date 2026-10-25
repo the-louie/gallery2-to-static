@@ -1,8 +1,8 @@
 # Sprint 03: browsing that behaves
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-09 (`in-progress` — Image search results link to /album/:parentId/image/:id)
-**Last completed:** T-08 (`done` — commit `496f991`)
+**Current ticket:** T-10 (`todo` — Thumbnail object URL revoked only on image change/unmount)
+**Last completed:** T-09 (`done` — commit `d0764ee`)
 
 **Goal:** browsing the gallery fetches only what is shown, the lightbox follows the grid and
 returns you where you were, and filters, sort and zoom do what they say.
@@ -24,7 +24,7 @@ filters correctly; zoom stops at 400%; a broken stored sort value falls back to 
 | T-06 | Date filter: local input state, seconds, inclusive end | LOGIC-18 | 2h | – | done | test: start only, end only, both; last day included. Landed in `e6c636f` |
 | T-07 | Zoom max = 400% | LOGIC-19 | 1h | – | done | existing "respects max zoom limit" test meaningful. Landed in `9f22000` |
 | T-08 | Validate stored sort option; Swedish collation for name sort | LOGIC-25, LOGIC-29 | 2h | – | done | `5`/`{}`/unknown → default; å < ä < ö. Landed in `496f991` |
-| T-09 | Image search results link to `/album/:parentId/image/:id` | LOGIC-14 | 1h | – | in-progress | test with a photo index item |
+| T-09 | Image search results link to `/album/:parentId/image/:id` | LOGIC-14 | 1h | – | done | test with a photo index item. Landed in `d0764ee` |
 | T-10 | Thumbnail object URL revoked only on image change/unmount | LOGIC-26 | 2h | T-01 | todo | test: state change keeps URL valid |
 
 Total ≈ 20h.
