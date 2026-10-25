@@ -3,8 +3,8 @@
 Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–4h) and end on a demo.
 
 **Active sprint:** [Sprint 01](./sprints/sprint-01.md) — in progress.
-**Current ticket:** [Sprint 01 T-05](./sprints/sprint-01.md) (`in-progress` — Don't copy public/ image tree into dist/ (copyPublicDir:false + explic)
-**Last completed:** Sprint 01 T-04 (commit `be78370`).
+**Current ticket:** [Sprint 01 T-06](./sprints/sprint-01.md) (`todo` — No sourcemaps / stats.html in production; visualizer behind ANALYZE=1)
+**Last completed:** Sprint 01 T-05 (commit `efbf0c6`).
 
 | Sprint | Goal |
 |---|---|
