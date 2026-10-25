@@ -236,6 +236,17 @@ Album IDs may be strings (e.g. `"10"`, `"25"`) or numbers; both are normalized. 
 "ignoreAlbums": ["10", "25"]
 ```
 
+### ignoreItems
+
+- **Type**: Array of numbers or strings
+- **Required**: No
+- **Default**: `[]`
+- **Description**: Gallery 2 IDs of single photos to leave out. They are not written, not thumbnailed, not used as an album's thumbnail and not counted; an album whose only photos are ignored is not exported. Use it for photos hidden in Gallery 2 inside otherwise public albums.
+
+```json
+"ignoreItems": [53524, 55006]
+```
+
 ### onlyAlbums
 
 - **Type**: Array of strings

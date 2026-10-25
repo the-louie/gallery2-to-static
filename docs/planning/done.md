@@ -4,6 +4,15 @@ Rows pruned from `TODO.md` after each sprint, with the proof they were closed on
 
 ## Pruned 2026-10-25 (operator 2026-10-25): 1 rows
 
+### ~~SEC-18: Gallery 2 has private items outside the blacklist — decide whether to export them (found 2026-10-25 in the real DB)~~
+
+**CLOSED, verified 2026-10-25:** operator: 507799 visible; 99283, 541802 and the 8 single photos hidden. `backend/config_example.json` `ignoreAlbums` [99283, 362248, 541802], new `ignoreItems` [53524, 55006, 56278, 56498, 338946, 367373, 495604, 498851]; `backend/extract.ts` `runExtraction` drops `ignoreItems` from every `getChildren` result (so: not written, not thumbnailed, not album thumbnail, not counted); test `backend/extract.test.ts` (fails on the previous code); docs `frontend/docs/user-guides/02-configuration.md`. Real-DB rerun (data only, 82 s): 0 references to the 11 hidden IDs, 507799 exported. Old static site on lanbilder2: nginx 404 for the hidden albums/photos. Original row kept for the record:
+
+
+First run against the real DB (`www_lanbilder2`, MySQL 9.4 on the operator's dev machine, read-only transaction, data only, no thumbnails): `runExtraction` OK in 39 s, 1,390 albums, search index 1,389 items, no warnings; blacklist works (99283, 362248: 0 references in `data/`); owner names resolve (129 distinct; "Gallery Administrator" → "Unknown" on 13,266 items; 586 of 587 users have a full name). **But** Gallery 2 permissions (Everybody group id 4 lacks `core.view`, bit 1, in `g2_AccessMap` via `g2_AccessSubscriberMap`) hide more than the blacklist: albums **507799** "DreamHack Summer 08 / Officiella" (84 photos) and **541802** "DreamHack / Officiella bilder / CrewBild" (1 photo) are exported today, plus 8 single hidden photos in public albums (parents 53200, 23342, 23322, 56480, 331404, 493337, 493342, and one in 362248). 99283 is private in G2 too; 362248 "inofficial" is public in G2 but blacklisted. Note: the live static site (2017 export, `test4/dreamhack/dreamhack_summer_08/officiella`, 170 files) already publishes 507799, and also Mobilbilder and inofficial. **Operator 2026-10-25: 507799 visible, 99283 hidden** (99283 already in `ignoreAlbums`; on lanbilder2 nginx `/mobilbilder/` → 404 for the old static site). Still open: 541802 (CrewBild, 1 photo) and the 8 single hidden photos. Original options: (a) honour Gallery 2 view permissions in `SQL_GET_CHILDREN`/`SQL_GET_ALBUM_INFO` plus the blacklist (the SEC-12 fix, ~3h, testable against this DB); (b) add 507799, 541802 to `ignoreAlbums` only (the 8 single photos stay public); (c) export as today. Operator decides.
+
+## Pruned 2026-10-25 (operator 2026-10-25): 1 rows
+
 ### ~~CONF-01: put the blacklisted album IDs in `config.ignoreAlbums` before the production extraction (operator, 2026-10-25)~~
 
 **CLOSED 2026-10-25:** operator confirmed the full list is `99283, 362248`; `backend/config_example.json:13` now ships `"ignoreAlbums": [99283, 362248]`, so a `config.json` made from it carries them. After the production extraction, check that neither ID appears under `data/`. Original row kept for the record:

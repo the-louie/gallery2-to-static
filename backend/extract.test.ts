@@ -18,7 +18,8 @@ const album = (id: number, title: string | null, pc: string, children: Node[]): 
 
 const TREE: Node = album(7, 'Lanbilder', '', [
     album(10, 'Dreamhack', 'dreamhack', [
-        album(11, 'Lördag', 'lordag1', [photo(101, 'A', 'a.jpg')]),
+        album(11, 'Lördag', 'lordag1', [photo(105, 'Secret', 'secret.jpg'), photo(101, 'A', 'a.jpg')]), // 105 in ignoreItems
+        album(16, 'Only hidden', 'onlyhidden', [photo(106, 'Secret 2', 'secret2.jpg')]), // only an ignored photo
         album(12, 'Lördag', 'lordag2', [photo(102, 'B', 'b.jpg')]), // duplicate title
         album(13, '', 'blank', [photo(103, 'Broken', 'bad.jpg')]), // blank title, truncated JPEG
         album(14, 'image', 'image', [album(15, '2005', '2005', [photo(104, 'Logo', 'c.png')])]), // LOGIC-28 shape
@@ -59,6 +60,8 @@ async function writeImages(albumsRoot: string): Promise<void> {
     const png = await sharp({ create: { width: 64, height: 48, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0.5 } } }).png().toBuffer();
     const files: Array<[string, Buffer]> = [
         ['dreamhack/lordag1/a.jpg', jpg],
+        ['dreamhack/lordag1/secret.jpg', jpg],
+        ['dreamhack/onlyhidden/secret2.jpg', jpg],
         ['dreamhack/lordag2/b.jpg', jpg],
         ['dreamhack/blank/bad.jpg', jpg.subarray(0, Math.floor(jpg.length * 0.5))],
         ['dreamhack/image/2005/c.png', png],
@@ -86,7 +89,7 @@ async function run(): Promise<void> {
         const config = {
             mysqlSettings: { host: 'x', user: 'x', database: 'x' },
             gallerySettings: { tablePrefix: 'g2_', columnPrefix: 'g_' },
-            thumbPrefix: 't__', rootId: 7, ignoreAlbums: [30],
+            thumbPrefix: 't__', rootId: 7, ignoreAlbums: [30], ignoreItems: [105, '106'],
             albumsRoot: 'g2/albums', thumbnailsRoot: 'g2/thumbs', verifyImagePaths: false,
         } as Config;
 
@@ -129,6 +132,14 @@ async function run(): Promise<void> {
         assert.strictEqual(meta.format, 'jpeg');
         assert.strictEqual(logo.thumb_width, 64);
         await assert.rejects(() => fs.access(path.join(tmp, 'g2/thumbs/dreamhack/blank/t__bad.jpg')), 'no thumbnail for the broken file');
+
+        // ignoreItems (SEC-18): hidden photos are not written, not thumbnailed, not used as album thumbnail
+        const l1 = await readJson(path.join(data, '11.json'));
+        assert.deepStrictEqual(l1.children.map((c: Child) => c.id), [101], 'ignored photo left out');
+        assert.ok(!Object.values(pi).includes(16), 'album whose only photo is ignored is not exported');
+        const all = JSON.stringify(await Promise.all((await fs.readdir(data)).filter((f) => f.endsWith('.json')).map((f) => readJson(path.join(data, f)))));
+        assert.ok(!/secret/i.test(all), 'no trace of ignored photos in data/');
+        await assert.rejects(fs.access(path.join(tmp, 'g2/thumbs/dreamhack/lordag/t__secret.jpg')), 'no thumbnail for an ignored photo');
 
         // search index written
         const search = await readJson(path.join(data, 'search', 'index.json'));

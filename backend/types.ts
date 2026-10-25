@@ -139,6 +139,8 @@ export interface Config {
     thumbPrefix: string;
     rootId?: number;
     ignoreAlbums?: Array<string | number>;
+    /** Single items (photos) to leave out of the export, by Gallery 2 ID (SEC-18). */
+    ignoreItems?: Array<string | number>;
     onlyAlbums?: Array<string>;
     /** If true (default), verify image paths after extraction; requires image-config.json baseUrl. */
     verifyImagePaths?: boolean;

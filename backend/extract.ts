@@ -18,16 +18,16 @@ import { buildPathsFromPathComponent } from './pathResolution.ts'
 import { decodeHtmlEntities } from '../shared/decodeHtmlEntities.ts'
 
 /**
- * Build a Set of album IDs to ignore from config.ignoreAlbums.
+ * Build a Set of IDs to ignore from config.ignoreAlbums / config.ignoreItems.
  * Handles missing, null, non-array; normalizes strings/numbers to number; skips invalid entries.
  */
-function buildIgnoreSet(raw: Array<string | number> | null | undefined): Set<number> {
+function buildIgnoreSet(raw: Array<string | number> | null | undefined, field = 'ignoreAlbums'): Set<number> {
     const arr = Array.isArray(raw) ? raw : [];
     const set = new Set<number>();
     for (const x of arr) {
         const n = typeof x === 'number' ? x : parseInt(String(x), 10);
         if (!Number.isFinite(n)) {
-            console.warn(`ignoreAlbums: invalid album ID "${x}", skipping`);
+            console.warn(`${field}: invalid ID "${x}", skipping`);
             continue;
         }
         set.add(n);
@@ -600,7 +600,14 @@ export interface ExtractionResult {
 }
 
 export async function runExtraction(options: ExtractionOptions): Promise<ExtractionResult> {
-    const { sql, config, projectRoot } = options;
+    const { config, projectRoot } = options;
+    // Single photos hidden by ID (config.ignoreItems): dropped from every child list, so they are
+    // never written, counted, used as album thumbnails or put in the search index (SEC-18).
+    const ignoreItems = buildIgnoreSet(config.ignoreItems, 'ignoreItems');
+    const sql: ExtractionSql = ignoreItems.size === 0 ? options.sql : {
+        ...options.sql,
+        getChildren: async (id: number) => (await options.sql.getChildren(id)).filter((c) => !ignoreItems.has(c.id)),
+    };
     let failed = false;
     // Output goes to a fresh staging directory; data/ is only replaced if the run succeeds (LOGIC-22).
     const finalDataDir = path.join(projectRoot, 'data');
