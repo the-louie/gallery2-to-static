@@ -4,7 +4,7 @@ import mysql from 'mysql2/promise'
 import sqlUtils from './sqlUtils'
 import { Config, Child, AlbumFile, BreadcrumbItem, AlbumMetadata } from './types'
 import { cleanup_uipathcomponent } from './cleanupUipath'
-import { getSegmentForAlbum, appendSegment, titleToSegment, addToPathIndex } from './pathSegments'
+import { getSegmentForAlbum, appendSegment, addToPathIndex, findPathIndexProblems } from './pathSegments'
 import { computeAllDescendantImageCounts } from './descendantImageCount'
 import { runVerification } from './verifyImagePaths'
 import { buildPathsFromPathComponent } from './pathResolution'
@@ -268,7 +268,10 @@ const main = async (
     albumsWithImageDescendants: Set<number>,
     descendantImageCounts: Map<number, number>,
     pathIndex: Map<string, number>,
-    usedSegmentsByParentId: Map<number, Set<string>>,
+    /** This album's path, computed once by the parent (root: '/'), so index key and parent link agree. */
+    ownPath: string,
+    /** Every child link emitted into a parent's JSON: album id → path (for the post-run invariant check). */
+    emittedChildPaths: Map<number, string>,
     thumbnailContext: { albumsRoot: string; thumbnailsRoot: string; sem: ReturnType<typeof createSemaphore>; options: { maxWidth: number; maxHeight: number; quality: number }; skip: boolean; generatedCount: number; skippedCount: number; excludedCount: number } | null,
 ) => {
     const children = await sql.getChildren(root);
@@ -283,21 +286,7 @@ const main = async (
 
         // Build breadcrumbPath for current album with path-based URL
         const isRoot = breadcrumbAncestors.length === 0;
-        const parentPath = isRoot ? '' : (breadcrumbAncestors[breadcrumbAncestors.length - 1]?.path ?? '');
-        const usedSegments = isRoot
-            ? new Set<string>()
-            : (() => {
-                  const parentId = breadcrumbAncestors[breadcrumbAncestors.length - 1]?.id ?? root;
-                  let set = usedSegmentsByParentId.get(parentId);
-                  if (!set) {
-                      set = new Set<string>();
-                      usedSegmentsByParentId.set(parentId, set);
-                  }
-                  return set;
-              })();
-        const currentTitle = isRoot ? 'Home' : (albumInfo.albumTitle ?? `Album ${root}`);
-        const currentSegment = isRoot ? '' : getSegmentForAlbum(currentTitle, root, usedSegments);
-        const currentPath = isRoot ? '/' : appendSegment(parentPath, currentSegment);
+        const currentPath = isRoot ? '/' : ownPath;
         addToPathIndex(pathIndex, currentPath, root);
 
         const currentBreadcrumbItem: BreadcrumbItem = {
@@ -308,6 +297,23 @@ const main = async (
         const breadcrumbPath: BreadcrumbItem[] = isRoot
             ? [currentBreadcrumbItem]
             : breadcrumbAncestors.concat([currentBreadcrumbItem]);
+
+        // Each child album's segment is computed once, here, in list order, and used both for the
+        // child's own path-index key (passed down as ownPath) and for the link in this album's JSON.
+        // Computing it twice (in the child and again here) disagreed for duplicate-named siblings.
+        const usedForChildren = new Set<string>();
+        const childPathByAlbumId = new Map<number, string>();
+        for (const child of filtered) {
+            if (child.type === 'GalleryAlbumItem') {
+                const seg = getSegmentForAlbum(child.title, child.id, usedForChildren);
+                childPathByAlbumId.set(child.id, appendSegment(currentPath, seg));
+            }
+        }
+        const pathForChild = (id: number): string => {
+            const p = childPathByAlbumId.get(id);
+            if (p === undefined) throw new Error(`No path computed for child album ${id} of ${root}`);
+            return p;
+        };
 
         const recursivePromises: Promise<void>[] = [];
         filtered.forEach((child) => {
@@ -329,7 +335,8 @@ const main = async (
                         albumsWithImageDescendants,
                         descendantImageCounts,
                         pathIndex,
-                        usedSegmentsByParentId,
+                        pathForChild(child.id),
+                        emittedChildPaths,
                         thumbnailContext,
                     ),
                 );
@@ -386,19 +393,11 @@ const main = async (
         const processedChildren = processedChildrenRaw.filter((c): c is Child => c !== null);
         await Promise.all(recursivePromises);
 
-        const usedForChildren = new Set<string>();
-        const childPathByAlbumId = new Map<number, string>();
-        for (const child of processedChildren) {
-            if (child.type === 'GalleryAlbumItem') {
-                const seg = getSegmentForAlbum(child.title, child.id, usedForChildren);
-                childPathByAlbumId.set(child.id, appendSegment(currentPath, seg));
-            }
-        }
-
         const processedChildrenWithThumbnails = await Promise.all(
             processedChildren.map(async (child) => {
                 if (child.type === 'GalleryAlbumItem') {
-                    const childPath = childPathByAlbumId.get(child.id) ?? appendSegment(currentPath, titleToSegment(child.title ?? ''));
+                    const childPath = pathForChild(child.id);
+                    emittedChildPaths.set(child.id, childPath);
                     const albumTitle = cleanup_uipathcomponent(
                         child.title ?? child.pathComponent ?? '',
                     );
@@ -678,7 +677,7 @@ let connection: mysql.Connection | null = null;
             albumsWithImageDescendants,
         );
         const pathIndex = new Map<string, number>();
-        const usedSegmentsByParentId = new Map<number, Set<string>>();
+        const emittedChildPaths = new Map<number, string>();
         await main(
             sql,
             rootId,
@@ -694,7 +693,8 @@ let connection: mysql.Connection | null = null;
             albumsWithImageDescendants,
             descendantImageCounts,
             pathIndex,
-            usedSegmentsByParentId,
+            '/',
+            emittedChildPaths,
             thumbnailContext,
         );
 
@@ -721,6 +721,16 @@ let connection: mysql.Connection | null = null;
         } catch (error) {
             console.error('Error generating search index:', error);
             // Don't fail extraction if search index generation fails
+        }
+
+        // Every emitted child link must resolve to its own album, and every album must have one path.
+        const pathProblems = findPathIndexProblems(pathIndex, emittedChildPaths);
+        if (pathProblems.length > 0) {
+            console.error(`Path index check FAILED (${pathProblems.length}):`);
+            for (const problem of pathProblems) console.error(`  - ${problem}`);
+            process.exitCode = 1;
+        } else {
+            console.log(`Path index check OK (${pathIndex.size} albums, ${emittedChildPaths.size} child links)`);
         }
 
         // Generate index.json with root album metadata and path index

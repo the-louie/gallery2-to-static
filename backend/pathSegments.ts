@@ -83,3 +83,37 @@ export function appendSegment(parentPath: string, segment: string): string {
   if (!segment) return base || '/';
   return base ? `${base}/${segment}` : `/${segment}`;
 }
+
+/**
+ * Post-extraction invariant check for path-based URLs (LOGIC-11). Returns one message per problem:
+ * - a child link emitted into a parent's JSON that does not resolve to that child in the path index
+ *   (wrong sibling, or a self-link back to the parent);
+ * - an emitted child that has no path-index entry at all;
+ * - an album reachable under more than one path.
+ * An empty result means every emitted link resolves to its own album and every album has one path.
+ */
+export function findPathIndexProblems(
+  pathIndex: Map<string, number>,
+  emittedChildPaths: Map<number, string>,
+): string[] {
+  const problems: string[] = [];
+  const pathsById = new Map<number, string[]>();
+  for (const [p, id] of pathIndex) {
+    const list = pathsById.get(id) ?? [];
+    list.push(p);
+    pathsById.set(id, list);
+  }
+  for (const [childId, p] of emittedChildPaths) {
+    const target = pathIndex.get(p);
+    if (target === undefined) {
+      if (!pathsById.has(childId)) continue; // child wrote no JSON (no recursion): nothing to reach
+      problems.push(`link to album ${childId} is "${p}", which is not in the path index (album is at "${pathsById.get(childId)!.join('", "')}")`);
+    } else if (target !== childId) {
+      problems.push(`link to album ${childId} is "${p}", which resolves to album ${target}`);
+    }
+  }
+  for (const [id, paths] of pathsById) {
+    if (paths.length > 1) problems.push(`album ${id} has ${paths.length} paths: "${paths.sort().join('", "')}"`);
+  }
+  return problems;
+}

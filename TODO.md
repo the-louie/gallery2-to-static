@@ -129,7 +129,9 @@ permission for the anonymous/"everybody" group, excluding anything that group ca
 Re-extraction is required — this cannot be patched in the frontend, because the information
 never leaves MySQL. Treat any already-published `data/` output as leaked.
 
-### LOGIC-11: blank album titles make the parent album unreachable
+### ~~LOGIC-11: blank album titles make the parent album unreachable~~
+
+**CLOSED, verified 2026-10-25 (Sprint 02 T-02 + T-03):** T-02 below; T-03: `backend/index.ts` computes each child album's segment **once**, in the parent, in list order (`childPathByAlbumId`), and passes it down as `ownPath` (the shared `usedSegmentsByParentId` map and the second computation are gone), so the index key and the emitted link are the same string. After extraction `findPathIndexProblems` (`pathSegments.ts`) checks that every emitted link resolves to its own album and no album has two paths; problems are listed and the run exits 1. Fixture tests in `pathSegments.test.ts` (self-link, wrong sibling, duplicate-named siblings deterministic). Not re-run against the real DB (none here): the 6/7 counts are not re-measured; see TEST-03. Original row kept for the record:
 
 **PARTLY CLOSED 2026-10-25 (Sprint 02 T-02):** `backend/pathSegments.ts` `getSegmentForAlbum` now maps segments that clean to `''`, `.` or `..` to `album_<id>` (`fallbackSegment`), and disambiguation loops until unique (`a`, `a--3`, `a` → `a--3--2`); `addToPathIndex` throws on a path that already belongs to another album instead of overwriting (`index.ts:301`). Tests in `pathSegments.test.ts`. Still open: the segment is computed twice (index key vs emitted child link) — Sprint 02 T-03.
 
@@ -563,6 +565,16 @@ through the runtimes and native libraries. Check each place and record the versi
 Done = each item has a recorded version that is fixed, or proof that no decoder is present. Add a
 check script (e.g. `scripts/check-brotli.mjs`) that prints `process.versions.brotli` and greps
 `dist/` and the lockfiles, so the release checklist can rerun it.
+
+### TEST-03: no end-to-end test of the backend extraction (found 2026-10-25, Sprint 02 T-03)
+
+`backend/index.ts` runs everything in a top-level IIFE (`index.ts:563`) and `main()` is not exported,
+so the tree walk (segments, path index, child links, thumbnails, JSON writing) has no test; Sprint 02
+T-03 could only test the pure helpers. Fix: move `main()` and its helpers into a module that takes
+the `sql` object as a parameter, keep `index.ts` as the thin CLI, and add a test with a fake `sql`
+(an in-memory tree with duplicate-named siblings, blank titles, a hidden album, a truncated JPEG) that
+runs the whole extraction into a temp dir and asserts on the JSON and `index.json`. Also lets the
+LOGIC-11 counts (6 bad links / 7 unreachable albums) be re-measured once the real DB is available.
 
 ### P2 additions
 

@@ -7,6 +7,7 @@ import {
   fallbackSegment,
   isUnusableSegment,
   addToPathIndex,
+  findPathIndexProblems,
   titleToSegment,
   getSegmentForAlbum,
   buildPathFromBreadcrumb,
@@ -62,6 +63,57 @@ function run(): void {
   addToPathIndex(index, '/a', 1);
   assert.throws(() => addToPathIndex(index, '/a', 2), /collision.*"\/a".*album 1 and album 2/);
   assert.strictEqual(index.get('/a'), 1);
+
+  // findPathIndexProblems – clean tree
+  {
+    const idx = new Map<string, number>([['/', 7], ['/a', 10], ['/a/x', 11]]);
+    const links = new Map<number, string>([[10, '/a'], [11, '/a/x']]);
+    assert.deepStrictEqual(findPathIndexProblems(idx, links), []);
+  }
+  // findPathIndexProblems – the shapes found in the committed data (LOGIC-11)
+  {
+    // self-link: /demoparties/birdie/birdie_16/dinet was emitted for a child but resolves to the parent 71173
+    const idx = new Map<string, number>([['/b16', 71173], ['/b16/dinet', 71174]]);
+    const links = new Map<number, string>([[71175, '/b16/dinet'], [71174, '/b16/dinet--71174']]);
+    const problems = findPathIndexProblems(idx, links);
+    assert.ok(problems.some((p) => p.includes('album 71175') && p.includes('resolves to album 71174')), problems.join('\n'));
+    assert.ok(problems.some((p) => p.includes('album 71174') && p.includes('not in the path index')), problems.join('\n'));
+  }
+  {
+    // one album under two paths
+    const idx = new Map<string, number>([['/x', 5], ['/y', 5]]);
+    assert.ok(findPathIndexProblems(idx, new Map())[0].includes('album 5 has 2 paths'));
+  }
+  {
+    // a child that wrote no JSON (no recursion) is not reported
+    assert.deepStrictEqual(findPathIndexProblems(new Map([['/', 7]]), new Map([[9, '/leaf']])), []);
+  }
+  // Computing every sibling segment once, in list order, is deterministic and self-consistent
+  {
+    const siblings = [
+      { id: 3, title: 'Lördag' },
+      { id: 1, title: 'Lördag' },
+      { id: 9, title: 'lördag--1' },
+      { id: 4, title: '' },
+      { id: 5, title: '..' },
+    ];
+    const build = () => {
+      const used = new Set<string>();
+      const idx = new Map<string, number>([['/', 7]]);
+      const links = new Map<number, string>();
+      for (const c of siblings) {
+        const p = appendSegment('/', getSegmentForAlbum(c.title, c.id, used));
+        addToPathIndex(idx, p, c.id); // what the child does with the ownPath it is given
+        links.set(c.id, p); // what the parent writes into its JSON
+      }
+      return { idx, links };
+    };
+    const a = build();
+    const b = build();
+    assert.deepStrictEqual([...a.links], [...b.links], 'same input order → same paths');
+    assert.deepStrictEqual(findPathIndexProblems(a.idx, a.links), []);
+    assert.strictEqual(new Set(a.links.values()).size, siblings.length, 'all sibling paths distinct');
+  }
 
   // buildPathFromBreadcrumb
   assert.strictEqual(buildPathFromBreadcrumb([]), '/');
