@@ -350,6 +350,8 @@ const main = async (
                     const { urlPath, thumbnailUrlPath: highlightThumbnailUrlPath } =
                         buildPathsFromPathComponent(pathComponentChain, thumbPrefix);
 
+                    // Size of the generated thumbnail; null when there is none (or generation is skipped).
+                    let thumbSize: { width: number; height: number } | null = null;
                     if (thumbnailContext && !thumbnailContext.skip) {
                         const albumsRoot = thumbnailContext.albumsRoot;
                         const thumbnailsRoot = thumbnailContext.thumbnailsRoot;
@@ -357,8 +359,11 @@ const main = async (
                         const destPath = path.join(thumbnailsRoot, highlightThumbnailUrlPath);
                         await thumbnailContext.sem.acquire();
                         try {
-                            const { generateThumbnail } = await import('./generateThumbnail');
+                            const { generateThumbnail, readThumbnailSize } = await import('./generateThumbnail');
                             const result = await generateThumbnail(sourcePath, destPath, thumbnailContext.options);
+                            if (result === 'generated' || result === 'skipped') {
+                                thumbSize = await readThumbnailSize(destPath);
+                            }
                             if (result === 'missing') {
                                 console.warn(`Missing source image: ${sourcePath}`);
                             } else if (result === 'invalid') {
@@ -380,6 +385,8 @@ const main = async (
 
                     return {
                         ...child,
+                        thumb_width: thumbSize?.width ?? null,
+                        thumb_height: thumbSize?.height ?? null,
                         pathComponent: fullPath,
                         urlPath,
                         thumbnailUrlPath: highlightThumbnailUrlPath,

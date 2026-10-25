@@ -8,7 +8,7 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import sharp from 'sharp';
-import { generateThumbnail } from './generateThumbnail';
+import { generateThumbnail, readThumbnailSize } from './generateThumbnail';
 
 async function run(): Promise<void> {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'generateThumbnail-'));
@@ -83,6 +83,20 @@ async function run(): Promise<void> {
         await fs.utimes(junkDest, old, old);
         assert.strictEqual(await generateThumbnail(junkPath, junkDest), 'generated', 'stale thumbnail regenerated');
         assert.strictEqual(await generateThumbnail(junkPath, junkDest), 'skipped', 'fresh thumbnail skipped');
+
+        // LOGIC-13: EXIF Orientation 6 (camera held upright): 80x40 stored, displayed 40x80
+        const rotatedPath = path.join(tmpDir, 'portrait.jpg');
+        await sharp({ create: { width: 80, height: 40, channels: 3, background: { r: 0, g: 0, b: 255 } } })
+            .jpeg()
+            .withMetadata({ orientation: 6 })
+            .toFile(rotatedPath);
+        assert.strictEqual((await sharp(rotatedPath).metadata()).orientation, 6, 'fixture carries orientation 6');
+        const rotatedDest = path.join(tmpDir, 'out', 't__portrait.jpg');
+        assert.strictEqual(await generateThumbnail(rotatedPath, rotatedDest), 'generated');
+        assert.deepStrictEqual(await readThumbnailSize(rotatedDest), { width: 40, height: 80 }, 'portrait thumbnail');
+        const rotatedMeta = await sharp(rotatedDest).metadata();
+        assert.ok(rotatedMeta.orientation === undefined || rotatedMeta.orientation === 1, 'no orientation tag left to double-rotate');
+        assert.strictEqual(await readThumbnailSize(path.join(tmpDir, 'nope.jpg')), null);
 
         // SEC-05: path traversal rejection
         await assert.rejects(

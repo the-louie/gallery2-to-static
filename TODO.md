@@ -379,7 +379,9 @@ LOGIC-12 touches anyway, and note `autoOrient` becomes available, which LOGIC-13
 
 ## P3 — Quality, hygiene and latent bugs
 
-### LOGIC-13: EXIF-rotated portrait photos come out sideways
+### ~~LOGIC-13: EXIF-rotated portrait photos come out sideways~~
+
+**CLOSED, verified 2026-10-25 (Sprint 02 T-06):** `backend/generateThumbnail.ts` calls `.autoOrient()` before `.resize()` (available since sharp 0.34; T-04 moved to 0.35.5). Photo `thumb_width`/`thumb_height` now come from the generated file (`readThumbnailSize`, set in `index.ts`), not the Gallery 2 derivative columns; null when there is no thumbnail. Test: an 80×40 JPEG with Orientation 6 gives a 40×80 thumbnail with no orientation tag left; without `autoOrient` the test fails (checked). The album *highlight* `thumbnailWidth/Height` (`index.ts:235`) still read the DB columns: latent, unused by the frontend. Original row kept for the record:
 
 **Confirms list item 5b.**
 

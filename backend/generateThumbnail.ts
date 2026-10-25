@@ -74,6 +74,7 @@ export async function generateThumbnail(
     const tmpPath = `${destPath}.tmp-${process.pid}`;
     try {
         await sharp(sourcePath, { failOn: 'truncated' })
+            .autoOrient() // apply EXIF Orientation before fitting; the tag is not kept in the output
             .resize(opts.maxWidth, opts.maxHeight, { fit: 'inside', withoutEnlargement: true })
             .jpeg({ quality: opts.quality })
             .toFile(tmpPath);
@@ -84,4 +85,18 @@ export async function generateThumbnail(
     }
 
     return 'generated';
+}
+
+/**
+ * Width and height of an existing thumbnail file, or null if it cannot be read. Used for the
+ * thumb_width/thumb_height fields, so they describe the file the frontend actually loads (the
+ * Gallery 2 derivative columns describe a different image).
+ */
+export async function readThumbnailSize(thumbPath: string): Promise<{ width: number; height: number } | null> {
+    try {
+        const { width, height } = await sharp(thumbPath).metadata();
+        return width && height ? { width, height } : null;
+    } catch {
+        return null;
+    }
 }
