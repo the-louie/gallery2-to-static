@@ -1,7 +1,7 @@
 # Sprint 05: the remaining correctness and hygiene rows
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-04 (`todo` — Safe background-image URL in the album block)
+**Current ticket:** T-04 (`in-progress` — Safe background-image URL in the album block)
 **Last completed:** T-03 (`done` — commit `2183442`)
 
 **Goal:** close the remaining P3 correctness rows (URLs, BBCode, links, routing, thumbnails) and the
@@ -17,7 +17,7 @@ the stray files are gone from the repo and from `dist/`.
 | T-01 | Encode each path segment in image/thumbnail URLs (frontend), and in backend URL building where used for HTTP | LOGIC-24 | 2h | – | done | tests with `#`, `?`, `%`, space, å. Landed in `eb4f756` |
 | T-02 | BBCode: input length and nesting caps, plain-text fallback | SEC-15 | 2h | – | done | `[b]`×16000 < 1 s; normal BBCode unchanged. Landed in `c2131b2` |
 | T-03 | Root list: description links not nested inside the block link | LOGIC-27 | 2h | – | done | test: no `a a` in DOM. Landed in `2183442` |
-| T-04 | Safe background-image URL in the album block | SEC-16 | 1h | T-01 | todo | test with `\"`, `\\`, newline |
+| T-04 | Safe background-image URL in the album block | SEC-16 | 1h | T-01 | in-progress | test with `\"`, `\\`, newline |
 | T-05 | Path index lookup before the `/image/<n>` rule | LOGIC-28 | 1h | – | todo | test: album "image" + child "2005" |
 | T-06 | Backend thumbnails written as `.jpg` (path recorded), frontend uses the recorded thumbnail path | LOGIC-30 | 3h | – | todo | PNG/GIF sources → `t__x.jpg`, URL matches |
 | T-07 | Photo without thumbnail: backend flag, frontend placeholder | LOGIC-31 | 2h | T-06 | todo | test: no error tile |
