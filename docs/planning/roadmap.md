@@ -3,8 +3,8 @@
 Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–4h) and end on a demo.
 
 **Active sprint:** [Sprint 01](./sprints/sprint-01.md) — in progress.
-**Current ticket:** [Sprint 01 T-06](./sprints/sprint-01.md) (`in-progress` — No sourcemaps / stats.html in production; visualizer behind ANALYZE=1)
-**Last completed:** Sprint 01 T-05 (commit `efbf0c6`).
+**Current ticket:** [Sprint 01 T-07](./sprints/sprint-01.md) (`todo` — Linear subsequence match, query cap 32, maxLength on SearchBar)
+**Last completed:** Sprint 01 T-06 (commit `f9138be`).
 
 | Sprint | Goal |
 |---|---|
