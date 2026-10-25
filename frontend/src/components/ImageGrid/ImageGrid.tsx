@@ -14,10 +14,9 @@ import { useAlbumData } from '@/hooks/useAlbumData';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
 import { useSort } from '@/hooks/useSort';
 import { useFilter } from '@/contexts/FilterContext';
-import { applyFilters } from '@/utils/filterUtils';
 import { sortItems } from '@/utils/sorting';
-import type { ImageGridProps, Image, Child, SortOption } from '@/types';
-import { isImage } from '@/types';
+import { getVisibleImages } from '@/utils/visibleImages';
+import type { ImageGridProps, Image, SortOption } from '@/types';
 import { ImageThumbnail } from '@/components/ImageThumbnail';
 import { ImageGridSkeleton } from './ImageGridSkeleton';
 import { ImageGridEmpty } from './ImageGridEmpty';
@@ -64,30 +63,12 @@ export function ImageGrid({
 
   // Filter images from data or use provided images prop, then apply filters and sorting
   const images = useMemo(() => {
-    let allImages: Image[] = [];
-
-    // If imagesProp is explicitly provided (even if empty array), use it
+    // imagesProp (even an empty array): the parent has already filtered; only sort.
     if (imagesProp !== undefined) {
-      allImages = imagesProp;
-    } else if (data) {
-      // Otherwise, use data from hook
-      allImages = data.filter(isImage);
+      return imagesProp.length > 0 && sortOption ? sortItems(imagesProp, sortOption) : imagesProp;
     }
-
-    // Apply filters if any are active
-    // Skip filtering if imagesProp is provided (parent has already filtered)
-    let filtered = allImages;
-    if (allImages.length > 0 && imagesProp === undefined) {
-      const filteredItems = applyFilters(allImages as Child[], criteria);
-      filtered = filteredItems.filter(isImage) as Image[];
-    }
-
-    // Apply sorting
-    if (filtered.length > 0 && sortOption) {
-      return sortItems(filtered, sortOption);
-    }
-
-    return filtered;
+    // Same filter + sort as the lightbox uses (getVisibleImages, LOGIC-16).
+    return getVisibleImages(data, criteria, sortOption);
   }, [imagesProp, data, criteria, sortOption]);
 
   // Scroll position management (save only, no restoration)

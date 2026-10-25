@@ -248,7 +248,9 @@ change, and `ViewAbortContext` aborts its controller on every `pathname` change.
 next/previous changes the path, so the neighbours that `useImagePreload` just fetched are aborted
 or revoked. Fix: don't clear or abort when only the image id changes within the same album.
 
-### LOGIC-16: the lightbox ignores the grid's sort and filters
+### ~~LOGIC-16: the lightbox ignores the grid's sort and filters~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-04):** new `frontend/src/utils/visibleImages.ts` `getVisibleImages(items, criteria, sortOption)` (images only → `applyFilters` → `sortItems`) is used by both `ImageGrid.tsx` and `ImageDetailPage.tsx` (with `useFilter()` + `useSort('images')`), so the lightbox list, next/previous and "N of M" match the grid. Tests: `visibleImages.test.ts` (JSON order, date/name sort, filter). Original row kept for the record:
 
 `pages/ImageDetailPage.tsx:83` builds the lightbox list as `albumData.filter(isImage)`, in raw JSON
 order. To reproduce: sort by date descending, open the 3rd thumbnail, press →. You get the next

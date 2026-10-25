@@ -17,7 +17,9 @@ import { useAlbumData } from '@/hooks/useAlbumData';
 import { useLightbox } from '@/hooks/useLightbox';
 import { getAlbumPath } from '@/utils/albumPath';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { isImage } from '@/types';
+import { useFilter } from '@/contexts/FilterContext';
+import { useSort } from '@/hooks/useSort';
+import { getVisibleImages } from '@/utils/visibleImages';
 import type { RouteParams, Image } from '@/types';
 
 // Lazy load Lightbox component for code splitting
@@ -75,13 +77,14 @@ export function ImageDetailPage({
 
   const breadcrumbPath = metadata?.breadcrumbPath ?? null;
 
-  // Extract images from album data
-  const images = useMemo<Image[]>(() => {
-    if (!albumData) {
-      return [];
-    }
-    return albumData.filter(isImage);
-  }, [albumData]);
+  // The album's images in the grid's order and with its filters, so next/previous and
+  // "N of M" match what the user clicked in (LOGIC-16).
+  const { criteria } = useFilter();
+  const { option: imageSortOption } = useSort('images');
+  const images = useMemo<Image[]>(
+    () => getVisibleImages(albumData, criteria, imageSortOption),
+    [albumData, criteria, imageSortOption],
+  );
 
   // Find current image from album data
   const currentImage = useMemo<Image | null>(() => {
