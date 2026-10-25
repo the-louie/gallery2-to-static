@@ -21,6 +21,7 @@
 import React, { Component, type ReactNode } from 'react';
 import { ErrorFallback } from './ErrorFallback';
 import { logComponentError } from '@/utils/errorLogger';
+import { reportError } from '@/utils/errorReporting';
 
 /**
  * Props for ErrorBoundary component
@@ -102,8 +103,9 @@ export class ErrorBoundary extends Component<
       errorInfo,
     });
 
-    // Log the error
+    // Log the error, and report it when error reporting is on (SENTRY-01)
     logComponentError(error, errorInfo);
+    reportError(error, { componentStack: errorInfo.componentStack });
 
     // Call custom error handler if provided
     if (this.props.onError) {

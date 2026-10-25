@@ -140,6 +140,10 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('web-vitals')) {
               return 'web-vitals-vendor';
             }
+            // Sentry (loaded dynamically, only when VITE_SENTRY_DSN is set; SENTRY-01)
+            if (/[\\/]node_modules[\\/]@sentry(-internal)?[\\/]/.test(id)) {
+              return 'sentry-vendor';
+            }
             // Other vendor dependencies
             return 'vendor';
           }

@@ -26,6 +26,7 @@ Requires Node.js 22.23.4 or later (earlier 22.x releases bundle a Brotli decoder
    cd frontend
    npm ci
    npm run build        # type check + production build into dist/
+   # optional: VITE_SENTRY_DSN=<dsn> npm run build  turns on error reporting (see Building & Deployment)
    npm run check:dist   # fails if dist/ contains images, sourcemaps or the bundle report
    npm run size-check   # bundle size budgets
    ```

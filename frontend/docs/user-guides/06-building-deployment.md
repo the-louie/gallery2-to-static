@@ -341,12 +341,19 @@ After deploying, verify everything works:
 
 ## Environment Variables
 
-The application doesn't currently use environment variables, but you can add them if needed:
+Build-time settings (all optional; set them in the environment or in `frontend/.env.production.local`, which git ignores, and rebuild):
 
-1. Create `.env` file in `frontend/` directory
-2. Add variables: `VITE_APP_API_URL=...`
-3. Access in code: `import.meta.env.VITE_APP_API_URL`
-4. Rebuild after changes
+| Variable | Effect |
+| --- | --- |
+| `VITE_SENTRY_DSN` | Turns on error reporting to Sentry (`src/utils/errorReporting.ts`). Without it the SDK is never loaded. With it, a separate chunk (about 27 KB compressed) loads after start; the initial load is unchanged. |
+| `VITE_SENTRY_ENVIRONMENT` | Sentry environment name (default: the Vite mode, `production`). |
+| `VITE_SENTRY_RELEASE` | Release name, e.g. the git commit (`git rev-parse --short HEAD`). |
+
+What is sent: errors only (uncaught errors, unhandled rejections, and errors caught by `ErrorBoundary` with their component stack). No user fields, cookies, headers, request bodies or query strings (search terms), no performance tracing, no session replay. Source maps are not shipped (`check:dist`); upload them to Sentry separately if readable stack traces are wanted. In the Sentry project, also turn on *Prevent Storing of IP Addresses*.
+
+```bash
+VITE_SENTRY_DSN=https://<key>@<org>.ingest.de.sentry.io/<project> VITE_SENTRY_RELEASE=$(git rev-parse --short HEAD) npm run build
+```
 
 ## CDN Deployment
 
