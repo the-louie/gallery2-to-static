@@ -240,7 +240,9 @@ gives `<a>` inside `<a>`. That is invalid HTML: the click goes to the inner link
 depending on the browser, and it triggers React hydration warnings. Fix: render the description
 outside the link, or strip links (`[url]` → text) in this view.
 
-### SEC-16: `url("…")` escaping in the album block is incomplete
+### ~~SEC-16: `url("…")` escaping in the album block is incomplete~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-04):** new `frontend/src/utils/cssUrl.ts` escapes backslash (first), double quote and CR/LF/FF (CSS hex escapes) before wrapping in `url("…")`; `RootAlbumListBlock.tsx` uses it. Since T-01 the highlight URL is also percent-encoded per segment, which already removes `"`, `\\` and newlines from file names. Tests `cssUrl.test.ts` (quote-breakout, newlines, jsdom parse does not pick up an injected declaration). Original row kept for the record:
 
 `RootAlbumListBlock.tsx:87` escapes only `"`: `url("${highlightImageUrl.replace(/"/g, '\\"')}")`.
 A path containing `\"` or a newline breaks out of `url()`. It needs a crafted Gallery 2 filename,

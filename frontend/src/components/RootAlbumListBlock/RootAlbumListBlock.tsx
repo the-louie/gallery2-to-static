@@ -18,6 +18,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { parseBBCodeDecoded, extractUrlFromBBCode } from '@/utils/bbcode';
+import { cssUrl } from '@/utils/cssUrl';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { formatAlbumDate } from '@/utils/dateUtils';
 import { getAlbumHighlightImageUrl, getAlbumThumbnailUrl } from '@/utils/imageUrl';
@@ -84,10 +85,7 @@ export function RootAlbumListBlock({
   const linkTo = album.path ?? `/${titleToSegment(album.title)}`;
   const highlightImageUrl = getAlbumHighlightImageUrl(album);
   const thumbnailUrl = getAlbumThumbnailUrl(album);
-  const safeBgUrl =
-    highlightImageUrl != null
-      ? `url("${highlightImageUrl.replace(/"/g, '\\"')}")`
-      : undefined;
+  const safeBgUrl = highlightImageUrl != null ? cssUrl(highlightImageUrl) : undefined;
 
   return (
     <article
