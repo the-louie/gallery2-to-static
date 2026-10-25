@@ -20,16 +20,6 @@ Nothing below this line can be validated until the build runs.
 
 Operator request, verbatim: "Help me create and set up Sentry projects for this application." Org slug: `telamon-it`; run code: `666248c9ac`. Install (operator, 2026-10-25): `npx @sentry/agent-plugin install telamon-it#666248c9ac` — read what the package does before running it (it is third-party code run with npx). _Progress 2026-10-25: package read (0.4.1: runs `claude plugin install sentry@claude-plugins-official`, then copies the onboarding prompt; crash reports to Sentry unless `--no-telemetry`). Run with `--no-interactive --no-telemetry`: plugin sentry 1.4.0 installed (user scope; skills `sentry-get-started`, `sentry-instrument`, … and the Sentry MCP server `https://mcp.sentry.dev/mcp`). Next: restart Claude Code, authenticate the Sentry MCP (`/mcp`), then run `sentry-get-started` with org `telamon-it`, run code `666248c9ac`._ Scope to settle when scheduled: one project per part (frontend SPA, backend extractor), DSNs kept out of the repo, source maps only from `--mode analyze` builds or uploaded, not shipped (`scripts/check-dist.mjs`), and what is sent (no IPs/PII by default).
 
-### LINT-02: review the @eslint-react rules that are off (Sprint 08 T-02)
-
-Moving to ESLint 10 replaced eslint-plugin-react with @eslint-react, whose `recommended-typescript` set adds rules the old set did not have. They fired 75 times and are off in `frontend/eslint.config.js` so the lint coverage stays as before: `set-state-in-effect` 49, `no-array-index-key` 7, `use-state` 5, `no-context-provider` 3, `no-use-context` 3, `naming-convention-ref-name` 2, `web-api-no-leaked-intersection-observer` 1 (`exhaustive-deps` 5 duplicates react-hooks and stays off). Review each: fix real bugs (the leaked IntersectionObserver first), turn the rule on, or keep it off with a reason.
-
-_Sprint 09 T-01 (2026-10-25): IntersectionObserver — no leak (the cleanup disconnected it through `observerRef`; the rule cannot follow the ref). The cleanup now disconnects the instance itself (`frontend/src/components/ImageThumbnail/ImageThumbnail.tsx`), still one disconnect per intersection (existing test); rule on._
-
-_Sprint 09 T-02: `no-context-provider`, `no-use-context` on (`<Ctx value>`, `use(Ctx)` in the 3 contexts); `naming-convention-ref-name` on (`isInitialMountRef`, `optionElementsRef`); `use-state` on with `enforceSetterName: false` (the `setXState` names are deliberate wrappers); SearchBar's unread `query` state removed (one setter ran inside another state updater)._
-
-_Sprint 09 T-03: `no-array-index-key` on. The 7 hits were all correct uses: the two skeletons (fixed placeholder lists) and SearchHighlight (parts rebuilt from text + query each render) carry a one-line exemption with the reason; test files have the rule off (list mocks key by index like Virtuoso)._
-
 ## P2 — Correctness and cost
 
 ## P3 — Quality, hygiene and latent bugs
@@ -61,6 +51,10 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
   - raw `ownerId` in the output: rows are now mapped field by field (LOGIC-05), `ownerId` is not emitted.
 - **Not re-verified:** per-album themes for paths with é/æ/ø (`albumThemesConfig.ts`, depends on
   whether `location.pathname` is percent-encoded under `HashRouter`). Check in a browser.
+
+### REFAC-01: state reset/sync effects → derived state or keyed components (P3, from LINT-02)
+
+`@eslint-react/set-state-in-effect` is off (49 hits). The effects reset or sync state when an input changes, or set loading flags before a fetch; each costs one extra render. Files: `hooks/useProgressiveImage.ts` (14), `hooks/useLightbox.ts` (8), `hooks/useSiteMetadata.ts` (6), `hooks/useAlbumData.ts` (4), `components/ImageThumbnail/ImageThumbnail.tsx` (3), `components/SearchBar/SearchBar.tsx` (3), `hooks/useAlbumMetadata.ts`, `hooks/useImageZoom.ts`, `components/FilterPanel/DateRangeFilter.tsx` (2 each), `AlbumCard`, `Lightbox`, `ThemeContext`, `ViewAbortContext`, `PathResolverPage` (1 each). Do it per hook with its tests; turn the rule on at the end. No user-visible bug known.
 
 ## FUTURE (after production deploy)
 

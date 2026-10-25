@@ -2,6 +2,21 @@
 
 Rows pruned from `TODO.md` after each sprint, with the proof they were closed on. Newest first.
 
+## Pruned 2026-10-25 (Sprint 09): 1 rows
+
+### ~~LINT-02: review the @eslint-react rules that are off (Sprint 08 T-02)~~
+
+**CLOSED, verified 2026-10-25 (Sprint 09 T-01..T-04):** `frontend/eslint.config.js` has no @eslint-react rule off without a reason: `web-api-no-leaked-intersection-observer`, `no-context-provider`, `no-use-context`, `naming-convention-ref-name`, `no-array-index-key` on; `use-state` on with `enforceSetterName: false`; `exhaustive-deps` off (duplicates react-hooks); `set-state-in-effect` off with the reason (49 sync/reset/loading effects across 14 files: extra renders, not bugs; refactor tracked as REFAC-01). No real bug found (the IntersectionObserver was disconnected through a ref). Lint 0/0, vitest green. Original row kept for the record:
+
+
+Moving to ESLint 10 replaced eslint-plugin-react with @eslint-react, whose `recommended-typescript` set adds rules the old set did not have. They fired 75 times and are off in `frontend/eslint.config.js` so the lint coverage stays as before: `set-state-in-effect` 49, `no-array-index-key` 7, `use-state` 5, `no-context-provider` 3, `no-use-context` 3, `naming-convention-ref-name` 2, `web-api-no-leaked-intersection-observer` 1 (`exhaustive-deps` 5 duplicates react-hooks and stays off). Review each: fix real bugs (the leaked IntersectionObserver first), turn the rule on, or keep it off with a reason.
+
+_Sprint 09 T-01 (2026-10-25): IntersectionObserver — no leak (the cleanup disconnected it through `observerRef`; the rule cannot follow the ref). The cleanup now disconnects the instance itself (`frontend/src/components/ImageThumbnail/ImageThumbnail.tsx`), still one disconnect per intersection (existing test); rule on._
+
+_Sprint 09 T-02: `no-context-provider`, `no-use-context` on (`<Ctx value>`, `use(Ctx)` in the 3 contexts); `naming-convention-ref-name` on (`isInitialMountRef`, `optionElementsRef`); `use-state` on with `enforceSetterName: false` (the `setXState` names are deliberate wrappers); SearchBar's unread `query` state removed (one setter ran inside another state updater)._
+
+_Sprint 09 T-03: `no-array-index-key` on. The 7 hits were all correct uses: the two skeletons (fixed placeholder lists) and SearchHighlight (parts rebuilt from text + query each render) carry a one-line exemption with the reason; test files have the rule off (list mocks key by index like Virtuoso)._
+
 ## Pruned 2026-10-25 (operator 2026-10-25): 1 rows
 
 ### ~~UX-01: show the thumbnail blurred while the full-size image loads (operator, 2026-10-25)~~

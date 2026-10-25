@@ -32,9 +32,11 @@ export default tseslint.config(
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      // Rules @eslint-react adds beyond the former eslint-plugin-react set; off until reviewed (LINT-02).
       // exhaustive-deps stays with react-hooks, where the deliberate suppressions are documented.
       '@eslint-react/exhaustive-deps': 'off',
+      // Off after review (LINT-02): its 49 hits are all "reset/sync state when an input changes" or
+      // "set loading before a fetch" effects. They cost an extra render, not correctness; removing
+      // them means restructuring 14 hooks/components (REFAC-01), not a lint fix.
       '@eslint-react/set-state-in-effect': 'off',
       // setXState names are deliberate: the public setX wraps the raw setter (validation, side effects)
       '@eslint-react/use-state': ['error', { enforceSetterName: false }],
