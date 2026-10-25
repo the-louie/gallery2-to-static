@@ -3,8 +3,8 @@
 Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–4h) and end on a demo.
 
 **Active sprint:** [Sprint 02](./sprints/sprint-02.md) — in progress.
-**Current ticket:** [Sprint 02 T-02](./sprints/sprint-02.md) (`in-progress` — Empty / . / .. segments fall back to an id segment; index insertion as)
-**Last completed:** Sprint 02 T-01 (commit `da9d9f6`).
+**Current ticket:** [Sprint 02 T-03](./sprints/sprint-02.md) (`todo` — Compute each child's segment once in the parent and pass it to both th)
+**Last completed:** Sprint 02 T-02 (commit `f00ae4a`).
 
 | Sprint | Goal |
 |---|---|
