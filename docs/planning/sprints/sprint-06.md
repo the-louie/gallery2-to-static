@@ -1,7 +1,7 @@
 # Sprint 06: old links work; tests and lint you can trust
 
-**Status:** open (planned 2026-10-25)
-**Current ticket:** T-01 (`todo` — old path URLs redirect to hash URLs)
+**Status:** in progress (opened 2026-10-25)
+**Current ticket:** T-01 (`in-progress` — Pathname → hash redirect before the router mounts; deploy docs (nginx )
 **Last completed:** —
 
 **Goal:** every old lanbilder.se album link opens its album (LOGIC-32, before cutover); the backend
@@ -13,7 +13,7 @@ writes a data tree whose path index passes the invariant check; `npm run lint` a
 
 | # | Ticket | Backlog | Est | Deps | Status | Acceptance / Notes |
 |---|---|---|---|---|---|---|
-| T-01 | Pathname → hash redirect before the router mounts; deploy docs (nginx fallback) | LOGIC-32 | 2h | – | todo | test: `/a/b/` → `/#/a/b/`; `/` and `/#/x` untouched; assets not affected |
+| T-01 | Pathname → hash redirect before the router mounts; deploy docs (nginx fallback) | LOGIC-32 | 2h | – | in-progress | test: `/a/b/` → `/#/a/b/`; `/` and `/#/x` untouched; assets not affected |
 | T-02 | Extract `main()` into a module taking `sql`; thin CLI in index.ts | TEST-03 | 3h | – | todo | behaviour unchanged, backend tests green |
 | T-03 | End-to-end extraction test with a fake `sql` tree (duplicates, blank titles, bad JPEG) | TEST-03 | 3h | T-02 | todo | JSON + index.json asserted; invariant check passes |
 | T-04 | Fix the 6 rules-of-hooks errors (ThemeDropdown) | LINT-01 | 1h | – | todo | 0 rules-of-hooks |
