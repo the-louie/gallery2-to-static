@@ -2,10 +2,6 @@
 
 Generated 2026-10-25 from `TODO.md` (SENTRY-01). Closed rows: `docs/planning/done.md`.
 
-## P1 — Must be fixed before anything is published
-
-- **SENTRY-01**: create and set up Sentry projects for this application (operator, 2026-10-25, high prio; required before the lanbilder.se cutover)
-
 ## FUTURE (after production deploy)
 
 - **FUT-01**: SQLite as the master of the data; regenerate only changed branches
@@ -18,4 +14,4 @@ Generated 2026-10-25 from `TODO.md` (SENTRY-01). Closed rows: `docs/planning/don
 
 ## Summary
 
-**Open rows:** 6
+**Open rows:** 5
