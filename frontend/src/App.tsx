@@ -15,6 +15,7 @@ const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage').then((m
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((module) => ({ default: module.NotFoundPage })));
 const PathResolverPage = lazy(() => import('./pages/PathResolverPage').then((module) => ({ default: module.PathResolverPage })));
 const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage').then((module) => ({ default: module.PlaceholderPage })));
+const LegacyRedirectPage = lazy(() => import('./pages/LegacyRedirectPage').then((module) => ({ default: module.LegacyRedirectPage })));
 
 /**
  * App Component
@@ -29,6 +30,7 @@ const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage').then((modul
  * - `/album/:albumId/image/:imageId` - Image detail (ID-based)
  * - `/album/:id` - Album detail (ID-based, legacy)
  * - `/image/:id` - Image detail (legacy)
+ * - `/v/*`, `/main.php` - Old Gallery 2 URLs, redirected (URL-02)
  * - `/*` - Path-based album/image (e.g. /albums/photos, /albums/photos/image/123)
  * - `*` - 404 Not Found page
  *
@@ -55,6 +57,8 @@ function App() {
               <Route path="/slideshow" element={<PlaceholderPage title="Slideshow" />} />
               <Route path="/slideshow-fullscreen" element={<PlaceholderPage title="Slideshow (Fullscreen)" />} />
               <Route path="/not-found" element={<NotFoundPage />} />
+              <Route path="/v/*" element={<LegacyRedirectPage />} />
+              <Route path="/main.php" element={<LegacyRedirectPage />} />
               <Route path="/album/:albumId/image/:imageId" element={<ImageDetailPage />} />
               <Route path="/album/:id" element={<AlbumDetailPage />} />
               <Route path="/image/:id" element={<ImageDetailPage />} />

@@ -133,6 +133,16 @@ async function run(): Promise<void> {
         assert.strictEqual(logo.thumb_width, 64);
         await assert.rejects(() => fs.access(path.join(tmp, 'g2/thumbs/dreamhack/blank/t__bad.jpg')), 'no thumbnail for the broken file');
 
+        // legacy.json (URL-02): Gallery 2 path -> new path for every exported album, photo id -> album id
+        const legacy = JSON.parse(await fs.readFile(path.join(data, 'legacy.json'), 'utf8'));
+        assert.strictEqual(legacy.albums[''], '/');
+        assert.strictEqual(legacy.albums['dreamhack'], '/dreamhack');
+        assert.strictEqual(legacy.albums['dreamhack/lordag1'], '/dreamhack/lordag');
+        assert.strictEqual(legacy.albums['dreamhack/blank'], '/dreamhack/album_13');
+        assert.strictEqual(legacy.albums['dreamhack/image/2005'], '/dreamhack/image/2005');
+        assert.ok(!('hidden' in legacy.albums) && !('dreamhack/onlyhidden' in legacy.albums), 'ignored/unexported albums absent');
+        assert.deepStrictEqual(legacy.photoAlbum, { 101: 11, 102: 12, 103: 13, 104: 15 }, 'ignored photos absent');
+
         // childCount (THEME-01): the album's exported items; ignored photos and unexported albums left out
         const dhFile = JSON.parse(await fs.readFile(path.join(data, '10.json'), 'utf8'));
         const childCounts = Object.fromEntries(dhFile.children.map((c: Child) => [c.id, c.childCount]));

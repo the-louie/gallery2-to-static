@@ -132,6 +132,7 @@ Each item in the JSON array contains:
 - **timestamp**: Unix timestamp (seconds since epoch)
 - **width/height**: Image dimensions (null for albums, numbers for photos)
 - **thumb_width/thumb_height**: Thumbnail dimensions (null if no thumbnail)
+- `data/legacy.json` (URL-02): `albums` (Gallery 2 path components → new path, e.g. `"dreamhack/dhw05/dhphotos": "/dreamhack/dreamhack_winter_05/battlefrag.com"`) and `photoAlbum` (photo id → album id), for redirecting old Gallery 2 URLs
 - **childCount** (albums): number of items directly in the album that the export writes (photos, and sub-albums that are not hidden and hold images); "Size: N items" in the classic theme
 - **viewCount** (optional): Gallery 2's view counter at export time; absent when Gallery 2 has none. Shown as "Views:" in the classic theme
 

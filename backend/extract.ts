@@ -187,6 +187,16 @@ async function resolveHighlightImageUrl(
 
 type FirstPhotoResult = { photo: Child; uipath: Array<string>; pathComponent: Array<string> };
 
+/**
+ * What old Gallery 2 URLs need to land on the new ones (URL-02): the Gallery 2 path of every exported
+ * album (its pathComponent chain, e.g. `dreamhack/dhw05/dhphotos`) → the new path, and every exported
+ * photo id → its album id (for `main.php?g2_itemId=N`). Written as data/legacy.json.
+ */
+export interface LegacyIndex {
+    albums: Map<string, string>;
+    photoAlbum: Map<number, number>;
+}
+
 function createSemaphore(max: number): { acquire: () => Promise<void>; release: () => void } {
     let inFlight = 0;
     const queue: Array<() => void> = [];
@@ -281,6 +291,7 @@ const main = async (
     emittedChildPaths: Map<number, string>,
     /** Child album walks that failed; collected so one bad subtree doesn't crash the run (LOGIC-21). */
     failures: SubtreeFailure[],
+    legacy: LegacyIndex,
     thumbnailContext: { albumsRoot: string; thumbnailsRoot: string; sem: ReturnType<typeof createSemaphore>; options: { maxWidth: number; maxHeight: number; quality: number }; skip: boolean; generatedCount: number; skippedCount: number; excludedCount: number } | null,
 ) => {
     const children = await sql.getChildren(root);
@@ -297,6 +308,10 @@ const main = async (
         const isRoot = breadcrumbAncestors.length === 0;
         const currentPath = isRoot ? '/' : ownPath;
         addToPathIndex(pathIndex, currentPath, root);
+        legacy.albums.set(pathComponent.join('/'), currentPath);
+        for (const c of filtered) {
+            if (c.type === 'GalleryPhotoItem' && !isBlacklisted(c.id, ignoreSet)) legacy.photoAlbum.set(c.id, root);
+        }
 
         const currentBreadcrumbItem: BreadcrumbItem = {
             id: root,
@@ -347,6 +362,7 @@ const main = async (
                         pathForChild(child.id),
                         emittedChildPaths,
                         failures,
+                        legacy,
                         thumbnailContext,
                     ),
                     child.id,
@@ -695,6 +711,7 @@ export async function runExtraction(options: ExtractionOptions): Promise<Extract
     const pathIndex = new Map<string, number>();
     const emittedChildPaths = new Map<number, string>();
     const failures: SubtreeFailure[] = [];
+    const legacy: LegacyIndex = { albums: new Map(), photoAlbum: new Map() };
     await main(
         sql,
         rootId,
@@ -713,6 +730,7 @@ export async function runExtraction(options: ExtractionOptions): Promise<Extract
         '/',
         emittedChildPaths,
         failures,
+        legacy,
         thumbnailContext,
     );
 
@@ -787,6 +805,14 @@ export async function runExtraction(options: ExtractionOptions): Promise<Extract
     const indexPath = path.join(dataDir, 'index.json');
     await fs.writeFile(indexPath, JSON.stringify(indexData, null, 2));
     console.log(`Generated index.json with root album reference`);
+
+    // Old Gallery 2 URLs → new (URL-02); loaded by the frontend only on such a URL
+    const legacyData = {
+        albums: Object.fromEntries(legacy.albums),
+        photoAlbum: Object.fromEntries(legacy.photoAlbum),
+    };
+    await fs.writeFile(path.join(dataDir, 'legacy.json'), JSON.stringify(legacyData));
+    console.log(`Generated legacy.json (${legacy.albums.size} album paths, ${legacy.photoAlbum.size} photos)`);
 
     if (options.verify !== false) try {
         console.log('Verifying image paths...');
