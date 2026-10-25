@@ -65,13 +65,6 @@ vi.mock('@/hooks/useSiteMetadata', () => ({
   useSiteMetadata: () => mockUseSiteMetadata(),
 }));
 
-// Mock useAlbumMetadata to avoid loadAlbum(parent) calls when metadata/album prop absent
-vi.mock('@/hooks/useAlbumMetadata', () => ({
-  useAlbumMetadata: vi.fn(
-    (_id: number, albumProp: unknown) => (albumProp !== undefined ? albumProp : null),
-  ),
-}));
-
 // Mock react-virtuoso VirtuosoGrid (used by VirtualGrid inside AlbumGrid/ImageGrid)
 vi.mock('react-virtuoso', () => ({
   VirtuosoGrid: ({ data, itemContent, ...props }: any) => (

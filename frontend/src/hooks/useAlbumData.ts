@@ -182,12 +182,9 @@ export function useAlbumData(
   }, [error, enableAutoRetry, id, isLoading, isRetryingRetry, canRetryRetry, retryFn]);
 
   useEffect(() => {
-    // Don't load if id is null
+    // Don't load if id is null; the returned values are nulled below (derived, no state reset:
+    // REFAC-01), and a request still in flight is invalidated by the previous effect's cleanup
     if (id === null) {
-      setData(null);
-      setMetadata(null);
-      setIsLoading(false);
-      setError(null);
       if (enableAutoRetry) {
         resetRetry();
       }
@@ -231,11 +228,12 @@ export function useAlbumData(
     }
   }, [id, loadData, enableAutoRetry, resetRetry]);
 
+  const idle = id === null;
   return {
-    data,
-    metadata,
-    isLoading: isLoading || (enableAutoRetry ? retryHook.isRetrying : false),
-    error,
+    data: idle ? null : data,
+    metadata: idle ? null : metadata,
+    isLoading: idle ? false : isLoading || (enableAutoRetry ? retryHook.isRetrying : false),
+    error: idle ? null : error,
     refetch,
     ...(enableAutoRetry
       ? {

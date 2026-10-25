@@ -58,6 +58,8 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
 
 _Sprint 10 T-01 (2026-10-25): `frontend/src/hooks/useSiteMetadata.ts` takes cached data as the initial state (a later mount renders it on the first render, no loading flash) and no longer resets loading/error at effect start (already the initial state); new `useSiteMetadata.test.ts` (fails on the previous code). 6 hits gone._
 
+_Sprint 10 T-02: `useAlbumMetadata` only copied its `albumProp` into state one render late: removed, `AlbumDetail.tsx` uses `albumPropToUse ?? null` directly (and its test no longer mocks the hook). `useAlbumData`: `id === null` now nulls the returned values directly instead of resetting state in the effect; new test (no render with the previous album's data; fails on the previous code). 6 hits gone._
+
 ## FUTURE (after production deploy)
 
 Operator, 2026-10-25. Not scheduled until lanbilder.se runs on the new code. The notes under each

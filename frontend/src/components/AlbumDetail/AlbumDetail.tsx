@@ -20,7 +20,6 @@ import { useAlbumData } from '@/hooks/useAlbumData';
 import { useSort } from '@/hooks/useSort';
 import { useFilter } from '@/contexts/FilterContext';
 import { useSiteMetadata } from '@/hooks/useSiteMetadata';
-import { useAlbumMetadata } from '@/hooks/useAlbumMetadata';
 import { applyFilters } from '@/utils/filterUtils';
 import { parseBBCodeDecoded } from '@/utils/bbcode';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
@@ -110,7 +109,7 @@ export function AlbumDetail({
     [metadata],
   );
   const albumPropToUse = albumPropFromFile ?? albumProp ?? undefined;
-  const album = useAlbumMetadata(albumId, albumPropToUse, rootAlbumId);
+  const album = albumPropToUse ?? null; // was useAlbumMetadata: copied the prop into state one render late (REFAC-01)
 
   // Check if this is the root album
   const isRootAlbum = rootAlbumId !== null && albumId === rootAlbumId;

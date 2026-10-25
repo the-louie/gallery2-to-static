@@ -157,6 +157,25 @@ describe('useAlbumData', () => {
     expect(mockLoadAlbum).not.toHaveBeenCalled();
   });
 
+  it('clears data on the first render after id becomes null', async () => {
+    const child: Child = { id: 2, type: 'GalleryPhotoItem', hasChildren: false, title: 'P', description: null, pathComponent: 'p.jpg', timestamp: 1, width: 1, height: 1, thumb_width: 1, thumb_height: 1 };
+    mockLoadAlbum.mockResolvedValue(albumFile(1, [child]));
+    const seen: Array<unknown> = [];
+    const { result, rerender } = renderHook(({ id }: { id: number | null }) => {
+      const r = useAlbumData(id);
+      seen.push(r.data);
+      return r;
+    }, { initialProps: { id: 1 as number | null } });
+    await waitFor(() => expect(result.current.data).not.toBeNull());
+
+    seen.length = 0;
+    rerender({ id: null });
+    expect(seen[0]).toBeNull(); // no render with the previous album's data
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.metadata).toBeNull();
+    expect(result.current.error).toBeNull();
+  });
+
   it('reloads data when id changes', async () => {
     const mockData1: Child[] = [
       {
