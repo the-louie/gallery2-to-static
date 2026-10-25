@@ -1012,11 +1012,11 @@ describe('AlbumDetail', () => {
       const itemsWithDates = [
         {
           ...mockChildren[0],
-          timestamp: new Date('2024-06-15').getTime(),
+          timestamp: new Date('2024-06-15').getTime() / 1000, // Unix seconds, as in the data
         },
         {
           ...mockChildren[1],
-          timestamp: new Date('2025-06-15').getTime(),
+          timestamp: new Date('2025-06-15').getTime() / 1000, // Unix seconds, as in the data
         },
       ];
 

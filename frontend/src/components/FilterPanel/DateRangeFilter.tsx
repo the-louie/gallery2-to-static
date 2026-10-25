@@ -32,7 +32,7 @@
  * @module frontend/src/components/FilterPanel
  */
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import type { FilterCriteria } from '@/types';
 import './DateRangeFilter.css';
 
@@ -68,9 +68,36 @@ function timestampToDateString(timestamp: number): string {
  * @param dateString - Date string in YYYY-MM-DD format
  * @returns Timestamp in milliseconds (start of day)
  */
-function dateStringToTimestamp(dateString: string): number {
-  const date = new Date(dateString);
-  return date.getTime();
+/** Open ends of a one-sided range (only a start, or only an end date). */
+export const DATE_RANGE_OPEN_START = 0;
+export const DATE_RANGE_OPEN_END = Number.MAX_SAFE_INTEGER;
+
+/** 'YYYY-MM-DD' (input value) → local midnight in ms. `new Date('YYYY-MM-DD')` would be UTC. */
+function dateStringToStartOfDay(dateString: string): number {
+  const [y, m, d] = dateString.split('-').map(Number);
+  return new Date(y, m - 1, d).getTime();
+}
+
+/** 'YYYY-MM-DD' → last millisecond of that local day, so the end date is inclusive. */
+function dateStringToEndOfDay(dateString: string): number {
+  const [y, m, d] = dateString.split('-').map(Number);
+  return new Date(y, m - 1, d + 1).getTime() - 1;
+}
+
+/** Range for the two input values; one-sided when only one is set; undefined when neither. */
+export function dateInputsToRange(
+  startDate: string,
+  endDate: string,
+): FilterCriteria['dateRange'] {
+  if (!startDate && !endDate) return undefined;
+  let start = startDate ? dateStringToStartOfDay(startDate) : DATE_RANGE_OPEN_START;
+  let end = endDate ? dateStringToEndOfDay(endDate) : DATE_RANGE_OPEN_END;
+  if (startDate && endDate && start > end) {
+    // dates entered the wrong way round: use them as a range anyway
+    start = dateStringToStartOfDay(endDate);
+    end = dateStringToEndOfDay(startDate);
+  }
+  return { start, end };
 }
 
 /**
@@ -86,109 +113,46 @@ export function DateRangeFilter({
   onCriteriaChange,
   className,
 }: DateRangeFilterProps): React.ReactElement {
-  // Convert timestamps to date strings for input values
-  const startDate = useMemo(() => {
-    if (criteria.dateRange?.start != null) {
-      return timestampToDateString(criteria.dateRange.start);
-    }
-    return '';
-  }, [criteria.dateRange?.start]);
-
-  const endDate = useMemo(() => {
-    if (criteria.dateRange?.end != null) {
-      return timestampToDateString(criteria.dateRange.end);
-    }
-    return '';
-  }, [criteria.dateRange?.end]);
-
-  // Handle start date change
-  const handleStartDateChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newStartDate = e.target.value;
-      const newCriteria: FilterCriteria = { ...criteria };
-
-      if (newStartDate) {
-        const startTimestamp = dateStringToTimestamp(newStartDate);
-        const endTimestamp = criteria.dateRange?.end;
-
-        // Only create dateRange if we have both dates, or if end date exists
-        if (endTimestamp) {
-          // If start date is after end date, adjust end date
-          if (startTimestamp > endTimestamp) {
-            const nextDay = new Date(startTimestamp);
-            nextDay.setDate(nextDay.getDate() + 1);
-            newCriteria.dateRange = {
-              start: startTimestamp,
-              end: nextDay.getTime(),
-            };
-          } else {
-            newCriteria.dateRange = {
-              start: startTimestamp,
-              end: endTimestamp,
-            };
-          }
-        } else {
-          // Only start date provided, don't create dateRange yet
-          newCriteria.dateRange = undefined;
-        }
-      } else {
-        // Start date cleared
-        if (criteria.dateRange?.end) {
-          // If end date still exists, clear the whole dateRange
-          newCriteria.dateRange = undefined;
-        } else {
-          newCriteria.dateRange = undefined;
-        }
-      }
-
-      onCriteriaChange(newCriteria);
-    },
-    [criteria, onCriteriaChange]
+  // The inputs keep their own values, so a single date stays entered while the other is still
+  // empty (LOGIC-18: they were derived from criteria.dateRange, which was only set with both).
+  const rangeStart = criteria.dateRange?.start;
+  const rangeEnd = criteria.dateRange?.end;
+  const [startDate, setStartDate] = useState(() =>
+    rangeStart != null && rangeStart !== DATE_RANGE_OPEN_START ? timestampToDateString(rangeStart) : '',
+  );
+  const [endDate, setEndDate] = useState(() =>
+    rangeEnd != null && rangeEnd !== DATE_RANGE_OPEN_END ? timestampToDateString(rangeEnd) : '',
   );
 
-  // Handle end date change
+  // Follow outside changes (clear button, filter badges)
+  useEffect(() => {
+    if (rangeStart == null && rangeEnd == null) {
+      setStartDate('');
+      setEndDate('');
+    }
+  }, [rangeStart, rangeEnd]);
+
+  const apply = useCallback(
+    (nextStart: string, nextEnd: string) => {
+      onCriteriaChange({ ...criteria, dateRange: dateInputsToRange(nextStart, nextEnd) });
+    },
+    [criteria, onCriteriaChange],
+  );
+
+  const handleStartDateChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setStartDate(e.target.value);
+      apply(e.target.value, endDate);
+    },
+    [apply, endDate],
+  );
+
   const handleEndDateChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newEndDate = e.target.value;
-      const newCriteria: FilterCriteria = { ...criteria };
-
-      if (newEndDate) {
-        const endTimestamp = dateStringToTimestamp(newEndDate);
-        const startTimestamp = criteria.dateRange?.start;
-
-        // Only create dateRange if we have both dates, or if start date exists
-        if (startTimestamp) {
-          // If end date is before start date, adjust start date
-          if (endTimestamp < startTimestamp) {
-            const prevDay = new Date(endTimestamp);
-            prevDay.setDate(prevDay.getDate() - 1);
-            newCriteria.dateRange = {
-              start: prevDay.getTime(),
-              end: endTimestamp,
-            };
-          } else {
-            newCriteria.dateRange = {
-              start: startTimestamp,
-              end: endTimestamp,
-            };
-          }
-        } else {
-          // Only end date provided, don't create dateRange yet
-          newCriteria.dateRange = undefined;
-        }
-      } else {
-        // End date cleared
-        if (criteria.dateRange?.start) {
-          // If start date still exists, clear the whole dateRange
-          newCriteria.dateRange = undefined;
-        } else {
-          newCriteria.dateRange = undefined;
-        }
-      }
-
-      onCriteriaChange(newCriteria);
+      setEndDate(e.target.value);
+      apply(startDate, e.target.value);
     },
-    [criteria, onCriteriaChange]
+    [apply, startDate],
   );
 
   // Handle clear date range

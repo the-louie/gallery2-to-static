@@ -269,7 +269,9 @@ restores it. Closing lands at an arbitrary spot in a 500-image album. Fix: `navi
 lightbox was opened from the album (track it in location state), otherwise `replace: true`. Restore
 the saved scroll position on album mount.
 
-### LOGIC-18: date filter can't be enabled, and would hide everything
+### ~~LOGIC-18: date filter can't be enabled, and would hide everything~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-06):** `DateRangeFilter.tsx` keeps both input values in local state and builds the range with `dateInputsToRange` (local start of day … last ms of the end day; one-sided with `DATE_RANGE_OPEN_START`/`_END`; reversed dates swapped). `filterUtils.ts` `matchesDateRange` compares `item.timestamp * 1000` (items are Unix seconds, ranges ms). `FilterBadges` shows "from …"/"until …" for one-sided ranges. Tests rewritten: the old ones encoded the bug ("does not create dateRange when only start date is set", ms item timestamps in 5 fixture files); new ones cover start only, end only, both with inclusive end, reversed, and seconds timestamps. Full vitest 1461/1461. Original row kept for the record:
 
 - **Can't be enabled:** `components/FilterPanel/DateRangeFilter.tsx:105-140` sets
   `dateRange = undefined` when only one date is set ("Only start date provided, don't create

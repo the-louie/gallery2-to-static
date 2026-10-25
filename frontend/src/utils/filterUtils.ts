@@ -50,8 +50,10 @@ function matchesDateRange(
     return false;
   }
 
-  // Check if timestamp is within range (inclusive)
-  return item.timestamp >= dateRange.start && item.timestamp <= dateRange.end;
+  // item.timestamp is Unix seconds (Gallery 2 originationTimestamp); dateRange is milliseconds
+  // (LOGIC-18: comparing them directly filtered out every item).
+  const ms = item.timestamp * 1000;
+  return ms >= dateRange.start && ms <= dateRange.end;
 }
 
 /**

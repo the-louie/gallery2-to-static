@@ -257,7 +257,7 @@ export interface ThemeState {
  * Multiple filters can be applied simultaneously.
  */
 export interface FilterCriteria {
-  /** Date range filter (timestamps in milliseconds) */
+  /** Date range filter, in milliseconds (local start/end of day; one-sided ranges use 0 / Number.MAX_SAFE_INTEGER). Item timestamps are Unix seconds. */
   dateRange?: {
     /** Start timestamp (inclusive) */
     start: number;

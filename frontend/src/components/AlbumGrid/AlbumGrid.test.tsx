@@ -339,12 +339,12 @@ describe('AlbumGrid', () => {
       const albumsWithDates = [
         {
           ...mockAlbums[0],
-          timestamp: new Date('2024-06-15').getTime(),
+          timestamp: new Date('2024-06-15').getTime() / 1000, // Unix seconds, as in the data
         },
         {
           ...mockAlbums[0],
           id: 99,
-          timestamp: new Date('2025-06-15').getTime(),
+          timestamp: new Date('2025-06-15').getTime() / 1000, // Unix seconds, as in the data
         },
       ];
 
@@ -416,7 +416,7 @@ describe('AlbumGrid', () => {
       const albumsWithDates = [
         {
           ...mockAlbums[0],
-          timestamp: new Date('2024-06-15').getTime(),
+          timestamp: new Date('2024-06-15').getTime() / 1000, // Unix seconds, as in the data
         },
       ];
 

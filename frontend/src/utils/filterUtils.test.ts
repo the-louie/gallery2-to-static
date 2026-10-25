@@ -22,7 +22,7 @@ function createMockAlbum(overrides?: Partial<Child>): Child {
     title: 'Test Album',
     description: 'Test Description',
     pathComponent: 'test-album',
-    timestamp: 1000000000000,
+    timestamp: 1000000000,
     width: null,
     height: null,
     thumb_width: null,
@@ -42,7 +42,7 @@ function createMockImage(overrides?: Partial<Child>): Child {
     title: 'Test Image',
     description: 'Test Description',
     pathComponent: 'test-image.jpg',
-    timestamp: 1500000000000,
+    timestamp: 1500000000,
     width: 1920,
     height: 1080,
     thumb_width: 320,
@@ -51,6 +51,7 @@ function createMockImage(overrides?: Partial<Child>): Child {
   };
 }
 
+// Item timestamps are Unix seconds (as in the data); dateRange values are milliseconds (LOGIC-18).
 describe('applyFilters', () => {
   describe('empty arrays', () => {
     it('returns empty array for empty input', () => {
@@ -85,24 +86,24 @@ describe('applyFilters', () => {
   describe('date range filtering', () => {
     it('filters items within date range', () => {
       const items = [
-        createMockAlbum({ timestamp: 1000000000000 }),
-        createMockAlbum({ timestamp: 1500000000000 }),
-        createMockAlbum({ timestamp: 2000000000000 }),
-        createMockAlbum({ timestamp: 2500000000000 }),
+        createMockAlbum({ timestamp: 1000000000 }),
+        createMockAlbum({ timestamp: 1500000000 }),
+        createMockAlbum({ timestamp: 2000000000 }),
+        createMockAlbum({ timestamp: 2500000000 }),
       ];
       const criteria: FilterCriteria = {
         dateRange: { start: 1200000000000, end: 2200000000000 },
       };
       const result = applyFilters(items, criteria);
       expect(result).toHaveLength(2);
-      expect(result[0].timestamp).toBe(1500000000000);
-      expect(result[1].timestamp).toBe(2000000000000);
+      expect(result[0].timestamp).toBe(1500000000);
+      expect(result[1].timestamp).toBe(2000000000);
     });
 
     it('includes items at start boundary', () => {
       const items = [
-        createMockAlbum({ timestamp: 1000000000000 }),
-        createMockAlbum({ timestamp: 1500000000000 }),
+        createMockAlbum({ timestamp: 1000000000 }),
+        createMockAlbum({ timestamp: 1500000000 }),
       ];
       const criteria: FilterCriteria = {
         dateRange: { start: 1000000000000, end: 2000000000000 },
@@ -113,8 +114,8 @@ describe('applyFilters', () => {
 
     it('includes items at end boundary', () => {
       const items = [
-        createMockAlbum({ timestamp: 1000000000000 }),
-        createMockAlbum({ timestamp: 2000000000000 }),
+        createMockAlbum({ timestamp: 1000000000 }),
+        createMockAlbum({ timestamp: 2000000000 }),
       ];
       const criteria: FilterCriteria = {
         dateRange: { start: 1000000000000, end: 2000000000000 },
@@ -125,33 +126,33 @@ describe('applyFilters', () => {
 
     it('excludes items before start date', () => {
       const items = [
-        createMockAlbum({ timestamp: 500000000000 }),
-        createMockAlbum({ timestamp: 1500000000000 }),
+        createMockAlbum({ timestamp: 500000000 }),
+        createMockAlbum({ timestamp: 1500000000 }),
       ];
       const criteria: FilterCriteria = {
         dateRange: { start: 1000000000000, end: 2000000000000 },
       };
       const result = applyFilters(items, criteria);
       expect(result).toHaveLength(1);
-      expect(result[0].timestamp).toBe(1500000000000);
+      expect(result[0].timestamp).toBe(1500000000);
     });
 
     it('excludes items after end date', () => {
       const items = [
-        createMockAlbum({ timestamp: 1500000000000 }),
-        createMockAlbum({ timestamp: 2500000000000 }),
+        createMockAlbum({ timestamp: 1500000000 }),
+        createMockAlbum({ timestamp: 2500000000 }),
       ];
       const criteria: FilterCriteria = {
         dateRange: { start: 1000000000000, end: 2000000000000 },
       };
       const result = applyFilters(items, criteria);
       expect(result).toHaveLength(1);
-      expect(result[0].timestamp).toBe(1500000000000);
+      expect(result[0].timestamp).toBe(1500000000);
     });
 
     it('excludes items with null timestamps', () => {
       const items = [
-        createMockAlbum({ timestamp: 1500000000000 }),
+        createMockAlbum({ timestamp: 1500000000 }),
         createMockAlbum({ timestamp: null as unknown as number }),
       ];
       const criteria: FilterCriteria = {
@@ -159,12 +160,12 @@ describe('applyFilters', () => {
       };
       const result = applyFilters(items, criteria);
       expect(result).toHaveLength(1);
-      expect(result[0].timestamp).toBe(1500000000000);
+      expect(result[0].timestamp).toBe(1500000000);
     });
 
     it('excludes items with undefined timestamps', () => {
       const items = [
-        createMockAlbum({ timestamp: 1500000000000 }),
+        createMockAlbum({ timestamp: 1500000000 }),
         createMockAlbum({ timestamp: undefined as unknown as number }),
       ];
       const criteria: FilterCriteria = {
@@ -172,7 +173,7 @@ describe('applyFilters', () => {
       };
       const result = applyFilters(items, criteria);
       expect(result).toHaveLength(1);
-      expect(result[0].timestamp).toBe(1500000000000);
+      expect(result[0].timestamp).toBe(1500000000);
     });
   });
 
@@ -210,10 +211,10 @@ describe('applyFilters', () => {
   describe('multi-filter combinations', () => {
     it('applies date range and type filters together (AND logic)', () => {
       const items = [
-        createMockAlbum({ timestamp: 1500000000000 }),
-        createMockImage({ timestamp: 1500000000000 }),
-        createMockAlbum({ timestamp: 2500000000000 }),
-        createMockImage({ timestamp: 2500000000000 }),
+        createMockAlbum({ timestamp: 1500000000 }),
+        createMockImage({ timestamp: 1500000000 }),
+        createMockAlbum({ timestamp: 2500000000 }),
+        createMockImage({ timestamp: 2500000000 }),
       ];
       const criteria: FilterCriteria = {
         dateRange: { start: 1000000000000, end: 2000000000000 },
@@ -222,13 +223,13 @@ describe('applyFilters', () => {
       const result = applyFilters(items, criteria);
       expect(result).toHaveLength(1);
       expect(result[0].type).toBe('GalleryPhotoItem');
-      expect(result[0].timestamp).toBe(1500000000000);
+      expect(result[0].timestamp).toBe(1500000000);
     });
 
     it('returns empty array when no items match all filters', () => {
       const items = [
-        createMockAlbum({ timestamp: 1500000000000 }),
-        createMockImage({ timestamp: 2500000000000 }),
+        createMockAlbum({ timestamp: 1500000000 }),
+        createMockImage({ timestamp: 2500000000 }),
       ];
       const criteria: FilterCriteria = {
         dateRange: { start: 1000000000000, end: 2000000000000 },
@@ -252,8 +253,8 @@ describe('applyFilters', () => {
 
     it('handles very large date range', () => {
       const items = [
-        createMockAlbum({ timestamp: 1000000000000 }),
-        createMockAlbum({ timestamp: 2000000000000 }),
+        createMockAlbum({ timestamp: 1000000000 }),
+        createMockAlbum({ timestamp: 2000000000 }),
       ];
       const criteria: FilterCriteria = {
         dateRange: { start: 0, end: Number.MAX_SAFE_INTEGER },
@@ -264,15 +265,15 @@ describe('applyFilters', () => {
 
     it('handles very small date range', () => {
       const items = [
-        createMockAlbum({ timestamp: 1500000000000 }),
-        createMockAlbum({ timestamp: 1500000000001 }),
+        createMockAlbum({ timestamp: 1500000000 }),
+        createMockAlbum({ timestamp: 1500000001 }),
       ];
       const criteria: FilterCriteria = {
         dateRange: { start: 1500000000000, end: 1500000000000 },
       };
       const result = applyFilters(items, criteria);
       expect(result).toHaveLength(1);
-      expect(result[0].timestamp).toBe(1500000000000);
+      expect(result[0].timestamp).toBe(1500000000);
     });
   });
 });
@@ -346,5 +347,16 @@ describe('hasActiveFilters', () => {
       albumType: 'GalleryPhotoItem',
     };
     expect(hasActiveFilters(criteria)).toBe(true);
+  });
+
+  describe('date range against Unix-second timestamps (LOGIC-18)', () => {
+    it('matches a photo by its seconds timestamp, with open-ended ranges', () => {
+      const taken = Date.UTC(2005, 8, 28, 12) / 1000; // seconds, as in the album JSON
+      const items = [createMockAlbum({ timestamp: taken })];
+      const day = Date.UTC(2005, 8, 28);
+      expect(applyFilters(items, { dateRange: { start: day, end: Number.MAX_SAFE_INTEGER } })).toHaveLength(1);
+      expect(applyFilters(items, { dateRange: { start: 0, end: day + 86_399_999 } })).toHaveLength(1);
+      expect(applyFilters(items, { dateRange: { start: day + 86_400_000, end: Number.MAX_SAFE_INTEGER } })).toHaveLength(0);
+    });
   });
 });

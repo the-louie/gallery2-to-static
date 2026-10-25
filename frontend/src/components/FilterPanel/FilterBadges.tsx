@@ -35,6 +35,7 @@ import React, { useCallback, useMemo } from 'react';
 import type { FilterCriteria } from '@/types';
 import { countActiveFilters } from '@/utils/filterUtils';
 import './FilterBadges.css';
+import { DATE_RANGE_OPEN_START, DATE_RANGE_OPEN_END } from './DateRangeFilter';
 
 /**
  * Props for FilterBadges component
@@ -87,10 +88,11 @@ export function FilterBadges({
 
   // Format date range for display
   const formatDateRange = useCallback((start: number, end: number): string => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const startStr = startDate.toLocaleDateString();
-    const endStr = endDate.toLocaleDateString();
+    const startStr = new Date(start).toLocaleDateString();
+    const endStr = new Date(end).toLocaleDateString();
+    // One-sided ranges (only a start or only an end date)
+    if (end >= DATE_RANGE_OPEN_END) return `from ${startStr}`;
+    if (start <= DATE_RANGE_OPEN_START) return `until ${endStr}`;
     return `${startStr} - ${endStr}`;
   }, []);
 

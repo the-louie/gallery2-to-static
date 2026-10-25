@@ -348,12 +348,12 @@ describe('ImageGrid', () => {
       const imagesWithDates = [
         {
           ...mockPhotos[0],
-          timestamp: new Date('2024-06-15').getTime(),
+          timestamp: new Date('2024-06-15').getTime() / 1000, // Unix seconds, as in the data
         },
         {
           ...mockPhotos[0],
           id: 99,
-          timestamp: new Date('2025-06-15').getTime(),
+          timestamp: new Date('2025-06-15').getTime() / 1000, // Unix seconds, as in the data
         },
       ];
 

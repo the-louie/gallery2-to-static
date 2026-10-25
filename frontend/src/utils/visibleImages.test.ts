@@ -20,7 +20,7 @@ describe('getVisibleImages (LOGIC-16)', () => {
   });
 
   it('applies the active filters, so "N of M" counts only visible images', () => {
-    const criteria: FilterCriteria = { dateRange: { start: 150, end: 350 } };
+    const criteria: FilterCriteria = { dateRange: { start: 150_000, end: 350_000 } }; // ms; items are seconds
     expect(getVisibleImages(items, criteria, 'date-asc').map((i) => i.id)).toEqual([3, 1]);
   });
 

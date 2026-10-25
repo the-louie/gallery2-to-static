@@ -11,7 +11,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@/test-utils';
 import userEvent from '@testing-library/user-event';
-import { DateRangeFilter } from './DateRangeFilter';
+import { DateRangeFilter, DATE_RANGE_OPEN_START, DATE_RANGE_OPEN_END } from './DateRangeFilter';
 import { FilterProvider } from '@/contexts/FilterContext';
 import type { FilterCriteria } from '@/types';
 
@@ -86,73 +86,47 @@ describe('DateRangeFilter', () => {
   });
 
   describe('User Interactions', () => {
-    it('calls onCriteriaChange when start date is set and end date exists', async () => {
-      const criteria: FilterCriteria = {
-        dateRange: {
-          start: new Date('2024-01-01').getTime(),
-          end: new Date('2024-12-31').getTime(),
-        },
-      };
+    // Local-day helpers: the inputs are local dates; the range is local start/end of day in ms (LOGIC-18).
+    const startOf = (d: string) => {
+      const [y, m, dd] = d.split('-').map(Number);
+      return new Date(y, m - 1, dd).getTime();
+    };
+    const endOf = (d: string) => {
+      const [y, m, dd] = d.split('-').map(Number);
+      return new Date(y, m - 1, dd + 1).getTime() - 1;
+    };
+    const lastRange = () =>
+      (mockOnCriteriaChange.mock.calls[mockOnCriteriaChange.mock.calls.length - 1][0] as FilterCriteria).dateRange;
 
-      renderWithProvider(
-        <DateRangeFilter criteria={criteria} onCriteriaChange={mockOnCriteriaChange} />
-      );
+    it('changes the start date of an existing range', () => {
+      const criteria: FilterCriteria = { dateRange: { start: startOf('2024-01-01'), end: endOf('2024-12-31') } };
+      renderWithProvider(<DateRangeFilter criteria={criteria} onCriteriaChange={mockOnCriteriaChange} />);
+      fireEvent.change(screen.getByLabelText('Start Date'), { target: { value: '2024-06-01' } });
+      expect(lastRange()).toEqual({ start: startOf('2024-06-01'), end: endOf('2024-12-31') });
+    });
 
-      const startInput = screen.getByLabelText('Start Date');
+    it('only a start date gives an open-ended range, and the input keeps its value', () => {
+      renderWithProvider(<DateRangeFilter criteria={{}} onCriteriaChange={mockOnCriteriaChange} />);
+      const startInput = screen.getByLabelText('Start Date') as HTMLInputElement;
       fireEvent.change(startInput, { target: { value: '2024-06-01' } });
-
-      expect(mockOnCriteriaChange).toHaveBeenCalled();
-      const lastCall = mockOnCriteriaChange.mock.calls[mockOnCriteriaChange.mock.calls.length - 1][0] as FilterCriteria;
-      expect(lastCall.dateRange).toBeDefined();
-      expect(lastCall.dateRange?.start).toBe(new Date('2024-06-01').getTime());
+      expect(lastRange()).toEqual({ start: startOf('2024-06-01'), end: DATE_RANGE_OPEN_END });
+      expect(startInput.value).toBe('2024-06-01');
     });
 
-    it('does not create dateRange when only start date is set', () => {
-      renderWithProvider(
-        <DateRangeFilter criteria={{}} onCriteriaChange={mockOnCriteriaChange} />
-      );
-
-      const startInput = screen.getByLabelText('Start Date');
-      fireEvent.change(startInput, { target: { value: '2024-06-01' } });
-
-      expect(mockOnCriteriaChange).toHaveBeenCalled();
-      const callArgs = mockOnCriteriaChange.mock.calls[0][0] as FilterCriteria;
-      expect(callArgs.dateRange).toBeUndefined();
+    it('only an end date gives a range up to the end of that day', () => {
+      renderWithProvider(<DateRangeFilter criteria={{}} onCriteriaChange={mockOnCriteriaChange} />);
+      fireEvent.change(screen.getByLabelText('End Date'), { target: { value: '2024-12-31' } });
+      expect(lastRange()).toEqual({ start: DATE_RANGE_OPEN_START, end: endOf('2024-12-31') });
     });
 
-    it('does not create dateRange when only end date is set', () => {
-      renderWithProvider(
-        <DateRangeFilter criteria={{}} onCriteriaChange={mockOnCriteriaChange} />
-      );
-
-      const endInput = screen.getByLabelText('End Date');
-      fireEvent.change(endInput, { target: { value: '2024-12-31' } });
-
-      expect(mockOnCriteriaChange).toHaveBeenCalled();
-      const callArgs = mockOnCriteriaChange.mock.calls[0][0] as FilterCriteria;
-      expect(callArgs.dateRange).toBeUndefined();
-    });
-
-    it('creates dateRange when both dates are set', () => {
-      const criteria: FilterCriteria = {
-        dateRange: {
-          start: new Date('2024-01-01').getTime(),
-          end: new Date('2024-12-31').getTime(),
-        },
-      };
-
-      renderWithProvider(
-        <DateRangeFilter criteria={criteria} onCriteriaChange={mockOnCriteriaChange} />
-      );
-
-      const endInput = screen.getByLabelText('End Date');
-      fireEvent.change(endInput, { target: { value: '2024-06-30' } });
-
-      expect(mockOnCriteriaChange).toHaveBeenCalled();
-      const lastCall = mockOnCriteriaChange.mock.calls[mockOnCriteriaChange.mock.calls.length - 1][0] as FilterCriteria;
-      expect(lastCall.dateRange).toBeDefined();
-      expect(lastCall.dateRange?.start).toBe(new Date('2024-01-01').getTime());
-      expect(lastCall.dateRange?.end).toBe(new Date('2024-06-30').getTime());
+    it('entering one date then the other creates the full range, end day inclusive', () => {
+      renderWithProvider(<DateRangeFilter criteria={{}} onCriteriaChange={mockOnCriteriaChange} />);
+      fireEvent.change(screen.getByLabelText('Start Date'), { target: { value: '2024-01-01' } });
+      fireEvent.change(screen.getByLabelText('End Date'), { target: { value: '2024-06-30' } });
+      expect(lastRange()).toEqual({ start: startOf('2024-01-01'), end: endOf('2024-06-30') });
+      // a photo taken at 18:00 on the end date (Unix seconds) is inside the range
+      const evening = new Date(2024, 5, 30, 18).getTime();
+      expect(evening).toBeLessThanOrEqual(lastRange()!.end);
     });
 
     it('clears dateRange when clear button is clicked', async () => {
@@ -176,26 +150,11 @@ describe('DateRangeFilter', () => {
       expect(callArgs.dateRange).toBeUndefined();
     });
 
-    it('adjusts end date when start date is after end date', () => {
-      const criteria: FilterCriteria = {
-        dateRange: {
-          start: new Date('2024-01-01').getTime(),
-          end: new Date('2024-06-30').getTime(),
-        },
-      };
-
-      renderWithProvider(
-        <DateRangeFilter criteria={criteria} onCriteriaChange={mockOnCriteriaChange} />
-      );
-
-      const startInput = screen.getByLabelText('Start Date');
-      fireEvent.change(startInput, { target: { value: '2024-12-01' } });
-
-      expect(mockOnCriteriaChange).toHaveBeenCalled();
-      const lastCall = mockOnCriteriaChange.mock.calls[mockOnCriteriaChange.mock.calls.length - 1][0] as FilterCriteria;
-      expect(lastCall.dateRange).toBeDefined();
-      expect(lastCall.dateRange?.start).toBe(new Date('2024-12-01').getTime());
-      expect(lastCall.dateRange!.end).toBeGreaterThan(lastCall.dateRange!.start);
+    it('uses dates entered the wrong way round as a range', () => {
+      renderWithProvider(<DateRangeFilter criteria={{}} onCriteriaChange={mockOnCriteriaChange} />);
+      fireEvent.change(screen.getByLabelText('End Date'), { target: { value: '2024-06-30' } });
+      fireEvent.change(screen.getByLabelText('Start Date'), { target: { value: '2024-12-01' } });
+      expect(lastRange()).toEqual({ start: startOf('2024-06-30'), end: endOf('2024-12-01') });
     });
   });
 
