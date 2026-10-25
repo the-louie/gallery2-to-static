@@ -4,7 +4,7 @@ import mysql from 'mysql2/promise'
 import sqlUtils from './sqlUtils'
 import { Config, Child, AlbumFile, BreadcrumbItem, AlbumMetadata } from './types'
 import { cleanup_uipathcomponent } from './cleanupUipath'
-import { getSegmentForAlbum, appendSegment, titleToSegment } from './pathSegments'
+import { getSegmentForAlbum, appendSegment, titleToSegment, addToPathIndex } from './pathSegments'
 import { computeAllDescendantImageCounts } from './descendantImageCount'
 import { runVerification } from './verifyImagePaths'
 import { buildPathsFromPathComponent } from './pathResolution'
@@ -298,7 +298,7 @@ const main = async (
         const currentTitle = isRoot ? 'Home' : (albumInfo.albumTitle ?? `Album ${root}`);
         const currentSegment = isRoot ? '' : getSegmentForAlbum(currentTitle, root, usedSegments);
         const currentPath = isRoot ? '/' : appendSegment(parentPath, currentSegment);
-        pathIndex.set(currentPath, root);
+        addToPathIndex(pathIndex, currentPath, root);
 
         const currentBreadcrumbItem: BreadcrumbItem = {
             id: root,

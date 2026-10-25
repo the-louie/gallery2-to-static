@@ -4,6 +4,9 @@
 
 import assert from 'assert';
 import {
+  fallbackSegment,
+  isUnusableSegment,
+  addToPathIndex,
   titleToSegment,
   getSegmentForAlbum,
   buildPathFromBreadcrumb,
@@ -33,6 +36,32 @@ function run(): void {
   assert.strictEqual(getSegmentForAlbum('Photos', 20, used2), 'photos--20');
   assert.strictEqual(getSegmentForAlbum('Photos', 30, used2), 'photos--30');
   assert.deepStrictEqual(Array.from(used2).sort(), ['photos', 'photos--20', 'photos--30']);
+
+  // getSegmentForAlbum – unusable segments fall back to album_<id> (LOGIC-11)
+  const used3 = new Set<string>();
+  assert.strictEqual(getSegmentForAlbum('', 507876, used3), 'album_507876');
+  assert.strictEqual(getSegmentForAlbum(null, 71175, used3), 'album_71175');
+  assert.strictEqual(getSegmentForAlbum(undefined, 3, used3), 'album_3');
+  assert.strictEqual(getSegmentForAlbum('.', 5, used3), 'album_5');
+  assert.strictEqual(getSegmentForAlbum('..', 6, used3), 'album_6');
+  assert.strictEqual(getSegmentForAlbum('[b][/b]', 8, used3), 'album_8', 'markup-only title cleans to empty');
+  assert.ok(isUnusableSegment('') && isUnusableSegment('.') && isUnusableSegment('..'));
+  assert.ok(!isUnusableSegment('...') && !isUnusableSegment('v1.0'));
+  assert.strictEqual(fallbackSegment(9), 'album_9');
+
+  // getSegmentForAlbum – disambiguated segment taken by a sibling's own title (a, a--3, a)
+  const used4 = new Set<string>();
+  assert.strictEqual(getSegmentForAlbum('a', 1, used4), 'a');
+  assert.strictEqual(getSegmentForAlbum('a--3', 9, used4), 'a--3');
+  assert.strictEqual(getSegmentForAlbum('a', 3, used4), 'a--3--2');
+  assert.strictEqual(used4.size, 3, 'all three segments distinct');
+
+  // addToPathIndex – same id is idempotent, a different id throws instead of overwriting
+  const index = new Map<string, number>();
+  addToPathIndex(index, '/a', 1);
+  addToPathIndex(index, '/a', 1);
+  assert.throws(() => addToPathIndex(index, '/a', 2), /collision.*"\/a".*album 1 and album 2/);
+  assert.strictEqual(index.get('/a'), 1);
 
   // buildPathFromBreadcrumb
   assert.strictEqual(buildPathFromBreadcrumb([]), '/');

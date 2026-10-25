@@ -131,6 +131,8 @@ never leaves MySQL. Treat any already-published `data/` output as leaked.
 
 ### LOGIC-11: blank album titles make the parent album unreachable
 
+**PARTLY CLOSED 2026-10-25 (Sprint 02 T-02):** `backend/pathSegments.ts` `getSegmentForAlbum` now maps segments that clean to `''`, `.` or `..` to `album_<id>` (`fallbackSegment`), and disambiguation loops until unique (`a`, `a--3`, `a` → `a--3--2`); `addToPathIndex` throws on a path that already belongs to another album instead of overwriting (`index.ts:301`). Tests in `pathSegments.test.ts`. Still open: the segment is computed twice (index key vs emitted child link) — Sprint 02 T-03.
+
 **Confirms list item 9 (empty-title half); the duplicate-title half has a different, subtler cause.**
 
 **Empty titles — confirmed.** `backend/pathSegments.ts:50-54`:
