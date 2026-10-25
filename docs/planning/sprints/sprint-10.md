@@ -1,7 +1,7 @@
 # Sprint 10: state effects → derived or initial state (REFAC-01)
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-01 (`todo` — useSiteMetadata: initial state from the cache)
+**Current ticket:** T-01 (`in-progress` — useSiteMetadata: initial state from the cache)
 **Last completed:** —
 
 **Goal:** no effect sets state only to reset or mirror an input; `@eslint-react/set-state-in-effect` on.
@@ -10,7 +10,7 @@
 
 | # | Ticket | Backlog | Est | Deps | Status | Acceptance / Notes |
 |---|---|---|---|---|---|---|
-| T-01 | useSiteMetadata: initial state from the cache | REFAC-01 | 0.5h | – | todo | 6 hits gone |
+| T-01 | useSiteMetadata: initial state from the cache | REFAC-01 | 0.5h | – | in-progress | 6 hits gone |
 | T-02 | useAlbumMetadata, useAlbumData | REFAC-01 | 1.5h | – | todo | 6 hits |
 | T-03 | useImageZoom, DateRangeFilter, AlbumCard, PathResolverPage | REFAC-01 | 1.5h | – | todo | 6 hits |
 | T-04 | ImageThumbnail, Lightbox, SearchBar | REFAC-01 | 2h | – | todo | 7 hits |
