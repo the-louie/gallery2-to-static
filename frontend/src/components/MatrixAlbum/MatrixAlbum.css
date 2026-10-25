@@ -11,7 +11,7 @@
 
 .g2-matrix .gbHeader td {
   padding: 1px;
-  vertical-align: top;
+  vertical-align: middle; /* the browser default Gallery 2 relied on */
 }
 
 .g2-matrix .gbHeaderInfo {

@@ -17,6 +17,8 @@ import { useAlbumData } from '@/hooks/useAlbumData';
 import { useLightbox } from '@/hooks/useLightbox';
 import { getAlbumPath } from '@/utils/albumPath';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { MatrixPhoto } from '@/components/MatrixPhoto';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useFilter } from '@/contexts/FilterContext';
 import { useSort } from '@/hooks/useSort';
 import { getVisibleImages } from '@/utils/visibleImages';
@@ -46,6 +48,7 @@ export function ImageDetailPage({
 }: ImageDetailPageProps = {}) {
   const params = useParams<RouteParams>();
   const navigate = useNavigate();
+  const { isClassic } = useTheme();
 
   const routeParams = useMemo(() => {
     if (resolvedAlbumIdProp !== undefined && resolvedImageIdProp !== undefined) {
@@ -112,6 +115,11 @@ export function ImageDetailPage({
   }, [params, routeParams, navigate]);
 
   // Handle error state (album not found or image not found)
+  // Classic theme: Gallery 2's Matrix photo page instead of the lightbox (THEME-01)
+  if (isClassic && routeParams.albumId !== null && routeParams.imageId !== null) {
+    return <MatrixPhoto albumId={routeParams.albumId} imageId={routeParams.imageId} />;
+  }
+
   if (routeParams.albumId !== null && error) {
     return (
       <div className="image-detail-page image-detail-page-error" role="alert" aria-live="assertive">

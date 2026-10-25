@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { jumpRange, parsePage, pageHref, formatG2Date } from './matrixPaging';
+import { jumpRange, parsePage, pageHref, formatG2Date, resizedSize } from './matrixPaging';
 
 describe('jumpRange (Gallery 2 pager, pageWindowSize 6)', () => {
   it('matches the 2006 pages', () => {
@@ -45,5 +45,17 @@ describe('formatG2Date', () => {
   it('empty without a timestamp', () => {
     expect(formatG2Date(null)).toBe('');
     expect(formatG2Date(undefined)).toBe('');
+  });
+});
+
+describe('resizedSize (the 1024px resize)', () => {
+  it('matches the 2006 photo page: 1200x1600 shows 768x1024', () => {
+    expect(resizedSize(1200, 1600)).toEqual({ width: 768, height: 1024 });
+    expect(resizedSize(1600, 1200)).toEqual({ width: 1024, height: 768 });
+  });
+
+  it('no resize for photos of 1024px or less', () => {
+    expect(resizedSize(1024, 768)).toBeNull();
+    expect(resizedSize(640, 480)).toBeNull();
   });
 });

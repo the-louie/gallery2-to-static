@@ -1,0 +1,39 @@
+/*
+ * Matrix photo page (THEME-01): the image block. Header and navigator styles come from
+ * MatrixAlbum.css (same Gallery 2 classes).
+ */
+
+.g2-matrix .gsImageView {
+  /* Gallery 2 put the <img> left-aligned in the block */
+  text-align: left;
+}
+
+/* The thumbnail, blurred, holds the photo's place until the photo has loaded */
+.g2-matrix .gsImageFrame {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.g2-matrix .gsImageFrame img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.g2-matrix .gsImagePlaceholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(8px);
+}
+
+.g2-matrix .gsImageLoading {
+  opacity: 0;
+}
+
+.g2-matrix .block-core-PhotoSizes select {
+  font-size: 1em;
+}

@@ -50,3 +50,14 @@ export function formatG2Date(timestamp: number | null | undefined): string {
   if (timestamp == null || !Number.isFinite(timestamp)) return '';
   return DATE_FORMAT.format(new Date(timestamp * 1000));
 }
+
+/** lanbilder.se's Gallery 2 resize: the longest side 1024px (CIMG0053_.JPG 1200x1600 → 768x1024) */
+export const RESIZE_MAX = 1024;
+
+/** The resized dimensions Gallery 2 showed by default, or null when the original is no larger. */
+export function resizedSize(width: number, height: number): { width: number; height: number } | null {
+  const longest = Math.max(width, height);
+  if (longest <= RESIZE_MAX) return null;
+  const scale = RESIZE_MAX / longest;
+  return { width: Math.round(width * scale), height: Math.round(height * scale) };
+}

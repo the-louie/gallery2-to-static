@@ -110,3 +110,21 @@ describe('ImageDetailPage', () => {
     expect(screen.queryByText(/Error Loading Image/i)).not.toBeInTheDocument();
   });
 });
+
+describe('ImageDetailPage in the classic theme (THEME-01)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('renders the Matrix photo page, not the lightbox', () => {
+    mockUseAlbumData.mockReturnValue({
+      data: [{ id: 5, type: 'GalleryPhotoItem', title: 'P.jpg', pathComponent: 'a/P.jpg', width: 800, height: 600 }],
+      metadata: { albumId: 4, albumTitle: 'A', albumDescription: null, albumTimestamp: null, ownerName: null, breadcrumbPath: [{ id: 4, title: 'A', path: '/a' }] },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    render(<ImageDetailPage resolvedAlbumId={4} resolvedImageId={5} />, { defaultTheme: 'classic' });
+    expect(document.querySelector('.g2-matrix-photo')).not.toBeNull();
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('P.jpg');
+    expect(document.querySelector('[class*="lightbox"]')).toBeNull();
+  });
+});
