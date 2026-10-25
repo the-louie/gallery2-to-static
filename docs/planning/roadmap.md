@@ -5,7 +5,7 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 **After every sprint (operator, 2026-10-25):** prune `TODO.md` and regenerate `TODO-summarized.md`: `python3 docs/planning/prune_todo.py . "Sprint NN"` moves closed (~~struck~~) rows, with their proof, to `docs/planning/done.md`.
 
 **Active sprint:** [Sprint 04](./sprints/sprint-04.md) — in progress.
-**Current ticket:** [Sprint 04 T-06](./sprints/sprint-04.md) (`todo` — react-router 7 (HashRouter, routes, Link state))
+**Current ticket:** [Sprint 04 T-06](./sprints/sprint-04.md) (`in-progress` — react-router 7 (HashRouter, routes, Link state))
 **Last completed:** Sprint 04 T-05 (commit `d8db9e5`).
 
 | Sprint | Goal |
