@@ -11,7 +11,28 @@ gallery. So the options are to convert to another gallery like Flikr or Piwig, o
 static dump of the current state. This does the latter.
 
 ## How
-Copy `backend/config_example.json` to `backend/config.json` and edit it to your liking, then run the backend script from the backend directory: `cd backend && npx ts-node index.ts`.
+Requires Node.js 22.23.4 or later (earlier 22.x releases bundle a Brotli decoder with CVE-2026-111497).
+
+1. **Extract** (needs the Gallery 2 MySQL database):
+   ```bash
+   cd backend
+   npm ci
+   cp config_example.json config.json   # then edit it (DB credentials, image paths)
+   npm test                             # optional: backend unit tests
+   npx ts-node index.ts                 # writes ../data/ (via data.new-<time>/) and the thumbnails
+   ```
+2. **Build the site**:
+   ```bash
+   cd frontend
+   npm ci
+   npm run build        # type check + production build into dist/
+   npm run check:dist   # fails if dist/ contains images, sourcemaps or the bundle report
+   npm run size-check   # bundle size budgets
+   ```
+3. **Deploy**: serve `frontend/dist/` as the site root, `data/` at `/data/` and the image tree at
+   `/g2data/` (full images in `albums/`, thumbnails in `thumbnails/`); unknown paths fall back to
+   `index.html`. See [Building & Deployment](frontend/docs/user-guides/06-building-deployment.md).
+4. **Release checks**: `node scripts/check-brotli.mjs` (Brotli decoders on this host and in the build).
 
 ## Documentation
 

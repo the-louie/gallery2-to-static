@@ -273,7 +273,9 @@ animation is lost, and the server sends `image/png` for JPEG bytes (browsers sni
 `nosniff` plus a strict MIME check can break it). Fix: write `.jpg` thumbnails and record the path,
 or keep the format (`.png()`/`.webp()` for alpha).
 
-### HYGIENE-01: repo and package tidy-up
+### ~~HYGIENE-01: repo and package tidy-up~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-09):** removed the root `package-lock.json` stub, `report_fail_20260130.md` (4.6 MB) and the empty `report_20260130.md`; `.gitignore` adds `report_*.md`, `deviation-report_*.md` (the backend writes these to the root) and `frontend/coverage`. The `public/` extras no longer ship since BUILD-02's allowlist (`check:dist`), so they stay where the backend and docs expect them. Backend `typescript` declared since Sprint 04 T-08. `"engines": { "node": ">=22.23.4" }` in both `package.json`s (the first 22.x with the Brotli fix, SEC-18). README "How" now has install/extract, build, deploy and release-check steps. Original row kept for the record:
 
 - Delete the root `package-lock.json` stub (97 bytes, there is no root `package.json`),
   `report_fail_20260130.md` (4.6 MB) and the empty `report_20260130.md`. Add `report_*.md` and

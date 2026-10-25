@@ -15,3 +15,10 @@ frontend/*.local
 frontend/.DS_Store
 backend/all-lanbilder-files.txt
 frontend/public/g2data
+
+# One-off reports written to the project root (backend verification, analysis runs)
+report_*.md
+deviation-report_*.md
+
+# Test coverage output
+frontend/coverage
