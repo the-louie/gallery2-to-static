@@ -3,8 +3,8 @@
 Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–4h) and end on a demo.
 
 **Active sprint:** [Sprint 02](./sprints/sprint-02.md) — in progress.
-**Current ticket:** [Sprint 02 T-09](./sprints/sprint-02.md) (`in-progress` — Write output to a fresh dir and swap at the end; report stale files (n)
-**Last completed:** Sprint 02 T-08 (commit `1195cfd`).
+**Current ticket:** [Sprint 02 T-10](./sprints/sprint-02.md) (`todo` — Validate table/column prefixes; NULLIF(fullName,''), no login-name fal)
+**Last completed:** Sprint 02 T-09 (commit `fabca21`).
 
 | Sprint | Goal |
 |---|---|
