@@ -4,6 +4,7 @@ Generated 2026-10-25 from `TODO.md` (operator 2026-10-25). Closed rows: `docs/pl
 
 ## P1 — Must be fixed before anything is published
 
+- **SEC-18**: Gallery 2 has private items outside the blacklist — decide whether to export them (found 2026-10-25 in the real DB)
 - **SENTRY-01**: create and set up Sentry projects for this application (operator, 2026-10-25, high prio; required before the lanbilder.se cutover)
 - **LINT-02**: review the @eslint-react rules that are off (Sprint 08 T-02)
 
@@ -19,4 +20,4 @@ Generated 2026-10-25 from `TODO.md` (operator 2026-10-25). Closed rows: `docs/pl
 
 ## Summary
 
-**Open rows:** 7
+**Open rows:** 8
