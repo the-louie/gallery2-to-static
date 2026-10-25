@@ -146,12 +146,16 @@ export function setCachedData(url: string, data: AlbumFile): void {
   }
 }
 
+/** Cached loadIndex() result; null until the first call or after a failure / clearCache(). */
+let indexPromise: Promise<IndexMetadata | null> | null = null;
+
 /**
- * Clear all cached data
+ * Clear all cached data (album files and index.json)
  * Useful for testing
  */
 export function clearCache(): void {
   cache.clear();
+  indexPromise = null;
 }
 
 /**
@@ -378,6 +382,19 @@ export async function loadAlbum(id: number): Promise<AlbumFile> {
  * ```
  */
 export async function loadIndex(): Promise<IndexMetadata | null> {
+  // index.json carries the whole path index; fetch and parse it once per page load (PERF-02).
+  // A failure is not cached, so Retry (LOGIC-15) fetches again.
+  if (!indexPromise) {
+    indexPromise = fetchIndex().catch((error: unknown) => {
+      indexPromise = null;
+      throw error;
+    });
+  }
+  return indexPromise;
+}
+
+
+async function fetchIndex(): Promise<IndexMetadata | null> {
   const url = '/data/index.json';
 
   try {

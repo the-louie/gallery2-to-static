@@ -30,7 +30,8 @@ export function PathResolverPage() {
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    setResolved(undefined);
+    // Keep showing the previous resolution until the new one is known: resetting to undefined here
+    // unmounted the page (spinner flash, Lightbox remount) on every path change (PERF-02).
     setLoadFailed(false);
     let cancelled = false;
 

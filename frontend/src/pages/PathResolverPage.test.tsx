@@ -249,4 +249,25 @@ describe("PathResolverPage", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Could not load the gallery");
     consoleError.mockRestore();
   });
+
+  it("keeps the current page while a new path resolves (no spinner flash)", async () => {
+    vi.mocked(useParams).mockReturnValue({ "*": "AlbumA" });
+    vi.mocked(resolvePathToAlbumId).mockResolvedValueOnce(10);
+    const { rerender } = render(<PathResolverPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId("album-detail-page")).toHaveTextContent("Album 10");
+    });
+
+    let finish: (id: number) => void = () => {};
+    vi.mocked(resolvePathToAlbumId).mockReturnValueOnce(new Promise((r) => (finish = r)));
+    vi.mocked(useParams).mockReturnValue({ "*": "AlbumB" });
+    rerender(<PathResolverPage />);
+
+    expect(document.querySelector(".path-resolver-page-loading")).not.toBeInTheDocument();
+    expect(screen.getByTestId("album-detail-page")).toHaveTextContent("Album 10");
+    finish(20);
+    await waitFor(() => {
+      expect(screen.getByTestId("album-detail-page")).toHaveTextContent("Album 20");
+    });
+  });
 });

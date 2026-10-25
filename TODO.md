@@ -597,7 +597,9 @@ placeholder (or the downscaled full image) instead of the error state.
 
 ### P2 additions
 
-### PERF-02: every path navigation re-downloads and re-parses the whole `index.json`
+### ~~PERF-02: every path navigation re-downloads and re-parses the whole `index.json`~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-02):** `frontend/src/utils/dataLoader.ts` `loadIndex()` memoises its promise (failures are not cached, so Retry refetches; `clearCache()` resets it). `PathResolverPage.tsx` no longer resets `resolved` to `undefined` on a path change, so the current page stays mounted until the new path resolves. Tests: `dataLoader.test.ts` (2 calls + resolve + loadPathIndex → 1 fetch; 500 then OK → 2 fetches), `PathResolverPage.test.tsx` (no spinner while the next path resolves). Full vitest 1442/1442. Original row kept for the record:
 
 `loadIndex()` (`dataLoader.ts:380`) has no cache. `loadPathIndex()` (`:515`) calls it on every
 resolve, and `PathResolverPage.tsx:27` runs `setResolved(undefined)` first, so the page unmounts.

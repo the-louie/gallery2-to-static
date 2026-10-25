@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   loadAlbum,
   findRootAlbumId,
+  loadIndex,
   loadPathIndex,
   resolvePathToAlbumId,
   getCachedData,
@@ -659,6 +660,32 @@ describe('dataLoader', () => {
       expect(error).toBeInstanceOf(DataLoadError);
       expect(error).toBeInstanceOf(Error);
       expect(error.code).toBe('NOT_FOUND');
+    });
+  });
+
+  describe('loadIndex caching (PERF-02)', () => {
+    const indexJson = { rootAlbumId: 7, rootAlbumFile: '7.json', pathIndex: { '/a': 10 } };
+
+    it('fetches index.json once for repeated calls', async () => {
+      clearCache();
+      const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => indexJson });
+      global.fetch = fetchMock as any;
+      await Promise.all([loadIndex(), loadIndex()]);
+      expect(await resolvePathToAlbumId('/a')).toBe(10);
+      expect(await loadPathIndex()).toEqual({ '/a': 10 });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not cache a failure, so a retry fetches again', async () => {
+      clearCache();
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValueOnce({ ok: false, status: 500, statusText: 'Server Error' })
+        .mockResolvedValueOnce({ ok: true, json: async () => indexJson });
+      global.fetch = fetchMock as any;
+      await expect(loadIndex()).rejects.toThrow();
+      await expect(loadIndex()).resolves.toMatchObject({ rootAlbumId: 7 });
+      expect(fetchMock).toHaveBeenCalledTimes(2);
     });
   });
 });
