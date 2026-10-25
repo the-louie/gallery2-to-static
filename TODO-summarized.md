@@ -1,6 +1,6 @@
 # TODO Summarized
 
-Generated 2026-10-25 from `TODO.md` (operator 2026-10-25). Closed rows: `docs/planning/done.md`.
+Generated 2026-10-25 from `TODO.md` (SENTRY-01). Closed rows: `docs/planning/done.md`.
 
 ## P1 — Must be fixed before anything is published
 
