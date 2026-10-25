@@ -1,8 +1,8 @@
 # Sprint 01: green, safe production build
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-01 (`in-progress` — Breadcrumbs test duplicate + split type-check)
-**Last completed:** —
+**Current ticket:** T-02 (`todo` — Fix production-source type errors, part 1 (pages/, contexts/))
+**Last completed:** T-01 (`done` — commit `43b1266`)
 
 **Goal:** `npm run build` passes from a clean checkout and produces a deployable `dist/` without
 images, sourcemaps or the bundle report; the two P1 frontend blockers are fixed.
@@ -16,7 +16,7 @@ returning 500 shows an error with Retry instead of a spinner.
 
 | # | Ticket | Backlog | Est | Deps | Status | Acceptance / Notes |
 |---|---|---|---|---|---|---|
-| T-01 | Remove duplicated block in `Breadcrumbs.integration.test.tsx`; split type-check: `tsconfig.json` (app, no tests) for `npm run build`, `tsconfig.test.json` + `npm run typecheck:test` | BUILD-01 1–2 | 2h | – | in-progress | parse error gone; `tsc -p tsconfig.json` checks only shipped code; suite collects |
+| T-01 | Remove duplicated block in `Breadcrumbs.integration.test.tsx`; split type-check: `tsconfig.json` (app, no tests) for `npm run build`, `tsconfig.test.json` + `npm run typecheck:test` | BUILD-01 1–2 | 2h | – | done | parse error gone; `tsc -p tsconfig.json` checks only shipped code; suite collects. Landed in `43b1266` |
 | T-02 | Fix production-source type errors, part 1 (pages/, contexts/) | BUILD-01 3 | 3h | T-01 | todo | 0 errors in those dirs; tests of touched files pass |
 | T-03 | Fix production-source type errors, part 2 (hooks/, utils/, components/, `vite/client` types) | BUILD-01 3 | 3h | T-01 | todo | `npm run build` type-check 0 errors |
 | T-04 | `App.test.tsx` backend/types import; `fetchImageAsObjectUrl` URL stubs in setup | BUILD-01 4, TEST-01 | 1h | T-01 | todo | both suites collect and pass |
