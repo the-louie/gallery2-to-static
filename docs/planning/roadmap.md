@@ -3,8 +3,8 @@
 Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–4h) and end on a demo.
 
 **Active sprint:** [Sprint 02](./sprints/sprint-02.md) — in progress.
-**Current ticket:** [Sprint 02 T-01](./sprints/sprint-02.md) (`in-progress` — Backend npm ci; fix pathSegments.test.ts stale expectation (dots stay )
-**Last completed:** Sprint 01 T-08 (commit `ee0fa4b`).
+**Current ticket:** [Sprint 02 T-02](./sprints/sprint-02.md) (`todo` — Empty / . / .. segments fall back to an id segment; index insertion as)
+**Last completed:** Sprint 02 T-01 (commit `da9d9f6`).
 
 | Sprint | Goal |
 |---|---|
