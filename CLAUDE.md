@@ -282,7 +282,7 @@ Three themes available, selected via `ThemeDropdown` or `ThemeSwitcher`:
 |-------|-------------|--------------|
 | `light` | Warm greys, terracotta/navy accents | `[data-theme="light"]` |
 | `dark` | Dark greys, purple accents, reduced contrast | `[data-theme="dark"]` |
-| `classic` | Gallery 2 reproduction (lanbilder.se), two-column sidebar layout, blue links with orange hover | `[data-theme="classic"]` |
+| `classic` | Gallery 2 Matrix theme as lanbilder.se ran it in 2006 (`MatrixFrame`; spec `frontend/docs/theme-matrix.md`) | `[data-theme="classic"]` |
 
 - Default theme: `classic`
 - Per-album theme overrides via `frontend/public/album-themes.json`

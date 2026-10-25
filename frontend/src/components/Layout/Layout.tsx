@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ThemeDropdown } from '../ThemeDropdown';
+import { MatrixFrame } from '../MatrixFrame';
 import { getImageCache } from '@/utils/imageCache';
 import { getViewKey } from '@/utils/viewKey';
 import { SearchBar } from '../SearchBar';
@@ -24,7 +25,9 @@ export interface LayoutProps {
 /**
  * Base layout component providing the overall structure for the application.
  *
- * Includes:
+ * In the classic theme the page sits in Gallery 2's Matrix frame (MatrixFrame, THEME-01) instead.
+ *
+ * Includes (light and dark themes):
  * - Header with title/logo area (linked to home page)
  * - Main content area with proper semantic HTML
  * - Footer (minimal)
@@ -74,16 +77,54 @@ export function Layout({ children, className }: LayoutProps) {
     }
   }, [siteName]);
 
+  const skipLink = (
+    <a
+      href="#main-content"
+      className="skip-link"
+      aria-label="Skip to main content"
+      onClick={handleSkipClick}
+    >
+      Skip to main content
+    </a>
+  );
+
+  // Classic theme: Gallery 2's Matrix frame, no app header or footer (THEME-01)
+  if (isClassic) {
+    return (
+      <div className={className ? `layout layout-matrix ${className}` : 'layout layout-matrix'}>
+        {skipLink}
+        <MatrixFrame
+          sidebar={
+            <>
+              <div className="layout-sidebar-block">
+                <h2 className="layout-sidebar-title">Search the Gallery</h2>
+                <div className="layout-sidebar-search">
+                  <SearchBar />
+                </div>
+                <Link to="/search" className="layout-sidebar-link">
+                  Advanced Search
+                </Link>
+              </div>
+              <div className="layout-sidebar-block">
+                <Link to="/slideshow" className="layout-sidebar-link layout-sidebar-link-icon">
+                  View Slideshow
+                </Link>
+                <Link to="/slideshow-fullscreen" className="layout-sidebar-link layout-sidebar-link-icon">
+                  View Slideshow (Fullscreen)
+                </Link>
+              </div>
+            </>
+          }
+        >
+          {children}
+        </MatrixFrame>
+      </div>
+    );
+  }
+
   return (
     <div className={className ? `layout ${className}` : 'layout'}>
-      <a
-        href="#main-content"
-        className="skip-link"
-        aria-label="Skip to main content"
-        onClick={handleSkipClick}
-      >
-        Skip to main content
-      </a>
+      {skipLink}
       <header className="layout-header">
         <div className="layout-header-content">
           <div className="layout-header-branding">
@@ -97,52 +138,20 @@ export function Layout({ children, className }: LayoutProps) {
             )}
           </div>
           <div className="layout-header-actions">
-            {!isClassic && <SearchBar />}
+            <SearchBar />
             <div className="layout-header-dropdowns">
               <ThemeDropdown />
-              {!isClassic && (
-                <SortDropdown
-                  currentOption={sortOption}
-                  onOptionChange={setSortOption}
-                />
-              )}
+              <SortDropdown
+                currentOption={sortOption}
+                onOptionChange={setSortOption}
+              />
             </div>
           </div>
         </div>
       </header>
-      {isClassic ? (
-        <div className="layout-body layout-body-with-sidebar">
-          <aside className="layout-sidebar" aria-label="Gallery navigation">
-            <div className="layout-sidebar-block">
-              <h2 className="layout-sidebar-title">Search the Gallery</h2>
-              <div className="layout-sidebar-search">
-                <SearchBar />
-              </div>
-              <Link to="/search" className="layout-sidebar-link">
-                Advanced Search
-              </Link>
-            </div>
-            <div className="layout-sidebar-block">
-              <Link to="/rss" className="layout-sidebar-link layout-sidebar-link-icon">
-                RSS Feed for this Album
-              </Link>
-              <Link to="/slideshow" className="layout-sidebar-link layout-sidebar-link-icon">
-                View Slideshow
-              </Link>
-              <Link to="/slideshow-fullscreen" className="layout-sidebar-link layout-sidebar-link-icon">
-                View Slideshow (Fullscreen)
-              </Link>
-            </div>
-          </aside>
-          <main id="main-content" className="layout-main" tabIndex={-1}>
-            {children}
-          </main>
-        </div>
-      ) : (
-        <main id="main-content" className="layout-main" tabIndex={-1}>
-          {children}
-        </main>
-      )}
+      <main id="main-content" className="layout-main" tabIndex={-1}>
+        {children}
+      </main>
       <footer className="layout-footer">
         <div className="layout-footer-content">
           <p>&copy; 2026 the_louie</p>

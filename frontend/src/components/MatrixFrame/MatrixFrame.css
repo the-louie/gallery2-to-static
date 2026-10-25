@@ -1,0 +1,158 @@
+/*
+ * Gallery 2 Matrix frame as lanbilder.se served it in 2006 (THEME-01).
+ * Values from docs/orig-page/2006/matrix-theme.css; spec frontend/docs/theme-matrix.md.
+ * Scoped to .g2-matrix (Gallery 2's #gallery): the light and dark themes never render it.
+ */
+
+.g2-matrix {
+  padding: 8px;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 62.5%;
+  color: #333;
+  background-color: #fff;
+}
+
+.g2-matrix a {
+  font-weight: bold;
+  text-decoration: none;
+  color: #6b8cb7;
+}
+
+.g2-matrix a:hover {
+  text-decoration: underline;
+  color: #f4560f;
+}
+
+.g2-matrix a:active {
+  text-decoration: none;
+  color: #f9c190;
+}
+
+.g2-matrix img {
+  border-width: 0;
+}
+
+.g2-matrix h2,
+.g2-matrix h3,
+.g2-matrix h4 {
+  margin: 0;
+  padding: 0;
+  font-family: "Trebuchet MS", Arial, Verdana, Helvetica, sans-serif;
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+.g2-matrix p {
+  margin: 0.6em 0;
+  padding: 0;
+}
+
+.g2-matrix .gcBackground1 {
+  background-color: #eee;
+}
+
+.g2-matrix .gcBackground2 {
+  background-color: #e7e7e7;
+}
+
+.g2-matrix .gcBorder1 {
+  border: 0 solid #ccc;
+}
+
+/* .gbBlock: content and sidebar sections, a 1px rule under each */
+.g2-matrix .gbBlock {
+  padding: 0.7em;
+  border-width: 0 0 1px 0;
+  border-style: inherit;
+  border-color: inherit;
+}
+
+/* Nav bar: breadcrumb with the » separator image */
+.g2-matrix .gsNavBar {
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+}
+
+.g2-matrix .gsNavBar > div {
+  margin-top: 0.1em;
+  font-weight: bold;
+}
+
+.g2-matrix .gbBreadCrumb {
+  margin: 0;
+  padding: 4px 8px;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.g2-matrix .gbBreadCrumb a,
+.g2-matrix .gbBreadCrumb span {
+  padding: 0 0 0 14px;
+  background: url("../../assets/matrix/icon_path_separator.gif") no-repeat left;
+}
+
+.g2-matrix .gbBreadCrumb .BreadCrumb-1 {
+  padding-left: 0;
+  background-image: none;
+  white-space: nowrap;
+}
+
+/* Two columns: Gallery 2 used a 100% table with the sidebar cell at width 1% */
+.g2-matrix .gsColumns {
+  display: table;
+  width: 100%;
+  border-spacing: 0;
+}
+
+.g2-matrix .gsSidebarCol,
+.g2-matrix .gsContent {
+  display: table-cell;
+  vertical-align: top;
+}
+
+.g2-matrix .gsSidebarCol {
+  width: 1%;
+}
+
+.g2-matrix .gsSidebar {
+  border-right-width: 1px;
+  width: 175px;
+  overflow: hidden;
+}
+
+.g2-matrix .gsContent:focus {
+  outline: none;
+}
+
+.g2-matrix .gsFooter {
+  line-height: 0;
+}
+
+.g2-matrix .gsFooter img {
+  margin-right: 3px;
+}
+
+/* Phones (theme-matrix.md "Phones"): content first, sidebar below, no 9px text */
+@media (max-width: 699px) {
+  .g2-matrix {
+    font-size: 81.25%; /* 13px base: .giInfo (0.9em) stays >= 12px */
+  }
+
+  .g2-matrix .gsColumns,
+  .g2-matrix .gsSidebarCol,
+  .g2-matrix .gsContent {
+    display: block;
+    width: auto;
+  }
+
+  .g2-matrix .gsColumns {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  .g2-matrix .gsSidebar {
+    width: auto;
+    border-right-width: 0;
+    border-top-width: 1px;
+  }
+}

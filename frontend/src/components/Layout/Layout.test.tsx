@@ -518,3 +518,25 @@ describe('Layout Sort Dropdown', () => {
     });
   });
 });
+
+describe('Layout in the classic theme (Matrix frame, THEME-01)', () => {
+  // A theme stored by an earlier test would win over defaultTheme
+  beforeEach(() => localStorage.clear());
+
+  it('renders the Matrix frame instead of the app header, theme and sort dropdowns', () => {
+    render(<Layout><p>page</p></Layout>, { defaultTheme: 'classic' });
+    expect(document.querySelector('.layout-header')).toBeNull();
+    expect(document.querySelector('.layout-footer')).toBeNull();
+    expect(document.querySelector('.g2-matrix')).not.toBeNull();
+    expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument();
+    expect(screen.getByRole('main')).toHaveTextContent('page');
+    expect(screen.queryByRole('button', { name: /theme/i })).toBeNull();
+    expect(screen.getByText('Skip to main content')).toBeInTheDocument();
+  });
+
+  it('the light theme keeps the app header', () => {
+    render(<Layout><p>page</p></Layout>, { defaultTheme: 'light' });
+    expect(document.querySelector('.layout-header')).not.toBeNull();
+    expect(document.querySelector('.g2-matrix')).toBeNull();
+  });
+});

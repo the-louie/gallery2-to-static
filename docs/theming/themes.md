@@ -34,31 +34,26 @@
 
 ---
 
-## Classic (Gallery 2 Classic)
+## Classic (Gallery 2 Matrix, as lanbilder.se ran it)
 
 **Identifier:** `classic`
 
-**Description:** Reproduces the Gallery 2 Classic (lanbilder.se) colour palette and semantics. Based on the design analysis of the original Gallery 2 theme.
-
-**Source:** See [dev-notes/2026-01-25-1200_original_design_analyzis_1.md](../dev-notes/2026-01-25-1200_original_design_analyzis_1.md) and [20260125-1200_original-theme-implementation.md](../dev-notes/20260125-1200_original-theme-implementation.md).
+**Description:** Reproduces Gallery 2.0's Matrix theme as lanbilder.se served it in 2006, page for page (THEME-01, Sprint 11). Spec: [frontend/docs/theme-matrix.md](../../frontend/docs/theme-matrix.md); captured pages and CSS: [docs/orig-page](../orig-page/README.md). Earlier versions were built from a CSS reconstructed from screenshots; that analysis (`dev-notes/2026-01-25-1200_original_design_analyzis_1.md`) is superseded.
 
 **Characteristics:**
 - Backgrounds: white (#fff), light grey (#eee, #e7e7e7)
-- Text: dark grey (#333)
-- Links: blue (#6b8cb7) with orange hover (#f4560f)
-- Metadata: grey (#888)
+- Text: dark grey (#333), base 10px Verdana (62.5%), headings 13px Trebuchet MS
+- Links: bold blue (#6b8cb7) with orange underlined hover (#f4560f)
+- Metadata: grey (#888), 9px
 - Borders: (#ccc)
-- Focus/current accent: (#0b6cff)
-- Typography: Verdana, Arial, Helvetica
-- Layout: Two-column with sidebar (200px) when `isClassic`; search in sidebar, "Album:" prefix on titles
-- No gradient backgrounds on root album blocks; solid colours only
+- Current item in the sidebar peer list: (#0b6cff)
 
-**Layout differences when Classic is active:**
-- Sidebar layout with search block, RSS/Slideshow links
-- Site name in header is plain text (not a link)
-- Search bar and Sort dropdown moved to sidebar
-- Root album blocks: "Album: " prefix before titles
-- Background image on root blocks hidden
+**Layout when Classic is active (`MatrixFrame`, rendered by `Layout`):**
+- No app header, footer, theme or sort dropdown
+- Nav bar with the breadcrumb (`lanbilder.se » DreamHack » …`, built from the URL by `useMatrixLocation`)
+- 175px sidebar column (search, slideshow links, peer list) and the content column
+- Footer badges (XHTML 1.0, Gallery 2, Unpossible)
+- Below 700px: sidebar under the content, 13px base font
 
 **CSS selector:** `[data-theme="classic"]`
 
