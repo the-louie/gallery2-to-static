@@ -1,7 +1,7 @@
 # Sprint 04: everything on current versions, no vulnerable Brotli
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-11 (`todo` — README/docs: remove __docs references, rephrase)
+**Current ticket:** T-11 (`in-progress` — README/docs: remove __docs references, rephrase)
 **Last completed:** T-10 (`done` — commit `c46e949`)
 
 **Goal:** every frontend and backend dependency on its latest release (operator, DEPS-01), the
@@ -26,7 +26,7 @@ prints a fixed version or "no decoder" for every item in SEC-18; README has no `
 | T-08 | TypeScript 7 (frontend + backend); backend runner without ts-node if ts-node can't use TS 7 | DEPS-01 | 3h | T-07 | done | tsc both; backend npm test/start work. Landed in `7f7c94f` |
 | T-09 | size-limit 14, web-vitals 6; fix size-limit globs (no timing run) | DEPS-01, BUILD-04 | 2h | T-02 | done | `size-limit --why`-free static check passes. Landed in `ff01682` |
 | T-10 | Brotli check: record versions, `scripts/check-brotli.mjs` | SEC-18 | 2h | T-08 | done | each SEC-18 item answered. Landed in `c46e949` |
-| T-11 | README/docs: remove `__docs` references, rephrase | DOCS-01 | 1h | – | todo | no `__docs` in README, frontend/docs |
+| T-11 | README/docs: remove `__docs` references, rephrase | DOCS-01 | 1h | – | in-progress | no `__docs` in README, frontend/docs |
 
 Total ≈ 27h.
 
