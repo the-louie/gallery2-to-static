@@ -1,4 +1,4 @@
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, type Plugin, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import fs from 'fs';
@@ -76,6 +76,26 @@ function copyPublicFilesPlugin(): Plugin {
   };
 }
 
+/**
+ * Site metadata in index.html (THEME-01 T-12): `<title>` comes from VITE_SITE_NAME (Vite's %VAR%
+ * replacement); description and keywords `<meta>` tags are added only when VITE_META_DESCRIPTION /
+ * VITE_META_KEYWORDS are set, so a plain build carries no empty tags. lanbilder.se's 2006 values
+ * are in frontend/docs/theme-matrix.md.
+ */
+function siteMetaPlugin(env: Record<string, string>): Plugin {
+  return {
+    name: 'site-meta',
+    transformIndexHtml(html) {
+      const tags = [];
+      const description = env.VITE_META_DESCRIPTION;
+      const keywords = env.VITE_META_KEYWORDS;
+      if (description) tags.push({ tag: 'meta', attrs: { name: 'description', content: description }, injectTo: 'head' as const });
+      if (keywords) tags.push({ tag: 'meta', attrs: { name: 'keywords', content: keywords }, injectTo: 'head' as const });
+      return { html, tags };
+    },
+  };
+}
+
 // https://vitejs.dev/config/
 // `vite build --mode analyze` (npm run build:analyze) adds the bundle report (dist/stats.html) and
 // sourcemaps; a normal production build ships neither (they expose the full source).
@@ -84,6 +104,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     serveDataPlugin(),
     copyPublicFilesPlugin(),
+    siteMetaPlugin(loadEnv(mode, __dirname, 'VITE_')),
     ...(mode === 'analyze'
       ? [
           visualizer({

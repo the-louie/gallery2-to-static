@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useMatrixLocation } from '@/hooks/useMatrixLocation';
 import { useSiteMetadata } from '@/hooks/useSiteMetadata';
@@ -39,7 +39,12 @@ export function MatrixFrame({ children }: MatrixFrameProps) {
   const { location } = useMatrixLocation(pathname);
   const { siteName } = useSiteMetadata();
 
-  const rootTitle = siteName || 'Gallery';
+  const rootTitle = siteName || import.meta.env.VITE_SITE_NAME || 'Gallery';
+  // Gallery 2 titled every page with the item's title (the root album's is the site name)
+  const pageTitle = location?.photo?.title || location?.album.metadata.albumTitle || rootTitle;
+  useEffect(() => {
+    document.title = pageTitle;
+  }, [pageTitle]);
   const trail: Crumb[] = (location?.album.metadata.breadcrumbPath ?? []).map((item, i) => ({
     title: i === 0 ? rootTitle : item.title,
     path: withTrailingSlash(item.path),
@@ -52,7 +57,7 @@ export function MatrixFrame({ children }: MatrixFrameProps) {
   const crumbs = trail.map((c, i) => (isAlbumPage && i === trail.length - 1 ? { ...c, path: null } : c));
 
   return (
-    <div className="g2-matrix">
+    <div id="gallery" className="g2-matrix">
       <div className="gsNavBar gcBorder1">
         <div className="gbBreadCrumb">
           <nav className="block-core-BreadCrumb" aria-label="Breadcrumb">

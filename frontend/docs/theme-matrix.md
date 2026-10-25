@@ -81,6 +81,26 @@ Gallery 2 had no small-screen layout. Below 700px wide (`@media (max-width: 699p
 
 **Checked 2026-10-25 (Sprint 11 T-11)** with `scratchpad/mobilecheck.cjs` (puppeteer device presets): iPhone SE, iPhone 15 Pro, Pixel 5, Galaxy S8, iPad Mini, each portrait and landscape, and a 320px viewport; pages: root, album page 1 and 24, photo, search, an old `/v/` URL. Per page: no horizontal scroll, no image wider than the viewport, no console errors; on phones also tap targets ≥ 44px, text ≥ 12px, sidebar below the content. **66/66 pass.** Screenshots and `results.json`: `/srv/share/lanbilder2/inspo/screens/mobile/`. Tablets (≥ 700px) get the desktop layout with the 2006 sizes (9px info text), as intended.
 
+## HTML and HTTP headers like the old site (Sprint 11 T-12)
+
+Operator, 2026-10-25: make it less obvious that the site is a reproduction. Compared `docs/orig-page/2006/*.html` heads and the 2006 response headers (the Wayback `id_` copy keeps them as `X-Archive-Orig-*`) with lanbilder-new.
+
+| What | 2006 | Now | How |
+|---|---|---|---|
+| Doctype | XHTML 1.0 Strict | same | `frontend/index.html` (browsers render it in standards mode) |
+| Charset meta | `<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>` | same | `index.html` |
+| `<title>` | item title; `lanbilder.se` on the root | same | `index.html` `%VITE_SITE_NAME%`, then `MatrixFrame` sets `document.title` per page |
+| `<meta name="description">`, `keywords` | the 2006 texts on album/photo pages | the same texts on every page | `VITE_META_DESCRIPTION`, `VITE_META_KEYWORDS` (`.env.production.local`), `siteMetaPlugin` in `vite.config.ts` |
+| `<body class="gallery">`, `<div id="gallery">` | yes | yes | `index.html`, `MatrixFrame` |
+| `Content-Type` | `text/html; charset=UTF-8` | same | nginx `charset UTF-8` |
+| `X-Powered-By` | `PHP/5.0.4` | same | nginx `add_header` (in every `location` that has `add_header`, since nginx does not inherit them) |
+| `Server` | `Apache/2.0.54 (FreeBSD) PHP/5.0.4` | `cloudflare` | **cannot match**: Cloudflare overwrites it on every proxied response; its header rules cannot set it |
+| `Set-Cookie: GALLERYSID` | session cookie | none | left out: no sessions, and a cookie would need consent handling |
+| Cloudflare's own | — | `cf-ray`, `cf-cache-status`, `alt-svc`, `nel`/`report-to` | operator, zone-wide: NEL and HTTP/3 can be switched off in the Cloudflare zone; `cf-ray` cannot |
+| Viewport meta, `modulepreload`/asset links, `<div id="root">` | — | present | needed by the phone layout and the app |
+| `X-Content-Type-Options: nosniff`, `Cache-Control: no-cache` on HTML | — | kept | security and deploy hygiene outweigh the tell |
+| Icons/theme CSS as separate files | `icons.css`, `theme.css` | one bundled stylesheet | not worth splitting |
+
 ## Status after Sprint 11 T-10 (2026-10-25)
 
 Deployed on the test host. Side-by-side with the 2006 captures at 1280px (`/srv/share/lanbilder2/inspo/screens/t07-compare.png`, `t08-compare.png`): the album and photo pages have the same blocks at the same positions. Differences seen, for T-13 (`PRIO-THEME` rows) and T-11:

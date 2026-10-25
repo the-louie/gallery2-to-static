@@ -347,6 +347,8 @@ Build-time settings (all optional; set them in the environment or in `frontend/.
 
 | Variable | Effect |
 | --- | --- |
+| `VITE_SITE_NAME` | `<title>` of `index.html` before the app sets the page title (default `Gallery`, from `frontend/.env`). lanbilder.se: `lanbilder.se`. |
+| `VITE_META_DESCRIPTION`, `VITE_META_KEYWORDS` | Add `<meta name="description">` / `<meta name="keywords">` to `index.html` (none when unset). lanbilder.se uses its 2006 values, see `frontend/docs/theme-matrix.md`. |
 | `VITE_SENTRY_DSN` | Turns on error reporting to Sentry (`src/utils/errorReporting.ts`). Without it the SDK is never loaded. With it, a separate chunk (about 27 KB compressed) loads after start; the initial load is unchanged. |
 | `VITE_SENTRY_ENVIRONMENT` | Sentry environment name (default: the Vite mode, `production`). |
 | `VITE_SENTRY_RELEASE` | Release name, e.g. the git commit (`git rev-parse --short HEAD`). |

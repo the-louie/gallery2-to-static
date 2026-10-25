@@ -55,6 +55,18 @@ describe('MatrixFrame (THEME-01)', () => {
     expect(screen.getByText('CIMG0053_.JPG')).toHaveAttribute('aria-current', 'page');
   });
 
+  it('titles the page like Gallery 2: the item title, the site name on the root (T-12)', () => {
+    render(<MatrixFrame>page</MatrixFrame>, { initialEntries: ['/dreamhack/dreamhack_winter_05/battlefrag.com/'] });
+    expect(document.title).toBe('Battlefrag.com');
+    expect(document.getElementById('gallery')).toHaveClass('g2-matrix');
+    at({ ...battlefrag, photo: { id: 57215, title: 'CIMG0053_.JPG' } } as unknown as MatrixLocation);
+    render(<MatrixFrame>page</MatrixFrame>, { initialEntries: ['/x/y'] });
+    expect(document.title).toBe('CIMG0053_.JPG');
+    at(null);
+    render(<MatrixFrame>page</MatrixFrame>, { initialEntries: ['/search'] });
+    expect(document.title).toBe('lanbilder.se');
+  });
+
   it('pages without an album show the site name only', () => {
     at(null);
     render(<MatrixFrame>page</MatrixFrame>, { initialEntries: ['/not-found'] });
