@@ -4,7 +4,7 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 
 **After every sprint (operator, 2026-10-25):** prune `TODO.md` and regenerate `TODO-summarized.md`: `python3 docs/planning/prune_todo.py . "Sprint NN"` moves closed (~~struck~~) rows, with their proof, to `docs/planning/done.md`.
 
-**Active sprint:** [Sprint 11](./sprints/sprint-11.md) — in progress.
+**Active sprint:** — (Sprint 11 done; Sprint 12 drafted for review).
 **Current ticket:** —
 **Last completed:** Sprint 11 T-13 (commit `8460e71`).
 
@@ -20,6 +20,7 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 | S08 ✅ | OWNER-01 owner-name fallback; DEPS-01 ESLint 10 + TypeScript 7. |
 | S09 ✅ | LINT-02 @eslint-react rules. |
 | S10 ✅ | REFAC-01 state effects. |
-| S11 | THEME-01 Gallery 2 Matrix look (template: 2006 dhphotos page), URL-01 clean URLs, URL-02 old Gallery 2 redirects, mobile checks. |
+| S11 ✅ | THEME-01 Gallery 2 Matrix look (template: 2006 dhphotos page), URL-01 clean URLs, URL-02 old Gallery 2 redirects, mobile checks. |
+| S12 (draft) | PRIO-THEME-02..05 + SEARCH-01: the data/export differences the T-13 comparison found; PRIO-THEME-01 needs a decision. |
 | Operator | SENTRY-01 (after a Claude Code restart + Sentry login). DECISION-01: self-hosted on lanbilder2. FUT-01..05 after deploy. |
 | (old) S05+ | P3 items, SEC-18 brotli check, hygiene, test-fixture type burn-down (BUILD-01 rest, LINT-01). DECISION-01 (hosting) with the operator. SEC-12 (permissions) when the Gallery 2 DB is available to test against. |

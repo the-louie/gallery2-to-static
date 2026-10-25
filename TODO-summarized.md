@@ -1,12 +1,10 @@
 # TODO Summarized
 
-Generated 2026-10-25 from `TODO.md` (Sprint 11 open). Closed rows: `docs/planning/done.md`.
+Generated 2026-10-25 from `TODO.md` (Sprint 11). Closed rows: `docs/planning/done.md`.
 
-## P1 — Must be fixed before anything is published
+## P3 — Quality, hygiene and latent bugs
 
-- **THEME-01**: the default ("classic") theme becomes a 1:1 copy of Gallery 2's Matrix theme as lanbilder.se ran it (operator, 2026-10-25)
-- **URL-01**: clean URLs instead of hash URLs; no PHP-style URLs (operator, 2026-10-25)
-- **URL-02**: old Gallery 2 URLs redirect to the new ones (operator, 2026-10-25)
+- **SEARCH-01**: search results show raw BBCode in descriptions (found 2026-10-25, Sprint 11 T-11)
 
 ## FUTURE (after production deploy)
 
@@ -20,4 +18,4 @@ Generated 2026-10-25 from `TODO.md` (Sprint 11 open). Closed rows: `docs/plannin
 
 ## Summary
 
-**Open rows:** 8
+**Open rows:** 6
