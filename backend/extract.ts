@@ -12,7 +12,7 @@ import { getSegmentForAlbum, appendSegment, addToPathIndex, findPathIndexProblem
 import { settleSubtree, formatSubtreeFailures, type SubtreeFailure } from './subtreeFailures.ts'
 import { generateThumbnail, readThumbnailSize } from './generateThumbnail.ts'
 import { runStamp, prepareStagingDir, listStaleFiles, promoteStagingDir } from './outputDir.ts'
-import { computeAllDescendantImageCounts } from './descendantImageCount.ts'
+import { computeAllDescendantCounts, type DescendantCounts } from './descendantImageCount.ts'
 import { runVerification } from './verifyImagePaths.ts'
 import { buildPathsFromPathComponent } from './pathResolution.ts'
 import { decodeHtmlEntities } from '../shared/decodeHtmlEntities.ts'
@@ -309,7 +309,7 @@ const main = async (
     config: Config,
     rootAlbumId: number,
     albumsWithImageDescendants: Set<number>,
-    descendantImageCounts: Map<number, number>,
+    descendantCounts: DescendantCounts,
     pathIndex: Map<string, number>,
     /** This album's path, computed once by the parent (root: '/'), so index key and parent link agree. */
     ownPath: string,
@@ -383,7 +383,7 @@ const main = async (
                         config,
                         rootAlbumId,
                         albumsWithImageDescendants,
-                        descendantImageCounts,
+                        descendantCounts,
                         pathIndex,
                         pathForChild(child.id),
                         emittedChildPaths,
@@ -487,9 +487,12 @@ const main = async (
                     const highlightSpread: { highlightImageUrl?: string; highlightThumbnailUrlPath?: string } = {};
                     if (highlightImageUrl !== null) highlightSpread.highlightImageUrl = highlightImageUrl;
                     if (highlightThumbnailUrlPath !== null) highlightSpread.highlightThumbnailUrlPath = highlightThumbnailUrlPath;
-                    const totalCount = descendantImageCounts.get(child.id);
-                    const countSpread =
-                        totalCount !== undefined ? { totalDescendantImageCount: totalCount } : {};
+                    const totalCount = descendantCounts.images.get(child.id);
+                    const totalItems = descendantCounts.items.get(child.id);
+                    const countSpread = {
+                        ...(totalCount !== undefined ? { totalDescendantImageCount: totalCount } : {}),
+                        ...(totalItems !== undefined ? { totalDescendantCount: totalItems } : {}),
+                    };
 
                     const albumChildren = await sql.getChildren(child.id);
                     // Gallery 2 showed an album's own item count ("Size: 9 items (878 items total)", THEME-01)
@@ -499,7 +502,7 @@ const main = async (
                             c.type === 'GalleryPhotoItem' ||
                             (c.type === 'GalleryAlbumItem' &&
                                 !isBlacklisted(c.id, ignoreSet) &&
-                                (descendantImageCounts.get(c.id) ?? 0) > 0),
+                                (descendantCounts.images.get(c.id) ?? 0) > 0),
                     ).length;
                     const firstPhoto = findFirstPhoto(albumChildren);
                     if (firstPhoto) {
@@ -613,9 +616,13 @@ const main = async (
         }
         // Total descendant image count for non-root albums (root omitted; frontend shows for non-root only).
         if (root !== rootAlbumId) {
-            const count = descendantImageCounts.get(root);
+            const count = descendantCounts.images.get(root);
             if (count !== undefined) {
                 metadata.totalDescendantImageCount = count;
+            }
+            const itemCount = descendantCounts.items.get(root);
+            if (itemCount !== undefined) {
+                metadata.totalDescendantCount = itemCount;
             }
         }
 
@@ -734,7 +741,7 @@ export async function runExtraction(options: ExtractionOptions): Promise<Extract
     console.log('Computing albums with image descendants...');
     const albumsWithImageDescendants = await computeAlbumsWithImageDescendants(rootId, sql, ignoreSet);
     console.log('Computing descendant image counts...');
-    const descendantImageCounts = await computeAllDescendantImageCounts(
+    const descendantCounts = await computeAllDescendantCounts(
         rootId,
         (id) => sql.getChildren(id),
         ignoreSet,
@@ -757,7 +764,7 @@ export async function runExtraction(options: ExtractionOptions): Promise<Extract
         config,
         rootId,
         albumsWithImageDescendants,
-        descendantImageCounts,
+        descendantCounts,
         pathIndex,
         '/',
         emittedChildPaths,

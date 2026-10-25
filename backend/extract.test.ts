@@ -172,6 +172,9 @@ async function run(): Promise<void> {
         const dhFile = JSON.parse(await fs.readFile(path.join(data, '10.json'), 'utf8'));
         const childCounts = Object.fromEntries(dhFile.children.map((c: Child) => [c.id, c.childCount]));
         assert.deepStrictEqual(childCounts, { 11: 1, 12: 1, 13: 1, 14: 1 });
+        // totalDescendantCount (PRIO-THEME-04): photos + exported sub-albums below
+        assert.strictEqual(dhFile.children.find((c: Child) => c.id === 14).totalDescendantCount, 2, 'image: album 2005 + its photo');
+        assert.strictEqual(dhFile.metadata.totalDescendantCount, 4 + 5, 'dreamhack: 4 photos + 5 exported albums (16 not exported)');
         const rootFile = JSON.parse(await fs.readFile(path.join(data, '7.json'), 'utf8'));
         assert.strictEqual(rootFile.children.find((c: Child) => c.id === 10).childCount, 4, '16 (only hidden photos) not counted');
 

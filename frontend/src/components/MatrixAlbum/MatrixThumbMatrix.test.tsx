@@ -10,7 +10,7 @@ const photo = {
 const album = {
   id: 23281, type: 'GalleryAlbumItem', title: 'DH-Photo', timestamp: 1118300000, viewCount: 65057,
   summary: 'OFFICIELLA BILDER', path: '/dreamhack/dreamhack_winter_05/dh-photo', childCount: 9,
-  totalDescendantImageCount: 864, highlightThumbnailUrlPath: 'dreamhack/dhw05/dhw05dh/t__a.jpg',
+  totalDescendantImageCount: 864, totalDescendantCount: 878, highlightThumbnailUrlPath: 'dreamhack/dhw05/dhw05dh/t__a.jpg',
 } as unknown as Child;
 const info = (cell: Element) => [...cell.querySelectorAll('.summary')].map((s) => s.textContent);
 
@@ -31,7 +31,7 @@ describe('MatrixThumbMatrix (THEME-01)', () => {
     const cell = document.querySelector('td.giAlbumCell.gcBackground1')!;
     expect(cell.querySelector('.giTitle')).toHaveTextContent(/^DH-Photo$/);
     expect(cell.querySelector('.giDescription')).toHaveTextContent('OFFICIELLA BILDER');
-    expect(info(cell)).toEqual(['Date: 06/09/2005', 'Size: 9 items (864 items total)', 'Views: 65057']);
+    expect(info(cell)).toEqual(['Date: 06/09/2005', 'Size: 9 items (878 items total)', 'Views: 65057']);
     expect(screen.getByRole('img', { name: 'DH-Photo' }).closest('a')).toHaveAttribute('href', '/dreamhack/dreamhack_winter_05/dh-photo/');
   });
 

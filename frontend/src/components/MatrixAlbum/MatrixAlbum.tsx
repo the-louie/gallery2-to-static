@@ -18,10 +18,11 @@ export interface MatrixAlbumProps {
 
 /**
  * Item count for "Size:": Gallery 2 showed the album's own items, plus "(N items total)" when its
- * subtree held more. We know photos per subtree (totalDescendantImageCount), not sub-albums, so the
- * total counts the photos below plus the album's own items.
+ * subtree held more. The export carries that total (totalDescendantCount: photos and albums below);
+ * older data has only the photo count, so the total is then the photos below plus the own items.
  */
 function getSize(metadata: AlbumMetadata, children: Child[]): { count: number; total: number } {
+  if (metadata.totalDescendantCount != null) return { count: children.length, total: metadata.totalDescendantCount };
   const ownPhotos = children.filter((c) => c.type !== 'GalleryAlbumItem').length;
   const subtreePhotos = children.reduce((n, c) => n + (c.type === 'GalleryAlbumItem' ? (c.totalDescendantImageCount ?? 0) : 0), 0);
   const albums = children.length - ownPhotos;

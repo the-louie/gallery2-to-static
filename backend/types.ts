@@ -71,6 +71,10 @@ export interface Child {
      */
     totalDescendantImageCount?: number | null;
     /**
+     * Items (photos and exported sub-albums) in this album's subtree: Gallery 2's "(N items total)" (PRIO-THEME-04).
+     */
+    totalDescendantCount?: number | null;
+    /**
      * Owner display name resolved from Item.ownerId → User.fullName (trimmed; never the login name). Null when the user is missing or has no full name.
      */
     ownerName?: string | null;
@@ -118,6 +122,8 @@ export interface AlbumMetadata {
      * Omitted for root album; set for non-root albums so frontend can show "X images total".
      */
     totalDescendantImageCount?: number | null;
+    /** Items (photos and exported sub-albums) below the album; Gallery 2's descendentCount (PRIO-THEME-04). */
+    totalDescendantCount?: number | null;
 }
 
 /**

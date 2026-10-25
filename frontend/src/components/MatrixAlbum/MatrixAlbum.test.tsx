@@ -109,6 +109,15 @@ describe('MatrixAlbum (THEME-01)', () => {
     expect(document.querySelector('.size')).toHaveTextContent('Size: 2 items (252 items total)');
   });
 
+  it('uses the exported items total when the data has it', () => {
+    at(photos(5), { ...metadata, totalDescendantImageCount: 5, totalDescendantCount: 5 });
+    show(`${PATH}/`);
+    expect(document.querySelector('.size')).toHaveTextContent(/^Size: 5 items$/);
+    at(photos(5), { ...metadata, totalDescendantCount: 878 });
+    show(`${PATH}/`);
+    expect(document.querySelectorAll('.size')[1]).toHaveTextContent('Size: 5 items (878 items total)');
+  });
+
   it('an empty album says so', () => {
     at([]);
     show(`${PATH}/`);

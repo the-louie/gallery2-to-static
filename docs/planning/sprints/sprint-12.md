@@ -16,9 +16,10 @@
 | T-04 | 1024px resize for photo pages | PRIO-THEME-05 | 4h | – | todo | export writes `<dir>/r__<file>` (longest side 1024, quality as thumbnails) next to the thumbnail; `Child.resizeUrlPath`; `publishImages` links them; nginx `/g2data/resized/` or same tree; `MatrixPhoto` shows the resize by default, `?size=full` the original. Photos ≤ 1024px: no resize. Size check: CIMG0053_.JPG resize ≈ 100 KB |
 | T-05 | Owner name: "Gallery Administrator" or "Unknown" | PRIO-THEME-01 | 0.5h | – | todo | **Operator decided 2026-10-25: "Gallery Administrator"** (1:1 with 2006). `ownerDisplayName.ts` stops mapping it to "Unknown"; test; re-export |
 | T-06 | Search results without raw BBCode | SEARCH-01 | 1.5h | – | todo | `SearchResultsPage`: descriptions through the BBCode stripper (or the search index carries stripped text); highlighting on the stripped text; test with the DH-Photo description |
-| T-07 | Re-run the measured comparison | – | 1h | T-01..T-06 | todo | `compare.cjs` at 1280px for root, album p1, photo; the 2006 root (Classic layout) compared cell by cell for highlights; results into `theme-matrix.md`; any new difference → PRIO-THEME row |
+| T-07 | Re-run the measured comparison | – | 1h | T-01..T-06, T-08 | todo | `compare.cjs` at 1280px for root, album p1, photo; the 2006 root (Classic layout) compared cell by cell for highlights; results into `theme-matrix.md`; any new difference → PRIO-THEME row |
+| T-08 | DHW07 "Inofficiella" hidden everywhere | HIDE-02 | 0.5h | T-05 | todo | Operator, 2026-10-25. Album 493032 (empty in the DB, so already absent from the export): add to `ignoreAlbums` (config on lanbilder2 + `config_example.json`); nginx 404 on the old-site vhost for `/dreamhack/dreamhack_winter_07/inofficiella/`; check the origin's directory; re-export with T-05's run |
 
-Total ≈ 15.5h.
+Total ≈ 16h.
 
 ## Open points
 - **T-05** decided (operator, 2026-10-25): show "Gallery Administrator".

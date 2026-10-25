@@ -4,7 +4,7 @@
  */
 
 import assert from 'assert';
-import { computeAllDescendantImageCounts } from './descendantImageCount.ts';
+import { computeAllDescendantImageCounts, computeAllDescendantCounts } from './descendantImageCount.ts';
 import type { Child } from './types.ts';
 
 function photo(id: number, pathComponent: string): Child {
@@ -82,6 +82,12 @@ async function run(): Promise<void> {
     assert.strictEqual(map2.get(3), 2, 'leaf album has 2 photos');
     assert.strictEqual(map2.get(2), 3, 'album 2: 1 direct + 2 from album 3');
     assert.strictEqual(map2.get(1), 4, 'album 1: 1 direct + 3 from album 2');
+    // items (PRIO-THEME-04): photos plus exported sub-albums
+    const both = await computeAllDescendantCounts(1, getChildrenNested, ignoreSet, albumsWithNested);
+    assert.strictEqual(both.items.get(3), 2, 'leaf: 2 photos');
+    assert.strictEqual(both.items.get(2), 1 + 1 + 2, 'album 2: 1 photo + album 3 + its 2 photos');
+    assert.strictEqual(both.items.get(1), 1 + 1 + 4, 'album 1: 1 photo + album 2 + its 4 items');
+    assert.deepStrictEqual([...both.images.entries()].sort(), [...map2.entries()].sort(), 'images unchanged');
 
     // Blacklisted subtree excluded from count
     const ignoreSetBlacklist = new Set<number>([2]);

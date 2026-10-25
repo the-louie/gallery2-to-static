@@ -26,7 +26,8 @@ function ItemCell({ item, albumPath }: { item: Child; albumPath: string }) {
   const isAlbum = item.type === 'GalleryAlbumItem';
   const href = getItemPath(item, albumPath);
   const src = thumbnailUrl(item);
-  const total = item.totalDescendantImageCount ?? 0;
+  // Gallery 2 counted every item below (photos and albums); older data has only the photo count
+  const total = item.totalDescendantCount ?? item.totalDescendantImageCount ?? 0;
   const count = item.childCount ?? 0;
   const summary = item.summary?.trim();
   return (
