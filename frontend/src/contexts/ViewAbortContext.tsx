@@ -64,6 +64,7 @@ export function ViewAbortProvider({
     let current = controller;
     if (current.signal.aborted) {
       current = new AbortController();
+      // eslint-disable-next-line @eslint-react/set-state-in-effect -- the controller's lifetime is this effect run; only after an abort
       setController(current);
     }
     return () => {

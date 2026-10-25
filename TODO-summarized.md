@@ -1,14 +1,10 @@
 # TODO Summarized
 
-Generated 2026-10-25 from `TODO.md` (Sprint 09). Closed rows: `docs/planning/done.md`.
+Generated 2026-10-25 from `TODO.md` (Sprint 10). Closed rows: `docs/planning/done.md`.
 
 ## P1 — Must be fixed before anything is published
 
 - **SENTRY-01**: create and set up Sentry projects for this application (operator, 2026-10-25, high prio; required before the lanbilder.se cutover)
-
-## Not reproduced / no action
-
-- **REFAC-01**: state reset/sync effects → derived state or keyed components (P3, from LINT-02)
 
 ## FUTURE (after production deploy)
 
@@ -22,4 +18,4 @@ Generated 2026-10-25 from `TODO.md` (Sprint 09). Closed rows: `docs/planning/don
 
 ## Summary
 
-**Open rows:** 7
+**Open rows:** 6

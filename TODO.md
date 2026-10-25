@@ -52,24 +52,6 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
 - **Not re-verified:** per-album themes for paths with é/æ/ø (`albumThemesConfig.ts`, depends on
   whether `location.pathname` is percent-encoded under `HashRouter`). Check in a browser.
 
-### REFAC-01: state reset/sync effects → derived state or keyed components (P3, from LINT-02)
-
-`@eslint-react/set-state-in-effect` is off (49 hits). The effects reset or sync state when an input changes, or set loading flags before a fetch; each costs one extra render. Files: `hooks/useProgressiveImage.ts` (14), `hooks/useLightbox.ts` (8), `hooks/useSiteMetadata.ts` (6), `hooks/useAlbumData.ts` (4), `components/ImageThumbnail/ImageThumbnail.tsx` (3), `components/SearchBar/SearchBar.tsx` (3), `hooks/useAlbumMetadata.ts`, `hooks/useImageZoom.ts`, `components/FilterPanel/DateRangeFilter.tsx` (2 each), `AlbumCard`, `Lightbox`, `ThemeContext`, `ViewAbortContext`, `PathResolverPage` (1 each). Do it per hook with its tests; turn the rule on at the end. No user-visible bug known.
-
-_Sprint 10 T-01 (2026-10-25): `frontend/src/hooks/useSiteMetadata.ts` takes cached data as the initial state (a later mount renders it on the first render, no loading flash) and no longer resets loading/error at effect start (already the initial state); new `useSiteMetadata.test.ts` (fails on the previous code). 6 hits gone._
-
-_Sprint 10 T-02: `useAlbumMetadata` only copied its `albumProp` into state one render late: removed, `AlbumDetail.tsx` uses `albumPropToUse ?? null` directly (and its test no longer mocks the hook). `useAlbumData`: `id === null` now nulls the returned values directly instead of resetting state in the effect; new test (no render with the previous album's data; fails on the previous code). 6 hits gone._
-
-_Sprint 10 T-03: `AlbumCard` stores the failed URL (a new URL is tried without a reset), `PathResolverPage` stores the failed (attempt, path) key, `useImageZoom` and `DateRangeFilter` adjust state during render when the image size / range changes (React's documented pattern instead of an effect one render late). New tests for the AlbumCard retry and the outside clear of DateRangeFilter. 6 hits gone._
-
-_Sprint 10 T-04: `ImageThumbnail` and `Lightbox` reset their load state during render when the image key changes (the observer disconnect stays an effect, without state); `ImageThumbnail` no longer sets `shouldLoad` when IntersectionObserver is missing (already derived where used); `SearchBar` takes its initial text from the URL and follows location changes during render (the debounce-timer clear stays an effect). Covered by the existing reset/navigation tests. 7 hits gone._
-
-_Sprint 10 T-05: `ThemeContext` clears the album override during render when leaving an album. `ViewAbortContext` keeps its effect on purpose: the AbortController must live exactly as long as the effect run (created in render, StrictMode's double effect would abort it and keep the aborted signal); reason in place, exemption added when the rule goes on (T-08)._
-
-_Sprint 10 T-06: `useLightbox`: `resolvedAlbumPath` is derived (`pathBase ?? null`, no state); album images, current image and album id are synced from props/route during render (they stay state because `openLightbox`/`closeLightbox` set them directly). Existing `useLightbox` tests pass unchanged. 8 hits gone._
-
-_Sprint 10 T-07: `useProgressiveImage` resets its state during render when the image identity or the view signal changes; the effect keeps only the per-image refs and the object-URL release. This exposed a real double run: `ViewAbortProvider` handed out a placeholder signal and swapped it for a live one right after mount, so every fetch started on mount was started again (the `useImagePreload` tests expected doubled counts and blamed StrictMode; the wrapper has none). The provider now creates its AbortController in state, live from the first render, and replaces it only after it was aborted (view change, StrictMode check). New provider tests (the first fails on the previous code); preload test counts corrected (1 per neighbour). 14 hits gone._
-
 ## FUTURE (after production deploy)
 
 Operator, 2026-10-25. Not scheduled until lanbilder.se runs on the new code. The notes under each
