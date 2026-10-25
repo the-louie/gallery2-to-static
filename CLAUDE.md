@@ -383,7 +383,7 @@ All implemented and tested:
 
 - `docs/theming/` - Theme system architecture, CSS variables, adding themes, per-album config
 - `docs/dev-notes/` - 45+ implementation session notes with decisions and rationale
-- `docs/orig-page/` - Original Gallery 2 (lanbilder.se) HTML/CSS reference
+- `docs/orig-page/` - Original Gallery 2 (lanbilder.se) pages and CSS as served in 2006 (Wayback captures); spec: `frontend/docs/theme-matrix.md`
 - `frontend/docs/user-guides/` - Getting started, configuration, usage, features, deployment, troubleshooting
 - `frontend/docs/architecture.md` - Frontend architecture overview
 - `frontend/docs/bundle-optimization.md` - Code splitting and bundle strategy

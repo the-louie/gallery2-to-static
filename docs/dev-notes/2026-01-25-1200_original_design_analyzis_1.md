@@ -1,6 +1,6 @@
 # Original Gallery 2 (lanbilder.se) design analysis
 
-Design analysis of the lanbilder.se Gallery 2 page (Menalto Gallery 2 Classic–style theme). Source: docs/orig-page/main.html and docs/orig-page/theme.css; cross-checked with reference screenshots in __docs/original-design/. Refined using the downloaded site at __docs/original-design/lanbilder.se.htm and __docs/original-design/lanbilder.se-filer/ (actual Gallery 2 Classic theme.css and HTML). Verified 2026-01-25. A future Classic theme implementation should use this document as the specification; the “Refinement from downloaded site” section is the source-of-truth from the captured page.
+Design analysis of the lanbilder.se Gallery 2 page (Menalto Gallery 2 Classic–style theme). Source: docs/orig-page/main.html and docs/orig-page/theme.css (reconstructions, replaced 2026-10-25 by the real 2006 captures in docs/orig-page/2006/; see frontend/docs/theme-matrix.md); cross-checked with reference screenshots in __docs/original-design/. Refined using the downloaded site at __docs/original-design/lanbilder.se.htm and __docs/original-design/lanbilder.se-filer/ (actual Gallery 2 Classic theme.css and HTML). Verified 2026-01-25. A future Classic theme implementation should use this document as the specification; the “Refinement from downloaded site” section is the source-of-truth from the captured page.
 
 ---
 

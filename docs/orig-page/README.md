@@ -1,17 +1,17 @@
-# Original Gallery 2 (lanbilder.se) page assets
+# Original Gallery 2 (lanbilder.se) pages, as served in 2006
 
-**Source URL:** https://web.archive.org/web/20071220141404/http://www.lanbilder.se/main.php
+Raw captures from the Wayback Machine (`id_` URLs: the page as the server sent it, no Wayback toolbar), fetched 2026-10-25. Before that, this folder held a `main.html` and `theme.css` *reconstructed* from screenshots; the real 2006 Classic `theme.css` differs from that reconstruction by 811 diff lines, so both were replaced.
 
-**Fetch note:** Direct retrieval of the live Wayback URL returned "Access is forbidden or source is unavailable" when using automated fetch. The files in this folder were therefore reconstructed from:
+| File | Source |
+|---|---|
+| `2006/dhphotos.html` | https://web.archive.org/web/20060208090028/http://www.lanbilder.se/v/dreamhack/dhw05/dhphotos/ — **the template for every album page** (operator, 2026-10-25) |
+| `2006/photo-CIMG0053_.html` | https://web.archive.org/web/20060215034132/http://www.lanbilder.se:80/v/dreamhack/dhw05/dhphotos/CIMG0053_.JPG.html — a photo page in the same theme |
+| `2006/dhw05.html` | https://web.archive.org/web/20060515025935/http://www.lanbilder.se/v/dreamhack/dhw05/ — same theme; its sidebar peer list overflows (no line breaks): do not copy that |
+| `2006/main.html` | https://web.archive.org/web/20060718022536/http://www.lanbilder.se/main.php — the root, which used the Classic theme's list layout then; the new root uses the Matrix layout |
+| `2006/matrix-theme.css` | `/themes/matrix/theme.css` as served in 2006 (Gallery 2.0; base + Matrix rules concatenated) |
+| `2006/classic-theme.css` | `/themes/classic/theme.css` as served in 2006 |
+| `2006/icons.css` | `/modules/icons/iconpacks/paularmstrongdesigns/icons.css` |
 
-- Reference screenshots (kept outside the repository, not published), which capture the root album list, album list detail, DreamHack album view, DreamHack Summer 06, album cards, sidebar, and breadcrumbs.
-- Standard Menalto Gallery 2 theme structure and selectors (e.g. `#gsHeader`, `#gsLeft`, `#gsRight`, `.giItem`) as described in the screenshot analysis and typical G2 themes.
+The pages are ISO-8859-1 bytes despite their UTF-8 meta tag, and contain the 2006 ads and analytics scripts; they are reference material, never served. Screenshots of them (1280px) and the Gallery 2.3.2 source are on the operator share (`/srv/share/lanbilder2/inspo/`), not in the repository. The implementation spec is `frontend/docs/theme-matrix.md`.
 
-**Contents:**
-
-- `main.html` — Reconstructed root/main album list page structure (header, sidebar, main content). No Wayback toolbar block; gallery layout and semantics preserved.
-- `theme.css` — Reconstructed CSS for layout, colours, and typography derived from the screenshots and consistent with Gallery 2 Classic-style themes.
-
-**Downloaded site (canonical source):** A full capture of the same page was used during development (kept outside the repository, not published). It contains the original Gallery 2 Classic theme CSS (`theme.css`) and all referenced images/scripts. The analysis document was refined using this download to align selectors, colours, and dimensions with the actual site (see “Refinement from downloaded site” in the analysis).
-
-**Usage:** These assets support the design analysis in `docs/dev-notes/2026-01-25-1200_original_design_analyzis_1.md`. For implementation of the Classic theme, treat the analysis document as the primary specification; this folder provides the structural and style reference.
+Gallery 2 is © the Gallery project, GPL-2.0.
