@@ -2,13 +2,13 @@
 
 Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–4h) and end on a demo.
 
-**Active sprint:** [Sprint 01](./sprints/sprint-01.md) — in progress.
-**Current ticket:** —
+**Active sprint:** [Sprint 02](./sprints/sprint-02.md) — open.
+**Current ticket:** [Sprint 02 T-01](./sprints/sprint-02.md) (`todo` — backend pathSegments stale test).
 **Last completed:** Sprint 01 T-08 (commit `ee0fa4b`).
 
 | Sprint | Goal |
 |---|---|
-| S01 | Green, safe production build: `npm run build` passes from a clean checkout, `dist/` holds no images, sourcemaps or bundle report; the two P1 frontend blockers (search ReDoS, stuck path resolver) fixed. |
+| S01 ✅ | Green, safe production build: `npm run build` passes from a clean checkout, `dist/` holds no images, sourcemaps or bundle report; the two P1 frontend blockers (search ReDoS, stuck path resolver) fixed. |
 | S02 | Data correctness in the backend: path segments computed once (LOGIC-11), thumbnail failure handling + sharp upgrade (LOGIC-12, SEC-14, LOGIC-13), run robustness (LOGIC-21..23). |
-| S03 | Frontend behaviour: grid bandwidth (PERF-01..03), lightbox (LOGIC-16, 17, 19), filters/sort (LOGIC-18, 25, 29), error paths (LOGIC-20). |
-| S04+ | P3 items, hygiene, test-fixture type burn-down, toolchain upgrade. SEC-12 (permissions) when the Gallery 2 DB is available to test against. |
+| S03 | Frontend behaviour + DEPS-01 frontend half (latest vite/vitest/eslint/React, one toolchain per ticket): grid bandwidth (PERF-01..03), lightbox (LOGIC-16, 17, 19), filters/sort (LOGIC-18, 25, 29), error paths (LOGIC-20). |
+| S04+ | P3 items, SEC-18 brotli check, hygiene, test-fixture type burn-down (BUILD-01 rest, LINT-01). DECISION-01 (hosting) with the operator. SEC-12 (permissions) when the Gallery 2 DB is available to test against. |

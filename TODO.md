@@ -14,7 +14,9 @@ The reported test failures (214/1249) could **not** be reproduced — see TEST-0
 
 Nothing below this line can be validated until the build runs.
 
-### BUILD-01: `npm run build` fails at the type check — 343 errors, not 3
+### BUILD-01 (remaining): 253 test-only type errors behind `npm run typecheck:test`
+
+_Groomed 2026-10-25 (Sprint 01 retro): the build part is closed (T-01..T-04, `npm run build` exits 0). What is left is the test-fixture typing (`mockData.ts` `Child` vs `Album`/`Image`), to burn down with LINT-01._ Original title: `npm run build` fails at the type check — 343 errors, not 3.
 
 **PARTLY CLOSED 2026-10-25 (Sprint 01 T-01):** steps 1–2 done: duplicate block removed (`Breadcrumbs.integration.test.tsx` is now 114 lines, its suite collects: 37 tests pass with the other Breadcrumbs file); `tsconfig.json` now covers shipped code only (`npm run build`/`npm run typecheck`: 82 errors, 0 in test files), tests via `tsconfig.test.json` / `npm run typecheck:test` (343). Steps 3–4 open (Sprint 01 T-02..T-04).
 **T-02 (2026-10-25):** `vite/client` types added (33× `import.meta.env`); pages/ and contexts/ at 0 errors (`RouteParams` is now a `type`, `PathResolverPage` state `| undefined`, `SearchIndexItem.summary/ownerName` declared). App type-check: 82 → 27.
@@ -745,7 +747,9 @@ the bundle. Fix the globs (one entry per named chunk). Note: `size-limit` starts
 - README: add `npm ci` in both folders and the frontend build/deploy steps (the current README
   only shows the backend run).
 
-### ARCH-08: toolchain upgrade (dev-only, not blocking)
+### ~~ARCH-08: toolchain upgrade (dev-only, not blocking)~~
+
+**SUPERSEDED 2026-10-25 (Sprint 01 retro) by DEPS-01** (operator: every dependency on its latest version before deploy, not "can wait"). Original row kept for the record:
 
 `npm audit` (full) reports 43 issues (5 critical), all in build/test tools that don't ship:
 vite 5 (→ 8), vitest 1 (→ 5), eslint 8 (EOL, → 9 flat config), `@typescript-eslint` 6 (→ 8),

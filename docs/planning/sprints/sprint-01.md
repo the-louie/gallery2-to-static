@@ -1,6 +1,6 @@
 # Sprint 01: green, safe production build
 
-**Status:** in progress (opened 2026-10-25)
+**Status:** done (opened and closed 2026-10-25)
 **Current ticket:** —
 **Last completed:** T-08 (`done` — commit `ee0fa4b`)
 
@@ -28,7 +28,9 @@ returning 500 shows an error with Retry instead of a spinner.
 Total ≈ 16h.
 
 ## Retro
-(filled at end of sprint)
+**Worked:** every row was re-verified before work (BUILD-01's duplicate block, the `.*?` regex, the missing try/catch all reproduced as described). The tsconfig split turned an 82-error wall into small, file-grouped fixes. Full vitest with 2 forks takes 36 s, so a full run per ticket is cheap on the shared machine.
+**Didn't:** `--poolOptions.forks.maxForks=2` alone fails (min > max); needs `minForks=1`. T-02/T-03 boundaries were by folder, but one fix (`vite/client` types) cleared 33 errors across both.
+**Backlog grooming:** closed BUILD-02, BUILD-03, SEC-13, LOGIC-15, LOGIC-20, TEST-01. BUILD-01 narrowed to the 253 test-only type errors. ARCH-08 superseded by DEPS-01 (operator: all deps latest). New rows: DEPS-01, SEC-18, DECISION-01 (operator). Open rows: 42 → 35.
 
 ## Demo notes
-(filled at end of sprint)
+Clean clone → `npm ci && npm run build` exits 0; `npm run check:dist` OK: 27 files, 487 KB (`index.html`, `album-themes.json`, `assets/`; no `g2data/`, no `*.map`, no `stats.html`). With a `public/g2data` symlink the old config copied the tree into `dist/`, the new one does not. `#/search?q=eeeeeeeeeezz`: 1000 matches against a 1,100-char text in < 500 ms (was ~2.9 s for one). Path URL with a failing index: alert "Could not load the gallery" + Retry, Retry loads the album. Full vitest: 81 files, 1435 tests pass (was 79 collectable files, 1421).
