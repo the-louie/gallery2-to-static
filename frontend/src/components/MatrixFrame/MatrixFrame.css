@@ -68,9 +68,14 @@
   border-color: #ccc;
 }
 
-/* Banner slot (2006: the ad text block above the nav bar) */
+/* Banner slot (2006: the ad text block above the nav bar). The spacing sits on the link, so an
+   empty slot takes no height (the 2006 page's empty #gsHeader took none either). */
 .g2-matrix .gsHeader {
   text-align: center;
+}
+
+.g2-matrix .gsHeader a {
+  display: inline-block;
   padding: 6px 0 10px;
 }
 

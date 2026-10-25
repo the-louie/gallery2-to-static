@@ -139,3 +139,7 @@ What still differs is data and export logic, now backlog rows **PRIO-THEME-01..0
 - Photo pages serve the export's 1024px resize like Gallery 2's `scale|1024` derivative (T-04), the original on `?size=full`.
 - Search results show BBCode-free text (T-06); the banner slot above the nav bar carries the glitched.se banner (T-09); DHW07 "Inofficiella" is ignored and 404 on the old site (T-08).
 
+### Measured again after Sprint 12 (T-07, 2026-10-25 late)
+
+Same method as T-13 (`compare.cjs`, 1280px): album page 1 and the photo page have **no block differences** except the sidebar being 32px taller (the "Theme: modern" block the operator asked for, T-10); document height 1118px on both for the album. The banner slot above the nav bar (T-09) is removed on both sides before measuring, like the 2006 ad block; an empty slot takes no height. The root page's 10 album highlights match the 2006 root page 10/10 (T-01). The photo page serves the 1024px resize (175 KB for CIMG0053_.JPG instead of the 1.7 MB original). The modern light/dark redesign (T-11) is scoped to those themes and leaves these measurements unchanged.
+
