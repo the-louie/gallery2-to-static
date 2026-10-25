@@ -220,7 +220,9 @@ backend's local verify uses `fs.realpath` on the raw path, so it reports "ok". F
 segment when building URLs. Grep the real file list (`backend/all-lanbilder-files.txt`) for
 `[#?%]` to see how many are affected.
 
-### SEC-15: BBCode parse is quadratic, with no length or depth cap
+### ~~SEC-15: BBCode parse is quadratic, with no length or depth cap~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-02):** `frontend/src/utils/bbcode.ts` `parseBBCode` does not parse input over `BBCODE_MAX_INPUT_LENGTH` (8192 chars) or with more than `BBCODE_MAX_TAGS` (500) `[`; such text is shown with the BBCode tags stripped. Tests: `[b]`×16000 → `"x"` in < 1 s (was 7.6 s), over-long input stripped, normal BBCode still parsed, boundary at 500/501. Original row kept for the record:
 
 `frontend/src/utils/bbcode.ts` (`parseBBCode` at `:581`) has no input length or nesting limit. For
 each open tag it scans to the end and re-parses the nested content: `[b]`×16000 renders in 7.6 s,

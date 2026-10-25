@@ -11,6 +11,8 @@ import {
   clearBBCodeCache,
   getBBCodeCacheStats,
   extractUrlFromBBCode,
+  BBCODE_MAX_INPUT_LENGTH,
+  BBCODE_MAX_TAGS,
 } from './bbcode';
 
 describe('parseBBCode', () => {
@@ -565,5 +567,32 @@ describe('parseBBCodeDecoded', () => {
   it('handles null/undefined like parseBBCode', () => {
     expect(parseBBCodeDecoded(null as unknown as string)).toBe(null);
     expect(parseBBCodeDecoded(undefined as unknown as string)).toBe(undefined);
+  });
+
+  describe('input limits (SEC-15)', () => {
+    it('renders 16 000 nested [b] quickly as plain text', () => {
+      const text = '[b]'.repeat(16000) + 'x';
+      const start = performance.now();
+      const out = parseBBCode(text, { enableCache: false });
+      expect(performance.now() - start).toBeLessThan(1000);
+      expect(out).toBe('x');
+    });
+
+    it('strips tags from over-long input instead of parsing it', () => {
+      const long = '[b]bold[/b] ' + 'a'.repeat(BBCODE_MAX_INPUT_LENGTH);
+      expect(parseBBCode(long, { enableCache: false })).toBe('bold ' + 'a'.repeat(BBCODE_MAX_INPUT_LENGTH));
+    });
+
+    it('still parses normal descriptions', () => {
+      const { container } = render(<>{parseBBCode('[b]Lördag[/b] och [i]söndag[/i]', { enableCache: false })}</>);
+      expect(container.querySelector('strong')?.textContent).toBe('Lördag');
+      expect(container.querySelector('em')?.textContent).toBe('söndag');
+    });
+
+    it('applies the limits at exactly the boundary', () => {
+      const atLimit = '[b]'.repeat(BBCODE_MAX_TAGS);
+      expect(typeof parseBBCode(atLimit, { enableCache: false })).not.toBe('undefined');
+      expect(parseBBCode('[b]'.repeat(BBCODE_MAX_TAGS + 1) + 'y', { enableCache: false })).toBe('y');
+    });
   });
 });

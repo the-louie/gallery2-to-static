@@ -565,6 +565,28 @@ export function extractUrlFromBBCode(text: string): ExtractedUrl | null {
 }
 
 /**
+ * Inputs beyond these limits are not parsed (SEC-15): the parser rescans the remaining text for
+ * every opening tag, so `[b]` repeated 16 000 times took 7.6 s to render. Such text is shown with
+ * the BBCode tags stripped instead. Real Gallery 2 descriptions are far below both limits.
+ */
+export const BBCODE_MAX_INPUT_LENGTH = 8192;
+export const BBCODE_MAX_TAGS = 500;
+
+/** Remove BBCode tags, keep the text (fallback for oversized input). */
+function stripBBCodeTags(text: string): string {
+  return text.replace(/\[\/?[a-z*]+(?:=[^\]]*)?\]/gi, '');
+}
+
+function exceedsBBCodeLimits(text: string): boolean {
+  if (text.length > BBCODE_MAX_INPUT_LENGTH) return true;
+  let tags = 0;
+  for (let i = 0; i < text.length; i++) {
+    if (text.charCodeAt(i) === 91 /* [ */ && ++tags > BBCODE_MAX_TAGS) return true;
+  }
+  return false;
+}
+
+/**
  * Parse BBCode text and convert to React elements
  *
  * @param text - Text containing BBCode tags
@@ -592,8 +614,8 @@ export function parseBBCode(text: string, options: BBCodeParseOptions = {}): Rea
     return cached.result;
   }
 
-  // Parse
-  const result = parseBBCodeInternal(text);
+  // Parse (oversized input: tags stripped, not parsed)
+  const result = exceedsBBCodeLimits(text) ? stripBBCodeTags(text) : parseBBCodeInternal(text);
 
   // Store in cache
   if (enableCache) {
