@@ -4,6 +4,7 @@ Generated 2026-10-25 from `TODO.md` (operator 2026-10-25). Closed rows: `docs/pl
 
 ## P1 — Must be fixed before anything is published
 
+- **SENTRY-01**: create and set up Sentry projects for this application (operator, 2026-10-25, high prio)
 - **LINT-02**: review the @eslint-react rules that are off (Sprint 08 T-02)
 
 ## FUTURE (after production deploy)
@@ -18,4 +19,4 @@ Generated 2026-10-25 from `TODO.md` (operator 2026-10-25). Closed rows: `docs/pl
 
 ## Summary
 
-**Open rows:** 6
+**Open rows:** 7

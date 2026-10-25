@@ -16,6 +16,10 @@ Nothing below this line can be validated until the build runs.
 
 ## P1 — Must be fixed before anything is published
 
+### SENTRY-01: create and set up Sentry projects for this application (operator, 2026-10-25, high prio)
+
+Operator request, verbatim: "Help me create and set up Sentry projects for this application." Org slug: `telamon-it`; run code: `666248c9ac`. Scope to settle when scheduled: one project per part (frontend SPA, backend extractor), DSNs kept out of the repo, source maps only from `--mode analyze` builds or uploaded, not shipped (`scripts/check-dist.mjs`), and what is sent (no IPs/PII by default).
+
 ### LINT-02: review the @eslint-react rules that are off (Sprint 08 T-02)
 
 Moving to ESLint 10 replaced eslint-plugin-react with @eslint-react, whose `recommended-typescript` set adds rules the old set did not have. They fired 75 times and are off in `frontend/eslint.config.js` so the lint coverage stays as before: `set-state-in-effect` 49, `no-array-index-key` 7, `use-state` 5, `no-context-provider` 3, `no-use-context` 3, `naming-convention-ref-name` 2, `web-api-no-leaked-intersection-observer` 1 (`exhaustive-deps` 5 duplicates react-hooks and stays off). Review each: fix real bugs (the leaked IntersectionObserver first), turn the rule on, or keep it off with a reason.
