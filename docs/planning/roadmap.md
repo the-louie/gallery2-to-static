@@ -5,8 +5,8 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 **After every sprint (operator, 2026-10-25):** prune `TODO.md` and regenerate `TODO-summarized.md`: `python3 docs/planning/prune_todo.py . "Sprint NN"` moves closed (~~struck~~) rows, with their proof, to `docs/planning/done.md`.
 
 **Active sprint:** [Sprint 04](./sprints/sprint-04.md) — in progress.
-**Current ticket:** [Sprint 04 T-08](./sprints/sprint-04.md) (`in-progress` — TypeScript 7 (frontend + backend); backend runner without ts-node if t)
-**Last completed:** Sprint 04 T-07 (commit `9a8ddfa`).
+**Current ticket:** [Sprint 04 T-09](./sprints/sprint-04.md) (`todo` — size-limit 14, web-vitals 6; fix size-limit globs (no timing run))
+**Last completed:** Sprint 04 T-08 (commit `7f7c94f`).
 
 | Sprint | Goal |
 |---|---|
