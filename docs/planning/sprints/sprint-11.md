@@ -1,8 +1,8 @@
 # Sprint 11: Gallery 2 Matrix look and clean URLs (THEME-01, URL-01, URL-02)
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-03 (`in-progress` — Export view counts)
-**Last completed:** T-02 (`done` — commit `0859f77`)
+**Current ticket:** T-04 (`todo` — Page frame)
+**Last completed:** T-03 (`done` — commit `0cb6fea`)
 
 **Goal:** in the default theme, an album and a photo look like the 2006 lanbilder.se Matrix pages (`inspo/wayback-2006/dhphotos.html`, `photo-CIMG0053_.html`) and are reached by clean URLs. Old Gallery 2 URLs redirect to them.
 
@@ -12,7 +12,7 @@
 |---|---|---|---|---|---|---|
 | T-01 | Reference doc + assets | THEME-01 | 2h | – | done | `frontend/docs/theme-matrix.md`: the template's blocks, measured CSS values from the 2006 `theme.css`, leave-outs, the Login/Register notes (also in TODO). Nav arrows, item-link icons and footer badges copied from Gallery 2.3.2 (GPL-2, attribution in the doc) into `frontend/src/assets/matrix/` (all < 1.3 KB: Vite inlines them, `check:dist` stays image-free, nginx 402 rule unaffected). `docs/orig-page/` today holds a *reconstructed* Classic CSS (its README says so; 811 diff lines against the real 2006 file): replace it with the captured 2006 files. Landed in `a24363d` |
 | T-02 | Clean URLs | URL-01 | 4h | – | done | `BrowserRouter`; album `/<path>/`, photo `/<path>/<slug>`, `?page=N`, `/search?q=`. Old `#/…` links (test host only) redirect. nginx SPA fallback unchanged except no `index.html` for `/data/`, `/g2data/`. Tests for the routes + the hash redirect. Landed in `0859f77` |
-| T-03 | Export view counts | THEME-01 | 1.5h | – | in-progress | backend: `viewCount` from `g2_ItemAttributesMap` per album/photo (57215: 1766). Frozen at export time. Test |
+| T-03 | Export view counts | THEME-01 | 1.5h | – | done | backend: `viewCount` from `g2_ItemAttributesMap` per album/photo (57215: 1766). Frozen at export time. Test. Landed in `0cb6fea` |
 | T-04 | Page frame | THEME-01 | 4h | T-01 | todo | Classic theme only: no big title header, no theme/sort dropdowns, no "Up" button. Nav bar with `»` breadcrumb ("lanbilder.se » DreamHack » …", current unlinked), sidebar column + content column with `gcBorder1` borders, footer badges. Verdana/Arial 11–12px, colours from theme.css |
 | T-05 | Sidebar | THEME-01 | 3h | T-04 | todo | Search box ("Search the Gallery" placeholder) + "Advanced Search"; "View Slideshow", "View Slideshow (Fullscreen)" with icons (no Add Comment, no RSS); peer list "N. title" with the current one bold, first 6, "...", last; long titles wrap (dhw05 bug not copied) |
 | T-06 | Album header + navigator + pager | THEME-01 | 3h | T-04 | todo | Header block: h2 title, BBCode description, right 30% "Date: MM/DD/YYYY", "Owner:", "Size: N items". Navigator bars top and bottom (first/previous left, next/last right, arrow icons). Pager "Page: 1 2 3 4 5 6 ... 24" |
