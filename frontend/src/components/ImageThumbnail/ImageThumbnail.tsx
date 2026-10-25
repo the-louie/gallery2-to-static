@@ -185,13 +185,15 @@ function ImageThumbnailComponent({
 
     // Create observer with rootMargin aligned to VirtualGrid's increaseViewportBy
     const rootMargin = `${LAZY_LOAD_ROOT_MARGIN_TOP_PX}px 0px ${LAZY_LOAD_ROOT_MARGIN_BOTTOM_PX}px 0px`;
+    let observer: IntersectionObserver | null = null;
     try {
-      const observer = new IntersectionObserver(
+      observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               setShouldLoad(true);
-              observer.disconnect();
+              observer?.disconnect();
+              observer = null; // cleanup then has nothing left to disconnect
               observerRef.current = null;
             }
           });
@@ -218,10 +220,8 @@ function ImageThumbnailComponent({
     }
 
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-        observerRef.current = null;
-      }
+      observer?.disconnect();
+      if (observerRef.current === observer) observerRef.current = null;
     };
   }, [shouldLoad]);
 

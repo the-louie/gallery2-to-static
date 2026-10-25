@@ -24,6 +24,8 @@ Operator request, verbatim: "Help me create and set up Sentry projects for this 
 
 Moving to ESLint 10 replaced eslint-plugin-react with @eslint-react, whose `recommended-typescript` set adds rules the old set did not have. They fired 75 times and are off in `frontend/eslint.config.js` so the lint coverage stays as before: `set-state-in-effect` 49, `no-array-index-key` 7, `use-state` 5, `no-context-provider` 3, `no-use-context` 3, `naming-convention-ref-name` 2, `web-api-no-leaked-intersection-observer` 1 (`exhaustive-deps` 5 duplicates react-hooks and stays off). Review each: fix real bugs (the leaked IntersectionObserver first), turn the rule on, or keep it off with a reason.
 
+_Sprint 09 T-01 (2026-10-25): IntersectionObserver — no leak (the cleanup disconnected it through `observerRef`; the rule cannot follow the ref). The cleanup now disconnects the instance itself (`frontend/src/components/ImageThumbnail/ImageThumbnail.tsx`), still one disconnect per intersection (existing test); rule on._
+
 ## P2 — Correctness and cost
 
 ## P3 — Quality, hygiene and latent bugs

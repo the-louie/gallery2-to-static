@@ -41,7 +41,6 @@ export default tseslint.config(
       '@eslint-react/no-context-provider': 'off',
       '@eslint-react/no-use-context': 'off',
       '@eslint-react/naming-convention-ref-name': 'off',
-      '@eslint-react/web-api-no-leaked-intersection-observer': 'off',
       // project convention: a leading underscore marks a deliberately unused name (kept for an API)
       '@typescript-eslint/no-unused-vars': [
         'error',
