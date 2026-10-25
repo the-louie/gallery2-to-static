@@ -239,51 +239,6 @@ placeholder (or the downscaled full image) instead of the error state.
 
 ### P2 additions
 
-### ~~PERF-03: the image cache is wiped and fetches aborted on every lightbox step~~
-
-**CLOSED, verified 2026-10-25 (Sprint 03 T-03):** new `frontend/src/utils/viewKey.ts` `getViewKey(pathname)` drops a trailing `/image/<id>`; `Layout.tsx` clears the image cache and `ViewAbortContext.tsx` renews/aborts its controller only when the view key (or search) changes, not on every lightbox step (and not on opening the lightbox from its album). Tests: `viewKey.test.ts`, ViewAbortContext (image → image keeps the signal, other album aborts), Layout (cache kept between images, cleared for another album). Full vitest 1448/1448. Original row kept for the record:
-
-`components/Layout/Layout.tsx:48-55` runs `getImageCache().clear()` on every `pathname`/`key`
-change, and `ViewAbortContext` aborts its controller on every `pathname` change. Each lightbox
-next/previous changes the path, so the neighbours that `useImagePreload` just fetched are aborted
-or revoked. Fix: don't clear or abort when only the image id changes within the same album.
-
-### ~~LOGIC-16: the lightbox ignores the grid's sort and filters~~
-
-**CLOSED, verified 2026-10-25 (Sprint 03 T-04):** new `frontend/src/utils/visibleImages.ts` `getVisibleImages(items, criteria, sortOption)` (images only → `applyFilters` → `sortItems`) is used by both `ImageGrid.tsx` and `ImageDetailPage.tsx` (with `useFilter()` + `useSort('images')`), so the lightbox list, next/previous and "N of M" match the grid. Tests: `visibleImages.test.ts` (JSON order, date/name sort, filter). Original row kept for the record:
-
-`pages/ImageDetailPage.tsx:83` builds the lightbox list as `albumData.filter(isImage)`, in raw JSON
-order. To reproduce: sort by date descending, open the 3rd thumbnail, press →. You get the next
-image in JSON order, and "N of M" counts images the filter hid. Fix: build the list with the same
-`applyFilters` + sort the grid uses (`useSort('images')`, `FilterContext`).
-
-### ~~LOGIC-17: closing the lightbox pushes history; album scroll position is lost~~
-
-**CLOSED, verified 2026-10-25 (Sprint 03 T-05):** opening an image from the album (`AlbumDetail.tsx` `handleImageClick`, and `useLightbox.openLightbox`) navigates with state `{ fromAlbum: true }` and remembers `window.scrollY` per album path (`utils/albumScroll.ts`, sessionStorage, guarded); next/previous keep that state; `closeLightbox` goes `navigate(-1)` when it is set, else replaces the image entry with the album. `AlbumDetail` restores the remembered position on a POP once its data is shown. Tests: `useLightbox.test.tsx` (close → POP to album; next then close → POP; deep link → REPLACE), `albumScroll.test.ts`, `AlbumDetail.test.tsx` (restore on POP, click remembers + state). Not done: scroll-to-top on forward navigation (not in the row's fix). Original row kept for the record:
-
-`hooks/useLightbox.ts:196-197`: `closeLightbox` calls `navigate(pathForAlbum(), { replace: false })`.
-History becomes [album, image, album], so Back reopens the lightbox. The album page is unmounted
-while the image is open. `useScrollPosition` only saves (its own doc comment, lines 6 and 15, leaves
-restore to "React Router/browser"), but `HashRouter` has no `<ScrollRestoration>`, so nothing
-restores it. Closing lands at an arbitrary spot in a 500-image album. Fix: `navigate(-1)` when the
-lightbox was opened from the album (track it in location state), otherwise `replace: true`. Restore
-the saved scroll position on album mount.
-
-### ~~LOGIC-18: date filter can't be enabled, and would hide everything~~
-
-**CLOSED, verified 2026-10-25 (Sprint 03 T-06):** `DateRangeFilter.tsx` keeps both input values in local state and builds the range with `dateInputsToRange` (local start of day … last ms of the end day; one-sided with `DATE_RANGE_OPEN_START`/`_END`; reversed dates swapped). `filterUtils.ts` `matchesDateRange` compares `item.timestamp * 1000` (items are Unix seconds, ranges ms). `FilterBadges` shows "from …"/"until …" for one-sided ranges. Tests rewritten: the old ones encoded the bug ("does not create dateRange when only start date is set", ms item timestamps in 5 fixture files); new ones cover start only, end only, both with inclusive end, reversed, and seconds timestamps. Full vitest 1461/1461. Original row kept for the record:
-
-- **Can't be enabled:** `components/FilterPanel/DateRangeFilter.tsx:105-140` sets
-  `dateRange = undefined` when only one date is set ("Only start date provided, don't create
-  dateRange yet"). The inputs are controlled by `criteria.dateRange`, so the first date clears
-  itself and the second can never be entered.
-- **Would hide everything:** `dateStringToTimestamp` (`:73`) returns `getTime()` (milliseconds).
-  `utils/filterUtils.ts` `matchesDateRange` compares that with `item.timestamp`, which is Unix
-  **seconds** (`Lightbox.tsx:341` multiplies by 1000). Every item would fail the filter.
-- **End date:** it is start-of-day, so the last day is excluded.
-
-Fix: keep both input values in local state, store seconds, and make `end` inclusive (end of day).
-
 ### LOGIC-19: zoom limit is ~2500% instead of 400%
 
 `hooks/useImageZoom.ts:121-128`: `fitZoom = Math.min(scaleX, scaleY) * 100` with scales that are
@@ -396,3 +351,69 @@ the bundle. Fix the globs (one entry per named chunk). Note: `size-limit` starts
   - raw `ownerId` in the output: rows are now mapped field by field (LOGIC-05), `ownerId` is not emitted.
 - **Not re-verified:** per-album themes for paths with é/æ/ø (`albumThemesConfig.ts`, depends on
   whether `location.pathname` is percent-encoded under `HashRouter`). Check in a browser.
+
+## FUTURE (after production deploy)
+
+Operator, 2026-10-25. Not scheduled until lanbilder.se runs on the new code. The notes under each
+row are first answers to the questions asked, to verify when the row is planned.
+
+### FUT-01: SQLite as the master of the data; regenerate only changed branches
+
+All data in a SQLite database whose schema preserves everything the JSON carries (albums, images,
+paths, breadcrumbs, highlight images, descriptions, owners, counts, themes). The database is the
+master; the JSON files are generated from it. Every album/image row records when it last changed,
+so a run regenerates only the affected branch (the albums on the path from the root to the changed
+item, plus their search-index entries) instead of the whole tree.
+- First import: from the Gallery 2 extraction (the current backend), then Gallery 2 is retired.
+- Changed-at must propagate: a changed image marks its album and every ancestor (counts, highlight)
+  dirty. Deletes must be recorded too (tombstones), so stale JSON is reported (see LOGIC-22's
+  no-delete policy).
+- Fits DECISION-01 either way: the generator writes the same static files.
+
+### FUT-02: admin can add albums and delegate them; delegated users add subalbums and images
+
+An ADMIN creates an album and delegates it to a user; that user can create subalbums and
+upload/add images under it. Requirements (operator):
+- Authentication **must** be secure: federated login (GitHub / Google / Facebook were named).
+- The admin part is **not linked** from the gallery, lives on its **own, not easily guessed
+  subdomain**, and its code must **not be served at all** to unauthenticated users (separate build
+  and origin, not a hidden route in the public SPA).
+- Enforce login in Cloudflare (Access application on the admin hostname), and verify again in our
+  backend, independently of Cloudflare, that the authenticated identity is on our own user list,
+  without a second login: validate the `Cf-Access-Jwt-Assertion` JWT (signature against the team's
+  public keys, `aud`, expiry) and map its subject/email to our user table.
+- Authorisation: a user ↔ album table (0..n albums per user, inherited down the subtree); every
+  write checks it in the backend.
+- MFA, not email-based (token or key): to research. GitHub can require 2FA for members of an
+  organisation; Google can enforce it only for Workspace accounts; whether Cloudflare Access can
+  require MFA for social logins must be checked. A dependable option is our own WebAuthn/passkey
+  step in the admin backend after the Access login.
+- Uploads go through the image pipeline (sharp, failOn, size limits, EXIF strip) and into FUT-01's
+  database, then trigger a branch regeneration.
+
+### FUT-03: user profiles
+
+Each user has a profile with a nickname and a profile picture. The federated providers usually
+supply a display name and a picture (Google: `name`, `picture`; GitHub: `login`, `name`,
+`avatar_url`; Facebook: name and picture): check what reaches us through Cloudflare Access (the
+JWT, `/cdn-cgi/access/get-identity`) and copy it at first login, editable afterwards. Also worth
+having: a stable internal user id (not the email), the linked provider identities, role (admin /
+user), the delegated albums, created/last-login timestamps, and an "enabled" flag to lock a user
+out without deleting them. Pictures should be stored by us (not hot-linked from the provider).
+
+### FUT-04: audit logging
+
+Every user action, login and other event is logged, successful or not: logins and denials (ours
+and Cloudflare Access's audit log), album/image create/edit/delete/upload, delegation changes,
+profile changes, admin actions, failed authorisation checks. Append-only (writes only, no
+updates/deletes from the application), with timestamp, user id, source IP (`CF-Connecting-IP`),
+action, target, result. Decide retention and who can read it.
+
+### FUT-05: privacy-friendly statistics (European)
+
+Visitor statistics similar to Google Analytics, preferably a European service with a healthier
+privacy policy. Candidates to compare: Matomo (France; can be self-hosted), Plausible (EU, Estonia;
+has a self-hostable Community Edition), Simple Analytics (Netherlands), Pirsch (Germany). Prefer
+cookieless operation (no consent banner) and a self-hosted or EU-hosted instance. Any of them adds a
+script/endpoint origin to the CSP (`script-src`, `connect-src`). Cloudflare Web Analytics exists but
+is not European.

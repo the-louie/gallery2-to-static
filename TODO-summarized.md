@@ -1,6 +1,6 @@
 # TODO Summarized
 
-Generated 2026-10-25 from `TODO.md` (catch-up after Sprints 01–02 + S03 T-01..T-02). Closed rows: `docs/planning/done.md`.
+Generated 2026-10-25 from `TODO.md` (FUTURE rows added (no sprint end)). Closed rows: `docs/planning/done.md`.
 
 ## P0 — Blocks all other work
 
@@ -26,10 +26,6 @@ Generated 2026-10-25 from `TODO.md` (catch-up after Sprints 01–02 + S03 T-01..
 
 ## P2 (second review pass)
 
-- **PERF-03**: the image cache is wiped and fetches aborted on every lightbox step
-- **LOGIC-16**: the lightbox ignores the grid's sort and filters
-- **LOGIC-17**: closing the lightbox pushes history; album scroll position is lost
-- **LOGIC-18**: date filter can't be enabled, and would hide everything
 - **LOGIC-19**: zoom limit is ~2500% instead of 400%
 
 ## P3 (second review pass)
@@ -46,8 +42,16 @@ Generated 2026-10-25 from `TODO.md` (catch-up after Sprints 01–02 + S03 T-01..
 - **BUILD-04**: `size-limit` patterns don't match the build
 - **HYGIENE-01**: repo and package tidy-up
 
+## FUTURE (after production deploy)
+
+- **FUT-01**: SQLite as the master of the data; regenerate only changed branches
+- **FUT-02**: admin can add albums and delegate them; delegated users add subalbums and images
+- **FUT-03**: user profiles
+- **FUT-04**: audit logging
+- **FUT-05**: privacy-friendly statistics (European)
+
 ---
 
 ## Summary
 
-**Open rows:** 26
+**Open rows:** 27
