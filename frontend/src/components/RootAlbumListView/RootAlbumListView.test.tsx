@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { DataLoadError } from '@/utils/dataLoader';
 import { render, screen } from '@/test-utils';
 import userEvent from '@testing-library/user-event';
 import { RootAlbumListView } from './RootAlbumListView';
@@ -60,7 +61,7 @@ describe('RootAlbumListView', () => {
       data: null,
       metadata: null,
       isLoading: false,
-      error: new Error('Load failed'),
+      error: new DataLoadError('Load failed', 'NETWORK_ERROR'),
       refetch,
     });
 

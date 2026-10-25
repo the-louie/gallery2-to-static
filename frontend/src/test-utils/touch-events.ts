@@ -40,7 +40,7 @@ export function createTouch(
 export function createTouchList(touches: Touch[]): TouchList {
   const touchList = touches as unknown as TouchList;
   touchList.item = (index: number) => touches[index] || null;
-  touchList.length = touches.length;
+  Object.defineProperty(touchList, 'length', { value: touches.length });
   return touchList;
 }
 
@@ -67,7 +67,7 @@ export function createTouchEvent(
     touches: touchList,
     targetTouches: targetTouchList,
     changedTouches: changedTouchList,
-  } as TouchEventInit);
+  } as unknown as TouchEventInit);
 }
 
 /**

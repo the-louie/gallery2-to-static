@@ -1,3 +1,4 @@
+import type React from 'react';
 /**
  * ErrorBoundary Component Tests
  *
@@ -151,7 +152,7 @@ describe('ErrorBoundary', () => {
 
   describe('Different Error Types', () => {
     it('handles TypeError', () => {
-      function ThrowTypeError() {
+      function ThrowTypeError(): React.ReactElement {
         throw new TypeError('Type error');
       }
 
@@ -165,7 +166,7 @@ describe('ErrorBoundary', () => {
     });
 
     it('handles ReferenceError', () => {
-      function ThrowReferenceError() {
+      function ThrowReferenceError(): React.ReactElement {
         throw new ReferenceError('Reference error');
       }
 

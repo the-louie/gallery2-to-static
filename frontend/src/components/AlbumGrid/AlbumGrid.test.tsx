@@ -7,6 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test-utils';
+import { DataLoadError } from '@/utils/dataLoader';
 import userEvent from '@testing-library/user-event';
 import { AlbumGrid } from './AlbumGrid';
 import { mockAlbums, mockChildren, mockEmptyChildren } from '@/__mocks__/mockData';
@@ -162,11 +163,7 @@ describe('AlbumGrid', () => {
     });
 
     it('renders error state from hook', () => {
-      const mockError = {
-        message: 'Failed to load',
-        code: 'NETWORK_ERROR',
-        cause: new Error('Network error'),
-      };
+      const mockError = new DataLoadError('Failed to load', 'NETWORK_ERROR', new Error('Network error'));
 
       mockUseAlbumData.mockReturnValue({
         data: null,
@@ -198,11 +195,7 @@ describe('AlbumGrid', () => {
   describe('Error Handling', () => {
     it('displays retry button on error', async () => {
       const mockRefetch = vi.fn();
-      const mockError = {
-        message: 'Failed to load',
-        code: 'NETWORK_ERROR',
-        cause: new Error('Network error'),
-      };
+      const mockError = new DataLoadError('Failed to load', 'NETWORK_ERROR', new Error('Network error'));
 
       mockUseAlbumData.mockReturnValue({
         data: null,

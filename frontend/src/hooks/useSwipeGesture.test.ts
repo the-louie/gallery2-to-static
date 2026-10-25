@@ -5,9 +5,13 @@
  * velocity calculation, gesture state management, and edge cases.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
+import type React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { useSwipeGesture } from './useSwipeGesture';
+
+/** The helpers build native TouchEvents; the hook's handlers take React's synthetic event type. */
+const asReact = (e: TouchEvent) => e as unknown as React.TouchEvent;
 import {
   createTouchStart,
   createTouchMove,
@@ -17,14 +21,16 @@ import {
 
 describe('useSwipeGesture', () => {
   let mockElement: HTMLElement;
+  // Vitest 5: an untyped vi.fn() is Mock<Procedure | Constructable>, which is not a callback type
+  type Callback = (...args: any[]) => void;
   let mockCallbacks: {
-    onSwipeLeft: ReturnType<typeof vi.fn>;
-    onSwipeRight: ReturnType<typeof vi.fn>;
-    onSwipeUp: ReturnType<typeof vi.fn>;
-    onSwipeDown: ReturnType<typeof vi.fn>;
-    onSwipeStart: ReturnType<typeof vi.fn>;
-    onSwipeCancel: ReturnType<typeof vi.fn>;
-    onSwipeProgress: ReturnType<typeof vi.fn>;
+    onSwipeLeft: Mock<Callback>;
+    onSwipeRight: Mock<Callback>;
+    onSwipeUp: Mock<Callback>;
+    onSwipeDown: Mock<Callback>;
+    onSwipeStart: Mock<Callback>;
+    onSwipeCancel: Mock<Callback>;
+    onSwipeProgress: Mock<Callback>;
   };
 
   beforeEach(() => {
@@ -33,13 +39,13 @@ describe('useSwipeGesture', () => {
     document.body.appendChild(mockElement);
 
     mockCallbacks = {
-      onSwipeLeft: vi.fn(),
-      onSwipeRight: vi.fn(),
-      onSwipeUp: vi.fn(),
-      onSwipeDown: vi.fn(),
-      onSwipeStart: vi.fn(),
-      onSwipeCancel: vi.fn(),
-      onSwipeProgress: vi.fn(),
+      onSwipeLeft: vi.fn<Callback>(),
+      onSwipeRight: vi.fn<Callback>(),
+      onSwipeUp: vi.fn<Callback>(),
+      onSwipeDown: vi.fn<Callback>(),
+      onSwipeStart: vi.fn<Callback>(),
+      onSwipeCancel: vi.fn<Callback>(),
+      onSwipeProgress: vi.fn<Callback>(),
     };
 
     // Mock Date.now for consistent timing
@@ -65,7 +71,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 200, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       expect(mockCallbacks.onSwipeStart).toHaveBeenCalledTimes(1);
@@ -75,7 +81,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 100, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchMove(moveEvent);
+        result.current.onTouchMove(asReact(moveEvent));
       });
 
       // Advance time so velocity is sufficient (distance ~150px in 100ms = 1.5 px/ms)
@@ -90,7 +96,7 @@ describe('useSwipeGesture', () => {
         [{ identifier: 1, clientX: 50, clientY: 100 }],
       );
       act(() => {
-        result.current.onTouchEnd(endEvent);
+        result.current.onTouchEnd(asReact(endEvent));
       });
 
       expect(mockCallbacks.onSwipeLeft).toHaveBeenCalledTimes(1);
@@ -108,7 +114,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 100, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       // Move touch right (more than 50px)
@@ -116,7 +122,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 200, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchMove(moveEvent);
+        result.current.onTouchMove(asReact(moveEvent));
       });
 
       // Advance time so velocity is sufficient
@@ -131,7 +137,7 @@ describe('useSwipeGesture', () => {
         [{ identifier: 1, clientX: 250, clientY: 100 }],
       );
       act(() => {
-        result.current.onTouchEnd(endEvent);
+        result.current.onTouchEnd(asReact(endEvent));
       });
 
       expect(mockCallbacks.onSwipeRight).toHaveBeenCalledTimes(1);
@@ -150,7 +156,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 200, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       // Move touch left (less than 50px)
@@ -158,7 +164,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 160, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchMove(moveEvent);
+        result.current.onTouchMove(asReact(moveEvent));
       });
 
       // Advance time so we don't hit velocity=0 edge case
@@ -173,7 +179,7 @@ describe('useSwipeGesture', () => {
         [{ identifier: 1, clientX: 160, clientY: 100 }],
       );
       act(() => {
-        result.current.onTouchEnd(endEvent);
+        result.current.onTouchEnd(asReact(endEvent));
       });
 
       expect(mockCallbacks.onSwipeLeft).not.toHaveBeenCalled();
@@ -194,7 +200,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 100, clientY: 200 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       // Move touch up (more than 50px)
@@ -202,7 +208,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 100, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchMove(moveEvent);
+        result.current.onTouchMove(asReact(moveEvent));
       });
 
       // Advance time so velocity is sufficient
@@ -217,7 +223,7 @@ describe('useSwipeGesture', () => {
         [{ identifier: 1, clientX: 100, clientY: 50 }],
       );
       act(() => {
-        result.current.onTouchEnd(endEvent);
+        result.current.onTouchEnd(asReact(endEvent));
       });
 
       expect(mockCallbacks.onSwipeUp).toHaveBeenCalledTimes(1);
@@ -235,7 +241,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 100, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       // Move touch down (more than 50px)
@@ -243,7 +249,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 100, clientY: 200 },
       ]);
       act(() => {
-        result.current.onTouchMove(moveEvent);
+        result.current.onTouchMove(asReact(moveEvent));
       });
 
       // Advance time so velocity is sufficient
@@ -258,7 +264,7 @@ describe('useSwipeGesture', () => {
         [{ identifier: 1, clientX: 100, clientY: 250 }],
       );
       act(() => {
-        result.current.onTouchEnd(endEvent);
+        result.current.onTouchEnd(asReact(endEvent));
       });
 
       expect(mockCallbacks.onSwipeDown).toHaveBeenCalledTimes(1);
@@ -279,7 +285,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 200, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       // Move touch left (exactly 49px - should fail)
@@ -287,7 +293,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 151, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchMove(moveEvent);
+        result.current.onTouchMove(asReact(moveEvent));
       });
 
       // End touch
@@ -297,7 +303,7 @@ describe('useSwipeGesture', () => {
         [{ identifier: 1, clientX: 151, clientY: 100 }],
       );
       act(() => {
-        result.current.onTouchEnd(endEvent);
+        result.current.onTouchEnd(asReact(endEvent));
       });
 
       expect(mockCallbacks.onSwipeLeft).not.toHaveBeenCalled();
@@ -316,7 +322,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 200, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       // Move touch left
@@ -324,7 +330,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 100, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchMove(moveEvent);
+        result.current.onTouchMove(asReact(moveEvent));
       });
 
       // End touch after a very long time (low velocity)
@@ -338,7 +344,7 @@ describe('useSwipeGesture', () => {
         [{ identifier: 1, clientX: 50, clientY: 100 }],
       );
       act(() => {
-        result.current.onTouchEnd(endEvent);
+        result.current.onTouchEnd(asReact(endEvent));
       });
 
       // Should not trigger due to low velocity
@@ -362,7 +368,7 @@ describe('useSwipeGesture', () => {
         { identifier: 2, clientX: 250, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       expect(mockCallbacks.onSwipeLeft).not.toHaveBeenCalled();
@@ -384,7 +390,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 200, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       // Add second touch
@@ -393,7 +399,7 @@ describe('useSwipeGesture', () => {
         { identifier: 2, clientX: 250, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchMove(moveEvent);
+        result.current.onTouchMove(asReact(moveEvent));
       });
 
       expect(mockCallbacks.onSwipeCancel).toHaveBeenCalled();
@@ -414,7 +420,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 200, clientY: 200 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       // Move diagonally (equal X and Y movement)
@@ -422,7 +428,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 100, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchMove(moveEvent);
+        result.current.onTouchMove(asReact(moveEvent));
       });
 
       // End touch
@@ -432,7 +438,7 @@ describe('useSwipeGesture', () => {
         [{ identifier: 1, clientX: 100, clientY: 100 }],
       );
       act(() => {
-        result.current.onTouchEnd(endEvent);
+        result.current.onTouchEnd(asReact(endEvent));
       });
 
       // Should not trigger either direction
@@ -454,7 +460,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 200, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       // Move touch
@@ -462,7 +468,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 150, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchMove(moveEvent);
+        result.current.onTouchMove(asReact(moveEvent));
       });
 
       expect(mockCallbacks.onSwipeProgress).toHaveBeenCalled();
@@ -487,7 +493,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 200, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       // Cancel touch
@@ -495,7 +501,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 150, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchCancel(cancelEvent);
+        result.current.onTouchCancel(asReact(cancelEvent));
       });
 
       expect(mockCallbacks.onSwipeCancel).toHaveBeenCalled();
@@ -517,7 +523,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 200, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       expect(mockCallbacks.onSwipeStart).not.toHaveBeenCalled();
@@ -538,7 +544,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 200, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       // Move touch left
@@ -546,7 +552,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 100, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchMove(moveEvent);
+        result.current.onTouchMove(asReact(moveEvent));
       });
 
       // End touch
@@ -556,7 +562,7 @@ describe('useSwipeGesture', () => {
         [{ identifier: 1, clientX: 50, clientY: 100 }],
       );
       act(() => {
-        result.current.onTouchEnd(endEvent);
+        result.current.onTouchEnd(asReact(endEvent));
       });
 
       expect(mockCallbacks.onSwipeLeft).not.toHaveBeenCalled();
@@ -575,7 +581,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 100, clientY: 200 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       // Move touch up
@@ -583,7 +589,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 100, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchMove(moveEvent);
+        result.current.onTouchMove(asReact(moveEvent));
       });
 
       // End touch
@@ -593,7 +599,7 @@ describe('useSwipeGesture', () => {
         [{ identifier: 1, clientX: 100, clientY: 50 }],
       );
       act(() => {
-        result.current.onTouchEnd(endEvent);
+        result.current.onTouchEnd(asReact(endEvent));
       });
 
       expect(mockCallbacks.onSwipeUp).not.toHaveBeenCalled();
@@ -614,7 +620,7 @@ describe('useSwipeGesture', () => {
         { identifier: 1, clientX: 200, clientY: 100 },
       ]);
       act(() => {
-        result.current.onTouchStart(startEvent);
+        result.current.onTouchStart(asReact(startEvent));
       });
 
       // Advance time beyond timeout (300ms)

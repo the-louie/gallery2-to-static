@@ -163,7 +163,7 @@ describe('albumThemesConfig utilities', () => {
       const config = await loadAlbumThemesConfig();
 
       expect(config.defaultTheme).toBe('classic');
-      expect(config.albumThemes['7']).toBe('classic');
+      expect(config.albumThemes!['7']).toBe('classic');
     });
 
     it('returns default config when JSON is malformed', async () => {

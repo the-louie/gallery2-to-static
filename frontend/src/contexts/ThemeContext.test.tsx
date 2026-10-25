@@ -424,7 +424,7 @@ describe('ThemeContext', () => {
       const initialTheme = result.current.theme;
 
       act(() => {
-        // @ts-expect-error - Testing invalid theme name
+        // invalid theme name on purpose (setTheme accepts any string at the type level)
         result.current.setTheme('invalid-theme');
       });
 

@@ -87,7 +87,7 @@ describe('useProgressiveImage', () => {
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
 
     // Mock imageUrl functions
-    vi.spyOn(imageUrl, 'getImageUrl').mockImplementation((image, useThumbnail) => {
+    vi.spyOn(imageUrl, 'getImageUrl').mockImplementation((_image, useThumbnail) => {
       if (useThumbnail) {
         return '/images/test-album/t__test-photo.jpg';
       }

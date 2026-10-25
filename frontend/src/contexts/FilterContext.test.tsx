@@ -188,8 +188,8 @@ describe('useFilter', () => {
 
 describe('FilterContext memoization', () => {
   it('provides stable context value', () => {
-    let contextValue1: FilterContextValue | null = null;
-    let contextValue2: FilterContextValue | null = null;
+    let contextValue1 = null as FilterContextValue | null; // assigned in a render callback: avoid narrowing to null
+    let contextValue2 = null as FilterContextValue | null;
 
     function TestComponent1() {
       contextValue1 = useFilter();

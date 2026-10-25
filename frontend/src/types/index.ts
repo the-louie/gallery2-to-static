@@ -310,7 +310,8 @@ export interface SortState {
   /** Current sort option */
   option: SortOption;
   /** Function to set sort option */
-  setOption: (option: SortOption) => void;
+  /** New option, or an updater from the previous one (useLocalStorage supports both). */
+  setOption: (option: SortOption | ((prev: SortOption) => SortOption)) => void;
 }
 
 /**

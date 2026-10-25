@@ -8,7 +8,15 @@
  */
 
 import { axe } from 'vitest-axe';
-import type { AxeResults } from 'vitest-axe';
+import type { AxeResults } from 'axe-core';
+
+// vitest-axe 0.1 types its matcher on the old `Vi` namespace; Vitest 5 is extended through Matchers.
+declare module 'vitest' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface Matchers<R extends void | Promise<void> = void | Promise<void>, T = unknown> {
+    toHaveNoViolations(): R;
+  }
+}
 
 /**
  * Test component for accessibility violations

@@ -117,7 +117,7 @@ describe('ImageThumbnail', () => {
       expect(calls[calls.length - 1][2]).toEqual({ loadFull: false, enabled: false });
       triggerIntersection();
       await waitFor(() => {
-        const last = vi.mocked(useProgressiveImage).mock.calls.at(-1)!;
+        const last = vi.mocked(useProgressiveImage).mock.calls[vi.mocked(useProgressiveImage).mock.calls.length - 1];
         expect(last[2]).toEqual({ loadFull: false, enabled: true });
       });
     });
@@ -596,7 +596,7 @@ describe('ImageThumbnail', () => {
       expect(screen.getByText('No preview')).toBeInTheDocument();
       expect(screen.queryByText('Image unavailable')).toBeNull();
       expect(document.querySelector('img')).toBeNull();
-      expect(vi.mocked(useProgressiveImage).mock.calls.at(-1)![2]).toEqual({ loadFull: false, enabled: false });
+      expect(vi.mocked(useProgressiveImage).mock.calls[vi.mocked(useProgressiveImage).mock.calls.length - 1][2]).toEqual({ loadFull: false, enabled: false });
       screen.getByRole('button').click();
       expect(onClick).toHaveBeenCalled();
     });

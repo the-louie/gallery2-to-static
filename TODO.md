@@ -14,7 +14,9 @@ The reported test failures (214/1249) could **not** be reproduced — see TEST-0
 
 Nothing below this line can be validated until the build runs.
 
-### BUILD-01 (remaining): test-only type errors behind `npm run typecheck:test` (253 → 273 after the Sprint 04 toolchain upgrades)
+### ~~BUILD-01 (remaining): test-only type errors behind `npm run typecheck:test` (253 → 273 after the Sprint 04 toolchain upgrades)~~
+
+**CLOSED, verified 2026-10-25 (Sprint 06 T-07 + T-08):** `npm run typecheck:test` → **0 errors** (was 343 at the start, 273 before this sprint). T-07: fixtures typed `Album`/`Image`. T-08: swipe tests pass native TouchEvents through `asReact()` and type their callback mocks (`vi.fn<Callback>()`, Vitest 5); touch helpers set `length` with `defineProperty`; error mocks are real `DataLoadError`s (and include `metadata`); throw-only test components typed; `.at()` (ES2022) replaced; FilterContext test variables not narrowed to `null`; stale `@ts-expect-error` removed; `SortState.setOption` type now admits the updater form the hook already supported; vitest-axe's `toHaveNoViolations` declared on Vitest 5's `Matchers`. Tests unchanged in behaviour: 1487/1487. Original row kept for the record:
 
 _Progress 2026-10-25 (Sprint 06 T-07): `src/__mocks__/mockData.ts` fixtures typed as `Album`/`Image` (they were `Child`, so every use as an `Album`/`Image` prop failed): **273 → 89**. Left: useSwipeGesture TouchEvent helpers (62), FilterContext test (6), small ones (21)._
 

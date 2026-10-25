@@ -72,7 +72,7 @@ describe("albumPath", () => {
     it('returns "/" when last item has no path', () => {
       const bp: BreadcrumbPath = [
         { id: 7, title: "Root", path: "/" },
-        { id: 8, title: "Albums", path: null },
+        { id: 8, title: "Albums", path: null as unknown as string }, // a missing path, as old data can have
       ];
       expect(getAlbumPath(bp)).toBe("/");
     });
