@@ -56,6 +56,8 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
 
 `@eslint-react/set-state-in-effect` is off (49 hits). The effects reset or sync state when an input changes, or set loading flags before a fetch; each costs one extra render. Files: `hooks/useProgressiveImage.ts` (14), `hooks/useLightbox.ts` (8), `hooks/useSiteMetadata.ts` (6), `hooks/useAlbumData.ts` (4), `components/ImageThumbnail/ImageThumbnail.tsx` (3), `components/SearchBar/SearchBar.tsx` (3), `hooks/useAlbumMetadata.ts`, `hooks/useImageZoom.ts`, `components/FilterPanel/DateRangeFilter.tsx` (2 each), `AlbumCard`, `Lightbox`, `ThemeContext`, `ViewAbortContext`, `PathResolverPage` (1 each). Do it per hook with its tests; turn the rule on at the end. No user-visible bug known.
 
+_Sprint 10 T-01 (2026-10-25): `frontend/src/hooks/useSiteMetadata.ts` takes cached data as the initial state (a later mount renders it on the first render, no loading flash) and no longer resets loading/error at effect start (already the initial state); new `useSiteMetadata.test.ts` (fails on the previous code). 6 hits gone._
+
 ## FUTURE (after production deploy)
 
 Operator, 2026-10-25. Not scheduled until lanbilder.se runs on the new code. The notes under each

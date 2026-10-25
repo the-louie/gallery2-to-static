@@ -33,21 +33,15 @@ const cache: { data: IndexMetadata | null; promise: Promise<IndexMetadata | null
 };
 
 export function useSiteMetadata(): UseSiteMetadataResult {
-  const [siteName, setSiteName] = useState<string | null>(null);
-  const [siteDescription, setSiteDescription] = useState<string | null>(null);
-  const [rootAlbumId, setRootAlbumId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // Cached data is used as the initial state, so a mount after the first load renders it at once
+  const [siteName, setSiteName] = useState<string | null>(() => cache.data?.siteName ?? null);
+  const [siteDescription, setSiteDescription] = useState<string | null>(() => cache.data?.siteDescription ?? null);
+  const [rootAlbumId, setRootAlbumId] = useState<number | null>(() => cache.data?.rootAlbumId ?? null);
+  const [isLoading, setIsLoading] = useState<boolean>(() => cache.data === null);
   const [error, setError] = useState<DataLoadError | null>(null);
 
   useEffect(() => {
-    // If we have cached data, use it immediately
-    if (cache.data) {
-      setSiteName(cache.data.siteName);
-      setSiteDescription(cache.data.siteDescription ?? null);
-      setRootAlbumId(cache.data.rootAlbumId);
-      setIsLoading(false);
-      return;
-    }
+    if (cache.data) return;
 
     // If there's already a pending request, wait for it
     if (cache.promise) {
@@ -75,9 +69,7 @@ export function useSiteMetadata(): UseSiteMetadataResult {
       return;
     }
 
-    // Start a new request
-    setIsLoading(true);
-    setError(null);
+    // Start a new request (isLoading is already true and error null: this effect runs once per mount)
     cache.promise = loadIndex();
 
     cache.promise
