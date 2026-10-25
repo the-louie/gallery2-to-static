@@ -1,6 +1,6 @@
 # Sprint 05: the remaining correctness and hygiene rows
 
-**Status:** in progress (opened 2026-10-25)
+**Status:** done (opened and closed 2026-10-25)
 **Current ticket:** —
 **Last completed:** T-09 (`done` — commit `db6a567`)
 
@@ -27,7 +27,9 @@ the stray files are gone from the repo and from `dist/`.
 Total ≈ 16h.
 
 ## Retro
-(filled at end of sprint)
+**Worked:** reading the design note before changing the root-block links (T-03) turned a "remove the link" fix into the intended one (URL kept as the separate website link, with a description fallback). Mirroring rules on both sides (URL encoding, thumbnail names) with tests on each side.
+**Didn't:** writing the README deploy step exposed that the app uses `HashRouter`, so old lanbilder.se path URLs would land on the home page; the first review missed it. Recorded as LOGIC-32 (P1, before cutover) instead of widening this sprint. Several test edits via sed broke syntax and needed a second pass.
+**Backlog grooming:** closed LOGIC-24, SEC-15, LOGIC-27, SEC-16, LOGIC-28, LOGIC-30, LOGIC-31, ARCH-07, HYGIENE-01 (9) and DECISION-01 (operator: self-hosted on lanbilder2). New: LOGIC-32.
 
 ## Demo notes
-(filled at end of sprint)
+Image URLs: `#`, `?`, `%`, space, å/ö encoded per segment, backend check decodes and still rejects encoded traversal. `[b]`×16000 renders in < 1 s. Root block: no `a a`, description URL only as the website link. `/fester/image/2005` resolves to the album when it exists. PNG/GIF thumbnails named `t__x.png.jpg`; photos without a thumbnail show "No preview". `router-vendor` chunk exists, `chunkSizeWarningLimit` applied. Stray files gone; engines `>=22.23.4`; README has full steps. Vitest 1483/1483, backend 13/13, build + check:dist + size-limit OK.
