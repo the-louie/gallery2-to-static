@@ -4,7 +4,7 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 
 **After every sprint (operator, 2026-10-25):** prune `TODO.md` and regenerate `TODO-summarized.md`: `python3 docs/planning/prune_todo.py . "Sprint NN"` moves closed (~~struck~~) rows, with their proof, to `docs/planning/done.md`.
 
-**Active sprint:** [Sprint 10](./sprints/sprint-10.md) — in progress.
+**Active sprint:** — (Sprint 10 done; the remaining rows wait for the operator or the deploy).
 **Current ticket:** —
 **Last completed:** Sprint 10 T-08 (commit `349cb9d`).
 
@@ -19,6 +19,6 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 | S07 ✅ | LINT-01 warnings: lint gates. |
 | S08 ✅ | OWNER-01 owner-name fallback; DEPS-01 ESLint 10 + TypeScript 7. |
 | S09 ✅ | LINT-02 @eslint-react rules. |
-| S10 | REFAC-01 state effects. |
-| Operator | SENTRY-01 (after a Claude Code restart + Sentry login). DECISION-01: self-hosted on lanbilder2. REFAC-01 (P3) schedulable. FUT-01..05 after deploy. |
+| S10 ✅ | REFAC-01 state effects. |
+| Operator | SENTRY-01 (after a Claude Code restart + Sentry login). DECISION-01: self-hosted on lanbilder2. FUT-01..05 after deploy. |
 | (old) S05+ | P3 items, SEC-18 brotli check, hygiene, test-fixture type burn-down (BUILD-01 rest, LINT-01). DECISION-01 (hosting) with the operator. SEC-12 (permissions) when the Gallery 2 DB is available to test against. |
