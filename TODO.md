@@ -50,7 +50,9 @@ never leaves MySQL. Treat any already-published `data/` output as leaked.
 
 ## P3 — Quality, hygiene and latent bugs
 
-### LINT-01 (remaining): 18 lint warnings — exhaustive-deps 10, only-export-components 8
+### ~~LINT-01 (remaining): 18 lint warnings — exhaustive-deps 10, only-export-components 8~~
+
+**CLOSED, verified 2026-10-25 (Sprint 07 T-01..T-03):** `npm run lint` (`eslint . --max-warnings 0`) exits 0: 0 errors, 0 warnings (was 117 errors + 15 warnings at the start). CLAUDE.md marks lint and `typecheck:test` as gates. Original row kept for the record:
 
 _Progress 2026-10-25 (Sprint 07 T-01): exhaustive-deps 10 → 0. Fixed (6): Lightbox title memo, DOM-reset and zoom-reset effects, wheel and touch handlers (they name exactly what they use: `imageTitle`, `hasImage`/identity fields, `resetZoom`/`setZoom`/`setPan`/`zoomLevel`), useImageCache `stats` memo (`[cache]`, a stable singleton). Documented as deliberate (4): useProgressiveImage's 3 effects are keyed on image identity fields so re-sorted lists don't restart fetches; useAlbumData's cleanup reads the request counter ref on purpose._
 

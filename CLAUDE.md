@@ -159,13 +159,13 @@ npm install              # Install dependencies
 npm run dev              # Vite dev server (serves data/ via custom plugin)
 npm run build            # TypeScript check (shipped code only, tsconfig.json) + Vite production build
 npm run typecheck        # Type-check shipped code only (tsconfig.json; tests excluded)
-npm run typecheck:test   # Type-check including tests (tsconfig.test.json)
+npm run typecheck:test   # Type-check including tests (tsconfig.test.json; 0 errors)
 npm run preview          # Preview production build
 npm test                 # Vitest in watch mode
 npm run test:run         # Single test run
 npm run test:coverage    # Coverage report (v8)
 npm run test:ui          # Vitest UI
-npm run lint             # ESLint (zero warnings enforced)
+npm run lint             # ESLint, zero errors and zero warnings (passes; keep it that way: it is a gate)
 npm run lint:fix         # ESLint autofix
 npm run format           # Prettier write
 npm run format:check     # Prettier check
