@@ -20,6 +20,10 @@ Nothing below this line can be validated until the build runs.
 
 `backend/config_example.json:13` ships `"ignoreAlbums": []`. The review text cites `99283, 362248` from an older config; the operator confirms the full list. Check after extraction: none of the IDs (or their titles) appears in `data/search/index.json` or under `data/`.
 
+### OWNER-01: owner name = trimmed fullName, else trimmed userName (operator, 2026-10-25)
+
+Reverses the SEC-17 privacy choice. `backend/sqlUtils.ts:25,94` select `NULLIF(TRIM(fullName), '')`, so a user without a full name shows no owner. Operator: keep the old fallback to `userName`, but a blank/space-only fullName must also fall back; future logins are not username-based, so userName is a nickname that an optional fullName overrides.
+
 ## P2 — Correctness and cost
 
 ## P3 — Quality, hygiene and latent bugs
