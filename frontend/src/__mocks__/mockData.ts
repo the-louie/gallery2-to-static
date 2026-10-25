@@ -1,4 +1,4 @@
-import type { Child } from '../../../backend/types';
+import type { Child, Album, Image } from '@/types';
 
 /**
  * Mock data for testing
@@ -8,7 +8,7 @@ import type { Child } from '../../../backend/types';
 /**
  * Mock album item (GalleryAlbumItem)
  */
-export const mockAlbum: Child = {
+export const mockAlbum: Album = {
   id: 1,
   type: 'GalleryAlbumItem',
   hasChildren: true,
@@ -28,7 +28,7 @@ export const mockAlbum: Child = {
 /**
  * Mock photo item (GalleryPhotoItem)
  */
-export const mockPhoto: Child = {
+export const mockPhoto: Image = {
   id: 2,
   type: 'GalleryPhotoItem',
   hasChildren: false,
@@ -48,7 +48,7 @@ export const mockPhoto: Child = {
 /**
  * Mock album with multiple children
  */
-export const mockAlbumWithChildren: Child = {
+export const mockAlbumWithChildren: Album = {
   id: 10,
   type: 'GalleryAlbumItem',
   hasChildren: true,
@@ -68,7 +68,7 @@ export const mockAlbumWithChildren: Child = {
 /**
  * Mock photo with different dimensions
  */
-export const mockPhotoPortrait: Child = {
+export const mockPhotoPortrait: Image = {
   id: 3,
   type: 'GalleryPhotoItem',
   hasChildren: false,
@@ -86,7 +86,7 @@ export const mockPhotoPortrait: Child = {
 /**
  * Mock photo without thumbnail dimensions
  */
-export const mockPhotoNoThumb: Child = {
+export const mockPhotoNoThumb: Image = {
   id: 4,
   type: 'GalleryPhotoItem',
   hasChildren: false,
@@ -114,12 +114,12 @@ export const mockChildren: Child[] = [
 /**
  * Array of mock albums only
  */
-export const mockAlbums: Child[] = [mockAlbum, mockAlbumWithChildren];
+export const mockAlbums: Album[] = [mockAlbum, mockAlbumWithChildren];
 
 /**
  * Array of mock photos only
  */
-export const mockPhotos: Child[] = [
+export const mockPhotos: Image[] = [
   mockPhoto,
   mockPhotoPortrait,
   mockPhotoNoThumb,

@@ -16,6 +16,8 @@ Nothing below this line can be validated until the build runs.
 
 ### BUILD-01 (remaining): test-only type errors behind `npm run typecheck:test` (253 → 273 after the Sprint 04 toolchain upgrades)
 
+_Progress 2026-10-25 (Sprint 06 T-07): `src/__mocks__/mockData.ts` fixtures typed as `Album`/`Image` (they were `Child`, so every use as an `Album`/`Image` prop failed): **273 → 89**. Left: useSwipeGesture TouchEvent helpers (62), FilterContext test (6), small ones (21)._
+
 _2026-10-25: Vitest 5 mock types add `Mock<Procedure | Constructable>` errors (22); the rest are the existing fixture typing (`Child` vs `Image`/`Album`, 104+) and `TouchEvent` helper types (39)._
 
 _Groomed 2026-10-25 (Sprint 01 retro): the build part is closed (T-01..T-04, `npm run build` exits 0). What is left is the test-fixture typing (`mockData.ts` `Child` vs `Album`/`Image`), to burn down with LINT-01._ Original title: `npm run build` fails at the type check — 343 errors, not 3.
