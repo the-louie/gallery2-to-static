@@ -109,8 +109,8 @@ Deployed on the test host. Side-by-side with the 2006 captures at 1280px (`/srv/
 |---|---|---|---|---|
 | 1 | Matrix rows | 225px per row | same (223px rows, document 1118px on both) | fixed in T-13: `.gbBlock` borders and the footer padding |
 | 2 | Root page | Classic list layout | Matrix layout | by decision (operator): the template applies to every album |
-| 3 | Root "Owner" | "Gallery Administrator" | "Unknown" | `backend/ownerDisplayName.ts` maps it; decide in T-13 |
-| 4 | Album cells | Gallery 2's chosen highlight, 150×150 | first photo, cropped to 150×150 | the export has no highlightId (schema) |
+| 3 | Root "Owner" | "Gallery Administrator" | "Gallery Administrator" | Sprint 12 T-05 (operator decision) |
+| 4 | Album cells | Gallery 2's chosen highlight, 150×150 | the same chosen highlight (Sprint 12 T-01: the album's thumbnail derivative chain in the DB); all 10 albums of the 2006 root page show the same photo now | — |
 | 5 | Album cell "Size" | "9 items (878 items total)" | "9 items (873 items total)" | fixed in Sprint 12 T-03: the total counts photos and sub-albums (`totalDescendantCount`); the DB holds 867 photos + 9 albums under DH-Photo today, 3 photos are not exported, and 2006's 878 reflects the data of 2006 |
 | 6 | Nav bar | Login / Register right | — | left out (operator) |
 | 7 | Sidebar | "Add Comment" | — | left out (operator) |
@@ -130,4 +130,12 @@ Deployed on the test host. Side-by-side with the 2006 captures at 1280px (`/srv/
 Found and fixed in T-13: the 1px rule under content blocks (`border-style` was inherited from a wrapper the 2006 page did not have), the footer's 4px padding, and that Gallery 2's photo page has **no** rules under its blocks (`photo.tpl` gives `#gsContent` no `gcBorder1` class). The search box uses the browser's default `Arial` like the 2006 page. Both sides render with the machine's fonts (Verdana → DejaVu Sans here; the operator's Windows browser shows real Verdana on both).
 
 What still differs is data and export logic, now backlog rows **PRIO-THEME-01..05** in `TODO.md`: owner "Unknown" vs "Gallery Administrator", the album highlight picked by Gallery 2, Gallery 2's thumbnail crops, "(N items total)" counting sub-albums, and a 1024px resize for photo pages instead of the scaled original.
+
+## Sprint 12 (2026-10-25): the data behind the look
+
+- Album highlights are Gallery 2's own (`getAlbumHighlight`, T-01): the 10 albums on the 2006 root page (`docs/orig-page/2006/main.html`, derivative ids resolved through the DB) show the same photos now, 10/10.
+- Thumbnails: Gallery 2's were `squarethumb` centre crops (T-02); ours are the same crop.
+- "(N items total)" counts photos and sub-albums (T-03); "Owner: Gallery Administrator" stays (T-05).
+- Photo pages serve the export's 1024px resize like Gallery 2's `scale|1024` derivative (T-04), the original on `?size=full`.
+- Search results show BBCode-free text (T-06); the banner slot above the nav bar carries the glitched.se banner (T-09); DHW07 "Inofficiella" is ignored and 404 on the old site (T-08).
 
