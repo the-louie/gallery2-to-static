@@ -38,6 +38,21 @@ import type { SortOption, SortState } from '@/types';
  */
 const DEFAULT_SORT_OPTION: SortOption = 'order-asc';
 
+/** Every valid SortOption, for validating values read back from localStorage (LOGIC-25). */
+const SORT_OPTIONS: readonly SortOption[] = [
+  'date-asc',
+  'date-desc',
+  'name-asc',
+  'name-desc',
+  'size-asc',
+  'size-desc',
+  'order-asc',
+];
+
+export function isSortOption(value: unknown): value is SortOption {
+  return typeof value === 'string' && (SORT_OPTIONS as readonly string[]).includes(value);
+}
+
 /**
  * Get localStorage key for sort preference
  *
@@ -72,8 +87,10 @@ export function useSort(context: 'albums' | 'images'): SortState {
     DEFAULT_SORT_OPTION
   );
 
+  // A stored value is whatever JSON was in localStorage (old version, hand-edited, another app):
+  // anything that is not a known option falls back to the default instead of crashing sortItems.
   return {
-    option,
+    option: isSortOption(option) ? option : DEFAULT_SORT_OPTION,
     setOption,
   };
 }

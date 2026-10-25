@@ -266,7 +266,9 @@ each open tag it scans to the end and re-parses the nested content: `[b]`×16000
 frozen, so this is low risk. Fix: cap the input (e.g. 8 KB) and the depth (e.g. 20), falling back
 to plain text.
 
-### LOGIC-25: stored sort value is not validated
+### ~~LOGIC-25: stored sort value is not validated~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-08):** `frontend/src/hooks/useSort.ts` returns the stored option only if `isSortOption()` (the 7 known values), else `order-asc`. Tests: stored `5`, `{}`, `"colour-asc"`, `null` → default. Original row kept for the record:
 
 `hooks/useSort.ts:68-72` passes whatever `useLocalStorage` parses straight through, and
 `utils/sorting.ts:217` calls `sortOption.split('-')`. A stored non-string (`5`, `{}`) throws and
@@ -303,7 +305,9 @@ and a strict CSP blocks external images, so this is low risk. Fix: `encodeURI` t
 path index, so `/x/image/2005` (album "image", sub-album "2005") is read as image 2005 in album
 `/x`. Fix: look up the full path in `pathIndex` first; use the image regex only if that misses.
 
-### LOGIC-29: Swedish name sort is wrong
+### ~~LOGIC-29: Swedish name sort is wrong~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-08):** `frontend/src/utils/sorting.ts` `sortByName` compares with a module-level `Intl.Collator('sv', { sensitivity: 'base' })`. Test: apa, Zebra, Ål, Åsna, Ärta, Ödla (asc and desc). Original row kept for the record:
 
 `utils/sorting.ts:66-75` compares `toLowerCase()` strings with `<`/`>` (code point order):
 ä (U+00E4) < å (U+00E5) < ö, but Swedish order is å, ä, ö, and accented letters sort after z

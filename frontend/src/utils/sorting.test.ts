@@ -89,6 +89,16 @@ describe('sorting', () => {
     });
 
     describe('name sorting', () => {
+      it('uses Swedish alphabetical order: z < å < ä < ö (LOGIC-29)', () => {
+        const items: Child[] = ['Ödla', 'Ärta', 'Zebra', 'Åsna', 'apa', 'Ål'].map((title, i) => ({
+          ...mockPhoto,
+          id: 100 + i,
+          title,
+        }));
+        expect(sortItems(items, 'name-asc').map((c) => c.title)).toEqual(['apa', 'Zebra', 'Ål', 'Åsna', 'Ärta', 'Ödla']);
+        expect(sortItems(items, 'name-desc').map((c) => c.title)).toEqual(['Ödla', 'Ärta', 'Åsna', 'Ål', 'Zebra', 'apa']);
+      });
+
       it('sorts by name ascending (A-Z)', () => {
         const items: Child[] = [
           { ...mockPhoto, title: 'Zebra' },

@@ -217,4 +217,15 @@ describe('useSort', () => {
       expect(result.current.option).toBe('name-asc');
     });
   });
+
+  describe('stored value validation (LOGIC-25)', () => {
+    it.each([['5', 5], ['object', {}], ['unknown string', 'colour-asc'], ['null', null]])(
+      'falls back to the default for a stored %s',
+      (_label, stored) => {
+        localStorage.setItem('gallery-sort-albums', JSON.stringify(stored));
+        const { result } = renderHook(() => useSort('albums'));
+        expect(result.current.option).toBe('order-asc');
+      },
+    );
+  });
 });

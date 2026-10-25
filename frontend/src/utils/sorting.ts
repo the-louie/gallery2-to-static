@@ -49,6 +49,9 @@ function sortByDate(a: Child, b: Child, ascending: boolean): number {
  * @param ascending - If true, sort A-Z, otherwise Z-A
  * @returns Comparison result (-1, 0, or 1)
  */
+/** Collator for name sorting: Swedish alphabet, case-insensitive. Created once (Intl objects are costly). */
+const NAME_COLLATOR = new Intl.Collator('sv', { sensitivity: 'base' });
+
 function sortByName(a: Child, b: Child, ascending: boolean): number {
   const aTitle = a.title?.trim() ?? '';
   const bTitle = b.title?.trim() ?? '';
@@ -64,15 +67,11 @@ function sortByName(a: Child, b: Child, ascending: boolean): number {
     return -1; // b is empty, put it last
   }
 
-  // Case-insensitive comparison
-  const aLower = aTitle.toLowerCase();
-  const bLower = bTitle.toLowerCase();
-
-  if (aLower < bLower) {
-    return ascending ? -1 : 1;
-  }
-  if (aLower > bLower) {
-    return ascending ? 1 : -1;
+  // Case-insensitive Swedish collation: a … z, å, ä, ö (code point order gave ä < å < ö and
+  // put other accented letters after z) (LOGIC-29).
+  const primary = NAME_COLLATOR.compare(aTitle, bTitle);
+  if (primary !== 0) {
+    return ascending ? primary : -primary;
   }
 
   // If case-insensitive comparison is equal, use case-sensitive for stable sort
