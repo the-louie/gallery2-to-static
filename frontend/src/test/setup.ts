@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 import { afterEach, vi, expect } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import * as matchers from 'vitest-axe/matchers';
@@ -79,3 +79,12 @@ if (typeof URL.createObjectURL !== 'function') {
 if (typeof URL.revokeObjectURL !== 'function') {
   URL.revokeObjectURL = vi.fn() as typeof URL.revokeObjectURL;
 }
+
+// @testing-library/dom 10 only recognises *Jest* fake timers (global `jest` plus a faked
+// setTimeout); with Vitest's fake timers its asyncWrapper waited on a setTimeout(0) that never
+// fired, so userEvent calls hung. This shim lets it advance Vitest's fake clock instead.
+(globalThis as unknown as { jest: { advanceTimersByTime: (ms: number) => void } }).jest = {
+  advanceTimersByTime: (ms: number) => {
+    vi.advanceTimersByTime(ms);
+  },
+};
