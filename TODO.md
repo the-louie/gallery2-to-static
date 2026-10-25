@@ -156,7 +156,9 @@ Verify with `npm outdated` (empty) + `npm audit` (0) in both folders, `npm run b
 vitest run and the backend tests. Add `engines` (HYGIENE-01) so the Node version is pinned too.
 Supersedes the "can wait" note in ARCH-08 and the version part of SEC-14.
 
-### TEST-03: no end-to-end test of the backend extraction (found 2026-10-25, Sprint 02 T-03)
+### ~~TEST-03: no end-to-end test of the backend extraction (found 2026-10-25, Sprint 02 T-03)~~
+
+**CLOSED, verified 2026-10-25 (Sprint 06 T-02 + T-03):** `backend/extract.test.ts` runs `runExtraction()` over an in-memory tree (fake `sql`) with real image files in a temp dir: duplicate-named siblings (`/dreamhack/lordag`, `/dreamhack/lordag--12`), a blank title (`album_13`), an album named `image` with child `2005`, an album without images and an ignored album (both not exported), a truncated JPEG (photo kept, `thumbnailMissing`), a PNG (`t__c.png.jpg`, JPEG content, measured `thumb_width`); every album has one path and every parent link resolves to its child; search index written; a second run keeps `data.prev-*`. Mutation check: with the blank-title fallback removed the test fails with the path-index collision. Still needs the real DB for the LOGIC-11 counts on real data. Original row kept for the record:
 
 _Progress 2026-10-25 (Sprint 06 T-02): `main()` and its helpers moved unchanged into `backend/extract.ts`; `runExtraction({ sql, config, projectRoot, verify? })` returns `{ ok, finalDataDir, dataDir }` instead of setting `process.exitCode`; `index.ts` is the 59-line CLI. The end-to-end test is T-03._
 
