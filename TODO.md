@@ -179,7 +179,9 @@ Add a post-extraction invariant check that every album id appears in the index e
 and every emitted link resolves to its own album — the 6/7 figures above make a good
 regression fixture.
 
-### SEC-13: a 12-character shared search link locks the visitor's tab
+### ~~SEC-13: a 12-character shared search link locks the visitor's tab~~
+
+**CLOSED, verified 2026-10-25 (Sprint 01 T-07):** `frontend/src/utils/searchUtils.ts` `matchSubsequence` is now a linear two-pointer scan (no `new RegExp` left in the app's search path); `MAX_SEARCH_QUERY_LENGTH = 32`, also `maxLength` on the SearchBar input. The 2000-char combined cap is gone (it only existed for the regex and made descriptions over ~1950 chars unsearchable). Tests: 1000 × `eeeeeeeeeezz` against a 1,100-char Swedish text < 500 ms; 500 random cases give the same indices as the old lazy regex. Moving `search()` off the main thread was not needed for this and is not done. Original row kept for the record:
 
 **Confirms list item 7's impact, but the stated mechanism is wrong — and the real one is harder to spot.**
 

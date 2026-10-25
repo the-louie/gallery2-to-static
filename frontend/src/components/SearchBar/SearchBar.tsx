@@ -38,6 +38,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { MAX_SEARCH_QUERY_LENGTH } from '@/utils/searchUtils';
 import './SearchBar.css';
 
 /**
@@ -241,6 +242,7 @@ export function SearchBar({
           className="search-bar-input"
           placeholder={placeholder}
           value={localQuery}
+          maxLength={MAX_SEARCH_QUERY_LENGTH}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           aria-label="Search albums and images"

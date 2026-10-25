@@ -368,7 +368,7 @@ All implemented and tested:
 | Image URLs | Path traversal prevention (rejects `..` segments and null bytes) | `frontend/src/utils/imageUrl.ts` |
 | Thumbnails | `validateNoTraversal()` on source/dest paths | `backend/generateThumbnail.ts` |
 | Local files | `fs.realpath()` for symlink-safe containment | `backend/verifyImagePaths.ts` |
-| Search | Input length limits prevent ReDoS (query max 50 chars, combined max 2000) | `frontend/src/utils/searchUtils.ts` |
+| Search | Linear two-pointer subsequence match (no regex, no backtracking); query max `MAX_SEARCH_QUERY_LENGTH` = 32, also the SearchBar `maxLength` | `frontend/src/utils/searchUtils.ts`, `SearchBar.tsx` |
 | HTTP requests | `isPublicUrl()` blocks localhost and private IP ranges | `backend/verifyImagePaths.ts` |
 | DB credentials | Environment variable overrides (`MYSQL_*`) | `backend/index.ts` |
 | Path components | Rejects `..`, `/`, `\`, null bytes in path chain | `backend/pathResolution.ts` |

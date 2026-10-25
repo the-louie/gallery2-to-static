@@ -28,20 +28,18 @@ export interface SubsequenceMatch {
 }
 
 /**
- * Escape special regex characters in a string
- *
- * @param str - String to escape
- * @returns Escaped string safe for use in regex
+ * Maximum query length for subsequence search. Longer queries return no match.
+ * The SearchBar input enforces the same limit (maxLength).
  */
-function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+export const MAX_SEARCH_QUERY_LENGTH = 32;
 
 /**
- * Match a query as a subsequence in text using lazy regex
+ * Match a query as a subsequence in text (case-insensitive)
  *
- * Converts the query to a lazy regex pattern (e.g., "fbsd" becomes "f.*?b.*?s.*?d")
- * and finds the first match, returning the indices of matched characters.
+ * Linear two-pointer scan: each query character is matched at its earliest position after the
+ * previous one. This gives the same indices as the lazy regex `f.*?b.*?s.*?d` it replaces, without
+ * that regex's catastrophic backtracking on non-matching input (SEC-13: a 12-character query could
+ * block the tab for seconds per description).
  *
  * @param text - Text to search in
  * @param query - Query to match as subsequence
@@ -71,47 +69,19 @@ export function matchSubsequence(
     return { matched: false, matchIndices: [] };
   }
 
-  // Input length validation to prevent ReDoS (catastrophic backtracking)
-  // The regex pattern char1.*?char2.*?... has exponential worst-case complexity
-  // with long inputs, so we cap query length and combined input length.
-  if (trimmedQuery.length > 50) {
-    return { matched: false, matchIndices: [] };
-  }
-  if (trimmedQuery.length + text.length > 2000) {
+  if (trimmedQuery.length > MAX_SEARCH_QUERY_LENGTH) {
     return { matched: false, matchIndices: [] };
   }
 
-  // Convert query to lazy regex pattern
-  // Escape special regex characters and join with .*? (lazy match)
-  const escapedChars = trimmedQuery
-    .split('')
-    .map(char => escapeRegex(char))
-    .join('.*?');
-  const regexPattern = new RegExp(escapedChars, 'i'); // Case-insensitive
-
-  // Find match
-  const match = text.match(regexPattern);
-  if (!match || match.index === undefined || !match[0]) {
-    return { matched: false, matchIndices: [] };
-  }
-
-  // Find indices of matched characters within the matched span
-  // Constrain search to the matched span to ensure correctness
-  const matchIndices: number[] = [];
   const textLower = text.toLowerCase();
   const queryLower = trimmedQuery.toLowerCase();
-  const matchStart = match.index;
-  const matchEnd = matchStart + match[0].length;
-  let textIndex = matchStart;
+  const matchIndices: number[] = [];
   let queryIndex = 0;
-
-  // Find each character from query in order, within the matched span
-  while (queryIndex < queryLower.length && textIndex < matchEnd) {
+  for (let textIndex = 0; textIndex < textLower.length && queryIndex < queryLower.length; textIndex++) {
     if (textLower[textIndex] === queryLower[queryIndex]) {
       matchIndices.push(textIndex);
       queryIndex++;
     }
-    textIndex++;
   }
 
   // If we didn't find all characters, it's not a valid match
