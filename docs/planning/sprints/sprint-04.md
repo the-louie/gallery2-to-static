@@ -1,7 +1,7 @@
 # Sprint 04: everything on current versions, no vulnerable Brotli
 
-**Status:** open (planned 2026-10-25)
-**Current ticket:** T-01 (`todo` — in-range updates and runtime libraries)
+**Status:** in progress (opened 2026-10-25)
+**Current ticket:** T-01 (`in-progress` — In-range updates: Font Awesome, user-event, prettier, react-virtuoso, )
 **Last completed:** —
 
 **Goal:** every frontend and backend dependency on its latest release (operator, DEPS-01), the
@@ -16,7 +16,7 @@ prints a fixed version or "no decoder" for every item in SEC-18; README has no `
 
 | # | Ticket | Backlog | Est | Deps | Status | Acceptance / Notes |
 |---|---|---|---|---|---|---|
-| T-01 | In-range updates: Font Awesome, user-event, prettier, react-virtuoso, react-router-dom 6.30.6 (audit) | DEPS-01 | 1h | – | todo | build + tests green; prod audit 0 |
+| T-01 | In-range updates: Font Awesome, user-event, prettier, react-virtuoso, react-router-dom 6.30.6 (audit) | DEPS-01 | 1h | – | in-progress | build + tests green; prod audit 0 |
 | T-02 | Vite 5 → 8, @vitejs/plugin-react 6, rollup-plugin-visualizer 7 | DEPS-01 | 3h | T-01 | todo | build, dev config, check:dist |
 | T-03 | Vitest 1 → 5 (+ coverage-v8, ui), jsdom 30, @types/jsdom | DEPS-01 | 3h | T-02 | todo | full suite green |
 | T-04 | Testing Library react 16, jest-dom 7 | DEPS-01 | 2h | T-03 | todo | full suite green |
