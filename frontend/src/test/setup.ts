@@ -66,3 +66,12 @@ global.IntersectionObserver = class IntersectionObserver {
   }
   unobserve() {}
 } as any;
+
+// jsdom has no URL.createObjectURL / URL.revokeObjectURL; stub them so code (and tests that
+// vi.spyOn them at module scope) can run. Tests override the return value when they need one.
+if (typeof URL.createObjectURL !== 'function') {
+  URL.createObjectURL = vi.fn(() => 'blob:mock') as typeof URL.createObjectURL;
+}
+if (typeof URL.revokeObjectURL !== 'function') {
+  URL.revokeObjectURL = vi.fn() as typeof URL.revokeObjectURL;
+}

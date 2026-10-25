@@ -19,6 +19,7 @@ Nothing below this line can be validated until the build runs.
 **PARTLY CLOSED 2026-10-25 (Sprint 01 T-01):** steps 1–2 done: duplicate block removed (`Breadcrumbs.integration.test.tsx` is now 114 lines, its suite collects: 37 tests pass with the other Breadcrumbs file); `tsconfig.json` now covers shipped code only (`npm run build`/`npm run typecheck`: 82 errors, 0 in test files), tests via `tsconfig.test.json` / `npm run typecheck:test` (343). Steps 3–4 open (Sprint 01 T-02..T-04).
 **T-02 (2026-10-25):** `vite/client` types added (33× `import.meta.env`); pages/ and contexts/ at 0 errors (`RouteParams` is now a `type`, `PathResolverPage` state `| undefined`, `SearchIndexItem.summary/ownerName` declared). App type-check: 82 → 27.
 **T-03 (2026-10-25):** hooks/, utils/, components/ at 0 errors; **`npm run build` exits 0** (step 3 done). Remaining: step 4 + TEST-01 (T-04), and the 256 test-fixture errors behind `npm run typecheck:test`.
+**T-04 (2026-10-25):** step 4 done: `App.test.tsx:11` and `RootAlbumListView.test.tsx:11` import from `@/types` (0× TS2307). BUILD-01 is closed for the build; the **253** test-only type errors (`npm run typecheck:test`, mostly `mockData.ts` fixtures) stay open as follow-up, tracked with LINT-01.
 
 **Confirms list item 1, but the scale was understated by 20x.**
 
@@ -404,7 +405,9 @@ Fix: `SearchIndexItem` already carries `parentId` (`searchIndex.ts:46-63`) — t
 `/album/${parentId}/image/${image.id}` is constructible from data on hand and simply is not
 constructed. Do that, and fix it before indexing photos.
 
-### TEST-01: 2 suites fail to load; the reported 214 failures do not reproduce
+### ~~TEST-01: 2 suites fail to load; the reported 214 failures do not reproduce~~
+
+**CLOSED, verified 2026-10-25 (Sprint 01 T-01 + T-04):** Breadcrumbs duplicate removed (T-01); `src/test/setup.ts` now stubs `URL.createObjectURL`/`revokeObjectURL` when jsdom lacks them (T-04). Full vitest (2 forks): **81/81 files, 1432/1432 tests pass**. Original row kept for the record:
 
 **Does not confirm the "214 of 1249 tests fail" report.** Actual state of `npx vitest run`
 at `61c80e6`: **1421 passed, 0 failed, 2 suites failed to collect** (81 files, 79 passed).

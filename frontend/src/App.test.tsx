@@ -8,7 +8,7 @@ import {
   loadPathIndex,
   resolvePathToAlbumId,
 } from '@/utils/dataLoader';
-import type { AlbumFile } from '../../../backend/types';
+import type { AlbumFile } from '@/types';
 
 const emptyAlbumFile: AlbumFile = {
   metadata: {

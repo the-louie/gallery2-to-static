@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 import { RootAlbumListView } from './RootAlbumListView';
 import { FilterProvider } from '@/contexts/FilterContext';
 import { mockAlbums } from '@/__mocks__/mockData';
-import type { Child } from '../../../backend/types';
+import type { Child } from '@/types';
 import * as useAlbumDataHook from '@/hooks/useAlbumData';
 import * as useSubalbumsMapHook from '@/hooks/useSubalbumsMap';
 
