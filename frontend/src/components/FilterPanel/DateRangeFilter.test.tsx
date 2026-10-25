@@ -11,7 +11,8 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@/test-utils';
 import userEvent from '@testing-library/user-event';
-import { DateRangeFilter, DATE_RANGE_OPEN_START, DATE_RANGE_OPEN_END } from './DateRangeFilter';
+import { DateRangeFilter } from './DateRangeFilter';
+import { DATE_RANGE_OPEN_START, DATE_RANGE_OPEN_END } from '@/utils/dateRange';
 import { FilterProvider } from '@/contexts/FilterContext';
 import type { FilterCriteria } from '@/types';
 

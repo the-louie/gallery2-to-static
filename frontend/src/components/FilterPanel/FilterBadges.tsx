@@ -35,7 +35,7 @@ import React, { useCallback, useMemo } from 'react';
 import type { FilterCriteria } from '@/types';
 import { countActiveFilters } from '@/utils/filterUtils';
 import './FilterBadges.css';
-import { DATE_RANGE_OPEN_START, DATE_RANGE_OPEN_END } from './DateRangeFilter';
+import { DATE_RANGE_OPEN_START, DATE_RANGE_OPEN_END } from '@/utils/dateRange';
 
 /**
  * Props for FilterBadges component

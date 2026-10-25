@@ -96,6 +96,8 @@ never leaves MySQL. Treat any already-published `data/` output as leaked.
 
 ### LINT-01: 117 lint errors — including 6 real conditional-hook violations
 
+_2026-10-25 (Sprint 04 T-07, ESLint 9 flat config + typescript-eslint 8): 128 problems (110 errors, 18 warnings): no-explicit-any 68, no-unused-vars 29 (v8 also reports unused caught errors), exhaustive-deps 10, only-export-components 8, rules-of-hooks 6, no-useless-escape 3, no-constant-binary-expression 3 (new rule, test file), no-empty-object-type 1 (new rule). Same files and scope as before; the increase is stricter rule versions, not new code._
+
 **Partly confirms the report's "127 errors"** — actual is **117 errors + 15 warnings (132
 problems) across 52 files**:
 
@@ -183,6 +185,7 @@ _Progress 2026-10-25 (Sprint 04 T-02, with T-03): Vite 8.3.5 (+ @vitejs/plugin-r
 _Progress 2026-10-25 (Sprint 04 T-04): @testing-library/react 16.3.3 (+ @testing-library/dom 10.4.2 as explicit peer), jest-dom 7.0.1 (setup and tsconfig.test use `@testing-library/jest-dom/vitest`; tsconfig.test adds `node` types). `src/test/setup.ts` shims a global `jest.advanceTimersByTime` → Vitest's, because Testing Library 10 only detects Jest fake timers (SearchBar's userEvent tests hung). 1468/1468._
 _Progress 2026-10-25 (Sprint 04 T-05): React 19.3.1, react-dom 19.3.1, @types/react(-dom) 19.3.0. `JSX` namespace now imported from React (5 files); 2 timer tests wrapped in `act()` (React 19 flushes updates only there). Test-log warnings unchanged vs React 18 (measured on a T-04 worktree: same act()/Router warnings, 435 ThemeProvider etc.). dist 517 → 595 KB (React 19 runtime)._
 _Progress 2026-10-25 (Sprint 04 T-06): react-router-dom 7.18.4 (re-exports react-router 7). `npm audit --omit=dev`: **0**. No relative `to`/`navigate` paths in the app, so v7's splat-route resolution change does not apply; the two v7 future-flag warnings are gone from the test log. dist 611 KB._
+_Progress 2026-10-25 (Sprint 04 T-07): ESLint 9.39.5 (flat config `eslint.config.js`), typescript-eslint 8.72.0 (replaces the two @typescript-eslint packages), eslint-plugin-react 7.37.5, react-hooks 7.1.1, react-refresh 0.5.7, eslint-config-prettier 10.1.8, globals 17. **ESLint 10 not possible yet:** eslint-plugin-react 7.37.5 (latest) supports ESLint ≤ 9. Remaining full-audit items (14 high: basic-ftp, extract-zip, nanoid, zod 3) all come from size-limit's puppeteer chain (T-09)._
 Verify with `npm outdated` (empty) + `npm audit` (0) in both folders, `npm run build`, the full
 vitest run and the backend tests. Add `engines` (HYGIENE-01) so the Node version is pinned too.
 Supersedes the "can wait" note in ARCH-08 and the version part of SEC-14.
