@@ -18,7 +18,7 @@ Nothing below this line can be validated until the build runs.
 
 ### SENTRY-01: create and set up Sentry projects for this application (operator, 2026-10-25, high prio)
 
-Operator request, verbatim: "Help me create and set up Sentry projects for this application." Org slug: `telamon-it`; run code: `666248c9ac`. Scope to settle when scheduled: one project per part (frontend SPA, backend extractor), DSNs kept out of the repo, source maps only from `--mode analyze` builds or uploaded, not shipped (`scripts/check-dist.mjs`), and what is sent (no IPs/PII by default).
+Operator request, verbatim: "Help me create and set up Sentry projects for this application." Org slug: `telamon-it`; run code: `666248c9ac`. Install (operator, 2026-10-25): `npx @sentry/agent-plugin install telamon-it#666248c9ac` — read what the package does before running it (it is third-party code run with npx). Scope to settle when scheduled: one project per part (frontend SPA, backend extractor), DSNs kept out of the repo, source maps only from `--mode analyze` builds or uploaded, not shipped (`scripts/check-dist.mjs`), and what is sent (no IPs/PII by default).
 
 ### LINT-02: review the @eslint-react rules that are off (Sprint 08 T-02)
 
