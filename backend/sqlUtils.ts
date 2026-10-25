@@ -2,7 +2,7 @@ import type mysql from 'mysql2/promise'
 import type { Child, Config, AlbumMetadata } from './types'
 import { stripBBCode } from './bbcode'
 import { decodeHtmlEntities } from '../shared/decodeHtmlEntities'
-import { normalizeOwnerDisplayName } from './ownerDisplayName'
+import { normalizeOwnerDisplayName, resolveOwnerName } from './ownerDisplayName'
 import {
     validateNullableString,
     validateRequiredString,
@@ -22,7 +22,8 @@ export default (connection: mysql.Connection, config: Config) => {
             i.${config.gallerySettings.columnPrefix}description as description,
             i.${config.gallerySettings.columnPrefix}ownerId as ownerId,
             i.${config.gallerySettings.columnPrefix}summary as summary,
-            NULLIF(TRIM(u.${config.gallerySettings.columnPrefix}fullName), '') as ownerName,
+            u.${config.gallerySettings.columnPrefix}fullName as ownerFullName,
+            u.${config.gallerySettings.columnPrefix}userName as ownerUserName,
 
             fse.${config.gallerySettings.columnPrefix}pathComponent as pathComponent,
             i.${config.gallerySettings.columnPrefix}originationTimestamp as timestamp,
@@ -91,7 +92,8 @@ export default (connection: mysql.Connection, config: Config) => {
             i.${config.gallerySettings.columnPrefix}title as title,
             i.${config.gallerySettings.columnPrefix}description as description,
             i.${config.gallerySettings.columnPrefix}originationTimestamp as timestamp,
-            NULLIF(TRIM(u.${config.gallerySettings.columnPrefix}fullName), '') as ownerName
+            u.${config.gallerySettings.columnPrefix}fullName as ownerFullName,
+            u.${config.gallerySettings.columnPrefix}userName as ownerUserName
         FROM ${config.gallerySettings.tablePrefix}ChildEntity ce
         LEFT JOIN ${config.gallerySettings.tablePrefix}Entity e ON e.${config.gallerySettings.columnPrefix}id=ce.${config.gallerySettings.columnPrefix}id
         LEFT JOIN ${config.gallerySettings.tablePrefix}Item i ON i.${config.gallerySettings.columnPrefix}id=ce.${config.gallerySettings.columnPrefix}id
@@ -142,8 +144,9 @@ export default (connection: mysql.Connection, config: Config) => {
                 const pathComponent = validateNullableString(child.pathComponent, 'pathComponent', MAX_LENGTHS.pathComponent, rowContext);
 
                 // Owner name
-                const rawOwnerName = validateNullableString(child.ownerName, 'ownerName', MAX_LENGTHS.ownerName, rowContext);
-                const ownerName = normalizeOwnerDisplayName(rawOwnerName);
+                const ownerFullName = validateNullableString(child.ownerFullName, 'ownerFullName', MAX_LENGTHS.ownerName, rowContext);
+                const ownerUserName = validateNullableString(child.ownerUserName, 'ownerUserName', MAX_LENGTHS.ownerName, rowContext);
+                const ownerName = normalizeOwnerDisplayName(resolveOwnerName(ownerFullName, ownerUserName));
 
                 // Nullable number fields
                 const timestamp = validateNullableNumber(child.timestamp, 'timestamp', rowContext);
@@ -220,14 +223,15 @@ export default (connection: mysql.Connection, config: Config) => {
             const rawTitle = validateNullableString(row.title, 'title', MAX_LENGTHS.title, rowContext);
             const rawDescription = validateNullableString(row.description, 'description', MAX_LENGTHS.description, rowContext);
             const timestamp = validateNullableNumber(row.timestamp, 'timestamp', rowContext);
-            const rawOwnerName = validateNullableString(row.ownerName, 'ownerName', MAX_LENGTHS.ownerName, rowContext);
+            const ownerFullName = validateNullableString(row.ownerFullName, 'ownerFullName', MAX_LENGTHS.ownerName, rowContext);
+            const ownerUserName = validateNullableString(row.ownerUserName, 'ownerUserName', MAX_LENGTHS.ownerName, rowContext);
 
             return {
                 albumId: id,
                 albumTitle: rawTitle != null ? stripBBCode(decodeHtmlEntities(rawTitle)) : null,
                 albumDescription: rawDescription != null ? decodeHtmlEntities(rawDescription) : null,
                 albumTimestamp: timestamp,
-                ownerName: normalizeOwnerDisplayName(rawOwnerName),
+                ownerName: normalizeOwnerDisplayName(resolveOwnerName(ownerFullName, ownerUserName)),
             };
         }
     }

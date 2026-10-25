@@ -222,7 +222,7 @@ interface Child {
 - `timestamp`: Unix timestamp in seconds (or milliseconds, depending on Gallery 2 configuration)
 - `width`/`height`: Image dimensions, null for albums or items without dimensions
 - `thumb_width`/`thumb_height`: Thumbnail dimensions, null if thumbnail not generated or unavailable
-- `ownerName`: Owner display name from Gallery 2 User (fullName or userName); optional, null when user missing
+- `ownerName`: Owner display name from Gallery 2 User: trimmed fullName, else trimmed userName (blank counts as missing); "Gallery Administrator" becomes "Unknown"; null when both are missing
 - `summary`: Item summary from Gallery 2; optional, distinct from description
 
 ### Data Relationships

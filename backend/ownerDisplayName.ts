@@ -22,3 +22,11 @@ export function normalizeOwnerDisplayName(name: string | null): string | null {
   }
   return name;
 }
+
+/**
+ * Pick the owner name to show: the trimmed full name, else the trimmed user name
+ * (a nickname for future logins), else null. Blank or space-only values count as missing.
+ */
+export function resolveOwnerName(fullName: string | null, userName: string | null): string | null {
+  return fullName?.trim() || userName?.trim() || null;
+}
