@@ -2,6 +2,53 @@
 
 Rows pruned from `TODO.md` after each sprint, with the proof they were closed on. Newest first.
 
+## Pruned 2026-10-25 (FUTURE rows added (no sprint end)): 4 rows
+
+### ~~PERF-03: the image cache is wiped and fetches aborted on every lightbox step~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-03):** new `frontend/src/utils/viewKey.ts` `getViewKey(pathname)` drops a trailing `/image/<id>`; `Layout.tsx` clears the image cache and `ViewAbortContext.tsx` renews/aborts its controller only when the view key (or search) changes, not on every lightbox step (and not on opening the lightbox from its album). Tests: `viewKey.test.ts`, ViewAbortContext (image → image keeps the signal, other album aborts), Layout (cache kept between images, cleared for another album). Full vitest 1448/1448. Original row kept for the record:
+
+`components/Layout/Layout.tsx:48-55` runs `getImageCache().clear()` on every `pathname`/`key`
+change, and `ViewAbortContext` aborts its controller on every `pathname` change. Each lightbox
+next/previous changes the path, so the neighbours that `useImagePreload` just fetched are aborted
+or revoked. Fix: don't clear or abort when only the image id changes within the same album.
+
+### ~~LOGIC-16: the lightbox ignores the grid's sort and filters~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-04):** new `frontend/src/utils/visibleImages.ts` `getVisibleImages(items, criteria, sortOption)` (images only → `applyFilters` → `sortItems`) is used by both `ImageGrid.tsx` and `ImageDetailPage.tsx` (with `useFilter()` + `useSort('images')`), so the lightbox list, next/previous and "N of M" match the grid. Tests: `visibleImages.test.ts` (JSON order, date/name sort, filter). Original row kept for the record:
+
+`pages/ImageDetailPage.tsx:83` builds the lightbox list as `albumData.filter(isImage)`, in raw JSON
+order. To reproduce: sort by date descending, open the 3rd thumbnail, press →. You get the next
+image in JSON order, and "N of M" counts images the filter hid. Fix: build the list with the same
+`applyFilters` + sort the grid uses (`useSort('images')`, `FilterContext`).
+
+### ~~LOGIC-17: closing the lightbox pushes history; album scroll position is lost~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-05):** opening an image from the album (`AlbumDetail.tsx` `handleImageClick`, and `useLightbox.openLightbox`) navigates with state `{ fromAlbum: true }` and remembers `window.scrollY` per album path (`utils/albumScroll.ts`, sessionStorage, guarded); next/previous keep that state; `closeLightbox` goes `navigate(-1)` when it is set, else replaces the image entry with the album. `AlbumDetail` restores the remembered position on a POP once its data is shown. Tests: `useLightbox.test.tsx` (close → POP to album; next then close → POP; deep link → REPLACE), `albumScroll.test.ts`, `AlbumDetail.test.tsx` (restore on POP, click remembers + state). Not done: scroll-to-top on forward navigation (not in the row's fix). Original row kept for the record:
+
+`hooks/useLightbox.ts:196-197`: `closeLightbox` calls `navigate(pathForAlbum(), { replace: false })`.
+History becomes [album, image, album], so Back reopens the lightbox. The album page is unmounted
+while the image is open. `useScrollPosition` only saves (its own doc comment, lines 6 and 15, leaves
+restore to "React Router/browser"), but `HashRouter` has no `<ScrollRestoration>`, so nothing
+restores it. Closing lands at an arbitrary spot in a 500-image album. Fix: `navigate(-1)` when the
+lightbox was opened from the album (track it in location state), otherwise `replace: true`. Restore
+the saved scroll position on album mount.
+
+### ~~LOGIC-18: date filter can't be enabled, and would hide everything~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-06):** `DateRangeFilter.tsx` keeps both input values in local state and builds the range with `dateInputsToRange` (local start of day … last ms of the end day; one-sided with `DATE_RANGE_OPEN_START`/`_END`; reversed dates swapped). `filterUtils.ts` `matchesDateRange` compares `item.timestamp * 1000` (items are Unix seconds, ranges ms). `FilterBadges` shows "from …"/"until …" for one-sided ranges. Tests rewritten: the old ones encoded the bug ("does not create dateRange when only start date is set", ms item timestamps in 5 fixture files); new ones cover start only, end only, both with inclusive end, reversed, and seconds timestamps. Full vitest 1461/1461. Original row kept for the record:
+
+- **Can't be enabled:** `components/FilterPanel/DateRangeFilter.tsx:105-140` sets
+  `dateRange = undefined` when only one date is set ("Only start date provided, don't create
+  dateRange yet"). The inputs are controlled by `criteria.dateRange`, so the first date clears
+  itself and the second can never be entered.
+- **Would hide everything:** `dateStringToTimestamp` (`:73`) returns `getTime()` (milliseconds).
+  `utils/filterUtils.ts` `matchesDateRange` compares that with `item.timestamp`, which is Unix
+  **seconds** (`Lightbox.tsx:341` multiplies by 1000). Every item would fail the filter.
+- **End date:** it is start-of-day, so the last day is excluded.
+
+Fix: keep both input values in local state, store seconds, and make `end` inclusive (end of day).
+
 ## Pruned 2026-10-25 (catch-up after Sprints 01–02 + S03 T-01..T-02): 18 rows
 
 ### ~~BUILD-02: the build copies the whole image tree into `dist/` (and currently just fails)~~

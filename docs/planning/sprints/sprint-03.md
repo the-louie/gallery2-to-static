@@ -1,7 +1,7 @@
 # Sprint 03: browsing that behaves
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-07 (`todo` — Zoom max = 400%)
+**Current ticket:** T-07 (`in-progress` — Zoom max = 400%)
 **Last completed:** T-06 (`done` — commit `e6c636f`)
 
 **Goal:** browsing the gallery fetches only what is shown, the lightbox follows the grid and
@@ -22,7 +22,7 @@ filters correctly; zoom stops at 400%; a broken stored sort value falls back to 
 | T-04 | Lightbox list uses the grid's sort + filters | LOGIC-16 | 2h | – | done | test: date-desc sort → → gives grid's next. Landed in `3857e19` |
 | T-05 | Close via `navigate(-1)` when opened from the album; restore album scroll position | LOGIC-17 | 3h | T-04 | done | test: open/close → history length same, scroll restored. Landed in `c215da5` |
 | T-06 | Date filter: local input state, seconds, inclusive end | LOGIC-18 | 2h | – | done | test: start only, end only, both; last day included. Landed in `e6c636f` |
-| T-07 | Zoom max = 400% | LOGIC-19 | 1h | – | todo | existing "respects max zoom limit" test meaningful |
+| T-07 | Zoom max = 400% | LOGIC-19 | 1h | – | in-progress | existing "respects max zoom limit" test meaningful |
 | T-08 | Validate stored sort option; Swedish collation for name sort | LOGIC-25, LOGIC-29 | 2h | – | todo | `5`/`{}`/unknown → default; å < ä < ö |
 | T-09 | Image search results link to `/album/:parentId/image/:id` | LOGIC-14 | 1h | – | todo | test with a photo index item |
 | T-10 | Thumbnail object URL revoked only on image change/unmount | LOGIC-26 | 2h | T-01 | todo | test: state change keeps URL valid |
