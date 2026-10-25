@@ -1,6 +1,6 @@
 # Sprint 03: browsing that behaves
 
-**Status:** in progress (opened 2026-10-25)
+**Status:** done (opened and closed 2026-10-25)
 **Current ticket:** —
 **Last completed:** T-10 (`done` — commit `ec7b49c`)
 
@@ -30,7 +30,9 @@ filters correctly; zoom stops at 400%; a broken stored sort value falls back to 
 Total ≈ 20h.
 
 ## Retro
-(filled at end of sprint)
+**Worked:** checking each new regression test against the old code (zoom, object URL) proved the tests catch the bug. Small shared helpers (`getVisibleImages`, `getViewKey`, `albumScroll`) kept the fixes testable without touching the big components much.
+**Didn't:** several existing tests encoded the bugs themselves (grid test expected the full-size URL; date-filter tests expected no range with one date; five fixture files used millisecond item timestamps) and had to be rewritten, not just kept green. The prune ran mid-sprint once (operator asked for the FUTURE rows and the prune rule at the same time).
+**Backlog grooming:** closed PERF-01, PERF-02, PERF-03, LOGIC-16, LOGIC-17, LOGIC-18, LOGIC-19, LOGIC-25, LOGIC-29, LOGIC-14, LOGIC-26 (11). New: DOCS-01 (operator), FUT-01..05 (operator, after deploy). Pruned to `docs/planning/done.md`.
 
 ## Demo notes
-(filled at end of sprint)
+Grid: only `t__` thumbnails fetched, only when a cell is near the viewport (hook fetch-count tests). Lightbox steps: one `index.json` fetch per page load, no remount, cache and preloads kept; order and "N of M" follow the grid's sort/filter; close goes Back and the album returns to its scroll position. Date filter: one or two dates, end day inclusive, seconds vs ms fixed. Zoom stops at 400%. Stored sort `5`/`{}` → default; Swedish order å < ä < ö. Image search results open in their album. Full vitest 1468/1468 (85 files), build + `check:dist` OK (488 KB), backend 13/13.

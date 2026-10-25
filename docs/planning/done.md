@@ -2,6 +2,68 @@
 
 Rows pruned from `TODO.md` after each sprint, with the proof they were closed on. Newest first.
 
+## Pruned 2026-10-25 (Sprint 03): 5 rows
+
+### ~~LOGIC-14: image search results link to a "Legacy Route Not Supported" page~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-09):** `frontend/src/pages/SearchResultsPage.tsx` links image results to `/album/${parentId}/image/${id}` (legacy `/image/:id` only if an item had no `parentId`, which the backend always sets). Test: photo result with `parentId: 55` → `href="/album/55/image/2"`. Still latent until photos are indexed. Original row kept for the record:
+
+**Partly confirms list item 8 — the dead end is real, but it is unreachable today, so this is latent, not live.**
+
+`frontend/src/pages/SearchResultsPage.tsx:219` builds `<Link to={`/image/${image.id}`}>` for
+every `GalleryPhotoItem` — compare the album branch at `:160`, which correctly uses
+`album.path`. The route exists (`App.tsx:60`), so it is not a 404; it resolves to an explicit
+dead end. `ImageDetailPage.tsx:53-55` sets `albumId: null` for the legacy `:id` param and
+`:172-186` renders "Legacy Route Not Supported — The legacy image route requires album
+context", with only a "Go to Home" button. No album data loads, no lightbox renders.
+
+"Every image search result leads to a dead end" overstates it only because **there are no
+image search results**: all 1,389 entries in `public/data/search/index.json` are
+`GalleryAlbumItem` (0 photos), so the Images section at `:203` never renders. The whole
+Images UI and the `GalleryPhotoItem` type already ship, though, so this breaks the day
+photos are indexed.
+
+Fix: `SearchIndexItem` already carries `parentId` (`searchIndex.ts:46-63`) — the correct
+`/album/${parentId}/image/${image.id}` is constructible from data on hand and simply is not
+constructed. Do that, and fix it before indexing photos.
+
+### ~~LOGIC-19: zoom limit is ~2500% instead of 400%~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-07):** `frontend/src/hooks/useImageZoom.ts` `maxZoom = ZOOM_MAX` (400; zoom is relative to the fitted image). New test with container dimensions (4000×3000 in 1000×750, 50 zoom-ins → 400, `canZoomIn` false) fails on the old code (checked) and passes now. Original row kept for the record:
+
+`hooks/useImageZoom.ts:121-128`: `fitZoom = Math.min(scaleX, scaleY) * 100` with scales that are
+already percentages, then `Math.max(fitZoom, ZOOM_MAX)`. A 4000 px image in a 1000 px container
+allows 2500%. Fix: `maxZoom = ZOOM_MAX`, or the ratio without `* 100`.
+
+### ~~LOGIC-25: stored sort value is not validated~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-08):** `frontend/src/hooks/useSort.ts` returns the stored option only if `isSortOption()` (the 7 known values), else `order-asc`. Tests: stored `5`, `{}`, `"colour-asc"`, `null` → default. Original row kept for the record:
+
+`hooks/useSort.ts:68-72` passes whatever `useLocalStorage` parses straight through, and
+`utils/sorting.ts:217` calls `sortOption.split('-')`. A stored non-string (`5`, `{}`) throws and
+takes down the page. A string that is not a known option silently sorts nothing. Fix: validate
+against the `SortOption` list and fall back to `DEFAULT_SORT_OPTION`, as `ThemeContext` already does.
+
+### ~~LOGIC-26: thumbnail object URL revoked while it is displayed~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-10):** `frontend/src/hooks/useProgressiveImage.ts`: the thumbnail effect's cleanup no longer revokes (it re-runs on every `state` change); the image-change and unmount effects revoke, and a second fetch for the same image releases the first URL. Test: after `thumbnail-loaded` the shown `blob:` URL is not revoked and is still returned; on unmount it is. Fails on the old code (checked). Original row kept for the record:
+
+`hooks/useProgressiveImage.ts:224-232`: the thumbnail effect has `state` in its dependencies, and
+its cleanup revokes `thumbnailObjectUrlRef.current`. `setState('thumbnail-loaded')` (`:221`)
+re-runs the effect, so the cleanup revokes the URL the `<img>` is showing. It works today only
+because the browser keeps the decoded pixels; any re-mount or `src` re-assignment shows a broken
+image. Fix: revoke only on image change or unmount, not on state change (LOGIC-02 added the
+cleanup, but it is too eager).
+
+### ~~LOGIC-29: Swedish name sort is wrong~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-08):** `frontend/src/utils/sorting.ts` `sortByName` compares with a module-level `Intl.Collator('sv', { sensitivity: 'base' })`. Test: apa, Zebra, Ål, Åsna, Ärta, Ödla (asc and desc). Original row kept for the record:
+
+`utils/sorting.ts:66-75` compares `toLowerCase()` strings with `<`/`>` (code point order):
+ä (U+00E4) < å (U+00E5) < ö, but Swedish order is å, ä, ö, and accented letters sort after z
+inconsistently. Fix: `aTitle.localeCompare(bTitle, 'sv', { sensitivity: 'base' })`, or an
+`Intl.Collator('sv')` created once.
+
 ## Pruned 2026-10-25 (FUTURE rows added (no sprint end)): 4 rows
 
 ### ~~PERF-03: the image cache is wiped and fetches aborted on every lightbox step~~
