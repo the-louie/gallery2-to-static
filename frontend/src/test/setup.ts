@@ -14,7 +14,7 @@ afterEach(() => {
 // Mock useProgressiveImage globally — components get synchronous URLs instead of async blob fetching.
 // Uses the same fallback order as the real hook: thumbnailUrlPath > pathComponent.
 vi.mock('@/hooks/useProgressiveImage', () => ({
-  useProgressiveImage: vi.fn((image: any, useThumbnail: boolean = true) => {
+  useProgressiveImage: vi.fn((image: any, useThumbnail: boolean = true, options: { loadFull?: boolean } = {}) => {
     if (!image) {
       return { thumbnailUrl: '', fullImageUrl: '', state: 'thumbnail' as const, hasError: false, error: null };
     }
@@ -23,7 +23,11 @@ vi.mock('@/hooks/useProgressiveImage', () => ({
     return {
       thumbnailUrl: thumbPath ? `/g2data/thumbnails/${thumbPath}` : '',
       fullImageUrl: fullPath ? `/g2data/albums/${fullPath}` : '',
-      state: (fullPath ? 'full-loaded' : 'thumbnail') as 'full-loaded' | 'thumbnail',
+      // Grid mode (loadFull: false) stops after the thumbnail, like the real hook.
+      state: (options.loadFull === false ? 'thumbnail-loaded' : fullPath ? 'full-loaded' : 'thumbnail') as
+        | 'full-loaded'
+        | 'thumbnail-loaded'
+        | 'thumbnail',
       hasError: false,
       error: null,
     };

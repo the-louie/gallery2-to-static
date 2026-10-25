@@ -121,7 +121,12 @@ function ImageThumbnailComponent({
   const isMountedRef = useRef(true);
 
   // Use progressive image loading hook
-  const progressiveImage = useProgressiveImage(image, true);
+  // Grid cells (useThumbnail) fetch only the thumbnail, and only once the cell is near the viewport;
+  // the full-size original is for the lightbox (PERF-01).
+  const progressiveImage = useProgressiveImage(image, true, {
+    loadFull: !useThumbnail,
+    enabled: shouldLoad || typeof IntersectionObserver === 'undefined',
+  });
 
   // Calculate aspect ratio from image dimensions (memoized)
   const aspectRatio = useMemo(
@@ -266,7 +271,9 @@ function ImageThumbnailComponent({
   const shouldRenderImage = shouldLoad || typeof IntersectionObserver === 'undefined';
 
   // Determine loading state
-  const isLoading = progressiveImage.state === 'thumbnail' || progressiveImage.state === 'thumbnail-loaded';
+  const isLoading =
+    progressiveImage.state === 'thumbnail' ||
+    (progressiveImage.state === 'thumbnail-loaded' && !useThumbnail);
   const isFullLoaded = progressiveImage.state === 'full-loaded';
   const hasError = progressiveImage.hasError;
 
@@ -311,18 +318,18 @@ function ImageThumbnailComponent({
             <img
               ref={thumbnailImgRef}
               src={progressiveImage.thumbnailUrl}
-              alt=""
+              alt={useThumbnail ? altText : ''}
               className={`image-thumbnail-image image-thumbnail-thumb ${progressiveImage.state !== 'thumbnail' ? 'image-thumbnail-thumb-ready' : ''}`}
               onLoad={handleThumbnailLoad}
               onError={handleImageError}
               loading="lazy"
               decoding="async"
-              aria-hidden="true"
+              aria-hidden={useThumbnail ? undefined : 'true'}
               crossOrigin="anonymous"
             />
           )}
           {/* Full image (fades in when loaded) */}
-          {isFullLoaded && progressiveImage.fullImageUrl && (
+          {!useThumbnail && isFullLoaded && progressiveImage.fullImageUrl && (
             <img
               ref={fullImgRef}
               src={progressiveImage.fullImageUrl}

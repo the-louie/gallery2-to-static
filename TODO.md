@@ -250,7 +250,9 @@ explicit flag (e.g. `process.env.ANALYZE`) and give `build:analyze` that flag.
 
 ## P2 — Correctness and cost
 
-### PERF-01: album grids download every full-size original
+### ~~PERF-01: album grids download every full-size original~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-01):** `useProgressiveImage(image, useThumbnail, { loadFull, enabled })`: `loadFull: false` stops after the thumbnail, `enabled: false` fetches nothing. `ImageThumbnail.tsx` passes `loadFull: !useThumbnail` and `enabled: shouldLoad` (lazy-load flag), and in grid mode never renders the full `<img>`; the thumbnail carries the alt text. Lightbox unchanged (defaults). Tests: hook (`loadFull:false` → only `t__` fetched; `enabled:false` → no fetch until enabled; default still loads full) and component (thumbnail src, hook options before/after intersection). The old test "renders with thumbnail URL when useThumbnail is true" asserted the full-size URL, i.e. the bug; corrected. Full vitest 1439/1439. Original row kept for the record:
 
 **Confirms list item 3, at the cited line.**
 

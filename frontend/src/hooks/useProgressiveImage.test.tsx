@@ -276,6 +276,56 @@ describe('useProgressiveImage', () => {
     });
   });
 
+  describe('grid mode options (PERF-01)', () => {
+    const fetchedUrls = () => (global.fetch as any).mock.calls.map((c: any[]) => String(c[0]));
+
+    it('loadFull: false fetches the thumbnail only, never the full-size original', async () => {
+      const { result } = renderHook(() => useProgressiveImage(mockImage, true, { loadFull: false }), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(mockImageElements.length).toBeGreaterThanOrEqual(1);
+        expect(mockImageElements[0].onload).toBeDefined();
+      });
+      mockImageElements[0].onload?.();
+      await waitFor(() => {
+        expect(result.current.state).toBe('thumbnail-loaded');
+      });
+      // give the full-image effect a chance to run
+      await new Promise((r) => setTimeout(r, 20));
+
+      expect(fetchedUrls()).toEqual(['/images/test-album/t__test-photo.jpg']);
+      expect(result.current.state).toBe('thumbnail-loaded');
+    });
+
+    it('enabled: false fetches nothing until enabled', async () => {
+      const { result, rerender } = renderHook(
+        ({ enabled }) => useProgressiveImage(mockImage, true, { loadFull: false, enabled }),
+        { wrapper: createWrapper(), initialProps: { enabled: false } },
+      );
+      await new Promise((r) => setTimeout(r, 20));
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(result.current.state).toBe('thumbnail');
+
+      rerender({ enabled: true });
+      await waitFor(() => {
+        expect(fetchedUrls()).toEqual(['/images/test-album/t__test-photo.jpg']);
+      });
+    });
+
+    it('default (lightbox) still loads thumbnail then full image', async () => {
+      renderHook(() => useProgressiveImage(mockImage), { wrapper: createWrapper() });
+      await waitFor(() => {
+        expect(mockImageElements[0]?.onload).toBeDefined();
+      });
+      mockImageElements[0].onload?.();
+      await waitFor(() => {
+        expect(fetchedUrls()).toContain('/images/test-album/test-photo.jpg');
+      });
+    });
+  });
+
   describe('image URL', () => {
     it('uses server URL for full image until full image is loaded', async () => {
       const { result } = renderHook(() => useProgressiveImage(mockImage), {

@@ -66,12 +66,18 @@ export interface UseProgressiveImageReturn {
  *
  * @param image - Image object to load
  * @param useThumbnail - Whether to use thumbnail (default: true for progressive loading)
+ * @param options.loadFull - Fetch the full-size image after the thumbnail (default true). Grid
+ *   cells pass false: the original is only needed in the lightbox (PERF-01).
+ * @param options.enabled - Start fetching at all (default true). Grid cells pass their lazy-load
+ *   flag so off-screen cells fetch nothing.
  * @returns Progressive image loading state and URLs
  */
 export function useProgressiveImage(
   image: Image | null,
   useThumbnail: boolean = true,
+  options: { loadFull?: boolean; enabled?: boolean } = {},
 ): UseProgressiveImageReturn {
+  const { loadFull = true, enabled = true } = options;
   const signal = useViewAbortSignal();
   const [state, setState] = useState<ProgressiveImageState>('thumbnail');
   const [hasError, setHasError] = useState(false);
@@ -138,7 +144,7 @@ export function useProgressiveImage(
 
   // Load thumbnail (fetch + object URL when signal provided)
   useEffect(() => {
-    if (!image || !thumbnailUrl || state !== 'thumbnail') {
+    if (!enabled || !image || !thumbnailUrl || state !== 'thumbnail') {
       return;
     }
 
@@ -229,11 +235,11 @@ export function useProgressiveImage(
       }
       thumbnailImgRef.current = null;
     };
-  }, [image?.id, image?.pathComponent, image?.urlPath, useThumbnail, thumbnailUrl, state, signal]);
+  }, [image?.id, image?.pathComponent, image?.urlPath, useThumbnail, thumbnailUrl, state, signal, enabled]);
 
   // Load full image (fetch + object URL)
   useEffect(() => {
-    if (!image || !fullImageUrl || state !== 'thumbnail-loaded') {
+    if (!loadFull || !enabled || !image || !fullImageUrl || state !== 'thumbnail-loaded') {
       return;
     }
 
@@ -321,7 +327,7 @@ export function useProgressiveImage(
       }
       fullImgRef.current = null;
     };
-  }, [image?.id, image?.pathComponent, image?.urlPath, fullImageUrl, state, signal]);
+  }, [image?.id, image?.pathComponent, image?.urlPath, fullImageUrl, state, signal, loadFull, enabled]);
 
   useEffect(() => {
     return () => {

@@ -100,12 +100,25 @@ describe('ImageThumbnail', () => {
       triggerIntersection();
 
       await waitFor(() => {
-        // The thumbnail <img> has alt="" (aria-hidden); the full image has the real alt text
+        // Grid mode (PERF-01): only the thumbnail is shown, and it carries the alt text
         const img = screen.getByAltText('Test Photo');
         expect(img).toHaveAttribute(
           'src',
-          `/g2data/albums/${mockPhoto.pathComponent}`,
+          `/g2data/thumbnails/${mockPhoto.pathComponent}`,
         );
+      });
+      expect(document.querySelector('.image-thumbnail-full')).toBeNull();
+    });
+
+    it('asks the hook for the thumbnail only, and only once visible, when useThumbnail is true', async () => {
+      const { useProgressiveImage } = await import('@/hooks/useProgressiveImage');
+      render(<ImageThumbnail image={mockPhoto} useThumbnail={true} />);
+      const calls = vi.mocked(useProgressiveImage).mock.calls;
+      expect(calls[calls.length - 1][2]).toEqual({ loadFull: false, enabled: false });
+      triggerIntersection();
+      await waitFor(() => {
+        const last = vi.mocked(useProgressiveImage).mock.calls.at(-1)!;
+        expect(last[2]).toEqual({ loadFull: false, enabled: true });
       });
     });
 
