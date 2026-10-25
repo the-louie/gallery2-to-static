@@ -2,6 +2,62 @@
 
 Rows pruned from `TODO.md` after each sprint, with the proof they were closed on. Newest first.
 
+## Pruned 2026-10-25 (Sprint 04): 3 rows
+
+### ~~DOCS-01: README links to `__docs/`, which is not in the repository (operator, 2026-10-25; before deploy)~~
+
+**CLOSED, verified 2026-10-25 (Sprint 04 T-11):** `README.md` Browser Support paragraph rephrased to stand on its own (the `__docs/browser-support.md` link removed; the graceful-degradation sentence now gives the concrete case). `frontend/docs/architecture.md`: all 12 `../__docs/` links replaced with links that exist (Backend Usage guide, `backend/index.ts`, `types.ts`, `sqlUtils.ts`, README; all checked); "React 18+" → React 19. `docs/orig-page/README.md` and `theme.css` say the screenshots and site capture are kept outside the repository. `grep __docs` over README, CLAUDE.md, frontend/docs, docs/orig-page: none. Left as they are: 4 historical `docs/dev-notes/` files (session notes, not user docs). Original row kept for the record:
+
+`README.md` ("Browser Support") points to [`__docs/browser-support.md`](__docs/browser-support.md);
+`__docs` is git-ignored (`.gitignore`) and private, so the link is dead for anyone else. Rephrase
+the paragraph so it stands on its own and remove the reference (check the rest of the README and
+`frontend/docs/` for other `__docs` links at the same time).
+_Found 2026-10-25: also `frontend/docs/architecture.md` (10 links to `../__docs/architecture.md`, `data-flow.md`, `types.md`, `overview.md`), `docs/orig-page/README.md`, and 4 files in `docs/dev-notes/` (historical notes; decide whether to leave them)._
+
+### ~~SEC-18: no Brotli decoder vulnerable to CVE-2026-111497 is shipped or used (operator, 2026-10-25)~~
+
+**CLOSED for the repository, verified 2026-10-25 (Sprint 04 T-10):** `scripts/check-brotli.mjs` (exit 1 on a finding) checks and prints each item:
+1. Node v22.23.4: the fixed 22.x release (sweep doc: ≥ 22.23.4 / 24.22.1 / 26.12.1); `process.versions.brotli` stays `1.1.0`, as expected for the backport.
+2. sharp-libvips 1.3.4 (linux-x64, linuxmusl-x64): no brotli in `versions.json`; its build script builds FreeType with `-Dbrotli=disabled` (`build/posix.sh` at tag v1.3.4, line 255). The `WOFF2` string in `libvips-cpp.so` is a format name, there is no decoder.
+3. No brotli npm package in either lockfile; since T-09 size-limit no longer pulls puppeteer/Chrome.
+4. `frontend/dist`: 28 files, no `.br`, no `.wasm`, no Brotli decoder in the JS.
+5. lanbilder2: `libbrotli1 1.1.0-2+deb13u1` (fixed). Node, nginx and cloudflared are not installed there yet: rerun the script on lanbilder2 after they are.
+**Finding outside the repo:** this dev/build machine has `libbrotli1 1.1.0-2+b7` (< `1.1.0-2+deb13u1`; apt candidate is the same, so its package lists are stale): needs `apt-get update && apt-get install --only-upgrade libbrotli1` by someone with root. Node does not use the system library, so the build output is unaffected; curl and other system tools on this host are.
+Original row kept for the record:
+
+CVE-2026-111497 is in Google's C Brotli decoder 1.0.3–1.2.0 (fixed 1.0.10, 1.1.1, 1.2.1); see
+`/srv/share/brotli-cve-2026-111497-phetast.md`. Neither lockfile has a brotli npm package today
+(no `node_modules/*brotli*` in either `package-lock.json`), so the decoder can only come in
+through the runtimes and native libraries. Check each place and record the version:
+1. **Node.js** used for the backend run and the build (bundles brotli; `process.versions.brotli`):
+   must be a release with the fix. Note: Node 22.23.4 here reports `process.versions.brotli` = `1.1.0`,
+   so the version string alone does not prove the fix (Node may backport without bumping it):
+   confirm against the Node security release notes for CVE-2026-111497.
+2. **sharp/libvips bundle** (`@img/sharp-libvips-*`, `versions.json`): libvips, libheif, librsvg,
+   fonts/woff2 — confirm whether any of them links or bundles brotli, and its version after DEPS-01.
+   _2026-10-25 (Sprint 02 T-04): sharp 0.35.5 `sharp.versions` lists no brotli (aom, archive, cairo, cgif, exif, expat, ffi, fontconfig, freetype 2.14.3, fribidi, glib, harfbuzz, heif, highway, imagequant, lcms, mozjpeg, pango, pixman, png, rsvg, tiff, uhdr, vips, webp, xml2, zlib-ng). Still to check: whether the bundled freetype was built with WOFF2 (brotli) — `strings`/`ldd` on `libvips-cpp.so`._
+3. **Build and dev tools** that decompress (Vite's compressed-size report, size-limit, puppeteer's
+   Chrome download): Node's zlib, so item 1 covers them; list anything that bundles its own copy.
+4. **The shipped `dist/`**: no WASM or JS Brotli decoder in the bundle (grep the build output), and
+   no `.br` files that need a server-side decoder.
+5. **Serving host (lanbilder2)**: nginx serves static files, and the Brotli *encoder* module is fine.
+   Confirm `libbrotli1` is Debian 13's fixed `1.1.0-2+deb13u1` or newer, and that cloudflared/curl
+   on the host link a fixed version.
+
+Done = each item has a recorded version that is fixed, or proof that no decoder is present. Add a
+check script (e.g. `scripts/check-brotli.mjs`) that prints `process.versions.brotli` and greps
+`dist/` and the lockfiles, so the release checklist can rerun it.
+
+### ~~BUILD-04: `size-limit` patterns don't match the build~~
+
+**CLOSED, verified 2026-10-25 (Sprint 04 T-09):** `frontend/package.json` `size-limit`: one entry per real chunk name (initial load = `index-*` + `rolldown-runtime-*` + `react-vendor-*` + `vendor-*`, `Lightbox-*`, 5 route chunks, total). `@size-limit/preset-app` (which adds the puppeteer/Chrome timing step) replaced by `@size-limit/file`. `npx size-limit` exits 0: initial 120.95 KB, Lightbox 4.9 KB, routes 0.8–4.2 KB, total 147.2 KB (brotli). Original row kept for the record:
+
+`frontend/package.json:9-24`: `dist/assets/js/lightbox*.js` matches no file (Vite names it
+`Lightbox-<hash>.js`, and the case differs), and `*-*.js` matches every chunk and size-limit adds
+them up (118 KB brotli vs the 50 KB "per chunk" limit). The check fails because of the globs, not
+the bundle. Fix the globs (one entry per named chunk). Note: `size-limit` starts headless Chrome
+(puppeteer) for its timing step. Run it with `--why`/without the time plugin, or only in CI.
+
 ## Pruned 2026-10-25 (Sprint 03): 5 rows
 
 ### ~~LOGIC-14: image search results link to a "Legacy Route Not Supported" page~~

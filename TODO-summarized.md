@@ -1,10 +1,10 @@
 # TODO Summarized
 
-Generated 2026-10-25 from `TODO.md` (Sprint 03). Closed rows: `docs/planning/done.md`.
+Generated 2026-10-25 from `TODO.md` (Sprint 04). Closed rows: `docs/planning/done.md`.
 
 ## P0 — Blocks all other work
 
-- **BUILD-01**: 253 test-only type errors behind `npm run typecheck:test`
+- **BUILD-01**: test-only type errors behind `npm run typecheck:test` (253 → 273 after the Sprint 04 toolchain upgrades)
 
 ## P1 — Must be fixed before anything is published
 
@@ -17,10 +17,8 @@ Generated 2026-10-25 from `TODO.md` (Sprint 03). Closed rows: `docs/planning/don
 
 ## P1 (second review pass)
 
-- **DOCS-01**: README links to `__docs/`, which is not in the repository (operator, 2026-10-25; before deploy)
 - **DECISION-01**: hosting model — Cloudflare Pages + image server, or one nginx host (needs operator)
-- **DEPS-01**: all dependencies on their latest version (operator, 2026-10-25)
-- **SEC-18**: no Brotli decoder vulnerable to CVE-2026-111497 is shipped or used (operator, 2026-10-25)
+- **DEPS-01**: two majors blocked upstream — ESLint 10, TypeScript 7 (operator, 2026-10-25)
 - **TEST-03**: no end-to-end test of the backend extraction (found 2026-10-25, Sprint 02 T-03)
 - **LOGIC-31**: a photo kept without a thumbnail shows the grid's error state (found 2026-10-25, Sprint 02 T-05)
 
@@ -32,7 +30,6 @@ Generated 2026-10-25 from `TODO.md` (Sprint 03). Closed rows: `docs/planning/don
 - **SEC-16**: `url("…")` escaping in the album block is incomplete
 - **LOGIC-28**: album named `image` with a numeric child is unreachable
 - **LOGIC-30**: thumbnails are always JPEG but keep the source extension
-- **BUILD-04**: `size-limit` patterns don't match the build
 - **HYGIENE-01**: repo and package tidy-up
 
 ## FUTURE (after production deploy)
@@ -47,4 +44,4 @@ Generated 2026-10-25 from `TODO.md` (Sprint 03). Closed rows: `docs/planning/don
 
 ## Summary
 
-**Open rows:** 23
+**Open rows:** 20

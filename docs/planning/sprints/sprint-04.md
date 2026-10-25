@@ -1,6 +1,6 @@
 # Sprint 04: everything on current versions, no vulnerable Brotli
 
-**Status:** in progress (opened 2026-10-25)
+**Status:** done (opened and closed 2026-10-25)
 **Current ticket:** —
 **Last completed:** T-11 (`done` — commit `856b416`)
 
@@ -31,7 +31,9 @@ prints a fixed version or "no decoder" for every item in SEC-18; README has no `
 Total ≈ 27h.
 
 ## Retro
-(filled at end of sprint)
+**Worked:** one toolchain per ticket kept every step green and bisectable; comparing test-log warnings against a worktree of the previous commit gave a measured "no new warnings" for React 19. Reading the sharp-libvips build script at the installed tag settled the WOFF2/Brotli question instead of guessing.
+**Didn't:** Vite and Vitest could not be split (T-03 merged into T-02). A `git add` that aborted on a removed path produced a commit with only the deletion (9a8ddfa); fixed with a follow-up commit, and the loop now checks `git status` after each commit. Two majors are not reachable: ESLint 10 (eslint-plugin-react supports ≤ 9) and TypeScript 7 (typescript-eslint and ts-node need the JS API).
+**Backlog grooming:** closed BUILD-04, SEC-18 (repo scope), DOCS-01; DEPS-01 done except the two blocked majors (stays open, narrowed). Finding outside the repo: this dev machine's `libbrotli1 1.1.0-2+b7` is vulnerable (needs root).
 
 ## Demo notes
-(filled at end of sprint)
+`npm outdated`: frontend only eslint/@eslint/js 10 and typescript 7 (blocked upstream), backend only typescript 7 and @types/node 26 (kept on 22 for the Node 22 runtime). `npm audit` (full): 0 in both (frontend was 43, 5 critical). Build + `check:dist` OK (613 KB), `size-limit` OK without Chrome (initial 121 KB brotli), lint runs on ESLint 9 (128, LINT-01), vitest 1468/1468 on Vitest 5 / React 19 / Router 7, backend 13/13 on TS 6. `scripts/check-brotli.mjs`: all repo items OK; FAIL only on this host's system libbrotli1.
