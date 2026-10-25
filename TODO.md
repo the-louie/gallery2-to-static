@@ -160,6 +160,13 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
 
 ### P1 additions
 
+### DOCS-01: README links to `__docs/`, which is not in the repository (operator, 2026-10-25; before deploy)
+
+`README.md` ("Browser Support") points to [`__docs/browser-support.md`](__docs/browser-support.md);
+`__docs` is git-ignored (`.gitignore`) and private, so the link is dead for anyone else. Rephrase
+the paragraph so it stands on its own and remove the reference (check the rest of the README and
+`frontend/docs/` for other `__docs` links at the same time).
+
 ### DECISION-01: hosting model — Cloudflare Pages + image server, or one nginx host (needs operator)
 
 Operator, 2026-10-25: the code was written for the frontend on **Cloudflare Pages** (load speed)
@@ -277,7 +284,9 @@ to plain text.
 takes down the page. A string that is not a known option silently sorts nothing. Fix: validate
 against the `SortOption` list and fall back to `DEFAULT_SORT_OPTION`, as `ThemeContext` already does.
 
-### LOGIC-26: thumbnail object URL revoked while it is displayed
+### ~~LOGIC-26: thumbnail object URL revoked while it is displayed~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-10):** `frontend/src/hooks/useProgressiveImage.ts`: the thumbnail effect's cleanup no longer revokes (it re-runs on every `state` change); the image-change and unmount effects revoke, and a second fetch for the same image releases the first URL. Test: after `thumbnail-loaded` the shown `blob:` URL is not revoked and is still returned; on unmount it is. Fails on the old code (checked). Original row kept for the record:
 
 `hooks/useProgressiveImage.ts:224-232`: the thumbnail effect has `state` in its dependencies, and
 its cleanup revokes `thumbnailObjectUrlRef.current`. `setState('thumbnail-loaded')` (`:221`)

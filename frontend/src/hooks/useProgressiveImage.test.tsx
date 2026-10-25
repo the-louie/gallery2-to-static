@@ -489,6 +489,29 @@ describe('useProgressiveImage', () => {
   });
 
   describe('object URL memory leak prevention', () => {
+    it('keeps the displayed thumbnail object URL valid when the state changes (LOGIC-26)', async () => {
+      const { result, unmount } = renderHook(
+        () => useProgressiveImage(mockImage, true, { loadFull: false }),
+        { wrapper: createWrapper() },
+      );
+      await waitFor(() => {
+        expect(mockImageElements[0]?.onload).toBeDefined();
+      });
+      const shown = result.current.thumbnailUrl;
+      expect(shown).toMatch(/^blob:/);
+      mockImageElements[0].onload?.();
+      await waitFor(() => {
+        expect(result.current.state).toBe('thumbnail-loaded');
+      });
+      const revoked = (URL.revokeObjectURL as ReturnType<typeof vi.fn>).mock.calls.map((c) => c[0]);
+      expect(revoked).not.toContain(shown);
+      expect(result.current.thumbnailUrl).toBe(shown);
+
+      unmount();
+      const revokedAfter = (URL.revokeObjectURL as ReturnType<typeof vi.fn>).mock.calls.map((c) => c[0]);
+      expect(revokedAfter).toContain(shown);
+    });
+
     it('revokes object URLs on unmount', async () => {
       const { result, unmount } = renderHook(
         () => useProgressiveImage(mockImage),

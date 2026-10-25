@@ -173,6 +173,10 @@ export function useProgressiveImage(
           URL.revokeObjectURL(objectUrl);
           return;
         }
+        if (thumbnailObjectUrlRef.current && thumbnailObjectUrlRef.current !== objectUrl) {
+          // a second fetch for the same image finished: release the first one
+          URL.revokeObjectURL(thumbnailObjectUrlRef.current);
+        }
         thumbnailObjectUrlRef.current = objectUrl;
         try {
           if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
@@ -228,11 +232,10 @@ export function useProgressiveImage(
         }
       });
 
+    // No revoke here: this effect re-runs on every `state` change (e.g. 'thumbnail' →
+    // 'thumbnail-loaded'), and revoking then broke the object URL the <img> was showing
+    // (LOGIC-26). The image-change and unmount effects revoke it.
     return () => {
-      if (thumbnailObjectUrlRef.current) {
-        URL.revokeObjectURL(thumbnailObjectUrlRef.current);
-        thumbnailObjectUrlRef.current = null;
-      }
       thumbnailImgRef.current = null;
     };
   }, [image?.id, image?.pathComponent, image?.urlPath, useThumbnail, thumbnailUrl, state, signal, enabled]);
