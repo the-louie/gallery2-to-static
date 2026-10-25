@@ -1,6 +1,6 @@
 # Sprint 02: backend output you can trust
 
-**Status:** in progress (opened 2026-10-25)
+**Status:** done (opened and closed 2026-10-25)
 **Current ticket:** —
 **Last completed:** T-10 (`done` — commit `702873c`)
 
@@ -33,7 +33,9 @@ heavy job at a time); commit locally to `master`.
 Total ≈ 21h.
 
 ## Retro
-(filled at end of sprint)
+**Worked:** small pure modules (`subtreeFailures`, `configValidation`, `outputDir`, `findPathIndexProblems`) made each fix testable although `main()` itself is not. Probing sharp before choosing `failOn` settled LOGIC-12 with evidence instead of a guess. Checking the EXIF test fails without the fix caught nothing wrong but proved the test.
+**Didn't:** no Gallery 2 DB, so the SQL changes (SEC-17 `NULLIF`) and the LOGIC-11 counts on real data are unverified; TEST-03 tracks the end-to-end harness. Found a pre-existing break outside any row: `MysqlSettings.port` missing made ts-node refuse to run the extractor (fixed in its own commit, 4cf1398).
+**Backlog grooming:** closed TEST-02, LOGIC-11, SEC-14, LOGIC-12, LOGIC-13, LOGIC-21, LOGIC-23, LOGIC-22, SEC-17 (9). New: TEST-03 (backend e2e harness), LOGIC-31 (frontend: photo kept without thumbnail shows the grid error state). DEPS-01 backend runtime half done. Open rows: 35 → 28.
 
 ## Demo notes
-(filled at end of sprint)
+Backend `npm test`: 13/13 test files (was 9/10); `npm audit`: 0 vulnerabilities (was 2 high); `tsc` clean (was failing). Path invariant fixtures (self-link, wrong sibling, two paths, duplicate-named siblings built twice) pass; extraneous-bytes JPEG generates, truncated JPEG leaves no file and keeps its photo; Orientation-6 80×40 → 40×80 thumbnail; `"thumbnailConcurrency": "x"` and an injection-shaped table prefix stop the run at config load; a failed run leaves `data/` untouched. Frontend unaffected: 1435/1435 tests, build + `check:dist` OK.

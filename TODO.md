@@ -584,6 +584,15 @@ the `sql` object as a parameter, keep `index.ts` as the thin CLI, and add a test
 runs the whole extraction into a temp dir and asserts on the JSON and `index.json`. Also lets the
 LOGIC-11 counts (6 bad links / 7 unreachable albums) be re-measured once the real DB is available.
 
+### LOGIC-31: a photo kept without a thumbnail shows the grid's error state (found 2026-10-25, Sprint 02 T-05)
+
+Since LOGIC-12 the backend keeps a photo whose thumbnail could not be generated, but the frontend
+builds every photo's thumbnail URL from `urlPath` (`frontend/src/utils/imageUrl.ts:178`
+`getImageUrl(image, true)`), not from `thumbnailUrlPath`/`thumb_width`. Such a photo requests a
+non-existent `/g2data/thumbnails/.../t__x.jpg` (404) and shows the error tile; the lightbox works.
+Fix: emit a flag (or `thumbnailUrlPath: null`) from the backend for these photos and show a
+placeholder (or the downscaled full image) instead of the error state.
+
 ### P2 additions
 
 ### PERF-02: every path navigation re-downloads and re-parses the whole `index.json`
