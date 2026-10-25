@@ -1,7 +1,7 @@
 # Sprint 01: green, safe production build
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-05 (`todo` — Don't copy public/ image tree into dist/ (copyPublicDir:false + explic)
+**Current ticket:** T-05 (`in-progress` — Don't copy public/ image tree into dist/ (copyPublicDir:false + explic)
 **Last completed:** T-04 (`done` — commit `be78370`)
 
 **Goal:** `npm run build` passes from a clean checkout and produces a deployable `dist/` without
@@ -20,7 +20,7 @@ returning 500 shows an error with Retry instead of a spinner.
 | T-02 | Fix production-source type errors, part 1 (pages/, contexts/) | BUILD-01 3 | 3h | T-01 | done | 0 errors in those dirs; tests of touched files pass. Landed in `171de9d` |
 | T-03 | Fix production-source type errors, part 2 (hooks/, utils/, components/, `vite/client` types) | BUILD-01 3 | 3h | T-01 | done | `npm run build` type-check 0 errors. Landed in `63be6cb` |
 | T-04 | `App.test.tsx` backend/types import; `fetchImageAsObjectUrl` URL stubs in setup | BUILD-01 4, TEST-01 | 1h | T-01 | done | both suites collect and pass. Landed in `be78370` |
-| T-05 | Don't copy `public/` image tree into `dist/` (`copyPublicDir:false` + explicit copy of small files); docs | BUILD-02 | 2h | T-03 | todo | build with a `g2data` symlink present: `dist/` has no images; docs updated |
+| T-05 | Don't copy `public/` image tree into `dist/` (`copyPublicDir:false` + explicit copy of small files); docs | BUILD-02 | 2h | T-03 | in-progress | build with a `g2data` symlink present: `dist/` has no images; docs updated |
 | T-06 | No sourcemaps / `stats.html` in production; visualizer behind `ANALYZE=1` | BUILD-03 | 1h | T-03 | todo | `dist/` has no `*.map`, no `stats.html`; `build:analyze` still writes it |
 | T-07 | Linear subsequence match, query cap 32, `maxLength` on SearchBar | SEC-13 | 2h | – | todo | regression test: `eeeeeeeeeezz` vs real-size text < 50 ms; existing search tests pass |
 | T-08 | PathResolverPage error state + Retry on index load failure | LOGIC-15 | 2h | – | todo | test: 500 → error + Retry; retry success → album |
