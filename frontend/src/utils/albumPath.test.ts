@@ -12,6 +12,7 @@ import {
   getAlbumPathFromAlbum,
   getChildAlbumPath,
   getPhotoSlug,
+  getItemPath,
   withTrailingSlash,
 } from "./albumPath";
 import type { BreadcrumbPath } from "@/types";
@@ -114,6 +115,14 @@ describe("albumPath", () => {
       expect(getPhotoSlug({ id: 5, pathComponent: null, title: "Nice Pic.jpg" })).toBe("nice_pic");
       expect(getPhotoSlug({ id: 5, pathComponent: "", title: "" })).toBe("photo_5");
       expect(getPhotoSlug({ id: 5, pathComponent: "a/.jpg" })).toBe("photo_5");
+    });
+  });
+
+  describe("getItemPath (URL-01)", () => {
+    it("sub-album: its own path with a slash; photo: slug under the album", () => {
+      expect(getItemPath({ id: 1, type: "GalleryAlbumItem", path: "/a/b" }, "/a/")).toBe("/a/b/");
+      expect(getItemPath({ id: 1, type: "GalleryAlbumItem" }, "/a/")).toBe("/album/1");
+      expect(getItemPath({ id: 2, type: "GalleryPhotoItem", pathComponent: "a/IMG_1.jpg" }, "/a/")).toBe("/a/img_1");
     });
   });
 

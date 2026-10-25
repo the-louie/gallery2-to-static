@@ -141,3 +141,15 @@ export function getChildAlbumPath(
   if (childPath != null && childPath !== '') return withTrailingSlash(childPath);
   return `${getAlbumPath(parentBreadcrumbPath)}${titleToSegment(childTitle)}/`;
 }
+
+/**
+ * Link target of an album's item (URL-01): a sub-album's own path, or the photo's slug under
+ * `albumPath` (which ends with /).
+ */
+export function getItemPath(
+  item: { id: number; type: string; path?: string | null; pathComponent?: string | null; title?: string | null },
+  albumPath: string,
+): string {
+  if (item.type === 'GalleryAlbumItem') return item.path ? withTrailingSlash(item.path) : `/album/${item.id}`;
+  return `${albumPath}${getPhotoSlug(item)}`;
+}

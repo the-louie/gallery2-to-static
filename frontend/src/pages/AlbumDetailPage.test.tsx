@@ -217,3 +217,22 @@ describe('AlbumDetailPage', () => {
     });
   });
 });
+
+describe('AlbumDetailPage in the classic theme (THEME-01)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('renders the Matrix album page instead of AlbumDetail', () => {
+    vi.mocked(useAlbumData).mockReturnValue({
+      data: mockChildren,
+      metadata: { albumId: 7, albumTitle: 'Root', albumDescription: null, albumTimestamp: null, ownerName: null, breadcrumbPath: [{ id: 7, title: 'Home', path: '/' }] },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    vi.mocked(useParams).mockReturnValue({ id: '7' });
+    render(<AlbumDetailPage />, { initialEntries: ['/album/7'], defaultTheme: 'classic' });
+    expect(document.querySelector('.g2-matrix-album')).not.toBeNull();
+    expect(document.querySelector('.gsThumbMatrix')).not.toBeNull();
+    expect(screen.queryByLabelText('Go up')).toBeNull();
+  });
+});

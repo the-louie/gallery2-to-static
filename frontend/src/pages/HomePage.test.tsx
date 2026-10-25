@@ -135,3 +135,16 @@ describe('HomePage', () => {
     expect(screen.getByText(/Failed to discover root album/i)).toBeInTheDocument();
   });
 });
+
+describe('HomePage in the classic theme (THEME-01)', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('the root is a Matrix album page', async () => {
+    vi.mocked(findRootAlbumId).mockResolvedValue(7);
+    render(<HomePage />, { defaultTheme: 'classic' });
+    await waitFor(() => {
+      expect(document.querySelector('.g2-matrix-album, [aria-label="Loading album"], .giError')).not.toBeNull();
+    });
+    expect(screen.queryByRole('region', { name: /root albums/i })).toBeNull();
+  });
+});

@@ -11,6 +11,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RootAlbumListView } from '@/components/RootAlbumListView';
+import { MatrixAlbum } from '@/components/MatrixAlbum';
+import { useTheme } from '@/contexts/ThemeContext';
 import { FilterPanel } from '@/components/FilterPanel';
 import { getAlbumPathFromAlbum } from '@/utils/albumPath';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -28,6 +30,7 @@ import './HomePage.css';
  */
 export function HomePage() {
   const navigate = useNavigate();
+  const { isClassic } = useTheme();
   const [rootAlbumId, setRootAlbumId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<DataLoadError | null>(null);
@@ -116,6 +119,9 @@ export function HomePage() {
       </div>
     );
   }
+
+  // Classic theme: the root is a Matrix album page like every other album (THEME-01)
+  if (isClassic) return <MatrixAlbum albumId={rootAlbumId} />;
 
   return (
     <div className="home-page">

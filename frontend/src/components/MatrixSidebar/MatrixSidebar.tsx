@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { AlbumFile, Child } from '@/types';
 import type { MatrixLocation } from '@/utils/matrixLocation';
-import { getAlbumPath, getPhotoSlug, withTrailingSlash } from '@/utils/albumPath';
+import { getAlbumPath, getItemPath } from '@/utils/albumPath';
 import { peerWindow, truncateTitle } from '@/utils/matrixPeers';
 import { MAX_SEARCH_QUERY_LENGTH } from '@/utils/searchUtils';
 import './MatrixSidebar.css';
@@ -41,11 +41,7 @@ function getPeers(location: MatrixLocation | null): Peers | null {
 }
 
 function peerHref(peer: Child, owner: AlbumFile): string {
-  const ownerPath = getAlbumPath(owner.metadata.breadcrumbPath ?? []);
-  if (peer.type === 'GalleryAlbumItem') {
-    return peer.path ? withTrailingSlash(peer.path) : `/album/${peer.id}`;
-  }
-  return `${ownerPath}${getPhotoSlug(peer)}`;
+  return getItemPath(peer, getAlbumPath(owner.metadata.breadcrumbPath ?? []));
 }
 
 function peerTitle(peer: Child): string {

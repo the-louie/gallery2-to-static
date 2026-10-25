@@ -1,0 +1,91 @@
+/*
+ * Matrix album page (THEME-01): header block, navigator, pager.
+ * Values from docs/orig-page/2006/matrix-theme.css.
+ */
+
+/* Gallery 2's <table style="width: 100%"> with the browser's default cell spacing and padding */
+.g2-matrix .gbHeader {
+  width: 100%;
+  border-spacing: 2px;
+}
+
+.g2-matrix .gbHeader td {
+  padding: 1px;
+  vertical-align: top;
+}
+
+.g2-matrix .gbHeaderInfo {
+  width: 30%;
+}
+
+.g2-matrix .giDescription {
+  font-size: 1.1em;
+  line-height: 1.4em;
+}
+
+.g2-matrix .giInfo {
+  font-size: 0.9em;
+  color: #888;
+}
+
+.g2-matrix .giInfo span.summary {
+  display: block;
+}
+
+.g2-matrix .gbEmptyAlbum {
+  height: 400px;
+}
+
+.g2-matrix .giDescription h3.emptyAlbum {
+  line-height: 4em;
+  text-align: center;
+}
+
+.g2-matrix .giError {
+  font-weight: bold;
+  color: #a44;
+}
+
+/* Navigator: next/last float right (or align right when there is no previous) */
+.g2-matrix .gbNavigator .next-and-last {
+  float: right;
+}
+
+.g2-matrix .gbNavigator .next-and-last.no-previous {
+  float: none;
+  text-align: right;
+}
+
+.g2-matrix .gbNavigator::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+.g2-matrix .gbNavigator a.first {
+  padding-left: 27px;
+  background: url("../../assets/matrix/nav_first.gif") left no-repeat;
+}
+
+.g2-matrix .gbNavigator a.previous {
+  padding-left: 27px;
+  background: url("../../assets/matrix/nav_prev.gif") left no-repeat;
+}
+
+.g2-matrix .gbNavigator a.next {
+  padding-right: 27px;
+  background: url("../../assets/matrix/nav_next.gif") right no-repeat;
+}
+
+.g2-matrix .gbNavigator a.last {
+  padding-right: 27px;
+  background: url("../../assets/matrix/nav_last.gif") right no-repeat;
+}
+
+.g2-matrix .gsPages span {
+  padding: 0 0.3em;
+}
+
+.g2-matrix .gsPages span span {
+  padding: 0;
+}
