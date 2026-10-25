@@ -1,7 +1,7 @@
 # Sprint 02: backend output you can trust
 
-**Status:** open (planned 2026-10-25)
-**Current ticket:** T-01 (`todo` — backend pathSegments stale test)
+**Status:** in progress (opened 2026-10-25)
+**Current ticket:** T-01 (`in-progress` — Backend npm ci; fix pathSegments.test.ts stale expectation (dots stay )
 **Last completed:** —
 
 **Goal:** the extractor's output is correct and complete for the real tree: every album reachable by
@@ -19,7 +19,7 @@ heavy job at a time); commit locally to `master`.
 
 | # | Ticket | Backlog | Est | Deps | Status | Acceptance / Notes |
 |---|---|---|---|---|---|---|
-| T-01 | Backend `npm ci`; fix `pathSegments.test.ts` stale expectation (dots stay legal, parity with frontend) | TEST-02 | 1h | – | todo | all backend test files pass |
+| T-01 | Backend `npm ci`; fix `pathSegments.test.ts` stale expectation (dots stay legal, parity with frontend) | TEST-02 | 1h | – | in-progress | all backend test files pass |
 | T-02 | Empty / `.` / `..` segments fall back to an id segment; index insertion asserts on collision | LOGIC-11 (part 1) | 2h | T-01 | todo | tests for "", "[b][/b]", ".", "..", null title |
 | T-03 | Compute each child's segment once in the parent and pass it to both the index key and the emitted link; post-extraction invariant check | LOGIC-11 (part 2) | 4h | T-02 | todo | invariant check on fixture tree with duplicate-named siblings passes deterministically |
 | T-04 | sharp → latest (0.35.x+), mysql2 → latest; adapt `failOnError` call site | SEC-14, DEPS-01 (backend runtime) | 2h | T-01 | todo | backend `npm audit` 0 high; tests pass |
