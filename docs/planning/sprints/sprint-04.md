@@ -1,8 +1,8 @@
 # Sprint 04: everything on current versions, no vulnerable Brotli
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-05 (`in-progress` — React 19 + @types/react(-dom) 19)
-**Last completed:** T-04 (`done` — commit `22fac89`)
+**Current ticket:** T-06 (`todo` — react-router 7 (HashRouter, routes, Link state))
+**Last completed:** T-05 (`done` — commit `d8db9e5`)
 
 **Goal:** every frontend and backend dependency on its latest release (operator, DEPS-01), the
 Brotli check (SEC-18) recorded and scripted, and the README/docs free of private `__docs` links.
@@ -20,7 +20,7 @@ prints a fixed version or "no decoder" for every item in SEC-18; README has no `
 | T-02 | Vite 5 → 8, @vitejs/plugin-react 6, rollup-plugin-visualizer 7 | DEPS-01 | 3h | T-01 | done | build, dev config, check:dist. Landed in `585e385` |
 | T-03 | Vitest 1 → 5 (+ coverage-v8, ui), jsdom 30, @types/jsdom | DEPS-01 | 3h | T-02 | done | full suite green. Merged into T-02 (vitest 1 only accepts vite 5, so they had to move together) |
 | T-04 | Testing Library react 16, jest-dom 7 | DEPS-01 | 2h | T-03 | done | full suite green. Landed in `22fac89` |
-| T-05 | React 19 + @types/react(-dom) 19 | DEPS-01 | 3h | T-04 | in-progress | build + suite; no React warnings new |
+| T-05 | React 19 + @types/react(-dom) 19 | DEPS-01 | 3h | T-04 | done | build + suite; no React warnings new. Landed in `d8db9e5` |
 | T-06 | react-router 7 (HashRouter, routes, Link state) | DEPS-01 | 3h | T-05 | todo | suite; routes + lightbox state work |
 | T-07 | ESLint 10 flat config, typescript-eslint 8, react-hooks 7, react-refresh, eslint-config-prettier 10 | DEPS-01 | 4h | T-05 | todo | lint runs (errors may remain = LINT-01, no new ones) |
 | T-08 | TypeScript 7 (frontend + backend); backend runner without ts-node if ts-node can't use TS 7 | DEPS-01 | 3h | T-07 | todo | tsc both; backend npm test/start work |
