@@ -60,6 +60,10 @@ export interface SearchIndexItem {
   ancestors?: string;
   /** Path-based URL for this album (e.g. /albums/photos), when backend emits it */
   path?: string;
+  /** Album summary (not emitted by the backend today; rendered when present) */
+  summary?: string;
+  /** Owner display name (not emitted by the backend today; rendered when present) */
+  ownerName?: string | null;
 }
 
 /**

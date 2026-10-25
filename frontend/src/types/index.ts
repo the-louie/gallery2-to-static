@@ -126,7 +126,7 @@ export function isImage(child: Child): child is Image {
  * Supports both single ID routes (/album/:id, /image/:id) and
  * hierarchical routes (/album/:albumId/image/:imageId).
  */
-export interface RouteParams {
+export type RouteParams = {
   /** ID parameter from route (e.g., /album/:id or /image/:id) */
   id?: string;
   /** Album ID parameter from hierarchical route (e.g., /album/:albumId/image/:imageId) */
@@ -135,7 +135,7 @@ export interface RouteParams {
   imageId?: string;
   /** Path-based route splat (path="*"), e.g. "seg1/seg2" or "seg1/seg2/image/123" */
   '*'?: string;
-}
+};
 
 /**
  * Breadcrumb item representing a single level in the navigation hierarchy

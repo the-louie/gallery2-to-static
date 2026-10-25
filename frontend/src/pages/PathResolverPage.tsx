@@ -21,7 +21,7 @@ export function PathResolverPage() {
   const [resolved, setResolved] = useState<{
     albumId: number;
     imageId?: number;
-  } | null>(undefined);
+  } | undefined>(undefined);
 
   useEffect(() => {
     setResolved(undefined);
