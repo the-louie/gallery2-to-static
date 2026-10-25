@@ -362,18 +362,17 @@ const main = async (
                             if (result === 'missing') {
                                 console.warn(`Missing source image: ${sourcePath}`);
                             } else if (result === 'invalid') {
-                                console.warn(`Invalid/corrupted image excluded: ${sourcePath}`);
+                                // Keep the photo (title, description, full-size link); only its thumbnail is missing.
+                                console.warn(`No thumbnail (source cannot be decoded), photo kept: ${sourcePath}`);
                                 thumbnailContext.excludedCount++;
-                                return null;
                             } else if (result === 'generated') {
                                 thumbnailContext.generatedCount++;
                             } else if (result === 'skipped') {
                                 thumbnailContext.skippedCount++;
                             }
                         } catch (err) {
-                            console.warn(`Thumbnail generation failed for ${sourcePath}:`, err instanceof Error ? err.message : String(err));
+                            console.warn(`Thumbnail generation failed for ${sourcePath}, photo kept:`, err instanceof Error ? err.message : String(err));
                             thumbnailContext.excludedCount++;
-                            return null;
                         } finally {
                             thumbnailContext.sem.release();
                         }
@@ -701,7 +700,7 @@ let connection: mysql.Connection | null = null;
         if (thumbnailContext) {
             const parts = [`${thumbnailContext.generatedCount} generated`, `${thumbnailContext.skippedCount} skipped`];
             if (thumbnailContext.excludedCount > 0) {
-                parts.push(`${thumbnailContext.excludedCount} excluded (invalid/corrupted)`);
+                parts.push(`${thumbnailContext.excludedCount} failed (photo kept without thumbnail)`);
             }
             console.log(`Thumbnails: ${parts.join(', ')}`);
         }

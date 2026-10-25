@@ -278,7 +278,9 @@ on mobile data too.
 Fix: fetch the full-size image only for the lightbox / image-detail view. Honour
 `useThumbnail`, and gate the hook's second argument on actual need rather than `true`.
 
-### LOGIC-12: a thumbnail failure deletes the photo from its album, permanently
+### ~~LOGIC-12: a thumbnail failure deletes the photo from its album, permanently~~
+
+**CLOSED, verified 2026-10-25 (Sprint 02 T-05):** `backend/generateThumbnail.ts`: `failOn: 'truncated'` (probe: "2 extraneous bytes before marker 0xda" fails at `'warning'`, passes at `'truncated'`; a truncated JPEG fails at both); output written to `<dest>.tmp-<pid>` and renamed, temp removed on failure; skip only when the thumbnail is non-empty and not older than the source. `backend/index.ts`: an `'invalid'` result or a thrown error keeps the photo (warns "photo kept"), so `descendantImageCounts` stay right; summary says "failed (photo kept without thumbnail)". Tests in `generateThumbnail.test.ts`: extraneous-bytes JPEG → generated; truncated → invalid twice, no dest, no temp file; 0-byte and stale thumbnails regenerated. Follow-up, not done: the frontend builds the thumbnail URL from `urlPath`, so a kept photo without thumbnail shows the grid's error state (lightbox works). Original row kept for the record:
 
 **Confirms list item 5a and 5c; the run-to-run behaviour is worse than reported.**
 
