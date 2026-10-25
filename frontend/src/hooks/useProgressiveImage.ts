@@ -97,34 +97,41 @@ export function useProgressiveImage(
   const currentImageIdRef = useRef<number | null>(null);
   const thumbnailTransitionDoneRef = useRef(false);
 
-  // Reset state when image changes
-  useEffect(() => {
+  // Reset state when the image (or the view's abort signal) changes. Adjusted during render, so no
+  // render shows the new image with the previous image's state (was an effect, one render late;
+  // REFAC-01). Keyed on the image's identity fields, not the object: a new object for the same
+  // image (re-sorted or re-filtered lists) must not restart the fetches.
+  const imageKey = image ? `${image.id}|${image.pathComponent}|${image.urlPath}` : null;
+  const [syncedFor, setSyncedFor] = useState<{ imageKey: string | null; signal: AbortSignal } | null>(null);
+  if (syncedFor === null || syncedFor.imageKey !== imageKey || syncedFor.signal !== signal) {
+    setSyncedFor({ imageKey, signal });
+    setDisplayThumbnailUrl('');
+    setDisplayFullImageUrl('');
     if (!image) {
       setState('error');
       setHasError(true);
       setError('No image provided');
       setThumbnailUrl('');
       setFullImageUrl('');
-      setDisplayThumbnailUrl('');
-      setDisplayFullImageUrl('');
+    } else {
+      setState('thumbnail');
+      setHasError(false);
+      setError(null);
+      setThumbnailUrl(getImageUrl(image, true));
+      setFullImageUrl(getImageUrl(image, false));
+    }
+  }
+
+  // Per-image bookkeeping for the loaders below, and release of the previous image's object URLs
+  useEffect(() => {
+    if (!image) {
       currentImageIdRef.current = null;
       return;
     }
 
-    const imageId = image.id;
-    currentImageIdRef.current = imageId;
+    currentImageIdRef.current = image.id;
     thumbnailTransitionDoneRef.current = false;
     isMountedRef.current = true;
-    setState('thumbnail');
-    setHasError(false);
-    setError(null);
-    setDisplayThumbnailUrl('');
-    setDisplayFullImageUrl('');
-
-    const thumbRequestUrl = getImageUrl(image, true);
-    const fullUrl = getImageUrl(image, false);
-    setThumbnailUrl(thumbRequestUrl);
-    setFullImageUrl(fullUrl);
 
     return () => {
       isMountedRef.current = false;
@@ -140,8 +147,7 @@ export function useProgressiveImage(
       thumbnailImgRef.current = null;
       fullImgRef.current = null;
     };
-    // Keyed on the image's identity fields, not the object: a new object for the same image
-    // (re-sorted or re-filtered lists) must not restart the fetches.
+    // Keyed like the reset above (identity fields, not the object)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [image?.id, image?.pathComponent, image?.urlPath, signal]);
 

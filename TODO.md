@@ -68,6 +68,8 @@ _Sprint 10 T-05: `ThemeContext` clears the album override during render when lea
 
 _Sprint 10 T-06: `useLightbox`: `resolvedAlbumPath` is derived (`pathBase ?? null`, no state); album images, current image and album id are synced from props/route during render (they stay state because `openLightbox`/`closeLightbox` set them directly). Existing `useLightbox` tests pass unchanged. 8 hits gone._
 
+_Sprint 10 T-07: `useProgressiveImage` resets its state during render when the image identity or the view signal changes; the effect keeps only the per-image refs and the object-URL release. This exposed a real double run: `ViewAbortProvider` handed out a placeholder signal and swapped it for a live one right after mount, so every fetch started on mount was started again (the `useImagePreload` tests expected doubled counts and blamed StrictMode; the wrapper has none). The provider now creates its AbortController in state, live from the first render, and replaces it only after it was aborted (view change, StrictMode check). New provider tests (the first fails on the previous code); preload test counts corrected (1 per neighbour). 14 hits gone._
+
 ## FUTURE (after production deploy)
 
 Operator, 2026-10-25. Not scheduled until lanbilder.se runs on the new code. The notes under each

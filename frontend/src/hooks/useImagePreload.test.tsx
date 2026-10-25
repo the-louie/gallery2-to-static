@@ -85,8 +85,8 @@ describe('useImagePreload', () => {
     });
 
     await waitFor(() => {
-      // React StrictMode double-invokes effects, so counts are doubled
-      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(4);
+      // One preload per neighbour (was doubled by the signal swap after mount; REFAC-01)
+      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(2);
       expect(imagePreload.preloadImage).toHaveBeenCalledWith(
         '/images/album/image1.jpg',
         expect.objectContaining({ signal: expect.any(Object) }),
@@ -104,8 +104,9 @@ describe('useImagePreload', () => {
     });
 
     await waitFor(() => {
-      // React StrictMode double-invokes effects, so counts are doubled
-      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(2);
+      // One preload per neighbour (the count used to be doubled: ViewAbortProvider swapped its
+      // signal right after mount and the effect ran again; REFAC-01)
+      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(1);
       expect(imagePreload.preloadImage).toHaveBeenCalledWith(
         '/images/album/image2.jpg',
         expect.objectContaining({ signal: expect.any(Object) }),
@@ -119,8 +120,9 @@ describe('useImagePreload', () => {
     });
 
     await waitFor(() => {
-      // React StrictMode double-invokes effects, so counts are doubled
-      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(2);
+      // One preload per neighbour (the count used to be doubled: ViewAbortProvider swapped its
+      // signal right after mount and the effect ran again; REFAC-01)
+      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(1);
       expect(imagePreload.preloadImage).toHaveBeenCalledWith(
         '/images/album/image2.jpg',
         expect.objectContaining({ signal: expect.any(Object) }),
@@ -166,8 +168,9 @@ describe('useImagePreload', () => {
     );
 
     await waitFor(() => {
-      // React StrictMode double-invokes effects, so counts are doubled
-      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(2);
+      // One preload per neighbour (the count used to be doubled: ViewAbortProvider swapped its
+      // signal right after mount and the effect ran again; REFAC-01)
+      expect(imagePreload.preloadImage).toHaveBeenCalledTimes(1);
     });
 
     vi.clearAllMocks();

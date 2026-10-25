@@ -54,18 +54,25 @@ export function ViewAbortProvider({
 }: ViewAbortProviderProps): React.ReactElement {
   const location = useLocation();
   const viewKey = getViewKey(location.pathname);
-  const [signal, setSignal] = useState<AbortSignal>(() => defaultSignal);
+  // Children get a live signal from the first render (it used to be a placeholder that the effect
+  // swapped for a real one right after mount, restarting every fetch started meanwhile; REFAC-01).
+  const [controller, setController] = useState(() => new AbortController());
 
   useEffect(() => {
-    const controller = new AbortController();
-    // The controller lives exactly as long as this effect run: created in render (useMemo), the
-    // StrictMode double-run would abort it and keep the aborted signal (REFAC-01: kept on purpose)
-    setSignal(controller.signal);
-
+    // A new controller only when the current one was aborted: by the previous view's cleanup, or
+    // by StrictMode's mount/unmount/mount check
+    let current = controller;
+    if (current.signal.aborted) {
+      current = new AbortController();
+      setController(current);
+    }
     return () => {
-      controller.abort();
+      current.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs per view, not per controller
   }, [viewKey, location.search]);
+
+  const signal = controller.signal;
 
   const value = useMemo<ViewAbortContextValue>(() => ({ signal }), [signal]);
 

@@ -22,6 +22,34 @@ function createWrapper(initialPath = "/") {
 }
 
 describe("ViewAbortContext", () => {
+  it("gives a live signal from the first render and keeps it after mount (REFAC-01)", () => {
+    const seen: AbortSignal[] = [];
+    const { result } = renderHook(
+      () => {
+        const signal = useViewAbortSignal();
+        seen.push(signal);
+        return signal;
+      },
+      { wrapper: createWrapper("/album/1") },
+    );
+    expect(seen[0].aborted).toBe(false);
+    expect(new Set(seen).size).toBe(1); // not swapped after mount: fetches started on mount keep running
+    expect(result.current).toBe(seen[0]);
+  });
+
+  it("StrictMode: the signal children end up with is live", () => {
+    const { result } = renderHook(() => useViewAbortSignal(), {
+      wrapper: ({ children }: { children: React.ReactNode }) => (
+        <React.StrictMode>
+          <MemoryRouter initialEntries={["/"]}>
+            <ViewAbortProvider>{children}</ViewAbortProvider>
+          </MemoryRouter>
+        </React.StrictMode>
+      ),
+    });
+    expect(result.current.aborted).toBe(false);
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
