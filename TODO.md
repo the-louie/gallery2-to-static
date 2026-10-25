@@ -489,7 +489,9 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
 
 ### P1 additions
 
-### LOGIC-15: a failed `index.json` load leaves path URLs spinning forever
+### ~~LOGIC-15: a failed `index.json` load leaves path URLs spinning forever~~
+
+**CLOSED, verified 2026-10-25 (Sprint 01 T-08):** `frontend/src/pages/PathResolverPage.tsx` wraps both `resolvePathToAlbumId` calls (`resolveOrFail`); a rejection sets `loadFailed` and renders `role="alert"` "Could not load the gallery" with a Retry button (re-runs the effect via an `attempt` counter); `null` still goes to `/not-found`. Tests: `PathResolverPage.test.tsx` reject → alert → Retry → album page; image-path variant. Original row kept for the record:
 
 `frontend/src/pages/PathResolverPage.tsx:30-66`: the async IIFE wraps only `decodeURIComponent`
 in a try/catch. `resolvePathToAlbumId` → `loadPathIndex` → `loadIndex` (`dataLoader.ts:380-395`)

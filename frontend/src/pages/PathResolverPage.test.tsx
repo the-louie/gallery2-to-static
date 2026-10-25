@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@/test-utils";
+import { render, screen, waitFor, fireEvent } from "@/test-utils";
 import { PathResolverPage } from "./PathResolverPage";
 import { useParams } from "react-router-dom";
 import { resolvePathToAlbumId } from "@/utils/dataLoader";
@@ -215,5 +215,38 @@ describe("PathResolverPage", () => {
     expect(
       document.querySelector(".path-resolver-page-loading"),
     ).toBeInTheDocument();
+  });
+  it("shows an error with Retry when the path index fails to load, and recovers on retry", async () => {
+    vi.mocked(useParams).mockReturnValue({ "*": "SomeAlbum" });
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(resolvePathToAlbumId)
+      .mockRejectedValueOnce(new Error("HTTP 500"))
+      .mockResolvedValueOnce(42);
+
+    render(<PathResolverPage />);
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Could not load the gallery");
+    expect(document.querySelector(".path-resolver-page-loading")).not.toBeInTheDocument();
+    expect(mockNavigate).not.toHaveBeenCalledWith("/not-found", { replace: true });
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("album-detail-page")).toBeInTheDocument();
+    });
+    expect(resolvePathToAlbumId).toHaveBeenCalledTimes(2);
+    consoleError.mockRestore();
+  });
+
+  it("shows the error state when the index fails for an image path too", async () => {
+    vi.mocked(useParams).mockReturnValue({ "*": "SomeAlbum/image/5" });
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(resolvePathToAlbumId).mockRejectedValue(new Error("offline"));
+
+    render(<PathResolverPage />);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Could not load the gallery");
+    consoleError.mockRestore();
   });
 });
