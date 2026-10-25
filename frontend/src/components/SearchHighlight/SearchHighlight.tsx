@@ -75,11 +75,14 @@ export function SearchHighlight({
 
   return (
     <Component className={className}>
+      {/* Index keys are right here: the parts are rebuilt from text + query on every render and hold no state */}
       {parts.map((part, index) => {
         if (typeof part === 'string') {
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- see above
           return <React.Fragment key={index}>{part}</React.Fragment>;
         }
         return (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- see above
           <mark key={index} className="search-highlight-mark">
             {part.text}
           </mark>

@@ -36,7 +36,6 @@ export default tseslint.config(
       // exhaustive-deps stays with react-hooks, where the deliberate suppressions are documented.
       '@eslint-react/exhaustive-deps': 'off',
       '@eslint-react/set-state-in-effect': 'off',
-      '@eslint-react/no-array-index-key': 'off',
       // setXState names are deliberate: the public setX wraps the raw setter (validation, side effects)
       '@eslint-react/use-state': ['error', { enforceSetterName: false }],
       // project convention: a leading underscore marks a deliberately unused name (kept for an API)
@@ -55,7 +54,8 @@ export default tseslint.config(
   {
     // Tests and test helpers: mocks and fixtures may use `any` (production code has none; LINT-01)
     files: ['**/*.test.{ts,tsx}', 'src/test/**', 'src/test-utils*', 'src/__mocks__/**'],
-    rules: { '@typescript-eslint/no-explicit-any': 'off' },
+    // ... and list mocks key by index, like the library they stand in for (LINT-02)
+    rules: { '@typescript-eslint/no-explicit-any': 'off', '@eslint-react/no-array-index-key': 'off' },
   },
   prettier,
 );

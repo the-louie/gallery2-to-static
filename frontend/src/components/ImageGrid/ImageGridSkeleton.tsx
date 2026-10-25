@@ -40,6 +40,7 @@ export function ImageGridSkeleton({
       aria-live="polite"
     >
       {Array.from({ length: count }).map((_, index) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed placeholder list, never reordered
         <div key={index} className="image-grid-skeleton-item">
           <div className="image-grid-skeleton-thumbnail" />
         </div>

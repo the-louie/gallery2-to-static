@@ -28,6 +28,8 @@ _Sprint 09 T-01 (2026-10-25): IntersectionObserver — no leak (the cleanup disc
 
 _Sprint 09 T-02: `no-context-provider`, `no-use-context` on (`<Ctx value>`, `use(Ctx)` in the 3 contexts); `naming-convention-ref-name` on (`isInitialMountRef`, `optionElementsRef`); `use-state` on with `enforceSetterName: false` (the `setXState` names are deliberate wrappers); SearchBar's unread `query` state removed (one setter ran inside another state updater)._
 
+_Sprint 09 T-03: `no-array-index-key` on. The 7 hits were all correct uses: the two skeletons (fixed placeholder lists) and SearchHighlight (parts rebuilt from text + query each render) carry a one-line exemption with the reason; test files have the rule off (list mocks key by index like Virtuoso)._
+
 ## P2 — Correctness and cost
 
 ## P3 — Quality, hygiene and latent bugs

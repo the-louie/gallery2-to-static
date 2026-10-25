@@ -40,6 +40,7 @@ export function AlbumGridSkeleton({
       aria-live="polite"
     >
       {Array.from({ length: count }).map((_, index) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed placeholder list, never reordered
         <div key={index} className="album-grid-skeleton-item">
           <div className="album-grid-skeleton-thumbnail" />
           <div className="album-grid-skeleton-content">
