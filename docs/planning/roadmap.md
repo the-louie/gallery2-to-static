@@ -5,8 +5,8 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 **After every sprint (operator, 2026-10-25):** prune `TODO.md` and regenerate `TODO-summarized.md`: `python3 docs/planning/prune_todo.py . "Sprint NN"` moves closed (~~struck~~) rows, with their proof, to `docs/planning/done.md`.
 
 **Active sprint:** [Sprint 06](./sprints/sprint-06.md) — in progress.
-**Current ticket:** [Sprint 06 T-01](./sprints/sprint-06.md) (`in-progress` — Pathname → hash redirect before the router mounts; deploy docs (nginx )
-**Last completed:** Sprint 05 T-09 (commit `db6a567`).
+**Current ticket:** [Sprint 06 T-02](./sprints/sprint-06.md) (`todo` — Extract main() into a module taking sql; thin CLI in index.ts)
+**Last completed:** Sprint 06 T-01 (commit `cb1f4d6`).
 
 | Sprint | Goal |
 |---|---|
