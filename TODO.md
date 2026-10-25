@@ -66,6 +66,8 @@ _Sprint 10 T-04: `ImageThumbnail` and `Lightbox` reset their load state during r
 
 _Sprint 10 T-05: `ThemeContext` clears the album override during render when leaving an album. `ViewAbortContext` keeps its effect on purpose: the AbortController must live exactly as long as the effect run (created in render, StrictMode's double effect would abort it and keep the aborted signal); reason in place, exemption added when the rule goes on (T-08)._
 
+_Sprint 10 T-06: `useLightbox`: `resolvedAlbumPath` is derived (`pathBase ?? null`, no state); album images, current image and album id are synced from props/route during render (they stay state because `openLightbox`/`closeLightbox` set them directly). Existing `useLightbox` tests pass unchanged. 8 hits gone._
+
 ## FUTURE (after production deploy)
 
 Operator, 2026-10-25. Not scheduled until lanbilder.se runs on the new code. The notes under each

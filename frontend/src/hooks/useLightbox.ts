@@ -36,7 +36,7 @@
  * @module frontend/src/hooks/useLightbox
  */
 
-import { useEffect, useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { isFromAlbumState } from '@/utils/albumScroll';
 import { parseAlbumImageParams, parseImageId } from '@/utils/routeParams';
@@ -106,16 +106,18 @@ export function useLightbox(
   const [currentImage, setCurrentImage] = useState<Image | null>(null);
   const [albumId, setAlbumId] = useState<number | null>(null);
   const [albumImages, setAlbumImages] = useState<Image[]>(images);
-  const [resolvedAlbumPath, setResolvedAlbumPath] = useState<string | null>(pathBase ?? null);
+  const resolvedAlbumPath = pathBase ?? null;
 
-  useEffect(() => {
-    setResolvedAlbumPath(pathBase ?? null);
-  }, [pathBase]);
-
-  // Update album images when prop changes
-  useEffect(() => {
+  // Prop and route changes are synced during render, not in effects one render late (REFAC-01).
+  // openLightbox/closeLightbox still set this state directly.
+  // Update album images when the prop changes
+  const [syncedImages, setSyncedImages] = useState(images);
+  let albumImagesNow = albumImages;
+  if (syncedImages !== images) {
+    setSyncedImages(images);
     setAlbumImages(images);
-  }, [images]);
+    albumImagesNow = images;
+  }
 
   const routeParams = useMemo(() => {
     if (resolvedAlbumId != null && resolvedImageId != null) {
@@ -135,36 +137,26 @@ export function useLightbox(
     return routeParams.imageId !== null;
   }, [routeParams.imageId]);
 
-  // Update image when route changes or album images load (for URL-based navigation)
-  useEffect(() => {
-    if (routeParams.imageId !== null) {
-      if (albumImages.length > 0) {
-        const foundImage = albumImages.find((img) => img.id === routeParams.imageId);
-        if (foundImage) {
-          setCurrentImage(foundImage);
-        } else {
-          // Image not found in album (might be loading or invalid)
-          setCurrentImage(null);
-        }
-      } else {
-        // Images not loaded yet, wait for them
-        setCurrentImage(null);
-      }
-    } else if (routeParams.imageId === null) {
-      // URL doesn't contain image route, close lightbox
-      setCurrentImage(null);
-    }
-  }, [routeParams.imageId, albumImages]);
+  // Update image when the route changes or album images load (URL-based navigation): the image
+  // with the route's id, or null (no image route, images not loaded yet, or id not in the album)
+  const [syncedImageRoute, setSyncedImageRoute] = useState<{ imageId: number | null; images: Image[] } | null>(null);
+  if (syncedImageRoute === null || syncedImageRoute.imageId !== routeParams.imageId || syncedImageRoute.images !== albumImagesNow) {
+    setSyncedImageRoute({ imageId: routeParams.imageId, images: albumImagesNow });
+    setCurrentImage(
+      routeParams.imageId === null ? null : (albumImagesNow.find((img) => img.id === routeParams.imageId) ?? null),
+    );
+  }
 
-  // Update album ID when route changes
-  useEffect(() => {
+  // Update album ID when the route changes; without an image route it is reset
+  const [syncedAlbumRoute, setSyncedAlbumRoute] = useState<{ albumId: number | null; imageId: number | null } | null>(null);
+  if (syncedAlbumRoute === null || syncedAlbumRoute.albumId !== routeParams.albumId || syncedAlbumRoute.imageId !== routeParams.imageId) {
+    setSyncedAlbumRoute({ albumId: routeParams.albumId, imageId: routeParams.imageId });
     if (routeParams.albumId !== null) {
       setAlbumId(routeParams.albumId);
     } else if (routeParams.imageId === null) {
-      // No image route, reset album ID
       setAlbumId(null);
     }
-  }, [routeParams.albumId, routeParams.imageId]);
+  }
 
   const pathForImage = useCallback(
     (imageId: number) => {
