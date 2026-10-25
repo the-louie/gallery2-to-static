@@ -3,7 +3,7 @@
 Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–4h) and end on a demo.
 
 **Active sprint:** [Sprint 02](./sprints/sprint-02.md) — in progress.
-**Current ticket:** [Sprint 02 T-08](./sprints/sprint-02.md) (`todo` — Validate numeric config (concurrency etc.) at load)
+**Current ticket:** [Sprint 02 T-08](./sprints/sprint-02.md) (`in-progress` — Validate numeric config (concurrency etc.) at load)
 **Last completed:** Sprint 02 T-07 (commit `3d32d2a`).
 
 | Sprint | Goal |
