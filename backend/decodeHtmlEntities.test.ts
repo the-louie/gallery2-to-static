@@ -3,8 +3,8 @@
  */
 
 import assert from 'assert';
-import { decodeHtmlEntities } from '../shared/decodeHtmlEntities';
-import { stripBBCode } from './bbcode';
+import { decodeHtmlEntities } from '../shared/decodeHtmlEntities.ts';
+import { stripBBCode } from './bbcode.ts';
 
 function run(): void {
   // decodeHtmlEntities

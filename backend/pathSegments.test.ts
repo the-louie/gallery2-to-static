@@ -12,8 +12,8 @@ import {
   getSegmentForAlbum,
   buildPathFromBreadcrumb,
   appendSegment,
-} from './pathSegments';
-import type { BreadcrumbItem } from './types';
+} from './pathSegments.ts';
+import type { BreadcrumbItem } from './types.ts';
 
 function run(): void {
   // titleToSegment

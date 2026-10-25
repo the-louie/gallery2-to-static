@@ -700,7 +700,7 @@ To limit RAM usage when browsing large galleries:
 1. **Backend generates data:**
    ```bash
    # Run backend to generate JSON files
-   cd backend && npm run start  # or ts-node index.ts
+   cd backend && npm run start  # or node index.ts
    ```
 
 2. **Frontend development:**

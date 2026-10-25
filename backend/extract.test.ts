@@ -8,8 +8,8 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import sharp from 'sharp';
-import { runExtraction, type ExtractionSql } from './extract';
-import type { Child, Config } from './types';
+import { runExtraction, type ExtractionSql } from './extract.ts';
+import type { Child, Config } from './types.ts';
 
 type Node = { id: number; type: 'GalleryAlbumItem' | 'GalleryPhotoItem'; title: string | null; pc: string; children?: Node[] };
 

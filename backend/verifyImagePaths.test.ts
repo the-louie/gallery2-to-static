@@ -12,7 +12,7 @@ import {
     writeDeviationReport,
     verifyImageUrl,
     type DeviationEntry,
-} from './verifyImagePaths';
+} from './verifyImagePaths.ts';
 
 async function run(): Promise<void> {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'verifyImagePaths-'));

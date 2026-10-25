@@ -57,9 +57,9 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p tsconfig.json && vite build",
-    "typecheck": "tsc -p tsconfig.json",
-    "typecheck:test": "tsc -p tsconfig.test.json",
+    "build": "node node_modules/typescript7/bin/tsc -p tsconfig.json && vite build",
+    "typecheck": "node node_modules/typescript7/bin/tsc -p tsconfig.json",
+    "typecheck:test": "node node_modules/typescript7/bin/tsc -p tsconfig.test.json",
     "check:dist": "node scripts/check-dist.mjs dist",
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0",
@@ -109,6 +109,7 @@
     "size-limit": "^14.3.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.0",
+    "typescript7": "npm:typescript@^7.0.2",
     "vite": "^8.3.5",
     "vitest": "^5.0.5",
     "vitest-axe": "^0.1.0"

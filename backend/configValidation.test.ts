@@ -3,8 +3,8 @@
  */
 
 import assert from 'assert';
-import { findConfigErrors } from './configValidation';
-import type { Config } from './types';
+import { findConfigErrors } from './configValidation.ts';
+import type { Config } from './types.ts';
 
 const base: Config = {
     mysqlSettings: { host: 'h', user: 'u', database: 'd' },

@@ -6,7 +6,7 @@
 import assert from 'assert';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { decode, cleanup_uipathcomponent } from './cleanupUipath';
+import { decode, cleanup_uipathcomponent } from './cleanupUipath.ts';
 
 function run(): void {
   // decode
@@ -54,7 +54,7 @@ function run(): void {
   console.log('cleanupUipath tests passed');
 
   // Shared cross-validation vectors (ARCH-02)
-  const vectorsPath = resolve(__dirname, '../test-vectors/nordic-path-normalization.json');
+  const vectorsPath = resolve(import.meta.dirname, '../test-vectors/nordic-path-normalization.json');
   const vectors = JSON.parse(readFileSync(vectorsPath, 'utf8'));
   for (const [input, expected] of vectors.common as [string, string][]) {
     const actual = cleanup_uipathcomponent(input);

@@ -5,7 +5,7 @@
  * @module backend/descendantImageCount
  */
 
-import type { Child } from './types';
+import type { Child } from './types.ts';
 
 function isBlacklisted(id: number, set: Set<number>): boolean {
     return set.has(id);

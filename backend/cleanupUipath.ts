@@ -15,8 +15,8 @@
  * vectors to match.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const unidecode = require('unidecode') as (s: string) => string;
+import unidecode from 'unidecode';
+
 
 /** Illegal URL characters replaced with underscore. No bare hyphen inside the class (would create a char range). */
 const RE_ILLEGAL = /[\[\]\\\/\?%:|"'><#\s&]/gi;

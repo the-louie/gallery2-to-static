@@ -1,15 +1,15 @@
 import type mysql from 'mysql2/promise'
-import type { Child, Config, AlbumMetadata } from './types'
-import { stripBBCode } from './bbcode'
-import { decodeHtmlEntities } from '../shared/decodeHtmlEntities'
-import { normalizeOwnerDisplayName, resolveOwnerName } from './ownerDisplayName'
+import type { Child, Config, AlbumMetadata } from './types.ts'
+import { stripBBCode } from './bbcode.ts'
+import { decodeHtmlEntities } from '../shared/decodeHtmlEntities.ts'
+import { normalizeOwnerDisplayName, resolveOwnerName } from './ownerDisplayName.ts'
 import {
     validateNullableString,
     validateRequiredString,
     validateNullableNumber,
     validateRequiredNumber,
     MAX_LENGTHS,
-} from './validateRow'
+} from './validateRow.ts'
 
 export default (connection: mysql.Connection, config: Config) => {
     const SQL_GET_CHILDREN = `

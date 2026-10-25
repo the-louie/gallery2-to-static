@@ -7,10 +7,6 @@ Generated 2026-10-25 from `TODO.md` (Sprint 08). Closed rows: `docs/planning/don
 - **CONF-01**: put the blacklisted album IDs in `config.ignoreAlbums` before the production extraction (operator, 2026-10-25)
 - **LINT-02**: review the @eslint-react rules that are off (Sprint 08 T-02)
 
-## P1 (second review pass)
-
-- **DEPS-01**: two majors blocked upstream — ESLint 10, TypeScript 7 (operator, 2026-10-25)
-
 ## FUTURE (after production deploy)
 
 - **FUT-01**: SQLite as the master of the data; regenerate only changed branches
@@ -23,4 +19,4 @@ Generated 2026-10-25 from `TODO.md` (Sprint 08). Closed rows: `docs/planning/don
 
 ## Summary
 
-**Open rows:** 8
+**Open rows:** 7

@@ -3,7 +3,7 @@
  */
 
 import assert from 'assert';
-import { normalizeOwnerDisplayName, resolveOwnerName } from './ownerDisplayName';
+import { normalizeOwnerDisplayName, resolveOwnerName } from './ownerDisplayName.ts';
 
 function run(): void {
   // null → null

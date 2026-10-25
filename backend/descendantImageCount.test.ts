@@ -4,8 +4,8 @@
  */
 
 import assert from 'assert';
-import { computeAllDescendantImageCounts } from './descendantImageCount';
-import type { Child } from './types';
+import { computeAllDescendantImageCounts } from './descendantImageCount.ts';
+import type { Child } from './types.ts';
 
 function photo(id: number, pathComponent: string): Child {
     return {

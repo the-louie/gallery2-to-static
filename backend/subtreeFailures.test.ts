@@ -4,7 +4,7 @@
  */
 
 import assert from 'assert';
-import { settleSubtree, formatSubtreeFailures, type SubtreeFailure } from './subtreeFailures';
+import { settleSubtree, formatSubtreeFailures, type SubtreeFailure } from './subtreeFailures.ts';
 
 async function run(): Promise<void> {
     const unhandled: unknown[] = [];

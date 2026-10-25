@@ -3,8 +3,8 @@
  * Uses cleanup_uipathcomponent for human-readable segments; disambiguates duplicate sibling titles with --id.
  */
 
-import { cleanup_uipathcomponent } from './cleanupUipath';
-import type { BreadcrumbItem } from './types';
+import { cleanup_uipathcomponent } from './cleanupUipath.ts';
+import type { BreadcrumbItem } from './types.ts';
 
 const DISAMBIGUATE_SEP = '--';
 

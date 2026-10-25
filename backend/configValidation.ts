@@ -7,7 +7,7 @@
  * absent/null or an integer within its range.
  */
 
-import type { Config } from './types';
+import type { Config } from './types.ts';
 
 interface IntRule {
     field: keyof Config;

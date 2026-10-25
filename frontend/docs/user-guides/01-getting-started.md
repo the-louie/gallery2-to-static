@@ -109,14 +109,7 @@ Navigate to the backend directory and run the conversion script:
 
 ```bash
 cd backend
-npx ts-node index.ts
-```
-
-Or if you have TypeScript installed globally:
-
-```bash
-cd backend
-ts-node index.ts
+node index.ts
 ```
 
 The script will:

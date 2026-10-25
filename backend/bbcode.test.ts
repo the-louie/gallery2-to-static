@@ -3,7 +3,7 @@
  */
 
 import assert from 'assert';
-import { stripBBCode } from './bbcode';
+import { stripBBCode } from './bbcode.ts';
 
 function run(): void {
   // [b]Bold[/b] → "Bold"

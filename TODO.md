@@ -36,36 +36,6 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
 
 ### P1 additions
 
-### DEPS-01 (remaining): two majors blocked upstream — ESLint 10, TypeScript 7 (operator, 2026-10-25)
-
-_Sprint 08 T-02 (2026-10-25): **ESLint 10 done** — eslint 10.13.0, @eslint/js 10.0.1, eslint-plugin-react replaced by @eslint-react/eslint-plugin 5.28.8 (`frontend/eslint.config.js`); new core rule `preserve-caught-error` fixed in `frontend/src/utils/searchIndexLoader.ts` (`cause`, lib `ES2022.Error`). TypeScript 7 open (T-03)._
-
-_Groomed 2026-10-25 (Sprint 04 retro): everything else is on its latest release and `npm audit` is 0 in both folders (see the progress notes below). Open: **eslint 10 / @eslint/js 10** — waits for eslint-plugin-react to support ESLint 10 (7.37.5 supports ≤ 9); **typescript 7** — waits for typescript-eslint (< 6.1.0) and ts-node (needs the JS API; alternative: run the backend with Node's type stripping or tsx instead of ts-node). Recheck both at each sprint start._ Original title: all dependencies on their latest version.
-
-Operator requirement before deploy: every dependency in `frontend/package.json` and
-`backend/package.json` (direct and dev) on its latest release, lockfiles regenerated, and
-`npm audit` (full, not only `--omit=dev`) clean in both folders. This includes the majors that
-SEC-14 and ARCH-08 list:
-- frontend: vite 5 → current, vitest 1 → current, eslint 8 → current (flat config),
-  `@typescript-eslint` 6 → current, React 18 → 19, react-router 6 → current, `@vitejs/plugin-react`,
-  jsdom, Testing Library, size-limit;
-- backend: sharp 0.33 → current, mysql2 → current, ts-node/typescript, `@types/node` matching the
-  Node major we deploy on (22).
-
-Split per toolchain (build, test, lint, runtime libraries, backend) so each step lands green.
-_Progress 2026-10-25 (Sprint 02 T-04): backend runtime libraries done (sharp 0.35.5, mysql2 3.24.6, @types/node 22.20.5). Backend open: typescript (7.x latest; ts-node 10.9.2 needs checking against it) and ts-node._
-_Progress 2026-10-25 (Sprint 04 T-01): frontend in-range updates done (Font Awesome 7.3.1 / react-fontawesome 3.5.0, react-virtuoso 4.18.19, react-router-dom 6.30.6, user-event 14.6.8, prettier 3.9.10, @types/react 18.3.31). `npm audit --omit=dev` still 1 moderate: react-router < 7.18 (T-06). dist 488 → 512 KB (Font Awesome)._
-_Progress 2026-10-25 (Sprint 04 T-02, with T-03): Vite 8.3.5 (+ @vitejs/plugin-react 6.1.2, rollup-plugin-visualizer 7.1.1), Vitest 5.0.5 (+ coverage-v8, ui), jsdom 30.1.3, @types/jsdom 30; lockfile regenerated. `minify: 'esbuild'` dropped (Vite 8 uses Oxc). Test mocks of `Image`/`IntersectionObserver`/`SearchIndex` changed from arrow functions to `function` (Vitest 3+ constructs mocks with `new`). Build OK, 1468/1468._
-_Progress 2026-10-25 (Sprint 04 T-04): @testing-library/react 16.3.3 (+ @testing-library/dom 10.4.2 as explicit peer), jest-dom 7.0.1 (setup and tsconfig.test use `@testing-library/jest-dom/vitest`; tsconfig.test adds `node` types). `src/test/setup.ts` shims a global `jest.advanceTimersByTime` → Vitest's, because Testing Library 10 only detects Jest fake timers (SearchBar's userEvent tests hung). 1468/1468._
-_Progress 2026-10-25 (Sprint 04 T-05): React 19.3.1, react-dom 19.3.1, @types/react(-dom) 19.3.0. `JSX` namespace now imported from React (5 files); 2 timer tests wrapped in `act()` (React 19 flushes updates only there). Test-log warnings unchanged vs React 18 (measured on a T-04 worktree: same act()/Router warnings, 435 ThemeProvider etc.). dist 517 → 595 KB (React 19 runtime)._
-_Progress 2026-10-25 (Sprint 04 T-06): react-router-dom 7.18.4 (re-exports react-router 7). `npm audit --omit=dev`: **0**. No relative `to`/`navigate` paths in the app, so v7's splat-route resolution change does not apply; the two v7 future-flag warnings are gone from the test log. dist 611 KB._
-_Progress 2026-10-25 (Sprint 04 T-07): ESLint 9.39.5 (flat config `eslint.config.js`), typescript-eslint 8.72.0 (replaces the two @typescript-eslint packages), eslint-plugin-react 7.37.5, react-hooks 7.1.1, react-refresh 0.5.7, eslint-config-prettier 10.1.8, globals 17. **ESLint 10 not possible yet:** eslint-plugin-react 7.37.5 (latest) supports ESLint ≤ 9. Remaining full-audit items (14 high: basic-ftp, extract-zip, nanoid, zod 3) all come from size-limit's puppeteer chain (T-09)._
-_Progress 2026-10-25 (Sprint 04 T-08): TypeScript 6.0.3 in frontend and backend. **TypeScript 7 (7.0.2, latest) not possible yet:** it is the native compiler and has no classic JS API (`typescript` exports only a version and `unstable/*`); typescript-eslint 8.72 requires `typescript <6.1.0` and ts-node needs the JS API. TS 6 deprecations fixed rather than silenced (frontend `baseUrl` removed; backend `module`/`moduleResolution` `node16`, `types: ["node"]` because TS 6 no longer includes all `@types` by default; the dynamic `import('./generateThumbnail')` became a static import, which `node16` requires)._
-_Progress 2026-10-25 (Sprint 04 T-09): size-limit 14.3.0 with `@size-limit/file` 14.3.0 (preset-app dropped: its `@size-limit/time` pulled puppeteer + Chrome and all remaining dev advisories), web-vitals 6.2.3. **Frontend full `npm audit`: 0.** `npm outdated` lists only the two blocked majors: eslint/@eslint/js 10 (eslint-plugin-react) and typescript 7 (typescript-eslint, ts-node). Backend: `@types/node` stays on 22.x on purpose (Node 22 runtime)._
-Verify with `npm outdated` (empty) + `npm audit` (0) in both folders, `npm run build`, the full
-vitest run and the backend tests. Add `engines` (HYGIENE-01) so the Node version is pinned too.
-Supersedes the "can wait" note in ARCH-08 and the version part of SEC-14.
-
 ### P2 additions
 
 ### P3 additions

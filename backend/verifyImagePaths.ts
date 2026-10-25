@@ -6,7 +6,7 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { thumbnailFileName } from './pathResolution';
+import { thumbnailFileName } from './pathResolution.ts';
 
 const THUMB_PREFIX = 't__';
 const DEFAULT_TIMEOUT_MS = 10_000;

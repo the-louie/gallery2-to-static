@@ -4,7 +4,7 @@ import {
   validateRequiredString,
   validateNullableNumber,
   validateRequiredNumber,
-} from './validateRow';
+} from './validateRow.ts';
 
 function run() {
   // validateNullableString

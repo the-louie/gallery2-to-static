@@ -1,10 +1,10 @@
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import mysql from 'mysql2/promise'
-import sqlUtils from './sqlUtils'
-import { Config } from './types'
-import { findConfigErrors } from './configValidation'
-import { runExtraction } from './extract'
+import sqlUtils from './sqlUtils.ts'
+import type { Config } from './types.ts'
+import { findConfigErrors } from './configValidation.ts'
+import { runExtraction } from './extract.ts'
 
 // CLI: load config.json (+ MYSQL_* overrides), connect to MySQL, run the extraction, set the exit code.
 let connection: mysql.Connection | null = null;
@@ -12,7 +12,7 @@ let connection: mysql.Connection | null = null;
 (async () => {
     try {
         console.log('Loading config...');
-        const configPath = path.join(__dirname, 'config.json');
+        const configPath = path.join(import.meta.dirname, 'config.json');
         let config: Config;
         try {
             const configFile = await fs.readFile(configPath, 'utf-8');
@@ -46,7 +46,7 @@ let connection: mysql.Connection | null = null;
         connection = await mysql.createConnection(config.mysqlSettings);
         const sql = sqlUtils(connection, config);
 
-        const result = await runExtraction({ sql, config, projectRoot: path.join(__dirname, '..') });
+        const result = await runExtraction({ sql, config, projectRoot: path.join(import.meta.dirname, '..') });
         if (!result.ok) process.exitCode = 1;
     } catch (error) {
         console.error('Error in main:', error);

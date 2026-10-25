@@ -19,7 +19,7 @@ Requires Node.js 22.23.4 or later (earlier 22.x releases bundle a Brotli decoder
    npm ci
    cp config_example.json config.json   # then edit it (DB credentials, image paths)
    npm test                             # optional: backend unit tests
-   npx ts-node index.ts                 # writes ../data/ (via data.new-<time>/) and the thumbnails
+   node index.ts                        # writes ../data/ (via data.new-<time>/) and the thumbnails
    ```
 2. **Build the site**:
    ```bash

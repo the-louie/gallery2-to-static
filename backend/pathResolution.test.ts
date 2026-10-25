@@ -3,7 +3,7 @@
  */
 
 import assert from 'assert';
-import { thumbnailFileName, buildPathsFromPathComponent } from './pathResolution';
+import { thumbnailFileName, buildPathsFromPathComponent } from './pathResolution.ts';
 
 const THUMB_PREFIX = 't__';
 

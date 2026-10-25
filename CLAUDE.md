@@ -29,7 +29,7 @@ Gallery 2 MySQL DB
 ### Backend (Extraction Script)
 
 - **Purpose**: Extract albums, images, metadata, and hierarchy from Gallery 2 database into JSON files
-- **Runtime**: Run once by hand (`cd backend && npx ts-node index.ts`), then the database server can be shut down
+- **Runtime**: Run once by hand (`cd backend && node index.ts`), then the database server can be shut down
 - **Security context**: Local admin tool only, never internet-facing. Vulnerabilities in backend code have very limited impact
 - **Database**: MySQL via `mysql2` with parameterized queries (no SQL injection risk)
 - **Image processing**: `sharp` for thumbnail generation
@@ -39,7 +39,7 @@ Gallery 2 MySQL DB
 ### Frontend (Static SPA)
 
 - **Framework**: React 18 + React Router v6 (HashRouter for static hosting compatibility)
-- **Build**: Vite 8 (Rolldown, Oxc minifier), Vitest 5, TypeScript 6.0 (TS 7 blocked: typescript-eslint and ts-node need the JS API) (strict mode), ES2020 target, ESNext modules
+- **Build**: Vite 8 (Rolldown, Oxc minifier), Vitest 5, TypeScript 7.0 for type checks (`typescript7` alias; TS 6.0.3 stays as `typescript` only because typescript-eslint needs its JS API) (strict mode), ES2020 target, ESNext modules
 - **Routing**: `HashRouter` with routes: `/` (home), `/album/:id`, `/album/:albumId/image/:imageId`, path-based album URLs via `PathResolverPage`
 - **State**: React Context API (ThemeContext, FilterContext, ViewAbortContext), no Redux/Zustand
 - **Styling**: Plain CSS files per component (not CSS Modules), CSS custom properties for theming, no CSS-in-JS
@@ -180,9 +180,10 @@ npm run size-check       # Check bundle size limits
 ```bash
 cd backend
 npm install              # Install dependencies
-npx ts-node index.ts     # Run extraction (requires config.json with DB credentials)
+node index.ts            # Run extraction (requires config.json with DB credentials)
 npm test                 # Run all backend *.test.ts (runTests.mjs); npm test -- <name> for a subset
-npx ts-node <file>.test.ts  # Run individual test files
+node <file>.test.ts      # Run individual test files
+npm run typecheck        # Type-check the backend (TypeScript 7; Node only strips types)
 ```
 
 ## Code Conventions
@@ -262,7 +263,7 @@ npx ts-node <file>.test.ts  # Run individual test files
     - Wrap IntersectionObserver callback invocations in `act()` for state updates to flush
     - For error state tests on image components, override the `useProgressiveImage` mock with `mockReturnValue({ hasError: true, ... })`
 - **Backend**: Node.js `assert` module (no test framework)
-  - Tests run directly: `npx ts-node bbcode.test.ts`
+  - Tests run directly: `node bbcode.test.ts` (Node 22 type stripping; `npm run typecheck` checks types)
   - Sequential assertions in a `run()` function
   - `console.log('... tests passed')` on success
   - Shared test vectors in `test-vectors/` for cross-backend/frontend validation

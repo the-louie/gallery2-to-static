@@ -8,7 +8,7 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import sharp from 'sharp';
-import { generateThumbnail, readThumbnailSize } from './generateThumbnail';
+import { generateThumbnail, readThumbnailSize } from './generateThumbnail.ts';
 
 async function run(): Promise<void> {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'generateThumbnail-'));

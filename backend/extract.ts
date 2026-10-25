@@ -5,17 +5,17 @@
  */
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import sqlUtils from './sqlUtils'
-import { Config, Child, AlbumFile, BreadcrumbItem, AlbumMetadata } from './types'
-import { cleanup_uipathcomponent } from './cleanupUipath'
-import { getSegmentForAlbum, appendSegment, addToPathIndex, findPathIndexProblems } from './pathSegments'
-import { settleSubtree, formatSubtreeFailures, type SubtreeFailure } from './subtreeFailures'
-import { generateThumbnail, readThumbnailSize } from './generateThumbnail'
-import { runStamp, prepareStagingDir, listStaleFiles, promoteStagingDir } from './outputDir'
-import { computeAllDescendantImageCounts } from './descendantImageCount'
-import { runVerification } from './verifyImagePaths'
-import { buildPathsFromPathComponent } from './pathResolution'
-import { decodeHtmlEntities } from '../shared/decodeHtmlEntities'
+import sqlUtils from './sqlUtils.ts'
+import type { Config, Child, AlbumFile, BreadcrumbItem, AlbumMetadata } from './types.ts'
+import { cleanup_uipathcomponent } from './cleanupUipath.ts'
+import { getSegmentForAlbum, appendSegment, addToPathIndex, findPathIndexProblems } from './pathSegments.ts'
+import { settleSubtree, formatSubtreeFailures, type SubtreeFailure } from './subtreeFailures.ts'
+import { generateThumbnail, readThumbnailSize } from './generateThumbnail.ts'
+import { runStamp, prepareStagingDir, listStaleFiles, promoteStagingDir } from './outputDir.ts'
+import { computeAllDescendantImageCounts } from './descendantImageCount.ts'
+import { runVerification } from './verifyImagePaths.ts'
+import { buildPathsFromPathComponent } from './pathResolution.ts'
+import { decodeHtmlEntities } from '../shared/decodeHtmlEntities.ts'
 
 /**
  * Build a Set of album IDs to ignore from config.ignoreAlbums.
