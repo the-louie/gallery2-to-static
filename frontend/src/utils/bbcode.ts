@@ -37,7 +37,7 @@ interface TagConfig {
   /** Tag name (lowercase) */
   name: string;
   /** React element type to render */
-  element: keyof JSX.IntrinsicElements;
+  element: keyof React.JSX.IntrinsicElements;
   /** Whether tag requires closing tag */
   requiresClosing: boolean;
   /** Whether tag supports attributes */

@@ -43,7 +43,7 @@ export interface SearchHighlightProps {
   /** Optional CSS class name */
   className?: string;
   /** HTML tag to use for container (default: 'span') */
-  as?: keyof JSX.IntrinsicElements;
+  as?: keyof React.JSX.IntrinsicElements;
 }
 
 /**

@@ -8,6 +8,7 @@
  */
 
 import './LoadingSpinner.css';
+import type { JSX } from 'react'; // React 19 types: no global JSX namespace
 
 /**
  * Size variants for the loading spinner

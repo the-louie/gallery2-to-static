@@ -71,11 +71,16 @@ describe('useLoadingState', () => {
     it('delays showing loading state', async () => {
       const { result } = renderHook(() => useLoadingState({ delay: 100 }));
 
-      result.current.startLoading();
+      // React 19 flushes state updates only inside act()
+      act(() => {
+        result.current.startLoading();
+      });
 
       expect(result.current.isLoading).toBe(false);
 
-      await vi.advanceTimersByTimeAsync(100);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+      });
 
       expect(result.current.isLoading).toBe(true);
     });
@@ -101,9 +106,13 @@ describe('useLoadingState', () => {
         useLoadingState({ delay: 0, timeout: 1000, onTimeout }),
       );
 
-      result.current.startLoading();
+      act(() => {
+        result.current.startLoading();
+      });
 
-      await vi.advanceTimersByTimeAsync(1000);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
 
       expect(result.current.isTimeout).toBe(true);
       expect(onTimeout).toHaveBeenCalled();

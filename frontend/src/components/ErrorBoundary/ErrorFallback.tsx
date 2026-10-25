@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import type { ErrorFallbackProps } from './ErrorBoundary';
 import './ErrorFallback.css';
+import type { JSX } from 'react'; // React 19 types: no global JSX namespace
 
 /**
  * ErrorFallback component
