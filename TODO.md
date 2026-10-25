@@ -166,6 +166,7 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
 `__docs` is git-ignored (`.gitignore`) and private, so the link is dead for anyone else. Rephrase
 the paragraph so it stands on its own and remove the reference (check the rest of the README and
 `frontend/docs/` for other `__docs` links at the same time).
+_Found 2026-10-25: also `frontend/docs/architecture.md` (10 links to `../__docs/architecture.md`, `data-flow.md`, `types.md`, `overview.md`), `docs/orig-page/README.md`, and 4 files in `docs/dev-notes/` (historical notes; decide whether to leave them)._
 
 ### DECISION-01: hosting model — Cloudflare Pages + image server, or one nginx host (needs operator)
 
