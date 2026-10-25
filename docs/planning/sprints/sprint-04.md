@@ -1,7 +1,7 @@
 # Sprint 04: everything on current versions, no vulnerable Brotli
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-10 (`todo` — Brotli check: record versions, scripts/check-brotli.mjs)
+**Current ticket:** T-10 (`in-progress` — Brotli check: record versions, scripts/check-brotli.mjs)
 **Last completed:** T-09 (`done` — commit `ff01682`)
 
 **Goal:** every frontend and backend dependency on its latest release (operator, DEPS-01), the
@@ -25,7 +25,7 @@ prints a fixed version or "no decoder" for every item in SEC-18; README has no `
 | T-07 | ESLint 10 flat config, typescript-eslint 8, react-hooks 7, react-refresh, eslint-config-prettier 10 | DEPS-01 | 4h | T-05 | done | lint runs (errors may remain = LINT-01, no new ones). Landed in `9a8ddfa` + `b1dfd7c` (files missed from the first commit) |
 | T-08 | TypeScript 7 (frontend + backend); backend runner without ts-node if ts-node can't use TS 7 | DEPS-01 | 3h | T-07 | done | tsc both; backend npm test/start work. Landed in `7f7c94f` |
 | T-09 | size-limit 14, web-vitals 6; fix size-limit globs (no timing run) | DEPS-01, BUILD-04 | 2h | T-02 | done | `size-limit --why`-free static check passes. Landed in `ff01682` |
-| T-10 | Brotli check: record versions, `scripts/check-brotli.mjs` | SEC-18 | 2h | T-08 | todo | each SEC-18 item answered |
+| T-10 | Brotli check: record versions, `scripts/check-brotli.mjs` | SEC-18 | 2h | T-08 | in-progress | each SEC-18 item answered |
 | T-11 | README/docs: remove `__docs` references, rephrase | DOCS-01 | 1h | – | todo | no `__docs` in README, frontend/docs |
 
 Total ≈ 27h.
