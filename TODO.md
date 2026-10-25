@@ -166,7 +166,9 @@ the `sql` object as a parameter, keep `index.ts` as the thin CLI, and add a test
 runs the whole extraction into a temp dir and asserts on the JSON and `index.json`. Also lets the
 LOGIC-11 counts (6 bad links / 7 unreachable albums) be re-measured once the real DB is available.
 
-### LOGIC-32: old lanbilder.se path URLs open the home page, not the album (found 2026-10-25, Sprint 05 T-09)
+### ~~LOGIC-32: old lanbilder.se path URLs open the home page, not the album (found 2026-10-25, Sprint 05 T-09)~~
+
+**CLOSED, verified 2026-10-25 (Sprint 06 T-01):** `frontend/src/utils/legacyPathRedirect.ts` `legacyPathToHash` + `main.tsx`: before the router mounts, a path other than `/` (or `…/index.html`) without a `#/` hash is replaced by `/#<path><search>` (`history.replaceState`, no reload); PathResolverPage resolves it. Tests: old shapes (`/dreamhack/dreamhack_97/martin_ojes/`, `/badalan/badalan_v1.0/`, percent-encoded Nordic, `index.html`, query), root and app URLs untouched, jsdom location → `#/dreamhack/dreamhack_97/`. Docs: 06-building-deployment (nginx fallback, real 404s for `/data/`, `/g2data/`, `/assets/`), README. Not yet tried in a real browser against the lanbilder2 nginx (needs the deploy). Original row kept for the record:
 
 The app runs under `HashRouter` (`frontend/src/main.tsx:13`), so its album URLs are
 `/#/dreamhack/dreamhack_97/...`. Every existing link and search-engine entry for lanbilder.se is a

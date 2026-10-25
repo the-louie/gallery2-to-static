@@ -30,8 +30,8 @@ Requires Node.js 22.23.4 or later (earlier 22.x releases bundle a Brotli decoder
    npm run size-check   # bundle size budgets
    ```
 3. **Deploy**: serve `frontend/dist/` as the site root, `data/` at `/data/` and the image tree at
-   `/g2data/` (full images in `albums/`, thumbnails in `thumbnails/`). The app uses hash URLs
-   (`/#/dreamhack/...`). See [Building & Deployment](frontend/docs/user-guides/06-building-deployment.md).
+   `/g2data/` (full images in `albums/`, thumbnails in `thumbnails/`). Answer unknown paths with
+   `index.html`: old path links (`/dreamhack/...`) are moved into the app's hash URLs (`/#/dreamhack/...`). See [Building & Deployment](frontend/docs/user-guides/06-building-deployment.md).
 4. **Release checks**: `node scripts/check-brotli.mjs` (Brotli decoders on this host and in the build).
 
 ## Documentation
