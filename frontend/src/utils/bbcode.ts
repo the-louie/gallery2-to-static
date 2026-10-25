@@ -580,8 +580,8 @@ export function extractUrlFromBBCode(text: string): ExtractedUrl | null {
 export const BBCODE_MAX_INPUT_LENGTH = 8192;
 export const BBCODE_MAX_TAGS = 500;
 
-/** Remove BBCode tags, keep the text (fallback for oversized input). */
-function stripBBCodeTags(text: string): string {
+/** Remove BBCode tags, keep the text (fallback for oversized input; search results, SEARCH-01). */
+export function stripBBCodeTags(text: string): string {
   return text.replace(/\[\/?[a-z*]+(?:=[^\]]*)?\]/gi, '');
 }
 

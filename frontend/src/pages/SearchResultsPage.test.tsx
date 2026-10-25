@@ -98,7 +98,7 @@ describe('SearchResultsPage', () => {
             id: 1,
             type: 'GalleryAlbumItem' as const,
             title: 'Test Album',
-            description: 'Test description',
+            description: 'Test description [url=http://www.lanbilder.se/main.php?g2_itemId=23271]here[/url] [b]bold[/b]',
             pathComponent: 'test',
             path: '/dreamhack/dreamhack_08/crew/test_album',
             ancestors: 'dreamhack/dreamhack 08/crew',
@@ -136,6 +136,9 @@ describe('SearchResultsPage', () => {
     expect(screen.getByRole('heading', { level: 3, name: (_, el) => el?.textContent === 'Test Album' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 3, name: (_, el) => el?.textContent === 'Test Photo' })).toBeInTheDocument();
     expect(screen.getByText((_, el) => el?.textContent === 'Album summary' && el?.tagName === 'P')).toBeInTheDocument();
+    // SEARCH-01: BBCode tags are stripped from the result text, the words stay
+    expect(screen.getByText((_, el) => el?.textContent === 'Test description here bold' && el?.tagName === 'P')).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('[url');
     expect(screen.getByText((_, el) => el?.textContent === 'Photo summary' && el?.tagName === 'P')).toBeInTheDocument();
     expect(screen.getByText(/Owner: Album Owner/)).toBeInTheDocument();
     expect(screen.getByText(/Owner: Photo Owner/)).toBeInTheDocument();

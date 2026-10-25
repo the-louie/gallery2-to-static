@@ -48,7 +48,7 @@ The 2006 photo page served a 768×1024 resized JPEG (`g2_imageViewsIndex=0`, abo
 
 ## P3 — Quality, hygiene and latent bugs
 
-### SEARCH-01: search results show raw BBCode in descriptions (found 2026-10-25, Sprint 11 T-11)
+### ~~SEARCH-01: search results show raw BBCode in descriptions (found 2026-10-25, Sprint 11 T-11)~~ — **CLOSED, verified 2026-10-25 (Sprint 12 T-06):** `frontend/src/utils/bbcode.ts` exports `stripBBCodeTags`; `pages/SearchResultsPage.tsx` strips descriptions and summaries of albums and images before highlighting; test in `SearchResultsPage.test.tsx`. Original row kept for the record:
 
 `frontend/src/pages/SearchResultsPage.tsx:171-176` renders `album.description` through `SearchHighlight` as plain text, so `[url=http://…]here[/url]` and `[b]` show as typed (e.g. album 23281 "DH-Photo"). The album page parses it (`parseBBCodeDecoded`). Fix: strip or parse BBCode for the result text (the search index already carries it stripped for matching?: check `backend/extract.ts` searchItem) and keep highlighting on the stripped text.
 

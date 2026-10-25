@@ -13,6 +13,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useSearch } from '@/hooks/useSearch';
 import { SearchHighlight } from '@/components/SearchHighlight';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
+import { stripBBCodeTags } from '@/utils/bbcode';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { withTrailingSlash } from '@/utils/albumPath';
 import type { SearchIndexItem } from '@/utils/searchIndex';
@@ -171,7 +172,7 @@ export function SearchResultsPage() {
                       {album.description && (
                         <p className="search-results-item-description">
                           <SearchHighlight
-                            text={decodeHtmlEntities(album.description)}
+                            text={stripBBCodeTags(decodeHtmlEntities(album.description))}
                             query={urlQuery}
                           />
                         </p>
@@ -180,7 +181,7 @@ export function SearchResultsPage() {
                         album.summary.trim() && (
                           <p className="search-results-item-summary">
                             <SearchHighlight
-                              text={decodeHtmlEntities(album.summary.trim())}
+                              text={stripBBCodeTags(decodeHtmlEntities(album.summary.trim()))}
                               query={urlQuery}
                             />
                           </p>
@@ -236,7 +237,7 @@ export function SearchResultsPage() {
                       {image.description && (
                         <p className="search-results-item-description">
                           <SearchHighlight
-                            text={decodeHtmlEntities(image.description)}
+                            text={stripBBCodeTags(decodeHtmlEntities(image.description))}
                             query={urlQuery}
                           />
                         </p>
@@ -245,7 +246,7 @@ export function SearchResultsPage() {
                         image.summary.trim() && (
                           <p className="search-results-item-summary">
                             <SearchHighlight
-                              text={decodeHtmlEntities(image.summary.trim())}
+                              text={stripBBCodeTags(decodeHtmlEntities(image.summary.trim()))}
                               query={urlQuery}
                             />
                           </p>
