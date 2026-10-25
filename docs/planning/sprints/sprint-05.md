@@ -1,7 +1,7 @@
 # Sprint 05: the remaining correctness and hygiene rows
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-07 (`todo` — Photo without thumbnail: backend flag, frontend placeholder)
+**Current ticket:** T-07 (`in-progress` — Photo without thumbnail: backend flag, frontend placeholder)
 **Last completed:** T-06 (`done` — commit `a0af0a1`)
 
 **Goal:** close the remaining P3 correctness rows (URLs, BBCode, links, routing, thumbnails) and the
@@ -20,7 +20,7 @@ the stray files are gone from the repo and from `dist/`.
 | T-04 | Safe background-image URL in the album block | SEC-16 | 1h | T-01 | done | test with `\"`, `\\`, newline. Landed in `47e11ce` |
 | T-05 | Path index lookup before the `/image/<n>` rule | LOGIC-28 | 1h | – | done | test: album "image" + child "2005". Landed in `c7f4867` |
 | T-06 | Backend thumbnails written as `.jpg` (path recorded), frontend uses the recorded thumbnail path | LOGIC-30 | 3h | – | done | PNG/GIF sources → `t__x.jpg`, URL matches. Landed in `a0af0a1` |
-| T-07 | Photo without thumbnail: backend flag, frontend placeholder | LOGIC-31 | 2h | T-06 | todo | test: no error tile |
+| T-07 | Photo without thumbnail: backend flag, frontend placeholder | LOGIC-31 | 2h | T-06 | in-progress | test: no error tile |
 | T-08 | vite.config: `chunkSizeWarningLimit` placement, `manualChunks` router order | ARCH-07 | 1h | – | todo | router-vendor chunk exists; no warning |
 | T-09 | Repo tidy-up (stray lock, reports, gitignore, public/ extras, engines, README steps) | HYGIENE-01 | 2h | – | todo | per row |
 
