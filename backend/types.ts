@@ -28,6 +28,11 @@ export interface Child {
      */
     thumbnailUrlPath?: string | null;
     /**
+     * True when the photo is kept but no thumbnail could be generated (source cannot be decoded,
+     * LOGIC-12/LOGIC-31): the frontend shows a placeholder instead of requesting a missing file.
+     */
+    thumbnailMissing?: boolean;
+    /**
      * Thumbnail URL path. For GalleryPhotoItem: pathComponent-based dir + thumb-prefixed filename.
      * For GalleryAlbumItem: thumbnail path of the album's highlight image (first-descendant).
      */

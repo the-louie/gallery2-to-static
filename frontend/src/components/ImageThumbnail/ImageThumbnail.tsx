@@ -123,9 +123,12 @@ function ImageThumbnailComponent({
   // Use progressive image loading hook
   // Grid cells (useThumbnail) fetch only the thumbnail, and only once the cell is near the viewport;
   // the full-size original is for the lightbox (PERF-01).
+  // A photo whose thumbnail could not be generated (backend `thumbnailMissing`, LOGIC-31) fetches
+  // nothing in grid mode and shows a placeholder; the lightbox still opens the full image.
+  const noThumbnail = useThumbnail && image.thumbnailMissing === true;
   const progressiveImage = useProgressiveImage(image, true, {
     loadFull: !useThumbnail,
-    enabled: shouldLoad || typeof IntersectionObserver === 'undefined',
+    enabled: !noThumbnail && (shouldLoad || typeof IntersectionObserver === 'undefined'),
   });
 
   // Calculate aspect ratio from image dimensions (memoized)
@@ -297,7 +300,12 @@ function ImageThumbnailComponent({
       onKeyDown={onClick ? handleKeyDown : undefined}
       aria-label={onClick ? altText : undefined}
     >
-      {hasError ? (
+      {noThumbnail ? (
+        <div className="image-thumbnail-error image-thumbnail-no-preview" role="img" aria-label={altText}>
+          <FontAwesomeIcon icon={faImage} className="image-thumbnail-error-icon" aria-hidden />
+          <span className="image-thumbnail-error-text">No preview</span>
+        </div>
+      ) : hasError ? (
         <div className="image-thumbnail-error" role="img" aria-label={altText}>
           <FontAwesomeIcon
             icon={faImage}

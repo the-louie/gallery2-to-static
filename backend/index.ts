@@ -361,6 +361,7 @@ const main = async (
 
                     // Size of the generated thumbnail; null when there is none (or generation is skipped).
                     let thumbSize: { width: number; height: number } | null = null;
+                    let thumbFailed = false;
                     if (thumbnailContext && !thumbnailContext.skip) {
                         const albumsRoot = thumbnailContext.albumsRoot;
                         const thumbnailsRoot = thumbnailContext.thumbnailsRoot;
@@ -378,6 +379,7 @@ const main = async (
                                 // Keep the photo (title, description, full-size link); only its thumbnail is missing.
                                 console.warn(`No thumbnail (source cannot be decoded), photo kept: ${sourcePath}`);
                                 thumbnailContext.excludedCount++;
+                                thumbFailed = true;
                             } else if (result === 'generated') {
                                 thumbnailContext.generatedCount++;
                             } else if (result === 'skipped') {
@@ -386,6 +388,7 @@ const main = async (
                         } catch (err) {
                             console.warn(`Thumbnail generation failed for ${sourcePath}, photo kept:`, err instanceof Error ? err.message : String(err));
                             thumbnailContext.excludedCount++;
+                            thumbFailed = true;
                         } finally {
                             thumbnailContext.sem.release();
                         }
@@ -395,6 +398,7 @@ const main = async (
                         ...child,
                         thumb_width: thumbSize?.width ?? null,
                         thumb_height: thumbSize?.height ?? null,
+                        ...(thumbFailed ? { thumbnailMissing: true } : {}),
                         pathComponent: fullPath,
                         urlPath,
                         thumbnailUrlPath: highlightThumbnailUrlPath,

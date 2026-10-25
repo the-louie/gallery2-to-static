@@ -198,7 +198,9 @@ the `sql` object as a parameter, keep `index.ts` as the thin CLI, and add a test
 runs the whole extraction into a temp dir and asserts on the JSON and `index.json`. Also lets the
 LOGIC-11 counts (6 bad links / 7 unreachable albums) be re-measured once the real DB is available.
 
-### LOGIC-31: a photo kept without a thumbnail shows the grid's error state (found 2026-10-25, Sprint 02 T-05)
+### ~~LOGIC-31: a photo kept without a thumbnail shows the grid's error state (found 2026-10-25, Sprint 02 T-05)~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-07):** the backend sets `thumbnailMissing: true` on a photo whose thumbnail failed (`index.ts`, new optional field in `types.ts`); `ImageThumbnail.tsx` in grid mode then fetches nothing and shows a "No preview" placeholder (still clickable; the lightbox loads the full image). Test: placeholder shown, no `<img>`, hook disabled, click works. Not testable end to end without TEST-03. Original row kept for the record:
 
 Since LOGIC-12 the backend keeps a photo whose thumbnail could not be generated, but the frontend
 builds every photo's thumbnail URL from `urlPath` (`frontend/src/utils/imageUrl.ts:178`

@@ -586,4 +586,19 @@ describe('ImageThumbnail', () => {
       expect(handleClick).toHaveBeenCalledWith(mockPhoto);
     });
   });
+
+  describe('photo without thumbnail (LOGIC-31)', () => {
+    it('shows a "No preview" placeholder, fetches nothing, stays clickable', async () => {
+      const { useProgressiveImage } = await import('@/hooks/useProgressiveImage');
+      const onClick = vi.fn();
+      render(<ImageThumbnail image={{ ...mockPhoto, thumbnailMissing: true }} useThumbnail={true} onClick={onClick} />);
+      triggerIntersection();
+      expect(screen.getByText('No preview')).toBeInTheDocument();
+      expect(screen.queryByText('Image unavailable')).toBeNull();
+      expect(document.querySelector('img')).toBeNull();
+      expect(vi.mocked(useProgressiveImage).mock.calls.at(-1)![2]).toEqual({ loadFull: false, enabled: false });
+      screen.getByRole('button').click();
+      expect(onClick).toHaveBeenCalled();
+    });
+  });
 });
