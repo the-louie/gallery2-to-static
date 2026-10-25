@@ -47,8 +47,13 @@ vi.mock("./ImageDetailPage", () => ({
 }));
 
 describe("PathResolverPage", () => {
+  // Only album paths are in the index: '/.../image/<n>' itself resolves to nothing.
+  const albumsAt = (map: Record<string, number>) =>
+    vi.mocked(resolvePathToAlbumId).mockImplementation(async (p: string) => map[p] ?? null);
+
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(resolvePathToAlbumId).mockResolvedValue(null);
   });
 
   it("resolves a plain album path", async () => {
@@ -124,7 +129,9 @@ describe("PathResolverPage", () => {
       });
     });
 
-    expect(resolvePathToAlbumId).not.toHaveBeenCalled();
+    // only the full path is tried as an album (LOGIC-28); the image form is rejected without a lookup
+    expect(resolvePathToAlbumId).toHaveBeenCalledTimes(1);
+    expect(resolvePathToAlbumId).toHaveBeenCalledWith("/SomeAlbum/image/99999999999999999999");
   });
 
   it("accepts imageId at MAX_SAFE_INTEGER", async () => {
@@ -132,7 +139,7 @@ describe("PathResolverPage", () => {
     vi.mocked(useParams).mockReturnValue({
       "*": `SomeAlbum/image/${maxSafe}`,
     });
-    vi.mocked(resolvePathToAlbumId).mockResolvedValue(42);
+    albumsAt({ "/SomeAlbum": 42 });
 
     render(<PathResolverPage />);
 
@@ -180,7 +187,7 @@ describe("PathResolverPage", () => {
     vi.mocked(useParams).mockReturnValue({
       "*": "My%20Album/image/123",
     });
-    vi.mocked(resolvePathToAlbumId).mockResolvedValue(20);
+    albumsAt({ "/My Album": 20 });
 
     render(<PathResolverPage />);
 
@@ -268,6 +275,29 @@ describe("PathResolverPage", () => {
     finish(20);
     await waitFor(() => {
       expect(screen.getByTestId("album-detail-page")).toHaveTextContent("Album 20");
+    });
+  });
+
+  it("an album named 'image' with a numeric child resolves as that album, not as an image (LOGIC-28)", async () => {
+    vi.mocked(useParams).mockReturnValue({ "*": "fester/image/2005" });
+    albumsAt({ "/fester": 10, "/fester/image": 11, "/fester/image/2005": 12 });
+
+    render(<PathResolverPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("album-detail-page")).toHaveTextContent("Album 12");
+    });
+    expect(screen.queryByTestId("image-detail-page")).toBeNull();
+  });
+
+  it("still opens an image when no album has that path", async () => {
+    vi.mocked(useParams).mockReturnValue({ "*": "fester/image/2005" });
+    albumsAt({ "/fester": 10 });
+
+    render(<PathResolverPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("image-detail-page")).toHaveTextContent("Album 10 Image 2005");
     });
   });
 });

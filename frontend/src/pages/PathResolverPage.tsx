@@ -56,6 +56,14 @@ export function PathResolverPage() {
         return;
       }
       const path = raw === '' ? '/' : `/${raw.replace(/^\/+/, '')}`;
+      // An album path wins over the `/image/<id>` form: an album named "image" with a numeric
+      // sub-album (e.g. /x/image/2005) is an album, not image 2005 of /x (LOGIC-28).
+      const albumAtPath = await resolveOrFail(path);
+      if (cancelled || albumAtPath === undefined) return;
+      if (albumAtPath !== null) {
+        setResolved({ albumId: albumAtPath });
+        return;
+      }
       const imageMatch = path.match(IMAGE_PATH_RE);
       if (imageMatch) {
         const albumPath = path.slice(0, imageMatch.index);
@@ -77,13 +85,7 @@ export function PathResolverPage() {
         setResolved({ albumId, imageId });
         return;
       }
-      const albumId = await resolveOrFail(path);
-      if (cancelled || albumId === undefined) return;
-      if (albumId === null) {
-        navigate('/not-found', { replace: true });
-        return;
-      }
-      setResolved({ albumId });
+      navigate('/not-found', { replace: true });
     })();
 
     return () => {

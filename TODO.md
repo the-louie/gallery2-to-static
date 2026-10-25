@@ -249,7 +249,9 @@ A path containing `\"` or a newline breaks out of `url()`. It needs a crafted Ga
 and a strict CSP blocks external images, so this is low risk. Fix: `encodeURI` the path (or
 `CSS.escape`), or pass it as a CSS custom property.
 
-### LOGIC-28: album named `image` with a numeric child is unreachable
+### ~~LOGIC-28: album named `image` with a numeric child is unreachable~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-05):** `frontend/src/pages/PathResolverPage.tsx` looks the full path up in the path index first; only if no album has that path is `/…/image/<id>` read as an image. Tests: `/fester/image/2005` with an album at that path → album 12; without → image 2005 of `/fester`; the out-of-range-id test now expects exactly one lookup (the full path). The index is cached (PERF-02), so the extra lookup costs no request. Original row kept for the record:
 
 `pages/PathResolverPage.tsx:16,39`: `IMAGE_PATH_RE = /\/image\/(\d+)$/` is checked before the
 path index, so `/x/image/2005` (album "image", sub-album "2005") is read as image 2005 in album
