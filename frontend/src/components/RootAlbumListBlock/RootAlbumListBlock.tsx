@@ -55,11 +55,13 @@ export function RootAlbumListBlock({
 
   const parsedTitle = useMemo(() => {
     const t = album.title?.trim();
-    return t ? parseBBCodeDecoded(t) : 'Untitled Album';
+    return t ? parseBBCodeDecoded(t, { links: false }) : 'Untitled Album'; // rendered inside the block <Link>
   }, [album.title]);
 
   const extUrl = useMemo(
-    () => extractUrlFromBBCode(album.summary ?? album.description ?? ''),
+    // summary first, then description: description links are shown as text inside the block
+    // link (LOGIC-27), so this is the only place a description URL stays clickable
+    () => extractUrlFromBBCode(album.summary ?? '') ?? extractUrlFromBBCode(album.description ?? ''),
     [album.summary, album.description],
   );
 
@@ -129,7 +131,8 @@ export function RootAlbumListBlock({
               </h2>
               {showDescription && (
                 <p className="root-album-list-block-description">
-                  {parseBBCodeDecoded(album.description!.trim())}
+                  {/* inside the block <Link>: no nested anchors (LOGIC-27) */}
+                  {parseBBCodeDecoded(album.description!.trim(), { links: false })}
                 </p>
               )}
               <dl className="root-album-list-block-meta">
@@ -187,7 +190,7 @@ export function RootAlbumListBlock({
                     to={`/album/${sub.id}`}
                     className="root-album-list-block-subalbum-link"
                   >
-                    {sub.title?.trim() ? parseBBCodeDecoded(sub.title.trim()) : 'Untitled'}
+                    {sub.title?.trim() ? parseBBCodeDecoded(sub.title.trim(), { links: false }) : 'Untitled'}
                   </Link>
                 </li>
               ))}

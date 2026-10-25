@@ -595,4 +595,15 @@ describe('parseBBCodeDecoded', () => {
       expect(parseBBCode('[b]'.repeat(BBCODE_MAX_TAGS + 1) + 'y', { enableCache: false })).toBe('y');
     });
   });
+
+  describe('links option (LOGIC-27)', () => {
+    it('links: false keeps the link text without an anchor; the default still links', () => {
+      const text = 'Se [url=https://example.org]mer[/url]';
+      const { container: withoutLinks } = render(<>{parseBBCode(text, { links: false })}</>);
+      expect(withoutLinks.querySelector('a')).toBeNull();
+      expect(withoutLinks.textContent).toBe('Se mer');
+      const { container: withLinks } = render(<>{parseBBCode(text)}</>);
+      expect(withLinks.querySelector('a')?.getAttribute('href')).toBe('https://example.org');
+    });
+  });
 });

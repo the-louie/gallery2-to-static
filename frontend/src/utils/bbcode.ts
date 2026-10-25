@@ -20,6 +20,11 @@ export interface BBCodeParseOptions {
   enableCache?: boolean;
   /** Maximum cache size (default: 1000) */
   maxCacheSize?: number;
+  /**
+   * Render [url] tags as links (default: true). Pass false when the result is placed inside
+   * another link (e.g. a block-level album link): nested <a> is invalid HTML (LOGIC-27).
+   */
+  links?: boolean;
 }
 
 /**
@@ -391,7 +396,7 @@ function findMatchingClosingTag(
 /**
  * Parse BBCode text and convert to React elements
  */
-function parseBBCodeInternal(text: string): React.ReactNode {
+function parseBBCodeInternal(text: string, links: boolean = true): React.ReactNode {
   if (!text || typeof text !== 'string') {
     return text;
   }
@@ -437,7 +442,7 @@ function parseBBCodeInternal(text: string): React.ReactNode {
           const closingTagEnd = text.indexOf(']', closingTagIndex) + 1;
 
           // Recursively parse content
-          const contentElements = parseBBCodeInternal(content);
+          const contentElements = parseBBCodeInternal(content, links);
 
           // [url] and [url=href]: build anchor only when href is http/https
           if (tagMatch.name === 'url') {
@@ -447,6 +452,9 @@ function parseBBCodeInternal(text: string): React.ReactNode {
               (isValidHttpUrl(contentAsHref) ? contentAsHref : null);
             if (href === null) {
               result.push(escapeHtml(tagText));
+              result.push(contentElements);
+            } else if (!links) {
+              // inside another link: keep the text, drop the anchor
               result.push(contentElements);
             } else {
               const anchor = React.createElement(
@@ -607,15 +615,17 @@ export function parseBBCode(text: string, options: BBCodeParseOptions = {}): Rea
 
   const enableCache = options.enableCache !== false;
   const maxCacheSize = options.maxCacheSize || DEFAULT_CACHE_SIZE;
+  const links = options.links !== false;
+  const cacheKey = links ? text : `\u0000nolinks\u0000${text}`;
 
   // Check cache
-  if (enableCache && parseCache.has(text)) {
-    const cached = parseCache.get(text)!;
+  if (enableCache && parseCache.has(cacheKey)) {
+    const cached = parseCache.get(cacheKey)!;
     return cached.result;
   }
 
   // Parse (oversized input: tags stripped, not parsed)
-  const result = exceedsBBCodeLimits(text) ? stripBBCodeTags(text) : parseBBCodeInternal(text);
+  const result = exceedsBBCodeLimits(text) ? stripBBCodeTags(text) : parseBBCodeInternal(text, links);
 
   // Store in cache
   if (enableCache) {
@@ -630,7 +640,7 @@ export function parseBBCode(text: string, options: BBCodeParseOptions = {}): Rea
       }
     }
 
-    parseCache.set(text, {
+    parseCache.set(cacheKey, {
       result,
       timestamp: Date.now(),
     });

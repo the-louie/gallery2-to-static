@@ -77,7 +77,7 @@ describe('RootAlbumListBlock', () => {
     expect(strong).toHaveTextContent('bold');
   });
 
-  it('renders [url] in description as link', () => {
+  it('renders [url] in description as text; the URL is the website link outside the block link', () => {
     const albumWithUrlInDesc: Album = {
       ...baseAlbum,
       id: 31,
@@ -86,10 +86,13 @@ describe('RootAlbumListBlock', () => {
     const { container } = render(<RootAlbumListBlock album={albumWithUrlInDesc} subalbums={[]} />);
     const descPara = container.querySelector('.root-album-list-block-description');
     expect(descPara).toBeInTheDocument();
-    const link = descPara?.querySelector('a');
-    expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', 'https://example.com');
-    expect(link).toHaveTextContent('example');
+    // inside the block <Link>: no nested anchor (LOGIC-27)
+    expect(descPara?.querySelector('a')).toBeNull();
+    expect(descPara).toHaveTextContent('See example for more.');
+    // the event website link (extractUrlFromBBCode) is outside the block link
+    const website = container.querySelector('a[href="https://example.com"]');
+    expect(website).toBeInTheDocument();
+    expect(website?.closest('.root-album-list-block-block-link')).toBeNull();
   });
 
   it('hides owner when null or empty', () => {
@@ -384,5 +387,20 @@ describe('RootAlbumListBlock', () => {
       expect(titleEl?.innerHTML).not.toContain('[b]');
       expect(titleEl?.textContent).toBe('Bold');
     });
+  });
+
+  it('renders [url] in description and titles as text, never as a link inside the block link (LOGIC-27)', () => {
+    const album = {
+      ...baseAlbum,
+      title: '[url=https://example.org]Titel[/url]',
+      description: 'Se [url=https://example.org/bilder]alla bilder[/url] här',
+    } as Album;
+    const sub = { ...mockAlbum, type: 'GalleryAlbumItem', id: 11, title: '[url]https://x.example[/url]' } as Album;
+    const { container } = render(<RootAlbumListBlock album={album} subalbums={[sub]} />);
+    expect(container.querySelectorAll('a a')).toHaveLength(0);
+    // the description URL survives only as the website link, outside the block link
+    const descLink = container.querySelector('a[href="https://example.org/bilder"]');
+    expect(descLink?.closest('.root-album-list-block-block-link') ?? null).toBeNull();
+    expect(container.querySelector('.root-album-list-block-description')).toHaveTextContent('Se alla bilder här');
   });
 });

@@ -230,7 +230,9 @@ each open tag it scans to the end and re-parses the nested content: `[b]`×16000
 frozen, so this is low risk. Fix: cap the input (e.g. 8 KB) and the depth (e.g. 20), falling back
 to plain text.
 
-### LOGIC-27: nested links in the root album list
+### ~~LOGIC-27: nested links in the root album list~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-03):** `parseBBCode` has a `links` option (default true); `RootAlbumListBlock.tsx` passes `links: false` for the title and description (inside the block `<Link>`) and for subalbum titles (inside their own links), so `[url]` renders as text there. Per the design note (20260126-1300), the description's URL is shown as the separate website link outside the block link; it now falls back to the description when the summary has no URL, so no link is lost. Tests: no `a a` in the block; description text kept, its URL only outside the block link; `links:false` vs default in `bbcode.test.tsx`. The old test that asserted an anchor inside the description (pre-dating the block link) was updated. Original row kept for the record:
 
 `components/RootAlbumListBlock/RootAlbumListBlock.tsx:105-132`: the album description is rendered
 with `parseBBCodeDecoded` **inside** the block-level `<Link>`, so any `[url]` in a description
