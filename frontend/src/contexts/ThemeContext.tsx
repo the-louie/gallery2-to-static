@@ -74,7 +74,7 @@
 
 import React, {
   createContext,
-  useContext,
+  use,
   useMemo,
   useLayoutEffect,
   useEffect,
@@ -437,9 +437,9 @@ export function ThemeProvider({
   );
 
   return (
-    <ThemeContext.Provider value={contextValue}>
+    <ThemeContext value={contextValue}>
       {children}
-    </ThemeContext.Provider>
+    </ThemeContext>
   );
 }
 
@@ -470,7 +470,7 @@ export function ThemeProvider({
  * ```
  */
 export function useTheme(): ThemeContextValue {
-  const context = useContext(ThemeContext);
+  const context = use(ThemeContext);
 
   // The context will always have a value (either from provider or default)
   // but we can check if setTheme is the warning function

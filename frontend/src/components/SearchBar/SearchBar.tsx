@@ -94,7 +94,6 @@ export function SearchBar({
 }: SearchBarProps): React.ReactElement {
   const navigate = useNavigate();
   const location = useLocation();
-  const [, setQuery] = useState<string>('');
   const [localQuery, setLocalQuery] = useState<string>('');
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -136,7 +135,6 @@ export function SearchBar({
 
       // Set new debounce timer
       debounceTimerRef.current = setTimeout(() => {
-        setQuery(newValue);
         performSearch(newValue);
         debounceTimerRef.current = null;
       }, debounceDelay);
@@ -157,7 +155,6 @@ export function SearchBar({
       }
       // Perform search immediately
       const trimmedQuery = localQuery.trim();
-      setQuery(trimmedQuery);
       performSearch(trimmedQuery);
     },
     [localQuery, performSearch],
@@ -173,7 +170,6 @@ export function SearchBar({
       debounceTimerRef.current = null;
     }
     setLocalQuery('');
-    setQuery('');
     performSearch('');
     // Focus input after clearing
     inputRef.current?.focus();
@@ -207,7 +203,6 @@ export function SearchBar({
       const urlQuery = urlParams.get('q') || '';
       setLocalQuery((prevLocalQuery) => {
         if (urlQuery !== prevLocalQuery) {
-          setQuery(urlQuery);
           return urlQuery;
         }
         return prevLocalQuery;
@@ -218,7 +213,6 @@ export function SearchBar({
         debounceTimerRef.current = null;
       }
       setLocalQuery('');
-      setQuery('');
     }
   }, [location.pathname, location.search]);
 

@@ -43,7 +43,7 @@
  * ```
  */
 
-import React, { createContext, useContext, useMemo, useState, useCallback } from 'react';
+import React, { createContext, use, useMemo, useState, useCallback } from 'react';
 import type { FilterCriteria, FilterState } from '@/types';
 import { hasActiveFilters as checkHasActiveFilters } from '@/utils/filterUtils';
 
@@ -145,9 +145,9 @@ export function FilterProvider({
   );
 
   return (
-    <FilterContext.Provider value={contextValue}>
+    <FilterContext value={contextValue}>
       {children}
-    </FilterContext.Provider>
+    </FilterContext>
   );
 }
 
@@ -175,7 +175,7 @@ export function FilterProvider({
  * ```
  */
 export function useFilter(): FilterContextValue {
-  const context = useContext(FilterContext);
+  const context = use(FilterContext);
 
   // The context will always have a value (either from provider or default)
   // but we can check if setCriteria is the warning function

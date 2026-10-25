@@ -37,10 +37,8 @@ export default tseslint.config(
       '@eslint-react/exhaustive-deps': 'off',
       '@eslint-react/set-state-in-effect': 'off',
       '@eslint-react/no-array-index-key': 'off',
-      '@eslint-react/use-state': 'off',
-      '@eslint-react/no-context-provider': 'off',
-      '@eslint-react/no-use-context': 'off',
-      '@eslint-react/naming-convention-ref-name': 'off',
+      // setXState names are deliberate: the public setX wraps the raw setter (validation, side effects)
+      '@eslint-react/use-state': ['error', { enforceSetterName: false }],
       // project convention: a leading underscore marks a deliberately unused name (kept for an API)
       '@typescript-eslint/no-unused-vars': [
         'error',

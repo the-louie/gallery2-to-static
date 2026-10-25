@@ -19,7 +19,7 @@
 
 import React, {
   createContext,
-  useContext,
+  use,
   useEffect,
   useMemo,
   useState,
@@ -68,9 +68,9 @@ export function ViewAbortProvider({
   const value = useMemo<ViewAbortContextValue>(() => ({ signal }), [signal]);
 
   return (
-    <ViewAbortContext.Provider value={value}>
+    <ViewAbortContext value={value}>
       {children}
-    </ViewAbortContext.Provider>
+    </ViewAbortContext>
   );
 }
 
@@ -80,7 +80,7 @@ export function ViewAbortProvider({
  * Must be used within ViewAbortProvider (inside Router).
  */
 export function useViewAbortSignal(): AbortSignal {
-  const { signal } = useContext(ViewAbortContext);
+  const { signal } = use(ViewAbortContext);
   return signal;
 }
 

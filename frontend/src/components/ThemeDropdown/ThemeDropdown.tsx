@@ -74,7 +74,7 @@ export function ThemeDropdown({ className }: ThemeDropdownProps): React.ReactEle
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLUListElement>(null);
-  const optionRefs = useRef<(HTMLLIElement | null)[]>([]);
+  const optionElementsRef = useRef<(HTMLLIElement | null)[]>([]);
 
   // Get current theme definition
   const currentTheme = availableThemes.find((t) => t.name === theme);
@@ -123,7 +123,7 @@ export function ThemeDropdown({ className }: ThemeDropdownProps): React.ReactEle
           event.preventDefault();
           setFocusedIndex((prev) => {
             const next = prev < availableThemes.length - 1 ? prev + 1 : 0;
-            optionRefs.current[next]?.scrollIntoView({ block: 'nearest' });
+            optionElementsRef.current[next]?.scrollIntoView({ block: 'nearest' });
             return next;
           });
           break;
@@ -131,7 +131,7 @@ export function ThemeDropdown({ className }: ThemeDropdownProps): React.ReactEle
           event.preventDefault();
           setFocusedIndex((prev) => {
             const next = prev > 0 ? prev - 1 : availableThemes.length - 1;
-            optionRefs.current[next]?.scrollIntoView({ block: 'nearest' });
+            optionElementsRef.current[next]?.scrollIntoView({ block: 'nearest' });
             return next;
           });
           break;
@@ -184,7 +184,7 @@ export function ThemeDropdown({ className }: ThemeDropdownProps): React.ReactEle
   // Use useLayoutEffect to ensure focus happens synchronously after DOM update
   React.useLayoutEffect(() => {
     if (isOpen && focusedIndex >= 0) {
-      const option = optionRefs.current[focusedIndex];
+      const option = optionElementsRef.current[focusedIndex];
       if (option) {
         option.focus();
       }
@@ -261,10 +261,10 @@ export function ThemeDropdown({ className }: ThemeDropdownProps): React.ReactEle
                 ref={(el) => {
                   // React calls ref callback with null when element is unmounted
                   if (el) {
-                    optionRefs.current[index] = el;
+                    optionElementsRef.current[index] = el;
                   } else {
                     // Clean up ref when element is unmounted
-                    optionRefs.current[index] = null;
+                    optionElementsRef.current[index] = null;
                   }
                 }}
                 role="option"

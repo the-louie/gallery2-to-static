@@ -26,6 +26,8 @@ Moving to ESLint 10 replaced eslint-plugin-react with @eslint-react, whose `reco
 
 _Sprint 09 T-01 (2026-10-25): IntersectionObserver — no leak (the cleanup disconnected it through `observerRef`; the rule cannot follow the ref). The cleanup now disconnects the instance itself (`frontend/src/components/ImageThumbnail/ImageThumbnail.tsx`), still one disconnect per intersection (existing test); rule on._
 
+_Sprint 09 T-02: `no-context-provider`, `no-use-context` on (`<Ctx value>`, `use(Ctx)` in the 3 contexts); `naming-convention-ref-name` on (`isInitialMountRef`, `optionElementsRef`); `use-state` on with `enforceSetterName: false` (the `setXState` names are deliberate wrappers); SearchBar's unread `query` state removed (one setter ran inside another state updater)._
+
 ## P2 — Correctness and cost
 
 ## P3 — Quality, hygiene and latent bugs

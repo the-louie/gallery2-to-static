@@ -44,15 +44,15 @@ export function Layout({ children, className }: LayoutProps) {
   const { isClassic } = useTheme();
   const { option: sortOption, setOption: setSortOption } = useSort('albums');
   const location = useLocation();
-  const isInitialMount = useRef(true);
+  const isInitialMountRef = useRef(true);
 
   // Clear image cache when the view changes so the previous view's decoded images can be GC'd
   // (Phase 3). Stepping between images of one album is not a view change: the lightbox's
   // preloaded neighbours must stay cached (PERF-03).
   const viewKey = getViewKey(location.pathname);
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
       return;
     }
     getImageCache().clear();
