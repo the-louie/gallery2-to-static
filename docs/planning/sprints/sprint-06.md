@@ -1,8 +1,8 @@
 # Sprint 06: old links work; tests and lint you can trust
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-08 (`in-progress` — Test types: TouchEvent helpers, Vitest mock types, rest)
-**Last completed:** T-07 (`done` — commit `3a2a056`)
+**Current ticket:** —
+**Last completed:** T-08 (`done` — commit `b91c6b6`)
 
 **Goal:** every old lanbilder.se album link opens its album (LOGIC-32, before cutover); the backend
 extraction has an end-to-end test; lint and the test type check are clean enough to gate on.
@@ -20,7 +20,7 @@ writes a data tree whose path index passes the invariant check; `npm run lint` a
 | T-05 | Lint: unused vars, useless escapes, constant expressions, empty object type | LINT-01 | 2h | T-04 | done | those rules at 0. Landed in `5a8b739` |
 | T-06 | Lint: no-explicit-any in production code | LINT-01 | 3h | T-05 | done | 0 in src (tests may keep a file-level override). Landed in `2c8e0d6` |
 | T-07 | Test types: mockData fixtures typed as Album/Image | BUILD-01 | 3h | – | done | typecheck:test drops by the fixture share (~120). Landed in `3a2a056` |
-| T-08 | Test types: TouchEvent helpers, Vitest mock types, rest | BUILD-01 | 3h | T-07 | in-progress | typecheck:test 0 |
+| T-08 | Test types: TouchEvent helpers, Vitest mock types, rest | BUILD-01 | 3h | T-07 | done | typecheck:test 0. Landed in `b91c6b6` |
 
 Total ≈ 20h.
 
