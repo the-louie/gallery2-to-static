@@ -96,6 +96,8 @@ never leaves MySQL. Treat any already-published `data/` output as leaked.
 
 ### LINT-01: 117 lint errors — including 6 real conditional-hook violations
 
+_Progress 2026-10-25 (Sprint 06 T-04): the 6 `rules-of-hooks` errors fixed (`ThemeDropdown.tsx` early return moved below the hooks; new `ThemeDropdown.empty.test.tsx` fails on the old code with a hook-order error). Lint now: 122 {'@typescript-eslint/no-unused-vars': 29, '@typescript-eslint/no-explicit-any': 68, 'react-hooks/exhaustive-deps': 10, 'react-refresh/only-export-components': 8, '@typescript-eslint/no-empty-object-type': 1, 'no-useless-escape': 3, 'no-constant-binary-expression': 3}._
+
 _2026-10-25 (Sprint 04 T-07, ESLint 9 flat config + typescript-eslint 8): 128 problems (110 errors, 18 warnings): no-explicit-any 68, no-unused-vars 29 (v8 also reports unused caught errors), exhaustive-deps 10, only-export-components 8, rules-of-hooks 6, no-useless-escape 3, no-constant-binary-expression 3 (new rule, test file), no-empty-object-type 1 (new rule). Same files and scope as before; the increase is stricter rule versions, not new code._
 
 **Partly confirms the report's "127 errors"** — actual is **117 errors + 15 warnings (132

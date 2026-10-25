@@ -79,25 +79,6 @@ export function ThemeDropdown({ className }: ThemeDropdownProps): React.ReactEle
   // Get current theme definition
   const currentTheme = availableThemes.find((t) => t.name === theme);
 
-  // Handle edge case: no themes available (shouldn't happen, but handle gracefully)
-  if (availableThemes.length === 0) {
-    const buttonClassName = className
-      ? `theme-dropdown-button ${className}`
-      : 'theme-dropdown-button';
-    return (
-      <div className="theme-dropdown">
-        <button
-          type="button"
-          className={buttonClassName}
-          disabled
-          aria-label="Theme selector (no themes available)"
-        >
-          <span className="theme-dropdown-button-label">No themes</span>
-        </button>
-      </div>
-    );
-  }
-
   // Close dropdown
   const closeDropdown = useCallback(() => {
     setIsOpen(false);
@@ -220,6 +201,26 @@ export function ThemeDropdown({ className }: ThemeDropdownProps): React.ReactEle
   const buttonClassName = className
     ? `theme-dropdown-button ${className}`
     : 'theme-dropdown-button';
+
+  // Handle edge case: no themes available (shouldn't happen, but handle gracefully).
+  // After all hooks: an early return above them broke the rules of hooks (LINT-01).
+  if (availableThemes.length === 0) {
+    const buttonClassName = className
+      ? `theme-dropdown-button ${className}`
+      : 'theme-dropdown-button';
+    return (
+      <div className="theme-dropdown">
+        <button
+          type="button"
+          className={buttonClassName}
+          disabled
+          aria-label="Theme selector (no themes available)"
+        >
+          <span className="theme-dropdown-button-label">No themes</span>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="theme-dropdown">
