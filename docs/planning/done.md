@@ -2,6 +2,87 @@
 
 Rows pruned from `TODO.md` after each sprint, with the proof they were closed on. Newest first.
 
+## Pruned 2026-10-25 (Sprint 06): 3 rows
+
+### ~~BUILD-01 (remaining): test-only type errors behind `npm run typecheck:test` (253 → 273 after the Sprint 04 toolchain upgrades)~~
+
+**CLOSED, verified 2026-10-25 (Sprint 06 T-07 + T-08):** `npm run typecheck:test` → **0 errors** (was 343 at the start, 273 before this sprint). T-07: fixtures typed `Album`/`Image`. T-08: swipe tests pass native TouchEvents through `asReact()` and type their callback mocks (`vi.fn<Callback>()`, Vitest 5); touch helpers set `length` with `defineProperty`; error mocks are real `DataLoadError`s (and include `metadata`); throw-only test components typed; `.at()` (ES2022) replaced; FilterContext test variables not narrowed to `null`; stale `@ts-expect-error` removed; `SortState.setOption` type now admits the updater form the hook already supported; vitest-axe's `toHaveNoViolations` declared on Vitest 5's `Matchers`. Tests unchanged in behaviour: 1487/1487. Original row kept for the record:
+
+_Progress 2026-10-25 (Sprint 06 T-07): `src/__mocks__/mockData.ts` fixtures typed as `Album`/`Image` (they were `Child`, so every use as an `Album`/`Image` prop failed): **273 → 89**. Left: useSwipeGesture TouchEvent helpers (62), FilterContext test (6), small ones (21)._
+
+_2026-10-25: Vitest 5 mock types add `Mock<Procedure | Constructable>` errors (22); the rest are the existing fixture typing (`Child` vs `Image`/`Album`, 104+) and `TouchEvent` helper types (39)._
+
+_Groomed 2026-10-25 (Sprint 01 retro): the build part is closed (T-01..T-04, `npm run build` exits 0). What is left is the test-fixture typing (`mockData.ts` `Child` vs `Album`/`Image`), to burn down with LINT-01._ Original title: `npm run build` fails at the type check — 343 errors, not 3.
+
+**PARTLY CLOSED 2026-10-25 (Sprint 01 T-01):** steps 1–2 done: duplicate block removed (`Breadcrumbs.integration.test.tsx` is now 114 lines, its suite collects: 37 tests pass with the other Breadcrumbs file); `tsconfig.json` now covers shipped code only (`npm run build`/`npm run typecheck`: 82 errors, 0 in test files), tests via `tsconfig.test.json` / `npm run typecheck:test` (343). Steps 3–4 open (Sprint 01 T-02..T-04).
+**T-02 (2026-10-25):** `vite/client` types added (33× `import.meta.env`); pages/ and contexts/ at 0 errors (`RouteParams` is now a `type`, `PathResolverPage` state `| undefined`, `SearchIndexItem.summary/ownerName` declared). App type-check: 82 → 27.
+**T-03 (2026-10-25):** hooks/, utils/, components/ at 0 errors; **`npm run build` exits 0** (step 3 done). Remaining: step 4 + TEST-01 (T-04), and the 256 test-fixture errors behind `npm run typecheck:test`.
+**T-04 (2026-10-25):** step 4 done: `App.test.tsx:11` and `RootAlbumListView.test.tsx:11` import from `@/types` (0× TS2307). BUILD-01 is closed for the build; the **253** test-only type errors (`npm run typecheck:test`, mostly `mockData.ts` fixtures) stay open as follow-up, tracked with LINT-01.
+
+**Confirms list item 1, but the scale was understated by 20x.**
+
+`frontend/src/components/Breadcrumbs/Breadcrumbs.integration.test.tsx` contains its entire
+set of `describe` blocks **twice**: the outer `describe` closes at line 114, leaving lines
+116-215 orphaned at top level with one surplus `});` (`error TS1128` at 215:1 and 215:2).
+
+That parse error was *masking* the rest of the program. With the file truncated to its
+first 114 lines, `tsc --noEmit` reports **343 errors across 63 files**:
+
+- 256 errors in test files (dominant cause: `mockData.ts` fixtures typed as `Child`, i.e.
+  `type: string`, assigned to the narrowed `Album`/`Image` discriminated-union types —
+  170x `TS2322`)
+- **87 errors in production source**, worst offenders `pages/SearchResultsPage.tsx` (12),
+  `contexts/ThemeContext.tsx` (9), `hooks/useLocalStorage.ts` (7), `pages/PathResolverPage.tsx` (6)
+- 2x `TS2307`: `src/App.test.tsx:11` imports `'../../../backend/types'`, a path that does
+  not resolve from `src/`
+
+Test files are in scope because `tsconfig.json` sets `"include": ["src", "**/*.{test,spec}.{ts,tsx}"]`
+and the tests are colocated under `src/`.
+
+This has been broken since `689c6ce` (2026-01-24, "Move breadcrumb construction to backend
+metadata"); **114 commits** have landed on a red build since.
+
+Steps:
+1. Delete the duplicated lines 116-215 of `Breadcrumbs.integration.test.tsx` (quick win —
+   also unblocks TEST-01).
+2. Decide the typecheck policy for tests: either a separate `tsconfig.test.json` so
+   `npm run build` type-checks only shipped code, or fix the 256 fixture errors. Recommend
+   splitting the config first so the build goes green, then burning down fixture errors
+   behind `npm run typecheck:test`.
+3. Fix the 87 production-source errors — these are real and ship today.
+4. Fix the `backend/types` import path in `App.test.tsx`.
+
+### ~~TEST-03: no end-to-end test of the backend extraction (found 2026-10-25, Sprint 02 T-03)~~
+
+**CLOSED, verified 2026-10-25 (Sprint 06 T-02 + T-03):** `backend/extract.test.ts` runs `runExtraction()` over an in-memory tree (fake `sql`) with real image files in a temp dir: duplicate-named siblings (`/dreamhack/lordag`, `/dreamhack/lordag--12`), a blank title (`album_13`), an album named `image` with child `2005`, an album without images and an ignored album (both not exported), a truncated JPEG (photo kept, `thumbnailMissing`), a PNG (`t__c.png.jpg`, JPEG content, measured `thumb_width`); every album has one path and every parent link resolves to its child; search index written; a second run keeps `data.prev-*`. Mutation check: with the blank-title fallback removed the test fails with the path-index collision. Still needs the real DB for the LOGIC-11 counts on real data. Original row kept for the record:
+
+_Progress 2026-10-25 (Sprint 06 T-02): `main()` and its helpers moved unchanged into `backend/extract.ts`; `runExtraction({ sql, config, projectRoot, verify? })` returns `{ ok, finalDataDir, dataDir }` instead of setting `process.exitCode`; `index.ts` is the 59-line CLI. The end-to-end test is T-03._
+
+`backend/index.ts` runs everything in a top-level IIFE (`index.ts:563`) and `main()` is not exported,
+so the tree walk (segments, path index, child links, thumbnails, JSON writing) has no test; Sprint 02
+T-03 could only test the pure helpers. Fix: move `main()` and its helpers into a module that takes
+the `sql` object as a parameter, keep `index.ts` as the thin CLI, and add a test with a fake `sql`
+(an in-memory tree with duplicate-named siblings, blank titles, a hidden album, a truncated JPEG) that
+runs the whole extraction into a temp dir and asserts on the JSON and `index.json`. Also lets the
+LOGIC-11 counts (6 bad links / 7 unreachable albums) be re-measured once the real DB is available.
+
+### ~~LOGIC-32: old lanbilder.se path URLs open the home page, not the album (found 2026-10-25, Sprint 05 T-09)~~
+
+**CLOSED, verified 2026-10-25 (Sprint 06 T-01):** `frontend/src/utils/legacyPathRedirect.ts` `legacyPathToHash` + `main.tsx`: before the router mounts, a path other than `/` (or `…/index.html`) without a `#/` hash is replaced by `/#<path><search>` (`history.replaceState`, no reload); PathResolverPage resolves it. Tests: old shapes (`/dreamhack/dreamhack_97/martin_ojes/`, `/badalan/badalan_v1.0/`, percent-encoded Nordic, `index.html`, query), root and app URLs untouched, jsdom location → `#/dreamhack/dreamhack_97/`. Docs: 06-building-deployment (nginx fallback, real 404s for `/data/`, `/g2data/`, `/assets/`), README. Not yet tried in a real browser against the lanbilder2 nginx (needs the deploy). Original row kept for the record:
+
+The app runs under `HashRouter` (`frontend/src/main.tsx:13`), so its album URLs are
+`/#/dreamhack/dreamhack_97/...`. Every existing link and search-engine entry for lanbilder.se is a
+path URL (`/dreamhack/dreamhack_97/martin_ojes/`). With an nginx fallback to `index.html` such a request
+loads the app, but the router reads the (empty) hash and shows the home page; without the fallback it
+is a 404. The earlier review's "album folders will probably keep working" did not account for the
+hash router. Fix (works on any host, incl. a later Cloudflare Pages move, DECISION-01): before the
+router mounts, if `location.pathname` is not `/` (or `/index.html`) and there is no `#/` hash,
+`history.replaceState` to `/#<pathname><search>`, so PathResolverPage resolves it (trailing slash
+and percent-encoding are already handled there). Test with the old URL shapes in
+`docs/dev-notes` / the 59 GB tree (`/dreamhack/dreamhack_97/martin_ojes/`, Nordic names). nginx then
+needs `try_files $uri $uri/ /index.html` for non-asset paths (and real 404s for `/data/`, `/g2data/`,
+`/assets/`). Must be done before the cutover.
+
 ## Pruned 2026-10-25 (Sprint 05 (pre-retro)): 10 rows
 
 ### ~~ARCH-07: two ineffective `vite.config.ts` settings~~

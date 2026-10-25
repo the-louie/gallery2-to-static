@@ -1,6 +1,6 @@
 # Sprint 06: old links work; tests and lint you can trust
 
-**Status:** in progress (opened 2026-10-25)
+**Status:** done (opened and closed 2026-10-25)
 **Current ticket:** —
 **Last completed:** T-08 (`done` — commit `b91c6b6`)
 
@@ -25,7 +25,9 @@ writes a data tree whose path index passes the invariant check; `npm run lint` a
 Total ≈ 20h.
 
 ## Retro
-(filled at end of sprint)
+**Worked:** mutation checks on new tests (blank-title fallback removed → e2e test fails; old ThemeDropdown → hook-order test fails) proved the tests guard what they claim. Splitting `extract.ts` out with a line-level diff kept the refactor behaviour-neutral. Typing five fixtures removed ~180 test type errors at once.
+**Didn't:** several Python/sed edits of test files needed a second pass (single-name imports, a regex line replaced by a placeholder, a comment inside an expression); each was caught by tsc/vitest before commit. Vitest 5's typing changes (`Mock<Procedure | Constructable>`, `Matchers` augmentation) took trial and error.
+**Backlog grooming:** closed LOGIC-32, TEST-03, BUILD-01; LINT-01 errors at 0 (18 warnings left, renamed). Open rows: 11 → 8 (LINT-01, SEC-12 operator, DEPS-01 blocked, FUT-01..05 after deploy).
 
 ## Demo notes
-(filled at end of sprint)
+Path URL `/dreamhack/dreamhack_97/` → `/#/dreamhack/dreamhack_97/` before the router mounts (unit + jsdom tests). Backend `extract.test.ts`: full extraction over a fake tree (duplicates, blank title, `image/2005`, ignored/empty albums, truncated JPEG, PNG) passes and fails when the LOGIC-11 fix is removed. `npm run typecheck:test`: 0 (was 273). Lint: 0 errors, 18 warnings (was 122 problems). Vitest 1487/1487 (88 files), backend 14/14, build + check:dist OK.
