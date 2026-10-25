@@ -4,7 +4,7 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 
 **After every sprint (operator, 2026-10-25):** prune `TODO.md` and regenerate `TODO-summarized.md`: `python3 docs/planning/prune_todo.py . "Sprint NN"` moves closed (~~struck~~) rows, with their proof, to `docs/planning/done.md`.
 
-**Active sprint:** [Sprint 07](./sprints/sprint-07.md) — in progress.
+**Active sprint:** — (Sprint 07 done; the remaining rows wait for the operator or upstream).
 **Current ticket:** —
 **Last completed:** Sprint 07 T-03 (commit `367c82f`).
 
@@ -16,6 +16,6 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 | S04 ✅ | DEPS-01 frontend half (latest vite/vitest/eslint/React, one toolchain per ticket) + backend typescript/ts-node; SEC-18 brotli check. |
 | S05 ✅ | Remaining P3 correctness rows + repo tidy-up. |
 | S06 ✅ | LOGIC-32 (old path URLs, before cutover) + test and lint debt: TEST-03 (backend e2e harness), LINT-01, BUILD-01 test types. |
-| S07 | LINT-01 warnings: lint gates. |
+| S07 ✅ | LINT-01 warnings: lint gates. |
 | Operator | SEC-12 (needs the Gallery 2 DB / answer). DECISION-01 decided: self-hosted on lanbilder2. DEPS-01: ESLint 10 / TS 7 when upstream allows. FUT-01..05 after deploy. |
 | (old) S05+ | P3 items, SEC-18 brotli check, hygiene, test-fixture type burn-down (BUILD-01 rest, LINT-01). DECISION-01 (hosting) with the operator. SEC-12 (permissions) when the Gallery 2 DB is available to test against. |

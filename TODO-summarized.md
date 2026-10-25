@@ -1,14 +1,10 @@
 # TODO Summarized
 
-Generated 2026-10-25 from `TODO.md` (Sprint 06). Closed rows: `docs/planning/done.md`.
+Generated 2026-10-25 from `TODO.md` (Sprint 07). Closed rows: `docs/planning/done.md`.
 
 ## P1 — Must be fixed before anything is published
 
 - **SEC-12**: no Gallery 2 permission check anywhere — private albums are exported
-
-## P3 — Quality, hygiene and latent bugs
-
-- **LINT-01**: 18 lint warnings — exhaustive-deps 10, only-export-components 8
 
 ## P1 (second review pass)
 
@@ -26,4 +22,4 @@ Generated 2026-10-25 from `TODO.md` (Sprint 06). Closed rows: `docs/planning/don
 
 ## Summary
 
-**Open rows:** 8
+**Open rows:** 7

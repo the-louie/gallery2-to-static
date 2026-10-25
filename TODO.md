@@ -50,43 +50,6 @@ never leaves MySQL. Treat any already-published `data/` output as leaked.
 
 ## P3 — Quality, hygiene and latent bugs
 
-### ~~LINT-01 (remaining): 18 lint warnings — exhaustive-deps 10, only-export-components 8~~
-
-**CLOSED, verified 2026-10-25 (Sprint 07 T-01..T-03):** `npm run lint` (`eslint . --max-warnings 0`) exits 0: 0 errors, 0 warnings (was 117 errors + 15 warnings at the start). CLAUDE.md marks lint and `typecheck:test` as gates. Original row kept for the record:
-
-_Progress 2026-10-25 (Sprint 07 T-01): exhaustive-deps 10 → 0. Fixed (6): Lightbox title memo, DOM-reset and zoom-reset effects, wheel and touch handlers (they name exactly what they use: `imageTitle`, `hasImage`/identity fields, `resetZoom`/`setZoom`/`setPan`/`zoomLevel`), useImageCache `stats` memo (`[cache]`, a stable singleton). Documented as deliberate (4): useProgressiveImage's 3 effects are keyed on image identity fields so re-sorted lists don't restart fetches; useAlbumData's cleanup reads the request counter ref on purpose._
-
-_Original title: 117 lint errors — including 6 real conditional-hook violations. Errors are at 0 since Sprint 06 T-06._
-
-_Progress 2026-10-25 (Sprint 06 T-05): no-unused-vars, no-useless-escape, no-constant-binary-expression, no-empty-object-type at 0 (eslint config: `_`-prefixed names are the project's "deliberately unused" convention; unused `catch (error)` → `catch {`; unused test imports removed; `RE_ILLEGAL` without redundant escapes, same 12,288-char set). Lint now 86: no-explicit-any 68, exhaustive-deps 10, only-export-components 8._
-_Progress 2026-10-25 (Sprint 06 T-06): all 68 `no-explicit-any` were in tests/mocks (production code has none); turned off for test files only (`eslint.config.js`). **Lint: 0 errors, 18 warnings** (exhaustive-deps 10, only-export-components 8); `npm run lint` (`--max-warnings 0`) still fails on those: each exhaustive-deps warning needs a look at the effect, not a blind dependency add._
-
-_Progress 2026-10-25 (Sprint 06 T-04): the 6 `rules-of-hooks` errors fixed (`ThemeDropdown.tsx` early return moved below the hooks; new `ThemeDropdown.empty.test.tsx` fails on the old code with a hook-order error). Lint now: 122 {'@typescript-eslint/no-unused-vars': 29, '@typescript-eslint/no-explicit-any': 68, 'react-hooks/exhaustive-deps': 10, 'react-refresh/only-export-components': 8, '@typescript-eslint/no-empty-object-type': 1, 'no-useless-escape': 3, 'no-constant-binary-expression': 3}._
-
-_2026-10-25 (Sprint 04 T-07, ESLint 9 flat config + typescript-eslint 8): 128 problems (110 errors, 18 warnings): no-explicit-any 68, no-unused-vars 29 (v8 also reports unused caught errors), exhaustive-deps 10, only-export-components 8, rules-of-hooks 6, no-useless-escape 3, no-constant-binary-expression 3 (new rule, test file), no-empty-object-type 1 (new rule). Same files and scope as before; the increase is stricter rule versions, not new code._
-
-**Partly confirms the report's "127 errors"** — actual is **117 errors + 15 warnings (132
-problems) across 52 files**:
-
-| count | rule |
-|---|---|
-| 64 | `@typescript-eslint/no-explicit-any` |
-| 43 | `@typescript-eslint/no-unused-vars` |
-| 10 | `react-hooks/exhaustive-deps` |
-| 6 | `react-hooks/rules-of-hooks` |
-| 5 | `react-refresh/only-export-components` |
-
-Most are cosmetic, but the 6 `rules-of-hooks` errors are a genuine crash, all in
-`frontend/src/components/ThemeDropdown/ThemeDropdown.tsx`: an early `return` for the
-"no themes available" case at `:83-99` sits **before** four `useCallback`s (`:102`, `:110`,
-`:119`, `:127`), a `useEffect` (`:179`) and a `useLayoutEffect` (`:204`). If
-`availableThemes` were ever empty React would throw on hook-order mismatch. Latent today —
-`availableThemes` comes from the frozen, non-empty `THEME_REGISTRY` — so the fix is cheap
-insurance: move the early return below the hooks.
-
-Do the `rules-of-hooks` fix now; schedule the `any`/unused-vars burn-down with BUILD-01,
-since both touch the same fixture-typing problem.
-
 ## Added 2026-10-25: second pass of the review, verified at `c750fbf`
 
 These come from the full review (`code-review-rc1.md`, items B1–B16 and C), which was written

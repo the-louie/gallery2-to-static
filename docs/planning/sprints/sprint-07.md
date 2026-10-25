@@ -1,6 +1,6 @@
 # Sprint 07: lint clean, so it can gate
 
-**Status:** in progress (opened 2026-10-25)
+**Status:** done (opened and closed 2026-10-25)
 **Current ticket:** —
 **Last completed:** T-03 (`done` — commit `367c82f`)
 
@@ -18,7 +18,9 @@ either fixed or documented in place.
 Total ≈ 4.5h.
 
 ## Retro
-(filled at end of sprint)
+**Worked:** separating "missing dependency" from "keyed on identity on purpose" per hook kept the effects' behaviour unchanged; suppressions carry their reason at the line.
+**Didn't:** one Python edit cut `getThemeIcon` without writing it out; recovered from HEAD before committing.
+**Backlog grooming:** LINT-01 closed. Open rows: 8 → 7, none schedulable without the operator or upstream: SEC-12 (needs the Gallery 2 DB / answer), DEPS-01 (ESLint 10, TypeScript 7 blocked upstream), FUT-01..05 (after production deploy).
 
 ## Demo notes
-(filled at end of sprint)
+`npm run lint`: exit 0 (0 errors, 0 warnings; was 117 errors + 15 warnings). `typecheck` and `typecheck:test`: 0. Vitest 1487/1487.
