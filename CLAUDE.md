@@ -170,6 +170,7 @@ npm run format           # Prettier write
 npm run format:check     # Prettier check
 npm run build:analyze    # Build with bundle visualizer + sourcemaps (--mode analyze; never deploy this)
 npm run check:dist       # Fail if dist/ has images, g2data/, *.map or stats.html
+node ../scripts/check-brotli.mjs  # CVE-2026-111497 release check: Node, sharp/libvips, lockfiles, dist/, system libbrotli1
 npm run size-check       # Check bundle size limits
 ```
 

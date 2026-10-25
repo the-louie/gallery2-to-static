@@ -192,7 +192,16 @@ Verify with `npm outdated` (empty) + `npm audit` (0) in both folders, `npm run b
 vitest run and the backend tests. Add `engines` (HYGIENE-01) so the Node version is pinned too.
 Supersedes the "can wait" note in ARCH-08 and the version part of SEC-14.
 
-### SEC-18: no Brotli decoder vulnerable to CVE-2026-111497 is shipped or used (operator, 2026-10-25)
+### ~~SEC-18: no Brotli decoder vulnerable to CVE-2026-111497 is shipped or used (operator, 2026-10-25)~~
+
+**CLOSED for the repository, verified 2026-10-25 (Sprint 04 T-10):** `scripts/check-brotli.mjs` (exit 1 on a finding) checks and prints each item:
+1. Node v22.23.4: the fixed 22.x release (sweep doc: ≥ 22.23.4 / 24.22.1 / 26.12.1); `process.versions.brotli` stays `1.1.0`, as expected for the backport.
+2. sharp-libvips 1.3.4 (linux-x64, linuxmusl-x64): no brotli in `versions.json`; its build script builds FreeType with `-Dbrotli=disabled` (`build/posix.sh` at tag v1.3.4, line 255). The `WOFF2` string in `libvips-cpp.so` is a format name, there is no decoder.
+3. No brotli npm package in either lockfile; since T-09 size-limit no longer pulls puppeteer/Chrome.
+4. `frontend/dist`: 28 files, no `.br`, no `.wasm`, no Brotli decoder in the JS.
+5. lanbilder2: `libbrotli1 1.1.0-2+deb13u1` (fixed). Node, nginx and cloudflared are not installed there yet: rerun the script on lanbilder2 after they are.
+**Finding outside the repo:** this dev/build machine has `libbrotli1 1.1.0-2+b7` (< `1.1.0-2+deb13u1`; apt candidate is the same, so its package lists are stale): needs `apt-get update && apt-get install --only-upgrade libbrotli1` by someone with root. Node does not use the system library, so the build output is unaffected; curl and other system tools on this host are.
+Original row kept for the record:
 
 CVE-2026-111497 is in Google's C Brotli decoder 1.0.3–1.2.0 (fixed 1.0.10, 1.1.1, 1.2.1); see
 `/srv/share/brotli-cve-2026-111497-phetast.md`. Neither lockfile has a brotli npm package today
