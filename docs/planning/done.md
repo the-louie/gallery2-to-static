@@ -2,6 +2,15 @@
 
 Rows pruned from `TODO.md` after each sprint, with the proof they were closed on. Newest first.
 
+## Pruned 2026-10-25 (operator 2026-10-25): 1 rows
+
+### ~~CONF-01: put the blacklisted album IDs in `config.ignoreAlbums` before the production extraction (operator, 2026-10-25)~~
+
+**CLOSED 2026-10-25:** operator confirmed the full list is `99283, 362248`; `backend/config_example.json:13` now ships `"ignoreAlbums": [99283, 362248]`, so a `config.json` made from it carries them. After the production extraction, check that neither ID appears under `data/`. Original row kept for the record:
+
+
+`backend/config_example.json:13` ships `"ignoreAlbums": []`. The review text cites `99283, 362248` from an older config; the operator confirms the full list. Check after extraction: none of the IDs (or their titles) appears in `data/search/index.json` or under `data/`.
+
 ## Pruned 2026-10-25 (Sprint 08): 1 rows
 
 ### ~~DEPS-01 (remaining): two majors blocked upstream — ESLint 10, TypeScript 7 (operator, 2026-10-25)~~

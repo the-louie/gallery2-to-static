@@ -10,7 +10,7 @@
         "columnPrefix": "g_"
     },
     "thumbPrefix": "t__",
-    "ignoreAlbums": [],
+    "ignoreAlbums": [99283, 362248],
     "onlyAlbums": [],
     "verifyImagePaths": true,
     "imageConfigPath": "frontend/public/image-config.json",
