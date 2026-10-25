@@ -78,3 +78,20 @@ Operator: "create detailed notes about the login/register links, we will need it
 ## Phones
 
 Gallery 2 had no small-screen layout. Below 700px wide: the sidebar moves under the content, the matrix drops to 2 columns, and text is set so the smallest (`.giInfo`) is at least 12px. Checked per device in Sprint 11 T-11.
+
+## Status after Sprint 11 T-10 (2026-10-25)
+
+Deployed on the test host. Side-by-side with the 2006 captures at 1280px (`/srv/share/lanbilder2/inspo/screens/t07-compare.png`, `t08-compare.png`): the album and photo pages have the same blocks at the same positions. Differences seen, for T-13 (`PRIO-THEME` rows) and T-11:
+
+| # | Where | 2006 | Now | Note |
+|---|---|---|---|---|
+| 1 | Matrix rows | 225px per row | a few px taller | measure in T-13 |
+| 2 | Root page | Classic list layout | Matrix layout | by decision (operator): the template applies to every album |
+| 3 | Root "Owner" | "Gallery Administrator" | "Unknown" | `backend/ownerDisplayName.ts` maps it; decide in T-13 |
+| 4 | Album cells | Gallery 2's chosen highlight, 150×150 | first photo, cropped to 150×150 | the export has no highlightId (schema) |
+| 5 | Album cell "Size" | "9 items (878 items total)" | "9 items (864 items total)" | the total counts photos only; Gallery 2 counted sub-albums too |
+| 6 | Nav bar | Login / Register right | — | left out (operator) |
+| 7 | Sidebar | "Add Comment" | — | left out (operator) |
+| 8 | Header / below footer | ad text, About us | — | left out (operator) |
+| 9 | Phone (390px) | n/a | matrix keeps 3 columns: page 573px wide | **fix in T-11** (2 columns below 700px, as planned) |
+
