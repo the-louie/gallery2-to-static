@@ -1,7 +1,7 @@
 # Sprint 02: backend output you can trust
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-10 (`todo` — Validate table/column prefixes; NULLIF(fullName,''), no login-name fal)
+**Current ticket:** T-10 (`in-progress` — Validate table/column prefixes; NULLIF(fullName,''), no login-name fal)
 **Last completed:** T-09 (`done` — commit `fabca21`)
 
 **Goal:** the extractor's output is correct and complete for the real tree: every album reachable by
@@ -28,7 +28,7 @@ heavy job at a time); commit locally to `master`.
 | T-07 | Subtree failures: `allSettled`/handled rejections, album id logged, non-zero exit | LOGIC-21 | 2h | T-01 | done | test: a rejecting subtree → summary lists it, exit code 1. Landed in `3d32d2a` |
 | T-08 | Validate numeric config (concurrency etc.) at load | LOGIC-23 | 1h | T-01 | done | "x" → clear error, exit 1. Landed in `1195cfd` |
 | T-09 | Write output to a fresh dir and swap at the end; report stale files (no silent delete) | LOGIC-22 | 3h | T-07 | done | crash mid-run leaves previous output intact; stale ids listed. Landed in `fabca21` |
-| T-10 | Validate table/column prefixes; `NULLIF(fullName,'')`, no login-name fallback | SEC-17 | 1h | T-01 | todo | bad prefix rejected; owner null when fullName empty |
+| T-10 | Validate table/column prefixes; `NULLIF(fullName,'')`, no login-name fallback | SEC-17 | 1h | T-01 | in-progress | bad prefix rejected; owner null when fullName empty |
 
 Total ≈ 21h.
 
