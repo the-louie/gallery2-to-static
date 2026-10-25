@@ -35,9 +35,7 @@ The frontend application supports modern browsers with ES2020 support:
 - **Desktop**: Chrome (80+), Firefox (75+), Safari (13.1+), Edge (80+)
 - **Mobile**: iOS Safari (12.2+), Chrome Mobile (Android)
 
-All CSS features (Grid, Flexbox, Custom Properties) and JavaScript features (async/await, IntersectionObserver) are natively supported in these browsers. The application includes graceful degradation for unsupported features.
-
-For detailed browser support information, see [`__docs/browser-support.md`](__docs/browser-support.md).
+All CSS features (Grid, Flexbox, Custom Properties) and JavaScript features (async/await, IntersectionObserver) are natively supported in these browsers. Where a feature is missing the gallery degrades instead of failing: for example, without IntersectionObserver every image loads at once instead of lazily.
 
 ## Does it really work?
 Well, works for me.

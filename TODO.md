@@ -141,7 +141,9 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
 
 ### P1 additions
 
-### DOCS-01: README links to `__docs/`, which is not in the repository (operator, 2026-10-25; before deploy)
+### ~~DOCS-01: README links to `__docs/`, which is not in the repository (operator, 2026-10-25; before deploy)~~
+
+**CLOSED, verified 2026-10-25 (Sprint 04 T-11):** `README.md` Browser Support paragraph rephrased to stand on its own (the `__docs/browser-support.md` link removed; the graceful-degradation sentence now gives the concrete case). `frontend/docs/architecture.md`: all 12 `../__docs/` links replaced with links that exist (Backend Usage guide, `backend/index.ts`, `types.ts`, `sqlUtils.ts`, README; all checked); "React 18+" → React 19. `docs/orig-page/README.md` and `theme.css` say the screenshots and site capture are kept outside the repository. `grep __docs` over README, CLAUDE.md, frontend/docs, docs/orig-page: none. Left as they are: 4 historical `docs/dev-notes/` files (session notes, not user docs). Original row kept for the record:
 
 `README.md` ("Browser Support") points to [`__docs/browser-support.md`](__docs/browser-support.md);
 `__docs` is git-ignored (`.gitignore`) and private, so the link is dead for anyone else. Rephrase
