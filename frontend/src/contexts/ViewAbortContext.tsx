@@ -25,6 +25,7 @@ import React, {
   useState,
 } from "react";
 import { useLocation } from "react-router-dom";
+import { getViewKey } from "@/utils/viewKey";
 
 export interface ViewAbortContextValue {
   /** AbortSignal for the current view; aborts when user navigates away */
@@ -43,14 +44,16 @@ export interface ViewAbortProviderProps {
 }
 
 /**
- * Provider that creates a new AbortController whenever location pathname or search
- * changes. The effect cleanup aborts the controller captured in its closure, ensuring
- * that only the previous view's requests are canceled, not the current one.
+ * Provider that creates a new AbortController whenever the view (getViewKey(pathname)) or
+ * search changes. The effect cleanup aborts the controller captured in its closure, ensuring
+ * that only the previous view's requests are canceled, not the current one. Stepping between
+ * images of the same album is not a view change, so lightbox preloads are not aborted (PERF-03).
  */
 export function ViewAbortProvider({
   children,
 }: ViewAbortProviderProps): React.ReactElement {
   const location = useLocation();
+  const viewKey = getViewKey(location.pathname);
   const [signal, setSignal] = useState<AbortSignal>(() => defaultSignal);
 
   useEffect(() => {
@@ -60,7 +63,7 @@ export function ViewAbortProvider({
     return () => {
       controller.abort();
     };
-  }, [location.pathname, location.search]);
+  }, [viewKey, location.search]);
 
   const value = useMemo<ViewAbortContextValue>(() => ({ signal }), [signal]);
 

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ThemeDropdown } from '../ThemeDropdown';
 import { getImageCache } from '@/utils/imageCache';
+import { getViewKey } from '@/utils/viewKey';
 import { SearchBar } from '../SearchBar';
 import { SortDropdown } from '../SortDropdown';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -45,14 +46,17 @@ export function Layout({ children, className }: LayoutProps) {
   const location = useLocation();
   const isInitialMount = useRef(true);
 
-  // Clear image cache on navigation so previous view's decoded images can be GC'd (Phase 3).
+  // Clear image cache when the view changes so the previous view's decoded images can be GC'd
+  // (Phase 3). Stepping between images of one album is not a view change: the lightbox's
+  // preloaded neighbours must stay cached (PERF-03).
+  const viewKey = getViewKey(location.pathname);
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
     getImageCache().clear();
-  }, [location.pathname, location.key]);
+  }, [viewKey]);
 
   const handleSkipClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();

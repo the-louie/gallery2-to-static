@@ -489,4 +489,32 @@ describe('Layout Sort Dropdown', () => {
     
     expect(sortDropdown).toHaveValue('date-desc');
   });
+
+  describe('image cache on navigation (PERF-03)', () => {
+    it('keeps the cache between images of one album, clears it for another album', async () => {
+      const { getImageCache } = await import('@/utils/imageCache');
+      const { useNavigate } = await import('react-router-dom');
+      const clearSpy = vi.spyOn(getImageCache(), 'clear');
+      function Nav() {
+        const navigate = useNavigate();
+        return (
+          <>
+            <button type="button" onClick={() => navigate('/album/7/image/13')}>next image</button>
+            <button type="button" onClick={() => navigate('/album/8')}>other album</button>
+          </>
+        );
+      }
+      render(
+        <Layout>
+          <Nav />
+        </Layout>,
+        { initialEntries: ['/album/7/image/12'] },
+      );
+      await userEvent.click(screen.getByText('next image'));
+      expect(clearSpy).not.toHaveBeenCalled();
+      await userEvent.click(screen.getByText('other album'));
+      expect(clearSpy).toHaveBeenCalledTimes(1);
+      clearSpy.mockRestore();
+    });
+  });
 });

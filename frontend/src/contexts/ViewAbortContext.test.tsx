@@ -247,4 +247,42 @@ describe("ViewAbortContext", () => {
     expect(ref.signalA!.aborted).toBe(true);
     expect(ref.signalB!.aborted).toBe(false);
   });
+
+  it("keeps the signal when only the image changes within the same album (PERF-03)", async () => {
+    const ref: { signal?: AbortSignal } = {};
+    function Viewer() {
+      ref.signal = useViewAbortSignal();
+      const navigate = useNavigate();
+      return (
+        <>
+          <button type="button" onClick={() => navigate("/album/7/image/13")}>
+            Next
+          </button>
+          <button type="button" onClick={() => navigate("/album/8/image/1")}>
+            Other album
+          </button>
+        </>
+      );
+    }
+    render(
+      <MemoryRouter initialEntries={["/album/7/image/12"]}>
+        <ViewAbortProvider>
+          <Routes>
+            <Route path="/album/:albumId/image/:imageId" element={<Viewer />} />
+          </Routes>
+        </ViewAbortProvider>
+      </MemoryRouter>
+    );
+    const first = ref.signal!;
+    await act(async () => {
+      screen.getByText("Next").click();
+    });
+    expect(first.aborted).toBe(false);
+    expect(ref.signal).toBe(first);
+
+    await act(async () => {
+      screen.getByText("Other album").click();
+    });
+    expect(first.aborted).toBe(true);
+  });
 });

@@ -239,7 +239,9 @@ placeholder (or the downscaled full image) instead of the error state.
 
 ### P2 additions
 
-### PERF-03: the image cache is wiped and fetches aborted on every lightbox step
+### ~~PERF-03: the image cache is wiped and fetches aborted on every lightbox step~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-03):** new `frontend/src/utils/viewKey.ts` `getViewKey(pathname)` drops a trailing `/image/<id>`; `Layout.tsx` clears the image cache and `ViewAbortContext.tsx` renews/aborts its controller only when the view key (or search) changes, not on every lightbox step (and not on opening the lightbox from its album). Tests: `viewKey.test.ts`, ViewAbortContext (image → image keeps the signal, other album aborts), Layout (cache kept between images, cleared for another album). Full vitest 1448/1448. Original row kept for the record:
 
 `components/Layout/Layout.tsx:48-55` runs `getImageCache().clear()` on every `pathname`/`key`
 change, and `ViewAbortContext` aborts its controller on every `pathname` change. Each lightbox
