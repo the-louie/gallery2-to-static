@@ -3,7 +3,7 @@
 Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–4h) and end on a demo.
 
 **Active sprint:** [Sprint 01](./sprints/sprint-01.md) — in progress.
-**Current ticket:** [Sprint 01 T-04](./sprints/sprint-01.md) (`todo` — App.test.tsx backend/types import; fetchImageAsObjectUrl URL stubs in )
+**Current ticket:** [Sprint 01 T-04](./sprints/sprint-01.md) (`in-progress` — App.test.tsx backend/types import; fetchImageAsObjectUrl URL stubs in )
 **Last completed:** Sprint 01 T-03 (commit `63be6cb`).
 
 | Sprint | Goal |
