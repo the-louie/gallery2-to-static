@@ -115,6 +115,7 @@ describe('SearchResultsPage', () => {
             title: 'Test Photo',
             description: 'Photo description',
             pathComponent: 'photo.jpg',
+            parentId: 55,
             ancestors: 'events/summer',
             summary: 'Photo summary',
             ownerName: 'Photo Owner',
@@ -137,6 +138,9 @@ describe('SearchResultsPage', () => {
     expect(screen.getByText((_, el) => el?.textContent === 'Photo summary' && el?.tagName === 'P')).toBeInTheDocument();
     expect(screen.getByText(/Owner: Album Owner/)).toBeInTheDocument();
     expect(screen.getByText(/Owner: Photo Owner/)).toBeInTheDocument();
+    // LOGIC-14: an image result opens the image in its album
+    const photoLink = screen.getByRole('heading', { level: 3, name: (_, el) => el?.textContent === 'Test Photo' }).closest('a');
+    expect(photoLink).toHaveAttribute('href', '/album/55/image/2');
   });
 
   it('does not render summary or owner when absent', () => {

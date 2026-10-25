@@ -92,7 +92,9 @@ never leaves MySQL. Treat any already-published `data/` output as leaked.
 
 ## P3 — Quality, hygiene and latent bugs
 
-### LOGIC-14: image search results link to a "Legacy Route Not Supported" page
+### ~~LOGIC-14: image search results link to a "Legacy Route Not Supported" page~~
+
+**CLOSED, verified 2026-10-25 (Sprint 03 T-09):** `frontend/src/pages/SearchResultsPage.tsx` links image results to `/album/${parentId}/image/${id}` (legacy `/image/:id` only if an item had no `parentId`, which the backend always sets). Test: photo result with `parentId: 55` → `href="/album/55/image/2"`. Still latent until photos are indexed. Original row kept for the record:
 
 **Partly confirms list item 8 — the dead end is real, but it is unreachable today, so this is latent, not live.**
 

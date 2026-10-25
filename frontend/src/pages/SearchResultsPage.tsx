@@ -216,7 +216,13 @@ export function SearchResultsPage() {
                     </p>
                   )}
                   <Link
-                    to={`/image/${image.id}`}
+                    // The image route needs its album (`/image/:id` alone is a dead end, LOGIC-14);
+                    // the backend sets parentId on every index item.
+                    to={
+                      image.parentId != null
+                        ? `/album/${image.parentId}/image/${image.id}`
+                        : `/image/${image.id}`
+                    }
                     className="search-results-link"
                   >
                     <div className="search-results-item-content">
