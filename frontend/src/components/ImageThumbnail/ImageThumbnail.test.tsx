@@ -62,10 +62,10 @@ describe('ImageThumbnail', () => {
     };
 
     global.IntersectionObserver = vi.fn(
-      (
+      function (
         callback: IntersectionObserverCallback,
         options?: IntersectionObserverInit,
-      ) => {
+      ) {
         // Store callback for manual triggering
         (mockIntersectionObserver as any).callback = callback;
         (mockIntersectionObserver as any).options = options;

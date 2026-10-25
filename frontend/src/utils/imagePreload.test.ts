@@ -36,7 +36,7 @@ describe('imagePreload', () => {
       };
 
       // Mock Image constructor
-      global.Image = vi.fn(() => mockImage as unknown as HTMLImageElement) as unknown as typeof Image;
+      global.Image = vi.fn(function () { return mockImage as unknown as HTMLImageElement; }) as unknown as typeof Image;
 
       const url = '/images/test.jpg';
       const preloadPromise = preloadImage(url);
@@ -57,7 +57,7 @@ describe('imagePreload', () => {
         src: '',
       };
 
-      global.Image = vi.fn(() => mockImage as unknown as HTMLImageElement) as unknown as typeof Image;
+      global.Image = vi.fn(function () { return mockImage as unknown as HTMLImageElement; }) as unknown as typeof Image;
 
       const url = '/images/test.jpg';
       const preloadPromise = preloadImage(url);
@@ -98,7 +98,7 @@ describe('imagePreload', () => {
         src: '',
       };
 
-      global.Image = vi.fn(() => mockImage as unknown as HTMLImageElement) as unknown as typeof Image;
+      global.Image = vi.fn(function () { return mockImage as unknown as HTMLImageElement; }) as unknown as typeof Image;
 
       const url = '/images/test.jpg';
       const cache = getImageCache();
@@ -147,7 +147,7 @@ describe('imagePreload', () => {
         onerror: null as (() => void) | null,
         src: '',
       };
-      global.Image = vi.fn(() => mockImage as unknown as HTMLImageElement) as unknown as typeof Image;
+      global.Image = vi.fn(function () { return mockImage as unknown as HTMLImageElement; }) as unknown as typeof Image;
 
       const url = '/images/fetched.jpg';
       const p = preloadImage(url, { signal: controller.signal });
@@ -176,7 +176,7 @@ describe('imagePreload', () => {
       ];
 
       let imageIndex = 0;
-      global.Image = vi.fn(() => {
+      global.Image = vi.fn(function () {
         const img = mockImages[imageIndex];
         imageIndex++;
         return img as unknown as HTMLImageElement;
@@ -208,7 +208,7 @@ describe('imagePreload', () => {
       ];
 
       let imageIndex = 0;
-      global.Image = vi.fn(() => {
+      global.Image = vi.fn(function () {
         const img = mockImages[imageIndex];
         imageIndex++;
         return img as unknown as HTMLImageElement;
@@ -244,7 +244,7 @@ describe('imagePreload', () => {
       let maxActiveFetches = 0;
       const resolvers: Array<() => void> = [];
 
-      global.Image = vi.fn(() => {
+      global.Image = vi.fn(function () {
         const img = {
           onload: null as (() => void) | null,
           onerror: null as (() => void) | null,
@@ -289,7 +289,7 @@ describe('imagePreload', () => {
     it('preloads all URLs even when exceeding concurrency limit', async () => {
       const loadedUrls: string[] = [];
 
-      global.Image = vi.fn(() => {
+      global.Image = vi.fn(function () {
         const img = {
           onload: null as (() => void) | null,
           onerror: null as (() => void) | null,
@@ -328,7 +328,7 @@ describe('imagePreload', () => {
         src: string;
       }> = [];
 
-      global.Image = vi.fn(() => {
+      global.Image = vi.fn(function () {
         const img = { onload: null, onerror: null, src: '' };
         mockImages.push(img);
         return img as unknown as HTMLImageElement;
@@ -351,7 +351,7 @@ describe('imagePreload', () => {
 
     it('rejects when any image fails in a large batch', async () => {
       let imageIndex = 0;
-      global.Image = vi.fn(() => {
+      global.Image = vi.fn(function () {
         const idx = imageIndex++;
         const img = {
           onload: null as (() => void) | null,

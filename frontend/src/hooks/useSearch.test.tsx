@@ -33,7 +33,9 @@ describe('useSearch', () => {
       isIndexBuilding: vi.fn().mockReturnValue(false),
     } as unknown as SearchIndex;
 
-    vi.mocked(SearchIndex).mockImplementation(() => mockSearchIndex);
+    vi.mocked(SearchIndex).mockImplementation(function () {
+      return mockSearchIndex;
+    });
     vi.mocked(findRootAlbumId).mockResolvedValue(7);
   });
 

@@ -29,7 +29,7 @@ describe('imageFormat', () => {
       src: '',
     };
 
-    global.Image = vi.fn(() => mockImage as any) as any;
+    global.Image = vi.fn(function () { return mockImage as any; }) as any;
 
     // Dynamically import a fresh copy of the module
     mod = await import('./imageFormat');
@@ -174,7 +174,7 @@ describe('imageFormat', () => {
         onerror: null,
         src: '',
       };
-      global.Image = vi.fn(() => mockImage as any) as any;
+      global.Image = vi.fn(function () { return mockImage as any; }) as any;
 
       // Mock WebP success
       const webpPromise = mod.detectWebPSupportAsync();
@@ -201,7 +201,7 @@ describe('imageFormat', () => {
         onerror: null,
         src: '',
       };
-      global.Image = vi.fn(() => mockImage as any) as any;
+      global.Image = vi.fn(function () { return mockImage as any; }) as any;
 
       // Mock WebP failure
       const webpPromise = mod.detectWebPSupportAsync();

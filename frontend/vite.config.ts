@@ -121,7 +121,7 @@ export default defineConfig(({ mode }) => ({
     outDir: 'dist',
     copyPublicDir: false, // see PUBLIC_FILES_TO_SHIP
     sourcemap: mode === 'analyze',
-    minify: 'esbuild', // Use esbuild for faster minification
+    // minify: Vite 8 default (Oxc); 'esbuild' would need esbuild installed separately
     cssMinify: true, // Minify CSS
     rollupOptions: {
       output: {

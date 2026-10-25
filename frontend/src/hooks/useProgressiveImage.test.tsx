@@ -68,7 +68,7 @@ describe('useProgressiveImage', () => {
 
     // Mock Image constructor -- each call returns a fresh mock so thumbnail
     // and full-image onload handlers stay separate.
-    global.Image = vi.fn(() => {
+    global.Image = vi.fn(function () {
       const el = { onload: null, onerror: null, src: '' };
       mockImageElements.push(el);
       return el as any;

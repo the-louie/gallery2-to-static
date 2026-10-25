@@ -23,10 +23,9 @@ describe('Browser Compatibility', () => {
       const mockObserve = vi.fn();
       const mockDisconnect = vi.fn();
 
-      (global as any).IntersectionObserver = vi.fn().mockImplementation(() => ({
-        observe: mockObserve,
-        disconnect: mockDisconnect,
-      }));
+      (global as any).IntersectionObserver = vi.fn().mockImplementation(function () {
+        return { observe: mockObserve, disconnect: mockDisconnect };
+      });
 
       expect(typeof IntersectionObserver).not.toBe('undefined');
       expect(() => new IntersectionObserver(() => {})).not.toThrow();
@@ -38,12 +37,9 @@ describe('Browser Compatibility', () => {
     });
 
     it('can create IntersectionObserver with options', () => {
-      (global as any).IntersectionObserver = vi.fn().mockImplementation(
-        (callback, options) => ({
-          observe: vi.fn(),
-          disconnect: vi.fn(),
-        })
-      );
+      (global as any).IntersectionObserver = vi.fn().mockImplementation(function () {
+        return { observe: vi.fn(), disconnect: vi.fn() };
+      });
 
       const observer = new IntersectionObserver(
         () => {},

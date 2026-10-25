@@ -131,7 +131,7 @@ Components are organized by feature/domain rather than by technical role:
 ### Core Technologies
 
 - **React 18+**: Modern React with hooks, concurrent features, and improved performance
-- **Vite 5+**: Fast build tool with excellent development experience and optimized production builds
+- **Vite 8**: Fast build tool with excellent development experience and optimized production builds
 - **TypeScript 5+**: Type safety and improved developer experience
 - **React Router v6**: Client-side routing with BrowserRouter for modern static hosting
 - **CSS Custom Properties**: Theme system using CSS variables for dynamic theming
