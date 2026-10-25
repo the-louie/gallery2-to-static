@@ -658,7 +658,9 @@ rejects while the thumbnails are still running, it is an unhandled rejection, an
 without running the catch/finally or writing `index.json`. Fix: `Promise.allSettled` (or attach a
 handler right away), log the failing album id, and exit non-zero at the end.
 
-### LOGIC-22: backend: JSON for removed or excluded albums is never removed, and writes are not atomic
+### ~~LOGIC-22: backend: JSON for removed or excluded albums is never removed, and writes are not atomic~~
+
+**CLOSED, verified 2026-10-25 (Sprint 02 T-09):** `backend/outputDir.ts` + `index.ts`: output goes to `data.new-<stamp>/`; only a run without errors (`process.exitCode !== 1`: no failed subtrees, path check OK) renames `data/` → `data.prev-<stamp>/` (kept, not deleted) and the staging dir → `data/`, then lists files the previous output had and the new one lacks. A crash or a failed run leaves `data/` unchanged. Tests `outputDir.test.ts` (first run, failed run, stale `8.json` listed and not published, previous kept). Docs: 03-backend-usage.md; `.gitignore` covers `data.new-*`/`data.prev-*`. Original row kept for the record:
 
 `backend/index.ts:550,719,754` write in place with `fs.writeFile`; nothing deletes or reports
 `data/<id>.json` files that a run did not produce. An album deleted, added to `ignoreAlbums` or

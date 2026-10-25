@@ -7,6 +7,7 @@ import { cleanup_uipathcomponent } from './cleanupUipath'
 import { getSegmentForAlbum, appendSegment, addToPathIndex, findPathIndexProblems } from './pathSegments'
 import { settleSubtree, formatSubtreeFailures, type SubtreeFailure } from './subtreeFailures'
 import { findConfigErrors } from './configValidation'
+import { runStamp, prepareStagingDir, listStaleFiles, promoteStagingDir } from './outputDir'
 import { computeAllDescendantImageCounts } from './descendantImageCount'
 import { runVerification } from './verifyImagePaths'
 import { buildPathsFromPathComponent } from './pathResolution'
@@ -609,22 +610,12 @@ let connection: mysql.Connection | null = null;
         connection = await mysql.createConnection(config.mysqlSettings);
         const sql = sqlUtils(connection, config);
 
-        const dataDir = path.join(__dirname, '..', 'data');
-        console.log('Preparing data directory...');
-        try {
-            await fs.access(dataDir);
-        } catch {
-            await fs.mkdir(dataDir, { recursive: true });
-        }
-
-        // Create search subdirectory
+        // Output goes to a fresh staging directory; data/ is only replaced if the run succeeds (LOGIC-22).
+        const finalDataDir = path.join(__dirname, '..', 'data');
+        const stamp = runStamp();
+        const dataDir = await prepareStagingDir(finalDataDir, stamp);
         const searchDir = path.join(dataDir, 'search');
-        try {
-            await fs.access(searchDir);
-        } catch {
-            await fs.mkdir(searchDir, { recursive: true });
-            console.log('Created search directory');
-        }
+        console.log(`Writing output to ${dataDir}`);
 
         const rootId = config.rootId ?? await sql.getRootAlbumId();
         console.log(`Using root album ID: ${rootId}`);
@@ -810,7 +801,20 @@ let connection: mysql.Connection | null = null;
         } catch (verificationError) {
             console.warn('Image path verification failed (extraction succeeded):', verificationError);
         }
-        console.log('Extraction complete.');
+
+        if (process.exitCode === 1) {
+            console.error(`Extraction had errors: ${finalDataDir} is unchanged; this run's output is in ${dataDir}`);
+            return;
+        }
+        const stale = await listStaleFiles(finalDataDir, dataDir);
+        const previous = await promoteStagingDir(finalDataDir, dataDir, stamp);
+        if (previous) console.log(`Previous output kept as ${previous}`);
+        if (stale.length > 0) {
+            console.warn(`${stale.length} file(s) from the previous output are not in this one (no longer published):`);
+            for (const f of stale.slice(0, 50)) console.warn(`  - ${f}`);
+            if (stale.length > 50) console.warn(`  ... and ${stale.length - 50} more (see ${previous})`);
+        }
+        console.log(`Extraction complete: ${finalDataDir}`);
     } catch (error) {
         console.error('Error in main:', error);
         process.exit(1);

@@ -70,6 +70,14 @@ If your root album has a different ID, you need to modify `backend/index.ts`:
 
 JSON files are generated in the `../data/` directory (project root, relative to backend directory).
 
+The run writes into a fresh `data.new-<timestamp>/` first. Only when it finishes without errors
+(no failed album subtrees, path index check OK) is the old `data/` renamed to
+`data.prev-<timestamp>/` and the new directory renamed to `data/`. A crash or a run with errors leaves
+`data/` unchanged and keeps its own output in `data.new-<timestamp>/` for inspection. Files that the
+previous `data/` had and the new one does not are listed at the end (albums deleted, ignored or no
+longer exported). Old `data.prev-*` and `data.new-*` directories are never deleted by the backend;
+remove them by hand when no longer needed.
+
 ### File Naming
 
 Each album gets a JSON file named `{albumId}.json` where `{albumId}` is the numeric ID of the album.

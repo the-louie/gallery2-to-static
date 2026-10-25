@@ -2,6 +2,8 @@ config.json
 node_modules
 backend/node_modules
 data
+data.new-*
+data.prev-*
 __docs
 .cursor
 
