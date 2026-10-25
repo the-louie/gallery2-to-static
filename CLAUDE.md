@@ -39,7 +39,7 @@ Gallery 2 MySQL DB
 ### Frontend (Static SPA)
 
 - **Framework**: React 18 + React Router v6 (HashRouter for static hosting compatibility)
-- **Build**: Vite 8 (Rolldown, Oxc minifier), Vitest 5, TypeScript 5 (strict mode), ES2020 target, ESNext modules
+- **Build**: Vite 8 (Rolldown, Oxc minifier), Vitest 5, TypeScript 6.0 (TS 7 blocked: typescript-eslint and ts-node need the JS API) (strict mode), ES2020 target, ESNext modules
 - **Routing**: `HashRouter` with routes: `/` (home), `/album/:id`, `/album/:albumId/image/:imageId`, path-based album URLs via `PathResolverPage`
 - **State**: React Context API (ThemeContext, FilterContext, ViewAbortContext), no Redux/Zustand
 - **Styling**: Plain CSS files per component (not CSS Modules), CSS custom properties for theming, no CSS-in-JS

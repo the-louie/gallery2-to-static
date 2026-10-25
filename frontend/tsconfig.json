@@ -21,7 +21,7 @@
     "noFallthroughCasesInSwitch": true,
 
     /* Path Aliases */
-    "baseUrl": ".",
+    // paths resolve relative to this file (baseUrl is deprecated in TS 6, removed in TS 7)
     "paths": {
       "@/*": ["./src/*"],
       "@/components/*": ["./src/components/*"],

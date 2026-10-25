@@ -7,6 +7,7 @@ import { cleanup_uipathcomponent } from './cleanupUipath'
 import { getSegmentForAlbum, appendSegment, addToPathIndex, findPathIndexProblems } from './pathSegments'
 import { settleSubtree, formatSubtreeFailures, type SubtreeFailure } from './subtreeFailures'
 import { findConfigErrors } from './configValidation'
+import { generateThumbnail, readThumbnailSize } from './generateThumbnail'
 import { runStamp, prepareStagingDir, listStaleFiles, promoteStagingDir } from './outputDir'
 import { computeAllDescendantImageCounts } from './descendantImageCount'
 import { runVerification } from './verifyImagePaths'
@@ -367,7 +368,6 @@ const main = async (
                         const destPath = path.join(thumbnailsRoot, highlightThumbnailUrlPath);
                         await thumbnailContext.sem.acquire();
                         try {
-                            const { generateThumbnail, readThumbnailSize } = await import('./generateThumbnail');
                             const result = await generateThumbnail(sourcePath, destPath, thumbnailContext.options);
                             if (result === 'generated' || result === 'skipped') {
                                 thumbSize = await readThumbnailSize(destPath);
