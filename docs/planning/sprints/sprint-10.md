@@ -1,8 +1,8 @@
 # Sprint 10: state effects → derived or initial state (REFAC-01)
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-05 (`in-progress` — ThemeContext, ViewAbortContext)
-**Last completed:** T-04 (`done` — commit `7ea0b1a`)
+**Current ticket:** T-06 (`todo` — useLightbox)
+**Last completed:** T-05 (`done` — commit `1262b15`)
 
 **Goal:** no effect sets state only to reset or mirror an input; `@eslint-react/set-state-in-effect` on.
 
@@ -14,7 +14,7 @@
 | T-02 | useAlbumMetadata, useAlbumData | REFAC-01 | 1.5h | – | done | 6 hits. Landed in `e265a5c` |
 | T-03 | useImageZoom, DateRangeFilter, AlbumCard, PathResolverPage | REFAC-01 | 1.5h | – | done | 6 hits. Landed in `953fe98` |
 | T-04 | ImageThumbnail, Lightbox, SearchBar | REFAC-01 | 2h | – | done | 7 hits. Landed in `7ea0b1a` |
-| T-05 | ThemeContext, ViewAbortContext | REFAC-01 | 1h | – | in-progress | 2 hits |
+| T-05 | ThemeContext, ViewAbortContext | REFAC-01 | 1h | – | done | 2 hits. Landed in `1262b15` |
 | T-06 | useLightbox | REFAC-01 | 2h | – | todo | 8 hits |
 | T-07 | useProgressiveImage | REFAC-01 | 3h | – | todo | 14 hits |
 | T-08 | Rule on; REFAC-01 struck | REFAC-01 | 0.5h | T-01..T-07 | todo | lint 0/0 |
