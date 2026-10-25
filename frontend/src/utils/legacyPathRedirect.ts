@@ -1,14 +1,14 @@
 /**
- * Old lanbilder.se links are path URLs (`/dreamhack/dreamhack_97/martin_ojes/`), but the app runs
- * under HashRouter (`/#/dreamhack/...`). When the server falls back to index.html for such a path,
- * the router would read the empty hash and show the home page (LOGIC-32). This maps the path into
- * the hash before the router mounts; PathResolverPage then resolves it like any path URL.
- * Works on any static host (no server rewrite needed beyond the index.html fallback).
+ * The app uses clean path URLs (`/dreamhack/dhw05/`, URL-01). Two older URL forms are moved to
+ * them before the router reads the location:
+ * - hash URLs from the HashRouter era (`/#/dreamhack/dhw05`), used on the test host;
+ * - the old static tree's explicit `index.html` (`/dreamhack/index.html`, LOGIC-32).
+ * Returns the URL to replace the current one with, or null when it is already clean.
  */
-export function legacyPathToHash(loc: { pathname: string; search: string; hash: string }): string | null {
-  if (loc.hash.startsWith('#/')) return null; // already an app URL
-  // the old static tree linked folders, sometimes with an explicit index.html
-  const pathname = loc.pathname.replace(/\/index\.html?$/i, '/');
-  if (pathname === '/' || pathname === '') return null;
-  return `/#${pathname}${loc.search}`;
+export function legacyUrlToCleanPath(loc: { pathname: string; search: string; hash: string }): string | null {
+  if (loc.hash.startsWith('#/')) return loc.hash.slice(1);
+  if (/\/index\.html?$/i.test(loc.pathname)) {
+    return `${loc.pathname.replace(/\/index\.html?$/i, '/')}${loc.search}`;
+  }
+  return null;
 }

@@ -126,6 +126,15 @@ export function getAlbumIdFromPath(
     if (id != null && Number.isFinite(id)) {
       return id;
     }
+    // A photo URL (`<album path>/<photo slug>`, URL-01): the album is the parent path
+    // (two segments at least, so /search and /not-found do not land on the root album)
+    if (!pathname.endsWith('/') && albumPath.lastIndexOf('/') > 0) {
+      const parent = albumPath.slice(0, albumPath.lastIndexOf('/'));
+      const parentId = pathIndex[parent];
+      if (parentId != null && Number.isFinite(parentId)) {
+        return parentId;
+      }
+    }
   }
 
   const match = pathname.match(/^\/album\/(\d+)(?:\/|$)/);

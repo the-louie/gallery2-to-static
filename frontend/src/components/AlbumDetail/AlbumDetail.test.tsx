@@ -473,7 +473,7 @@ describe('AlbumDetail', () => {
       await user.click(backButton);
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/album/5');
+        expect(mockNavigate).toHaveBeenCalledWith('/album/5/');
         expect(backButton).not.toBeDisabled();
       });
     });
@@ -557,7 +557,7 @@ describe('AlbumDetail', () => {
       await user.click(backButton);
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/album/5');
+        expect(mockNavigate).toHaveBeenCalledWith('/album/5/');
       });
     });
 
@@ -597,7 +597,7 @@ describe('AlbumDetail', () => {
       await user.click(backButton);
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith(`/album/${directParentId}`);
+        expect(mockNavigate).toHaveBeenCalledWith(`/album/${directParentId}/`);
       });
     });
 

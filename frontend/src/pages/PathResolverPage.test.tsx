@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@/test-utils";
 import { PathResolverPage } from "./PathResolverPage";
 import { useParams } from "react-router-dom";
-import { resolvePathToAlbumId } from "@/utils/dataLoader";
+import { loadAlbum, resolvePathToAlbumId } from "@/utils/dataLoader";
+import type { AlbumFile } from "@/types";
 
 // Mock dataLoader (preserve other exports used by ThemeContext etc.)
 vi.mock("@/utils/dataLoader", async (importOriginal) => {
@@ -10,6 +11,7 @@ vi.mock("@/utils/dataLoader", async (importOriginal) => {
   return {
     ...actual,
     resolvePathToAlbumId: vi.fn(),
+    loadAlbum: vi.fn(),
     loadPathIndex: vi.fn().mockResolvedValue({}),
   };
 });
@@ -198,6 +200,58 @@ describe("PathResolverPage", () => {
     });
 
     expect(resolvePathToAlbumId).toHaveBeenCalledWith("/My Album");
+  });
+
+  describe("photo slugs (URL-01)", () => {
+    const album = {
+      metadata: { albumId: 20 },
+      children: [
+        { id: 30, type: "GalleryAlbumItem", title: "cimg0053_", pathComponent: "a/sub" },
+        { id: 31, type: "GalleryPhotoItem", title: "CIMG0053_.JPG", pathComponent: "a/CIMG0053_.JPG" },
+        { id: 32, type: "GalleryPhotoItem", title: "x", pathComponent: "a/CIMG0054.JPG" },
+      ],
+    } as unknown as AlbumFile;
+
+    it("resolves <album path>/<slug> to the photo", async () => {
+      vi.mocked(useParams).mockReturnValue({ "*": "dreamhack/dhw05/cimg0054" });
+      albumsAt({ "/dreamhack/dhw05": 20 });
+      vi.mocked(loadAlbum).mockResolvedValue(album);
+      render(<PathResolverPage />);
+      await waitFor(() => {
+        expect(screen.getByTestId("image-detail-page")).toHaveTextContent("Album 20 Image 32");
+      });
+      expect(loadAlbum).toHaveBeenCalledWith(20);
+    });
+
+    it("matches photos only, not a sub-album with the same name", async () => {
+      vi.mocked(useParams).mockReturnValue({ "*": "dreamhack/dhw05/cimg0053_" });
+      albumsAt({ "/dreamhack/dhw05": 20 });
+      vi.mocked(loadAlbum).mockResolvedValue(album);
+      render(<PathResolverPage />);
+      await waitFor(() => {
+        expect(screen.getByTestId("image-detail-page")).toHaveTextContent("Album 20 Image 31");
+      });
+    });
+
+    it("goes to /not-found for an unknown slug or a failing album load", async () => {
+      vi.mocked(useParams).mockReturnValue({ "*": "dreamhack/dhw05/nope" });
+      albumsAt({ "/dreamhack/dhw05": 20 });
+      vi.mocked(loadAlbum).mockRejectedValue(new Error("404"));
+      render(<PathResolverPage />);
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith("/not-found", { replace: true });
+      });
+    });
+
+    it("an album with a trailing slash is never taken as a photo", async () => {
+      vi.mocked(useParams).mockReturnValue({ "*": "dreamhack/dhw05/" });
+      albumsAt({ "/dreamhack/dhw05/": 20 });
+      render(<PathResolverPage />);
+      await waitFor(() => {
+        expect(screen.getByTestId("album-detail-page")).toHaveTextContent("Album 20");
+      });
+      expect(loadAlbum).not.toHaveBeenCalled();
+    });
   });
 
   it("navigates to /not-found when album path is not found", async () => {

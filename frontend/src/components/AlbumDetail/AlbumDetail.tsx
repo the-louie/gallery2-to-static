@@ -24,7 +24,7 @@ import { applyFilters } from '@/utils/filterUtils';
 import { parseBBCodeDecoded } from '@/utils/bbcode';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { albumFromMetadata } from '@/utils/albumMetadata';
-import { getChildAlbumPath, getImagePath } from '@/utils/albumPath';
+import { getChildAlbumPath, getImagePath, withTrailingSlash } from '@/utils/albumPath';
 import { AlbumGrid } from '@/components/AlbumGrid';
 import { ImageGrid } from '@/components/ImageGrid';
 import { SortDropdown } from '@/components/SortDropdown';
@@ -186,7 +186,7 @@ export function AlbumDetail({
       } else {
         const path =
           breadcrumbPath != null
-            ? getImagePath(breadcrumbPath, clickedImage.id)
+            ? getImagePath(breadcrumbPath, clickedImage)
             : `/album/${albumId}/image/${clickedImage.id}`;
         rememberAlbumScroll(location.pathname, window.scrollY);
         navigate(path, { state: { fromAlbum: true } });
@@ -215,7 +215,7 @@ export function AlbumDetail({
       // Get parent from breadcrumbPath
       if (breadcrumbPath && breadcrumbPath.length >= 2) {
         const parent = breadcrumbPath[breadcrumbPath.length - 2];
-        navigate(parent.path);
+        navigate(withTrailingSlash(parent.path));
       } else {
         navigate('/');
       }

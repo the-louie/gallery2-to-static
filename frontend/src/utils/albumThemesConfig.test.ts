@@ -92,6 +92,14 @@ describe('albumThemesConfig utilities', () => {
       expect(getAlbumIdFromPath('/')).toBe(null);
     });
 
+    it('a photo-slug URL gets its album (URL-01)', () => {
+      const index = { '/': 7, '/dreamhack': 4352, '/dreamhack/dhw05': 23271 };
+      expect(getAlbumIdFromPath('/dreamhack/dhw05/cimg0053_', index)).toBe(23271);
+      expect(getAlbumIdFromPath('/dreamhack/dhw05/', index)).toBe(23271);
+      expect(getAlbumIdFromPath('/search', index)).toBe(null);
+      expect(getAlbumIdFromPath('/dreamhack/dhw05/sub/', index)).toBe(null);
+    });
+
     it('returns null for /search', () => {
       expect(getAlbumIdFromPath('/search')).toBe(null);
     });

@@ -11,6 +11,8 @@ import {
   getImagePath,
   getAlbumPathFromAlbum,
   getChildAlbumPath,
+  getPhotoSlug,
+  withTrailingSlash,
 } from "./albumPath";
 import type { BreadcrumbPath } from "@/types";
 
@@ -66,7 +68,7 @@ describe("albumPath", () => {
         { id: 7, title: "Root", path: "/" },
         { id: 8, title: "Albums", path: "/albums" },
       ];
-      expect(getAlbumPath(bp)).toBe("/albums");
+      expect(getAlbumPath(bp)).toBe("/albums/");
     });
 
     it('returns "/" when last item has no path', () => {
@@ -84,13 +86,42 @@ describe("albumPath", () => {
         { id: 7, title: "Root", path: "/" },
         { id: 8, title: "Albums", path: "/albums" },
       ];
-      expect(getImagePath(bp, 123)).toBe("/albums/image/123");
+      expect(
+        getImagePath(bp, { id: 123, pathComponent: "albums/CIMG0053_.JPG" })
+      ).toBe("/albums/cimg0053_");
     });
 
-    it("builds /image/{id} when album path is root", () => {
-      expect(getImagePath([], 99)).toBe("/image/99");
+    it("builds /{slug} when album path is root", () => {
+      const photo = { id: 99, pathComponent: "IMG 1.jpg" };
+      expect(getImagePath([], photo)).toBe("/img_1");
       const rootOnly: BreadcrumbPath = [{ id: 7, title: "Root", path: "/" }];
-      expect(getImagePath(rootOnly, 99)).toBe("/image/99");
+      expect(getImagePath(rootOnly, photo)).toBe("/img_1");
+    });
+  });
+
+  describe("getPhotoSlug (URL-01)", () => {
+    it("is the file name without extension, normalized", () => {
+      expect(getPhotoSlug({ id: 1, pathComponent: "a/b/CIMG0053_.JPG" })).toBe("cimg0053_");
+      expect(getPhotoSlug({ id: 1, pathComponent: "a/Söndag Kväll.jpeg" })).toBe("sondag_kvall");
+    });
+
+    it("turns dots into underscores, so no slug ends in an image extension", () => {
+      expect(getPhotoSlug({ id: 1, pathComponent: "a/x.jpg.jpg" })).toBe("x_jpg");
+      expect(getPhotoSlug({ id: 1, pathComponent: "a/img.2005.01.png" })).toBe("img_2005_01");
+    });
+
+    it("falls back to the title, then to photo_<id>", () => {
+      expect(getPhotoSlug({ id: 5, pathComponent: null, title: "Nice Pic.jpg" })).toBe("nice_pic");
+      expect(getPhotoSlug({ id: 5, pathComponent: "", title: "" })).toBe("photo_5");
+      expect(getPhotoSlug({ id: 5, pathComponent: "a/.jpg" })).toBe("photo_5");
+    });
+  });
+
+  describe("withTrailingSlash", () => {
+    it("adds one slash at most", () => {
+      expect(withTrailingSlash("/a")).toBe("/a/");
+      expect(withTrailingSlash("/a/")).toBe("/a/");
+      expect(withTrailingSlash("/")).toBe("/");
     });
   });
 
@@ -98,18 +129,18 @@ describe("albumPath", () => {
     it("returns album.path when set", () => {
       expect(
         getAlbumPathFromAlbum({ path: "/custom/path", title: "Ignore" })
-      ).toBe("/custom/path");
-      expect(getAlbumPathFromAlbum({ path: "/one", title: null })).toBe("/one");
+      ).toBe("/custom/path/");
+      expect(getAlbumPathFromAlbum({ path: "/one", title: null })).toBe("/one/");
     });
 
     it("builds path from title when path missing", () => {
       expect(getAlbumPathFromAlbum({ title: "Test Album" })).toBe(
-        "/test_album"
+        "/test_album/"
       );
       expect(getAlbumPathFromAlbum({ title: "Root", path: null })).toBe(
-        "/root"
+        "/root/"
       );
-      expect(getAlbumPathFromAlbum({ title: "Root", path: "" })).toBe("/root");
+      expect(getAlbumPathFromAlbum({ title: "Root", path: "" })).toBe("/root/");
     });
   });
 
@@ -117,7 +148,7 @@ describe("albumPath", () => {
     it("returns childPath when set", () => {
       const parent: BreadcrumbPath = [{ id: 7, title: "Root", path: "/" }];
       expect(getChildAlbumPath(parent, "Child", 10, "/emitted/child")).toBe(
-        "/emitted/child"
+        "/emitted/child/"
       );
     });
 
@@ -126,12 +157,12 @@ describe("albumPath", () => {
         { id: 7, title: "Root", path: "/" },
         { id: 8, title: "Parent", path: "/parent" },
       ];
-      expect(getChildAlbumPath(parent, "Child", 10)).toBe("/parent/child");
+      expect(getChildAlbumPath(parent, "Child", 10)).toBe("/parent/child/");
     });
 
     it("handles root parent", () => {
       const parent: BreadcrumbPath = [{ id: 7, title: "Root", path: "/" }];
-      expect(getChildAlbumPath(parent, "First", 1)).toBe("/first");
+      expect(getChildAlbumPath(parent, "First", 1)).toBe("/first/");
     });
   });
 });

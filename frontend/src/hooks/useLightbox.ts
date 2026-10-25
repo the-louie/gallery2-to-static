@@ -37,6 +37,7 @@
  */
 
 import { useMemo, useCallback, useState } from 'react';
+import { getPhotoSlug } from '@/utils/albumPath';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { isFromAlbumState } from '@/utils/albumScroll';
 import { parseAlbumImageParams, parseImageId } from '@/utils/routeParams';
@@ -161,16 +162,19 @@ export function useLightbox(
   const pathForImage = useCallback(
     (imageId: number) => {
       if (resolvedAlbumPath !== null) {
+        // Path-based album: the photo's slug (URL-01); the id form only if the photo is unknown
+        const image = albumImages.find((img) => img.id === imageId);
+        if (image) return `${resolvedAlbumPath}/${getPhotoSlug(image)}`;
         return resolvedAlbumPath ? `${resolvedAlbumPath}/image/${imageId}` : `/image/${imageId}`;
       }
       if (albumId !== null) return `/album/${albumId}/image/${imageId}`;
       return `/image/${imageId}`;
     },
-    [resolvedAlbumPath, albumId],
+    [resolvedAlbumPath, albumId, albumImages],
   );
 
   const pathForAlbum = useCallback(() => {
-    if (resolvedAlbumPath !== null) return resolvedAlbumPath || '/';
+    if (resolvedAlbumPath !== null) return `${resolvedAlbumPath}/`;
     if (albumId !== null) return `/album/${albumId}`;
     return '/';
   }, [resolvedAlbumPath, albumId]);

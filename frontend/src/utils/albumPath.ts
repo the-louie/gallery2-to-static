@@ -87,24 +87,46 @@ export function titleToSegment(title: string | null | undefined, _id?: number): 
 export function getAlbumPath(breadcrumbPath: BreadcrumbPath): string {
   if (!breadcrumbPath || breadcrumbPath.length === 0) return '/';
   const last = breadcrumbPath[breadcrumbPath.length - 1];
-  return last.path ?? '/';
+  return withTrailingSlash(last.path ?? '/');
 }
 
 /**
- * Image path: album path + /image/{imageId}.
+ * Album URLs end with a slash, photo URLs do not (URL-01): `/dreamhack/dhw05/` vs
+ * `/dreamhack/dhw05/cimg0053`. The path index stores albums without it; lookups strip it.
  */
-export function getImagePath(breadcrumbPath: BreadcrumbPath, imageId: number): string {
-  const albumPath = getAlbumPath(breadcrumbPath);
-  const base = albumPath === '/' ? '' : albumPath.replace(/\/+$/, '');
-  return base ? `${base}/image/${imageId}` : `/image/${imageId}`;
+export function withTrailingSlash(path: string): string {
+  return path.endsWith('/') ? path : `${path}/`;
+}
+
+/**
+ * URL segment for a photo (URL-01): its file name without the extension, normalized like album
+ * titles (`CIMG0053_.JPG` → `cimg0053_`); dots become `_` so no slug ends in `.jpg` (nginx answers
+ * those with 402). Falls back to the title, then to `photo_<id>`.
+ * Unique within an album in the lanbilder.se data (0 collisions among 57,149 photos, 2026-10-25);
+ * the resolver takes the first match in album order if a collision ever appears.
+ */
+export function getPhotoSlug(image: { id: number; pathComponent?: string | null; title?: string | null }): string {
+  const name = (image.pathComponent ?? '').split('/').pop() || image.title || '';
+  const slug = titleToSegment(name.replace(/\.[^.]*$/, '')).replace(/\./g, '_');
+  return slug === '' ? `photo_${image.id}` : slug;
+}
+
+/**
+ * Photo URL: album path + photo slug (URL-01).
+ */
+export function getImagePath(
+  breadcrumbPath: BreadcrumbPath,
+  image: { id: number; pathComponent?: string | null; title?: string | null },
+): string {
+  return `${getAlbumPath(breadcrumbPath)}${getPhotoSlug(image)}`;
 }
 
 /**
  * Path for an album (e.g. root child). Prefer album.path when backend emits it; otherwise build from title.
  */
 export function getAlbumPathFromAlbum(album: { path?: string | null; title?: string | null }): string {
-  if (album.path != null && album.path !== '') return album.path;
-  return `/${titleToSegment(album.title)}`;
+  if (album.path != null && album.path !== '') return withTrailingSlash(album.path);
+  return `/${titleToSegment(album.title)}/`;
 }
 
 /**
@@ -116,10 +138,6 @@ export function getChildAlbumPath(
   _childId: number,
   childPath?: string | null,
 ): string {
-  if (childPath != null && childPath !== '') return childPath;
-  const parentPath = getAlbumPath(parentBreadcrumbPath);
-  const segment = titleToSegment(childTitle);
-  const base = parentPath === '/' ? '' : parentPath.replace(/\/+$/, '');
-  const path = base ? `${base}/${segment}` : `/${segment}`;
-  return path;
+  if (childPath != null && childPath !== '') return withTrailingSlash(childPath);
+  return `${getAlbumPath(parentBreadcrumbPath)}${titleToSegment(childTitle)}/`;
 }

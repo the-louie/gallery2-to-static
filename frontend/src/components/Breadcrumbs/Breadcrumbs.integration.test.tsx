@@ -28,7 +28,7 @@ describe('Breadcrumbs Integration', () => {
 
       // Verify links have correct hrefs
       expect(homeLink).toHaveAttribute('href', '/');
-      expect(photosLink).toHaveAttribute('href', '/album/10');
+      expect(photosLink).toHaveAttribute('href', '/album/10/');
 
       // Click home link
       await user.click(homeLink);

@@ -100,6 +100,7 @@ describe('SearchResultsPage', () => {
             title: 'Test Album',
             description: 'Test description',
             pathComponent: 'test',
+            path: '/dreamhack/dreamhack_08/crew/test_album',
             ancestors: 'dreamhack/dreamhack 08/crew',
             summary: 'Album summary',
             ownerName: 'Album Owner',
@@ -141,6 +142,9 @@ describe('SearchResultsPage', () => {
     // LOGIC-14: an image result opens the image in its album
     const photoLink = screen.getByRole('heading', { level: 3, name: (_, el) => el?.textContent === 'Test Photo' }).closest('a');
     expect(photoLink).toHaveAttribute('href', '/album/55/image/2');
+    // URL-01: album URLs end with a slash
+    const albumLink = screen.getByRole('heading', { level: 3, name: (_, el) => el?.textContent === 'Test Album' }).closest('a');
+    expect(albumLink).toHaveAttribute('href', '/dreamhack/dreamhack_08/crew/test_album/');
   });
 
   it('does not render summary or owner when absent', () => {

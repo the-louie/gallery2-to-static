@@ -11,6 +11,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { parseBBCodeDecoded } from '@/utils/bbcode';
+import { withTrailingSlash } from '@/utils/albumPath';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import type { BreadcrumbPath, BreadcrumbItem } from '@/types';
 import './Breadcrumbs.css';
@@ -92,7 +93,7 @@ function BreadcrumbsComponent({
               ) : (
                 // Parent page - link
                 <Link
-                  to={item.path}
+                  to={withTrailingSlash(item.path)}
                   className="breadcrumbs-link"
                   onClick={(e) => handleItemClick(item, e)}
                   aria-label={

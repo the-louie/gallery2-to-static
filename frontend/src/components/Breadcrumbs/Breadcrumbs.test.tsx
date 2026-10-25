@@ -96,7 +96,7 @@ describe('Breadcrumbs', () => {
       expect(homeLink).toHaveAttribute('href', '/');
 
       const parentLink = screen.getByRole('link', { name: 'Go to Parent Album album' });
-      expect(parentLink).toHaveAttribute('href', '/album/10');
+      expect(parentLink).toHaveAttribute('href', '/album/10/');
     });
   });
 
@@ -129,7 +129,7 @@ describe('Breadcrumbs', () => {
       const photosLink = screen.getByRole('link', { name: 'Go to Photos album' });
       await user.click(photosLink);
 
-      expect(photosLink).toHaveAttribute('href', '/album/10');
+      expect(photosLink).toHaveAttribute('href', '/album/10/');
     });
 
     it('calls onItemClick handler when provided', async () => {

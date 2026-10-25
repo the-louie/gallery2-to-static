@@ -20,7 +20,7 @@ const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage').then((modul
  * App Component
  *
  * Main application component that sets up routing. Uses React Router v6
- * with HashRouter for static hosting compatibility.
+ * with BrowserRouter (clean path URLs, URL-01; set up in main.tsx).
  *
  * Routes:
  * - `/` - Home page (root album)

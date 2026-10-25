@@ -14,6 +14,7 @@ import { useSearch } from '@/hooks/useSearch';
 import { SearchHighlight } from '@/components/SearchHighlight';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { withTrailingSlash } from '@/utils/albumPath';
 import type { SearchIndexItem } from '@/utils/searchIndex';
 import './SearchResultsPage.css';
 
@@ -157,7 +158,7 @@ export function SearchResultsPage() {
                     </p>
                   )}
                   <Link
-                    to={album.path ?? `/album/${album.id}`}
+                    to={album.path ? withTrailingSlash(album.path) : `/album/${album.id}`}
                     className="search-results-link"
                   >
                     <div className="search-results-item-content">

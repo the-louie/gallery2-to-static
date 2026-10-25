@@ -22,7 +22,7 @@ import { cssUrl } from '@/utils/cssUrl';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { formatAlbumDate } from '@/utils/dateUtils';
 import { getAlbumHighlightImageUrl, getAlbumThumbnailUrl } from '@/utils/imageUrl';
-import { titleToSegment } from '@/utils/albumPath';
+import { titleToSegment, withTrailingSlash } from '@/utils/albumPath';
 import { sortItems } from '@/utils/sorting';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { Album } from '@/types';
@@ -82,7 +82,7 @@ export function RootAlbumListBlock({
   const hasMoreSubalbums =
     !isClassic && subalbums.length > ROOT_ALBUM_SUBALBUMS_DISPLAY_LIMIT;
 
-  const linkTo = album.path ?? `/${titleToSegment(album.title)}`;
+  const linkTo = withTrailingSlash(album.path ?? `/${titleToSegment(album.title)}`);
   const highlightImageUrl = getAlbumHighlightImageUrl(album);
   const thumbnailUrl = getAlbumThumbnailUrl(album);
   const safeBgUrl = highlightImageUrl != null ? cssUrl(highlightImageUrl) : undefined;

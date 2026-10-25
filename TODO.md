@@ -29,6 +29,8 @@ Template elements: nav bar (breadcrumb "lanbilder.se » DreamHack » … » curr
 
 Operator: "one important modernization is the urls, they should not mimic the old php site". Chosen form: `/` root, `/dreamhack/dhw05/dhphotos/` album (today's title-slug paths, trailing slash), `?page=2` page, `/dreamhack/dhw05/dhphotos/<photo slug>` photo, `/search?q=…`. No `#`, no `/v/`, no `main.php`, no session ids. Today: `HashRouter` (`App.tsx`), nginx serves `index.html` for unknown paths already.
 
+_Progress 2026-10-25 (Sprint 11 T-02): **done except `?page=N`**, which arrives with the pager (T-06). `BrowserRouter` (`frontend/src/main.tsx`); album links end with `/` (`withTrailingSlash`, `utils/albumPath.ts`); photos `/<album path>/<slug>` (`getPhotoSlug`: file name without extension, dots → `_`; 0 collisions among 57,149 photos), resolved in `PathResolverPage` (`findPhotoBySlug`); hash URLs and `index.html` rewritten before the router (`utils/legacyPathRedirect.ts`). Checked on lanbilder-new in Chrome: album, photo slug, `/#/…`, `/dreamhack/index.html`, unknown slug → 404 page, search links._
+
 ### URL-02: old Gallery 2 URLs redirect to the new ones (operator, 2026-10-25)
 
 301 for `/v/<G2 path>/` (album), `/v/<G2 path>/<file>.html` (photo), `main.php?g2_itemId=N` and `main.php?g2_view=core.ShowItem&g2_itemId=N`; Gallery 2 path components differ from the new title slugs (`dhw05/dhphotos` vs `dreamhack_winter_05/battlefrag.com`), the export already carries `pathComponent` per item. `/d/<id>-<n>/<file>` image files return 402 like the other old image links. Query noise (`g2_GALLERYSID`, `g2_highlightId`, `g2_page` → `page`) handled.
@@ -62,8 +64,7 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
   - thumbnail path traversal: `validateNoTraversal` (SEC-05) and component checks (SEC-11);
   - `/album/7abc` accepted: strict `/^\d+$/` in `routeParams.ts`;
   - raw `ownerId` in the output: rows are now mapped field by field (LOGIC-05), `ownerId` is not emitted.
-- **Not re-verified:** per-album themes for paths with é/æ/ø (`albumThemesConfig.ts`, depends on
-  whether `location.pathname` is percent-encoded under `HashRouter`). Check in a browser.
+- **Per-album themes for paths with é/æ/ø** (was "not re-verified"): checked 2026-10-25 (Sprint 11 T-02): all 1,389 `pathIndex` keys are ASCII (titles are transliterated), so a percent-encoded `location.pathname` (BrowserRouter) cannot miss a key.
 
 ## FUTURE (after production deploy)
 

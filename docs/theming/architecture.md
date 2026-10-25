@@ -34,7 +34,7 @@ The theming system uses CSS custom properties (variables) scoped by a `data-them
 
 ```
 main.tsx
-└── HashRouter
+└── BrowserRouter
     └── ThemeProvider          ← useLocation(), loadAlbumThemesConfig
         └── App
             └── Layout         ← uses useTheme().isClassic for sidebar

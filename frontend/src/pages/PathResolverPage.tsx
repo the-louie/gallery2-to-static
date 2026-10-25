@@ -2,6 +2,9 @@
  * PathResolverPage – resolves path-based URL to album (and optional image)
  * and delegates to AlbumDetailPage or ImageDetailPage.
  *
+ * A path that is not an album is tried as `<album path>/<photo slug>` (URL-01), then as the
+ * older `<album path>/image/<id>`.
+ *
  * Decodes URI-encoded path segments before index lookup to handle
  * percent-encoded characters (spaces, Nordic characters, etc.).
  *
@@ -12,12 +15,24 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { resolvePathToAlbumId } from '@/utils/dataLoader';
+import { loadAlbum, resolvePathToAlbumId } from '@/utils/dataLoader';
+import { getPhotoSlug } from '@/utils/albumPath';
 import { AlbumDetailPage } from './AlbumDetailPage';
 import { ImageDetailPage } from './ImageDetailPage';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 const IMAGE_PATH_RE = /\/image\/(\d+)$/;
+
+/** The id of the first photo in the album whose slug is `slug`, or null (also when the album fails to load). */
+async function findPhotoBySlug(albumId: number, slug: string): Promise<number | null> {
+  try {
+    const album = await loadAlbum(albumId);
+    const photo = album.children.find((c) => c.type !== 'GalleryAlbumItem' && getPhotoSlug(c) === slug);
+    return photo ? photo.id : null;
+  } catch {
+    return null;
+  }
+}
 
 export function PathResolverPage() {
   const pathParam = useParams<{ '*': string }>()['*'] ?? '';
@@ -87,6 +102,21 @@ export function PathResolverPage() {
         }
         setResolved({ albumId, imageId });
         return;
+      }
+      // A photo: `<album path>/<photo slug>` (URL-01), no trailing slash
+      const cut = path.lastIndexOf('/');
+      const slug = path.slice(cut + 1);
+      if (slug !== '') {
+        const albumId = await resolveOrFail(cut === 0 ? '/' : path.slice(0, cut));
+        if (cancelled || albumId === undefined) return;
+        if (albumId !== null) {
+          const imageId = await findPhotoBySlug(albumId, slug);
+          if (cancelled) return;
+          if (imageId !== null) {
+            setResolved({ albumId, imageId });
+            return;
+          }
+        }
       }
       navigate('/not-found', { replace: true });
     })();

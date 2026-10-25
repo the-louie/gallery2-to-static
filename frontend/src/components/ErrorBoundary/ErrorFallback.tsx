@@ -30,9 +30,8 @@ export function ErrorFallback({
   const isDevelopment = import.meta.env.MODE === 'development';
 
   const handleGoHome = (): void => {
-    // Use window.location.hash for navigation since ErrorBoundary may be outside Router context
-    // This works with HashRouter and doesn't require Router context
-    window.location.hash = '#/';
+    // ErrorBoundary is outside the Router: a full page load of the root (also resets the broken state)
+    window.location.assign('/');
   };
 
   return (
