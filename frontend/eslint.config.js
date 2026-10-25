@@ -44,6 +44,12 @@ export default tseslint.config(
     },
   },
   {
+    // Context modules export provider + hook + context together by design, and test-utils
+    // re-exports Testing Library: fast-refresh boundaries do not matter there (LINT-01)
+    files: ['src/contexts/**', 'src/test-utils.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
+  {
     // Tests and test helpers: mocks and fixtures may use `any` (production code has none; LINT-01)
     files: ['**/*.test.{ts,tsx}', 'src/test/**', 'src/test-utils*', 'src/__mocks__/**'],
     rules: { '@typescript-eslint/no-explicit-any': 'off' },

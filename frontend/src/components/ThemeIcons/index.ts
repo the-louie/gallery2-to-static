@@ -1,1 +1,2 @@
-export { SunIcon, MoonIcon, ClassicIcon, getThemeIcon } from './ThemeIcons';
+export { SunIcon, MoonIcon, ClassicIcon } from './ThemeIcons';
+export { getThemeIcon } from './getThemeIcon';
