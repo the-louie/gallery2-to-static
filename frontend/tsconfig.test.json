@@ -1,0 +1,10 @@
+{
+  // Type-check for the tests (npm run typecheck:test). The build uses tsconfig.json,
+  // which covers only the code that ships.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["vitest/globals", "@testing-library/jest-dom"]
+  },
+  "include": ["src"],
+  "exclude": []
+}

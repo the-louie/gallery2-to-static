@@ -156,7 +156,9 @@ Gallery 2 MySQL DB
 cd frontend
 npm install              # Install dependencies
 npm run dev              # Vite dev server (serves data/ via custom plugin)
-npm run build            # TypeScript check + Vite production build
+npm run build            # TypeScript check (shipped code only, tsconfig.json) + Vite production build
+npm run typecheck        # Type-check shipped code only (tsconfig.json; tests excluded)
+npm run typecheck:test   # Type-check including tests (tsconfig.test.json)
 npm run preview          # Preview production build
 npm test                 # Vitest in watch mode
 npm run test:run         # Single test run

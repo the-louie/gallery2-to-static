@@ -16,6 +16,8 @@ Nothing below this line can be validated until the build runs.
 
 ### BUILD-01: `npm run build` fails at the type check — 343 errors, not 3
 
+**PARTLY CLOSED 2026-10-25 (Sprint 01 T-01):** steps 1–2 done: duplicate block removed (`Breadcrumbs.integration.test.tsx` is now 114 lines, its suite collects: 37 tests pass with the other Breadcrumbs file); `tsconfig.json` now covers shipped code only (`npm run build`/`npm run typecheck`: 82 errors, 0 in test files), tests via `tsconfig.test.json` / `npm run typecheck:test` (343). Steps 3–4 open (Sprint 01 T-02..T-04).
+
 **Confirms list item 1, but the scale was understated by 20x.**
 
 `frontend/src/components/Breadcrumbs/Breadcrumbs.integration.test.tsx` contains its entire
