@@ -39,6 +39,23 @@ function ensureNoLeadingSlash(path: string): string {
 }
 
 /**
+ * Percent-encode each segment of a relative path for use in a URL (LOGIC-24). Gallery 2 file names
+ * are used as they are on disk: '#' would cut the URL, '?' start a query, '%' be read as an
+ * escape, and spaces/å/ä/ö be left to the browser. '/' separators are kept.
+ */
+function encodePathSegments(path: string): string {
+  return path
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+}
+
+/** ensureNoLeadingSlash + encodePathSegments: the form every image URL path takes. */
+function toUrlPath(path: string): string {
+  return encodePathSegments(ensureNoLeadingSlash(path));
+}
+
+/**
  * Construct thumbnail URL from pathComponent
  *
  * Applies the thumbnail prefix to the filename portion of the pathComponent.
@@ -90,7 +107,7 @@ function constructThumbnailUrl(
   const pathPart = directory
     ? `${directory}${thumbPrefix}${filenameWithFormat}`
     : `${thumbPrefix}${filenameWithFormat}`;
-  return `${baseUrl}/${pathPart}`;
+  return `${baseUrl}/${encodePathSegments(pathPart)}`;
 }
 
 /**
@@ -145,7 +162,7 @@ function constructFullImageUrl(
   const pathWithFormat = replaceExtension(ensureNoLeadingSlash(pathComponent), format);
   // baseUrl is normalized (no trailing slash)
   // pathComponent is the full path (e.g., "album/photo.jpg")
-  return `${baseUrl}/${pathWithFormat}`;
+  return `${baseUrl}/${encodePathSegments(pathWithFormat)}`;
 }
 
 /**
@@ -276,11 +293,11 @@ export function getAlbumThumbnailUrl(
 ): string | null {
   const baseUrl = baseUrlOverride ?? getThumbnailBaseUrl();
   if (album.thumbnailUrlPath && album.thumbnailUrlPath.length > 0) {
-    return `${baseUrl}/${ensureNoLeadingSlash(album.thumbnailUrlPath)}`;
+    return `${baseUrl}/${toUrlPath(album.thumbnailUrlPath)}`;
   }
 
   if (album.highlightThumbnailUrlPath && album.highlightThumbnailUrlPath.length > 0) {
-    return `${baseUrl}/${ensureNoLeadingSlash(album.highlightThumbnailUrlPath)}`;
+    return `${baseUrl}/${toUrlPath(album.highlightThumbnailUrlPath)}`;
   }
 
   const pathComponent = album.thumbnailPathComponent;
@@ -291,7 +308,7 @@ export function getAlbumThumbnailUrl(
 
   if (album.highlightImageUrl && album.highlightImageUrl.length > 0) {
     const imageBase = getImageBaseUrl();
-    return `${imageBase}/${ensureNoLeadingSlash(album.highlightImageUrl)}`;
+    return `${imageBase}/${toUrlPath(album.highlightImageUrl)}`;
   }
 
   return null;
@@ -314,5 +331,5 @@ export function getAlbumHighlightImageUrl(
     return null;
   }
   const baseUrl = baseUrlOverride ?? getImageBaseUrl();
-  return `${baseUrl}/${ensureNoLeadingSlash(album.highlightImageUrl)}`;
+  return `${baseUrl}/${toUrlPath(album.highlightImageUrl)}`;
 }

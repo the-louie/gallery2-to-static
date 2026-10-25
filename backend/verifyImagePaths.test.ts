@@ -162,6 +162,19 @@ async function run(): Promise<void> {
         const nullByte = await verifyImageUrl('/g2data/albums/photo\0.jpg', 1000, tmpDir);
         assert.strictEqual(nullByte.ok, false);
         assert.ok(nullByte.error?.includes('null'), 'null byte rejected');
+
+        // LOGIC-24: URLs are percent-encoded per segment; the local check decodes them
+        const pub = path.join(tmpDir, 'frontend', 'public', 'g2data', 'albums', 'lördag');
+        await fs.mkdir(pub, { recursive: true });
+        await fs.writeFile(path.join(pub, 'bild #1 100%.jpg'), 'x');
+        const encodedOk = await verifyImageUrl('/g2data/albums/l%C3%B6rdag/bild%20%231%20100%25.jpg', 1000, tmpDir);
+        assert.strictEqual(encodedOk.ok, true, 'encoded URL resolves to the file on disk');
+        const rawHash = await verifyImageUrl('/g2data/albums/lördag/bild #1 100%.jpg', 1000, tmpDir);
+        assert.strictEqual(rawHash.ok, false, 'an unencoded % is invalid percent-encoding');
+        const encodedTraversal = await verifyImageUrl('/g2data/albums/%2e%2e/%2e%2e/secret.jpg', 1000, tmpDir);
+        assert.strictEqual(encodedTraversal.ok, false, 'encoded .. still rejected');
+        const encodedSlash = await verifyImageUrl('/g2data/albums/a%2Fb.jpg', 1000, tmpDir);
+        assert.strictEqual(encodedSlash.ok, false, 'encoded / inside a segment rejected');
     } finally {
         await fs.rm(tmpDir, { recursive: true, force: true });
     }

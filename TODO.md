@@ -209,7 +209,9 @@ placeholder (or the downscaled full image) instead of the error state.
 
 ### P3 additions
 
-### LOGIC-24: image URLs are not encoded per segment
+### ~~LOGIC-24: image URLs are not encoded per segment~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-01):** `frontend/src/utils/imageUrl.ts` encodes each path segment (`encodePathSegments` / `toUrlPath`) in every image, thumbnail and album-highlight URL; `backend/verifyImagePaths.ts` builds URLs the same way and its local check decodes each segment before the traversal check (an encoded `%2e%2e` or `%2F` is still rejected). Tests: `#`, `?`, `%`, space, å/ö in names (frontend, decoded name round-trips) and encoded URL → file on disk, raw `%` rejected, encoded traversal rejected (backend). nginx decodes `%XX` before mapping to files, so the encoded URLs serve the original names. Original row kept for the record:
 
 `frontend/src/utils/imageUrl.ts:178` (`getImageUrl`) and `backend/pathResolution.ts` join raw
 `pathComponent`s. There is no `encodeURIComponent` anywhere in either. A filename containing

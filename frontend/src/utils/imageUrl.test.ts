@@ -81,7 +81,19 @@ describe('imageUrl utilities', () => {
         pathComponent: 'album/photo with spaces.jpg',
       };
       const url = getImageUrl(specialImage, false);
-      expect(url).toBe(`${IMAGE_BASE}/album/photo with spaces.jpg`);
+      expect(url).toBe(`${IMAGE_BASE}/album/photo%20with%20spaces.jpg`);
+    });
+
+    it('percent-encodes each path segment (LOGIC-24)', () => {
+      const img = (pathComponent: string): Image => ({ ...mockImage, urlPath: undefined, pathComponent });
+      expect(getImageUrl(img('dh/bild #1.jpg'))).toBe(`${IMAGE_BASE}/dh/bild%20%231.jpg`);
+      expect(getImageUrl(img('dh/vad?.jpg'))).toBe(`${IMAGE_BASE}/dh/vad%3F.jpg`);
+      expect(getImageUrl(img('dh/100%.jpg'))).toBe(`${IMAGE_BASE}/dh/100%25.jpg`);
+      expect(getImageUrl(img('lördag/Åsa.jpg'))).toBe(`${IMAGE_BASE}/l%C3%B6rdag/%C3%85sa.jpg`);
+      // thumbnail: prefix added to the file name, then the same encoding
+      expect(getImageUrl(img('dh/bild #1.jpg'), true)).toBe(`${THUMB_BASE}/dh/t__bild%20%231.jpg`);
+      // a decoded URL gives back the file name on disk
+      expect(decodeURIComponent(getImageUrl(img('dh/100% #1?.jpg')).split('/').pop()!)).toBe('100% #1?.jpg');
     });
 
     it('handles images with different file extensions', () => {

@@ -41,11 +41,16 @@ function ensureNoLeadingSlash(s: string | null | undefined): string {
     return s.replace(/^\/+/, '');
 }
 
+/** Percent-encode each path segment, as the frontend does (LOGIC-24): '#', '?', '%' and spaces in file names. */
+function encodePathSegments(p: string): string {
+    return p.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+}
+
 function buildImageUrl(baseUrl: string, pathSegment: string): string | null {
     const p = ensureNoLeadingSlash(pathSegment);
     if (!p) return null;
     const base = baseUrl.replace(/\/+$/, '');
-    return base ? `${base}/${p}` : null;
+    return base ? `${base}/${encodePathSegments(p)}` : null;
 }
 
 function getAlbumThumbnailUrl(child: { thumbnailUrlPath?: string | null; highlightThumbnailUrlPath?: string | null; thumbnailPathComponent?: string | null; highlightImageUrl?: string | null }, thumbBase: string, imageBase: string): string | null {
@@ -214,7 +219,18 @@ async function verifyLocalFile(
     if (url.includes('\0')) {
         return { ok: false, error: 'Path contains null byte' };
     }
-    const relativePath = url.replace(/^\//, '').replace(/\//g, path.sep);
+    // URLs are percent-encoded per segment (buildImageUrl); the file on disk has the decoded name.
+    // Decode first, then check for traversal (an encoded %2e%2e is '..' too).
+    let segments: string[];
+    try {
+        segments = url.replace(/^\//, '').split('/').map((s) => decodeURIComponent(s));
+    } catch {
+        return { ok: false, error: 'Invalid percent-encoding' };
+    }
+    if (segments.some((s) => s.includes('/') || s.includes('\\') || s.includes('\0'))) {
+        return { ok: false, error: 'Path contains traversal segment' };
+    }
+    const relativePath = segments.join(path.sep);
     if (relativePath.split(path.sep).some(seg => seg === '..')) {
         return { ok: false, error: 'Path contains traversal segment' };
     }
