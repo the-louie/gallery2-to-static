@@ -45,7 +45,19 @@ function toChild(n: Node): Child {
     } as Child;
 }
 
+// Gallery 2's chosen highlights (PRIO-THEME-02): album -> photo + the albums in between
+const HIGHLIGHTS: Record<number, { photoId: number; chain: number[] }> = {
+    7: { photoId: 104, chain: [10, 14, 15] }, // root: c.png three levels down
+    10: { photoId: 102, chain: [12] }, // Dreamhack: b.jpg in the second Lördag
+    11: { photoId: 105, chain: [] }, // Lördag: the hidden photo -> falls back to a.jpg
+    14: { photoId: 104, chain: [15] },
+};
 const fakeSql = {
+    getAlbumHighlight: async (id: number) => {
+        const h = HIGHLIGHTS[id];
+        if (!h) return null;
+        return { photoId: h.photoId, chain: h.chain.map((a) => ({ id: a, pathComponent: byId(TREE, a)!.pc, title: byId(TREE, a)!.title })) };
+    },
     getChildren: async (id: number) => (byId(TREE, id)?.children ?? []).map(toChild),
     getRootAlbumId: async () => 7,
     getRootAlbumInfo: async (id: number) => ({ id, title: 'Lanbilder', description: 'Bilder', timestamp: 1_130_000_000 }),
@@ -132,6 +144,19 @@ async function run(): Promise<void> {
         assert.strictEqual(meta.format, 'jpeg');
         assert.strictEqual(logo.thumb_width, 64);
         await assert.rejects(() => fs.access(path.join(tmp, 'g2/thumbs/dreamhack/blank/t__bad.jpg')), 'no thumbnail for the broken file');
+
+        // chosen highlights (PRIO-THEME-02): used for the cell thumbnail and highlightImageUrl; hidden -> fallback
+        const rootJson = JSON.parse(await fs.readFile(path.join(data, '7.json'), 'utf8'));
+        const dhJson = JSON.parse(await fs.readFile(path.join(data, '10.json'), 'utf8'));
+        const rootDh = rootJson.children.find((c: Child) => c.id === 10);
+        assert.strictEqual(rootDh.highlightImageUrl, 'dreamhack/lordag2/b.jpg');
+        assert.strictEqual(rootDh.thumbnailUrlPath, 'dreamhack/lordag2/t__b.jpg', 'cell shows the chosen highlight');
+        assert.strictEqual(rootJson.metadata.highlightImageUrl, 'dreamhack/image/2005/c.png', 'root highlight through 3 albums');
+        const dhL1 = dhJson.children.find((c: Child) => c.id === 11);
+        assert.strictEqual(dhL1.highlightImageUrl, 'dreamhack/lordag1/a.jpg', 'hidden highlight falls back to the first photo');
+        assert.strictEqual(dhL1.thumbnailUrlPath, 'dreamhack/lordag1/t__a.jpg');
+        const dhL2 = dhJson.children.find((c: Child) => c.id === 12);
+        assert.strictEqual(dhL2.highlightImageUrl, 'dreamhack/lordag2/b.jpg', 'no chosen highlight: first photo');
 
         // legacy.json (URL-02): Gallery 2 path -> new path for every exported album, photo id -> album id
         const legacy = JSON.parse(await fs.readFile(path.join(data, 'legacy.json'), 'utf8'));

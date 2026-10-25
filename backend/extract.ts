@@ -166,13 +166,9 @@ async function resolveHighlightImageUrl(
     thumbPrefix: string,
 ): Promise<string | null> {
     try {
-        const result = await findFirstPhotoRecursive(
-            root,
-            sql,
-            uipath,
-            pathComponent,
-            ignoreSet,
-        );
+        const result =
+            (await findChosenHighlight(root, sql, uipath, pathComponent, ignoreSet)) ??
+            (await findFirstPhotoRecursive(root, sql, uipath, pathComponent, ignoreSet));
 
         if (!result) return null;
         if (!result.photo.pathComponent) return null;
@@ -219,6 +215,36 @@ function createSemaphore(max: number): { acquire: () => Promise<void>; release: 
             if (next) next();
         },
     };
+}
+
+/**
+ * The photo Gallery 2 chose as the album's highlight (PRIO-THEME-02), as a FirstPhotoResult, or
+ * null when there is none or it is not exported (hidden photo, hidden or empty album on the way):
+ * the caller then falls back to the first photo.
+ */
+async function findChosenHighlight(
+    albumId: number,
+    sql: ReturnType<typeof sqlUtils>,
+    uipath: Array<string>,
+    pathComponent: Array<string>,
+    ignoreSet: Set<number>,
+): Promise<FirstPhotoResult | null> {
+    const highlight = await sql.getAlbumHighlight(albumId);
+    if (!highlight) return null;
+    let chainUipath = uipath;
+    let chainPathComponent = pathComponent;
+    for (const album of highlight.chain) {
+        if (isBlacklisted(album.id, ignoreSet) || !album.pathComponent) return null;
+        chainUipath = chainUipath.concat([cleanup_uipathcomponent(album.title ?? album.pathComponent)]);
+        chainPathComponent = chainPathComponent.concat([album.pathComponent]);
+    }
+    const parentId = highlight.chain.length > 0 ? highlight.chain[highlight.chain.length - 1].id : albumId;
+    // getChildren is the ignoreItems-filtered view: a hidden highlight is not found and falls back
+    const photo = (await sql.getChildren(parentId)).find(
+        (c) => c.id === highlight.photoId && c.type === 'GalleryPhotoItem' && c.pathComponent,
+    );
+    if (!photo) return null;
+    return { photo, uipath: chainUipath, pathComponent: chainPathComponent };
 }
 
 /**
@@ -444,14 +470,12 @@ const main = async (
                         : pathComponent;
                     let highlightImageUrl: string | null = null;
                     let highlightThumbnailUrlPath: string | null = null;
+                    let chosenHighlight = false;
                     if (child.pathComponent) {
-                        const highlightResult = await findFirstPhotoRecursive(
-                            child.id,
-                            sql,
-                            albumUipath,
-                            childPathComponent,
-                            ignoreSet,
-                        );
+                        const chosen = await findChosenHighlight(child.id, sql, albumUipath, childPathComponent, ignoreSet);
+                        chosenHighlight = chosen !== null;
+                        const highlightResult =
+                            chosen ?? (await findFirstPhotoRecursive(child.id, sql, albumUipath, childPathComponent, ignoreSet));
                         if (highlightResult) {
                             const paths = buildHighlightPathsFromResult(highlightResult, thumbPrefix);
                             if (paths) {
@@ -501,13 +525,21 @@ const main = async (
                             ...child,
                             path: childPath,
                             ...thumbnailInfo,
-                            thumbnailUrlPath,
+                            // The cell shows Gallery 2's chosen highlight when there is one (PRIO-THEME-02)
+                            thumbnailUrlPath: chosenHighlight && highlightThumbnailUrlPath ? highlightThumbnailUrlPath : thumbnailUrlPath,
                             ...highlightSpread,
                             ...countSpread,
                             childCount,
                         };
                     }
-                    return { ...child, path: childPath, ...highlightSpread, ...countSpread, childCount };
+                    return {
+                        ...child,
+                        path: childPath,
+                        ...(chosenHighlight && highlightThumbnailUrlPath ? { thumbnailUrlPath: highlightThumbnailUrlPath } : {}),
+                        ...highlightSpread,
+                        ...countSpread,
+                        childCount,
+                    };
                 }
                 if (child.type === 'GalleryPhotoItem' && child.pathComponent) {
                     return child;

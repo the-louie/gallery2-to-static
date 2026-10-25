@@ -42,6 +42,23 @@ async function run(): Promise<void> {
     console.warn = warn;
   }
 
+  // getAlbumHighlight (PRIO-THEME-02): rows top-down, the album itself first, then the chain, photoId on every row
+  const hl = fakeConnection([
+    { photoId: 53516, albumId: 23281, depth: 1, pathComponent: 'dhw05dh', title: 'DH-Photo' },
+    { photoId: 53516, albumId: 53200, depth: 0, pathComponent: '20051119', title: 'Lördag 19/11' },
+  ]);
+  assert.deepStrictEqual(await sqlUtils(hl.connection as never, config).getAlbumHighlight(23281), {
+    photoId: 53516,
+    chain: [{ id: 53200, pathComponent: '20051119', title: 'Lördag 19/11' }],
+  });
+  assert.match(hl.calls[0], /WITH RECURSIVE src AS/);
+  // a direct child: no chain; no rows: null; a chain that does not lead back to the album: null
+  const direct = fakeConnection([{ photoId: 57211, albumId: 57207, depth: 0, pathComponent: 'dhphotos', title: 'Battlefrag.com' }]);
+  assert.deepStrictEqual(await sqlUtils(direct.connection as never, config).getAlbumHighlight(57207), { photoId: 57211, chain: [] });
+  assert.strictEqual(await sqlUtils(fakeConnection([]).connection as never, config).getAlbumHighlight(1), null);
+  const stray = fakeConnection([{ photoId: 5, albumId: 999, depth: 3, pathComponent: 'x', title: 'x' }]);
+  assert.strictEqual(await sqlUtils(stray.connection as never, config).getAlbumHighlight(1), null);
+
   console.log('sqlUtils tests passed');
 }
 

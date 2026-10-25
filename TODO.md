@@ -22,7 +22,7 @@ Nothing below this line can be validated until the build runs.
 
 `backend/ownerDisplayName.ts` `normalizeOwnerDisplayName` maps "Gallery Administrator" to "Unknown"; the 2006 root page showed "Owner: Gallery Administrator". Decide: show the Gallery 2 name (1:1) or keep "Unknown". Seen on the root album header and on every album the admin owned.
 
-### PRIO-THEME-02: album highlight = Gallery 2's chosen highlight, not the first photo (Sprint 11 T-13)
+### ~~PRIO-THEME-02: album highlight = Gallery 2's chosen highlight, not the first photo (Sprint 11 T-13)~~ — **CLOSED, verified 2026-10-25 (Sprint 12 T-01):** `backend/sqlUtils.ts` `getAlbumHighlight` (recursive CTE over `g2_Derivative`), `backend/extract.ts` `findChosenHighlight` used for `highlightImageUrl` and the cell `thumbnailUrlPath`, first-photo fallback kept for hidden/missing; tests `sqlUtils.test.ts`, `extract.test.ts`. Original row kept for the record:
 
 The export takes the first photo of the subtree as an album's thumbnail (`findFirstPhotoRecursive`, `backend/extract.ts`); Gallery 2 used the highlight the owner picked. The pick is in the database: the album item's thumbnail derivative (`g2_Derivative` row whose `g_id` = the album's `g2_DerivativeImage` id, `g_derivativeSourceId` → the source photo). Join it in `sqlUtils.ts` and prefer it; fall back to the first photo. Root page in 2006 vs now: 9 of 12 cells show a different image.
 

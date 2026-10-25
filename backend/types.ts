@@ -121,6 +121,15 @@ export interface AlbumMetadata {
 }
 
 /**
+ * The highlight photo Gallery 2 chose for an album (PRIO-THEME-02): the photo id and the albums
+ * between the album and the photo, top first (empty when the photo is a direct child).
+ */
+export interface AlbumHighlight {
+    photoId: number;
+    chain: Array<{ id: number; pathComponent: string | null; title: string | null }>;
+}
+
+/**
  * Album JSON file structure: metadata for the album plus its children.
  */
 export interface AlbumFile {

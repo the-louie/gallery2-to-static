@@ -1,5 +1,5 @@
 import type mysql from 'mysql2/promise'
-import type { Child, Config, AlbumMetadata } from './types.ts'
+import type { Child, Config, AlbumMetadata, AlbumHighlight } from './types.ts'
 import { stripBBCode } from './bbcode.ts'
 import { decodeHtmlEntities } from '../shared/decodeHtmlEntities.ts'
 import { normalizeOwnerDisplayName, resolveOwnerName } from './ownerDisplayName.ts'
@@ -102,7 +102,66 @@ export default (connection: mysql.Connection, config: Config) => {
         WHERE
             ce.${config.gallerySettings.columnPrefix}id = ?`
 
+    const T = config.gallerySettings.tablePrefix;
+    const C = config.gallerySettings.columnPrefix;
+    /**
+     * The highlight Gallery 2 shows for an album (PRIO-THEME-02): the album's thumbnail derivative
+     * (type 1) points, through one or more derivatives, at the chosen photo. `src` follows that
+     * chain; `anc` walks from the photo's parent up to the album. One row per album on the way,
+     * the album itself with the highest depth.
+     */
+    const SQL_GET_ALBUM_HIGHLIGHT = `
+        WITH RECURSIVE src AS (
+            SELECT d.${C}derivativeSourceId AS id, 1 AS depth
+            FROM ${T}ChildEntity ce
+            JOIN ${T}Derivative d ON d.${C}id = ce.${C}id AND d.${C}derivativeType = 1
+            JOIN ${T}Entity e ON e.${C}id = ce.${C}id AND e.${C}entityType = 'GalleryDerivativeImage'
+            WHERE ce.${C}parentId = ?
+            UNION ALL
+            SELECT d.${C}derivativeSourceId, s.depth + 1 FROM src s
+            JOIN ${T}Derivative d ON d.${C}id = s.id WHERE s.depth < 20
+        ),
+        photo AS (
+            SELECT s.id FROM src s JOIN ${T}Entity e ON e.${C}id = s.id AND e.${C}entityType = 'GalleryPhotoItem'
+            ORDER BY s.depth LIMIT 1
+        ),
+        anc AS (
+            SELECT ce.${C}parentId AS id, 0 AS depth FROM ${T}ChildEntity ce WHERE ce.${C}id = (SELECT id FROM photo)
+            UNION ALL
+            SELECT ce.${C}parentId, a.depth + 1 FROM anc a JOIN ${T}ChildEntity ce ON ce.${C}id = a.id
+            WHERE a.id <> ? AND a.depth < 50
+        )
+        SELECT (SELECT id FROM photo) AS photoId, a.id AS albumId, a.depth AS depth,
+               fse.${C}pathComponent AS pathComponent, i.${C}title AS title
+        FROM anc a
+        LEFT JOIN ${T}FileSystemEntity fse ON fse.${C}id = a.id
+        LEFT JOIN ${T}Item i ON i.${C}id = a.id
+        ORDER BY a.depth DESC`
+
     return {
+        /**
+         * The photo Gallery 2 used as `albumId`'s highlight, with the albums between `albumId` and
+         * the photo (top first; empty when the photo is a direct child). Null when the album has no
+         * highlight or the chain does not lead back to the album.
+         */
+        getAlbumHighlight: async (albumId: number): Promise<AlbumHighlight | null> => {
+            const [results] = await connection.execute(SQL_GET_ALBUM_HIGHLIGHT, [albumId, albumId]);
+            if (!Array.isArray(results) || results.length === 0) return null;
+            const rows = results as Array<Record<string, unknown>>;
+            const photoId = validateNullableNumber(rows[0].photoId, 'photoId', `album ${albumId} highlight`);
+            if (photoId == null) return null;
+            const top = rows[0];
+            if (validateNullableNumber(top.albumId, 'albumId', `album ${albumId} highlight`) !== albumId) return null;
+            const chain = rows.slice(1).map((r, i) => {
+                const ctx = `album ${albumId} highlight, ancestor ${i}`;
+                return {
+                    id: validateRequiredNumber(r.albumId, 'albumId', ctx),
+                    pathComponent: validateNullableString(r.pathComponent, 'pathComponent', MAX_LENGTHS.pathComponent, ctx),
+                    title: validateNullableString(r.title, 'title', MAX_LENGTHS.title, ctx),
+                };
+            });
+            return { photoId, chain };
+        },
         getChildren: async (itemId: number): Promise<Array<Child>> => {
             const [results] = await connection.execute(SQL_GET_CHILDREN, [itemId]);
             if (!Array.isArray(results)) {
