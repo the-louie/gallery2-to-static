@@ -89,3 +89,39 @@
 .g2-matrix .gsPages span span {
   padding: 0;
 }
+
+/* Thumbnail matrix: Gallery 2's <table id="gsThumbMatrix" width="100%">, 3 cells of 33% */
+.g2-matrix .gsThumbMatrix {
+  width: 100%;
+  border-spacing: 2px;
+}
+
+.g2-matrix .gsThumbMatrix td {
+  width: 33%;
+  padding: 1px;
+  vertical-align: top;
+}
+
+.g2-matrix td.giItemCell,
+.g2-matrix td.giAlbumCell {
+  padding: 1em;
+  text-align: center;
+}
+
+/* lanbilder.se's thumbnails were 150x150 crops; ours keep the photo's shape, so crop to fit */
+.g2-matrix .giThumbnail {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+}
+
+.g2-matrix .giTitle {
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+.g2-matrix .giMissingThumbnail {
+  display: inline-block;
+  width: 150px;
+  line-height: 150px;
+}

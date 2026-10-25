@@ -19,6 +19,10 @@ export interface Child {
      */
     viewCount?: number | null;
     /**
+     * Albums only: number of items directly in the album (hidden sub-albums excluded), for the classic theme's "Size: N items".
+     */
+    childCount?: number;
+    /**
      * Relative URL path for full-size image (pathComponent-based, e.g. album/subalbum/photo.jpg).
      */
     urlPath?: string | null;

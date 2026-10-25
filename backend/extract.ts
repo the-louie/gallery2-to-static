@@ -452,6 +452,15 @@ const main = async (
                         totalCount !== undefined ? { totalDescendantImageCount: totalCount } : {};
 
                     const albumChildren = await sql.getChildren(child.id);
+                    // Gallery 2 showed an album's own item count ("Size: 9 items (878 items total)", THEME-01)
+                    // (the items this export writes: photos, and sub-albums that are not hidden and hold images)
+                    const childCount = albumChildren.filter(
+                        (c) =>
+                            c.type === 'GalleryPhotoItem' ||
+                            (c.type === 'GalleryAlbumItem' &&
+                                !isBlacklisted(c.id, ignoreSet) &&
+                                (descendantImageCounts.get(c.id) ?? 0) > 0),
+                    ).length;
                     const firstPhoto = findFirstPhoto(albumChildren);
                     if (firstPhoto) {
                         const photoPathComponent =
@@ -479,9 +488,10 @@ const main = async (
                             thumbnailUrlPath,
                             ...highlightSpread,
                             ...countSpread,
+                            childCount,
                         };
                     }
-                    return { ...child, path: childPath, ...highlightSpread, ...countSpread };
+                    return { ...child, path: childPath, ...highlightSpread, ...countSpread, childCount };
                 }
                 if (child.type === 'GalleryPhotoItem' && child.pathComponent) {
                     return child;

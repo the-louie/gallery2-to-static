@@ -133,6 +133,13 @@ async function run(): Promise<void> {
         assert.strictEqual(logo.thumb_width, 64);
         await assert.rejects(() => fs.access(path.join(tmp, 'g2/thumbs/dreamhack/blank/t__bad.jpg')), 'no thumbnail for the broken file');
 
+        // childCount (THEME-01): the album's exported items; ignored photos and unexported albums left out
+        const dhFile = JSON.parse(await fs.readFile(path.join(data, '10.json'), 'utf8'));
+        const childCounts = Object.fromEntries(dhFile.children.map((c: Child) => [c.id, c.childCount]));
+        assert.deepStrictEqual(childCounts, { 11: 1, 12: 1, 13: 1, 14: 1 });
+        const rootFile = JSON.parse(await fs.readFile(path.join(data, '7.json'), 'utf8'));
+        assert.strictEqual(rootFile.children.find((c: Child) => c.id === 10).childCount, 4, '16 (only hidden photos) not counted');
+
         // ignoreItems (SEC-18): hidden photos are not written, not thumbnailed, not used as album thumbnail
         const l1 = await readJson(path.join(data, '11.json'));
         assert.deepStrictEqual(l1.children.map((c: Child) => c.id), [101], 'ignored photo left out');

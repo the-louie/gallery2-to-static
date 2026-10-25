@@ -316,6 +316,7 @@ The core type is `Child` (defined in `backend/types.ts`):
 - `timestamp`: creation date
 - `width`, `height`, `thumb_width`, `thumb_height`: dimensions (images)
 - `viewCount` (optional): Gallery 2 view counter, frozen at export time
+- `childCount` (albums): items directly in the album, as exported
 - `totalDescendantImageCount`: recursive image count (albums)
 - `breadcrumbPath`: `BreadcrumbItem[]` for navigation
 
