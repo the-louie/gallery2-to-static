@@ -3,7 +3,7 @@
 Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–4h) and end on a demo.
 
 **Active sprint:** [Sprint 01](./sprints/sprint-01.md) — in progress.
-**Current ticket:** [Sprint 01 T-08](./sprints/sprint-01.md) (`todo` — PathResolverPage error state + Retry on index load failure)
+**Current ticket:** [Sprint 01 T-08](./sprints/sprint-01.md) (`in-progress` — PathResolverPage error state + Retry on index load failure)
 **Last completed:** Sprint 01 T-07 (commit `ed542b2`).
 
 | Sprint | Goal |

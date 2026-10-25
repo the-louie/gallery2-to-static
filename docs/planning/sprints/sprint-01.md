@@ -1,7 +1,7 @@
 # Sprint 01: green, safe production build
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-08 (`todo` — PathResolverPage error state + Retry on index load failure)
+**Current ticket:** T-08 (`in-progress` — PathResolverPage error state + Retry on index load failure)
 **Last completed:** T-07 (`done` — commit `ed542b2`)
 
 **Goal:** `npm run build` passes from a clean checkout and produces a deployable `dist/` without
@@ -23,7 +23,7 @@ returning 500 shows an error with Retry instead of a spinner.
 | T-05 | Don't copy `public/` image tree into `dist/` (`copyPublicDir:false` + explicit copy of small files); docs | BUILD-02 | 2h | T-03 | done | build with a `g2data` symlink present: `dist/` has no images; docs updated. Landed in `efbf0c6` |
 | T-06 | No sourcemaps / `stats.html` in production; visualizer behind `ANALYZE=1` | BUILD-03 | 1h | T-03 | done | `dist/` has no `*.map`, no `stats.html`; `build:analyze` still writes it. Landed in `f9138be` |
 | T-07 | Linear subsequence match, query cap 32, `maxLength` on SearchBar | SEC-13 | 2h | – | done | regression test: `eeeeeeeeeezz` vs real-size text < 50 ms; existing search tests pass. Landed in `ed542b2` |
-| T-08 | PathResolverPage error state + Retry on index load failure | LOGIC-15 | 2h | – | todo | test: 500 → error + Retry; retry success → album |
+| T-08 | PathResolverPage error state + Retry on index load failure | LOGIC-15 | 2h | – | in-progress | test: 500 → error + Retry; retry success → album |
 
 Total ≈ 16h.
 
