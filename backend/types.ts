@@ -27,6 +27,11 @@ export interface Child {
      */
     urlPath?: string | null;
     /**
+     * Relative path (same as urlPath) of the export's 1024px resize for the photo page (PRIO-THEME-05),
+     * served under the resized root. Absent when the photo is 1024px or smaller, or no resize was made.
+     */
+    resizeUrlPath?: string | null;
+    /**
      * Thumbnail path component extracted from the first photo in the album.
      * Only present for albums (GalleryAlbumItem) that contain photos.
      */
@@ -187,6 +192,12 @@ export interface Config {
     thumbnailMaxHeight?: number;
     /** JPEG quality for thumbnails (1-100). Default: 80 */
     thumbnailQuality?: number;
+    /** Where the 1024px photo-page resizes go (relative to project root). Default: frontend/public/g2data/resized */
+    resizedRoot?: string;
+    /** Longest side of the photo-page resize; photos no larger get none. Default: 1024 (lanbilder.se's Gallery 2 setting) */
+    resizeMaxSize?: number;
+    /** JPEG quality of the resizes (1-100). Default: 85 */
+    resizeQuality?: number;
     /** Max concurrent thumbnail generations. Default: 5 */
     thumbnailConcurrency?: number;
     /**

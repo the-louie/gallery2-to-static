@@ -294,6 +294,7 @@ Three themes available, selected via `ThemeDropdown` or `ThemeSwitcher`:
 
 - **Full-size images**: served from `/g2data/albums/` (fixed constant `IMAGE_BASE_URL`)
 - **Thumbnails**: served from `/g2data/thumbnails/` (fixed constant `THUMBNAIL_BASE_URL`)
+- **Photo-page resizes**: 1024px copies the export writes to `g2data/resized/` (`resizeUrlPath`), served from `/g2data/resized/` (`RESIZED_BASE_URL`); the classic photo page shows them, `?size=full` the original
 - No async config loading, no proxy, no dynamic base URLs
 - Progressive loading: thumbnail first (as object URL), then full-size
 - Object URLs revoked via three-layer cleanup: per-effect, image-change, and unmount

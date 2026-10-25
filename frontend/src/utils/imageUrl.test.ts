@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { getImageUrl, getImageUrlWithFormat, getAlbumThumbnailUrl, getAlbumHighlightImageUrl, thumbnailFileName } from './imageUrl';
+import { getImageUrl, getImageUrlWithFormat, getAlbumThumbnailUrl, getAlbumHighlightImageUrl, getResizedImageUrl, thumbnailFileName } from './imageUrl';
 import type { Image, Album } from '../types';
 
 const IMAGE_BASE = '/g2data/albums';
@@ -433,6 +433,19 @@ describe('imageUrl utilities', () => {
       expect(thumbnailFileName('t__', 'anim.gif')).toBe('t__anim.gif.jpg');
       expect(thumbnailFileName('t__', 'logo.png')).toBe('t__logo.png.jpg');
       expect(thumbnailFileName('t__', 'a.png')).not.toBe(thumbnailFileName('t__', 'a.jpg'));
+    });
+  });
+
+  describe('getResizedImageUrl (PRIO-THEME-05)', () => {
+    it('serves the resize from /g2data/resized with the photo path', () => {
+      expect(getResizedImageUrl({ resizeUrlPath: 'dreamhack/dhw05/dhphotos/CIMG0053_.JPG' })).toBe('/g2data/resized/dreamhack/dhw05/dhphotos/CIMG0053_.JPG');
+      expect(getResizedImageUrl({ resizeUrlPath: 'a/Rhodos 002.jpg' })).toBe('/g2data/resized/a/Rhodos%20002.jpg');
+    });
+
+    it('null without a resize or for an unsafe path', () => {
+      expect(getResizedImageUrl({})).toBeNull();
+      expect(getResizedImageUrl({ resizeUrlPath: null })).toBeNull();
+      expect(getResizedImageUrl({ resizeUrlPath: '../x.jpg' })).toBeNull();
     });
   });
 });

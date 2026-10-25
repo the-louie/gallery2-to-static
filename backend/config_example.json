@@ -10,8 +10,21 @@
         "columnPrefix": "g_"
     },
     "thumbPrefix": "t__",
-    "ignoreAlbums": [99283, 362248, 541802],
-    "ignoreItems": [53524, 55006, 56278, 56498, 338946, 367373, 495604, 498851],
+    "ignoreAlbums": [
+        99283,
+        362248,
+        541802
+    ],
+    "ignoreItems": [
+        53524,
+        55006,
+        56278,
+        56498,
+        338946,
+        367373,
+        495604,
+        498851
+    ],
     "onlyAlbums": [],
     "verifyImagePaths": true,
     "imageConfigPath": "frontend/public/image-config.json",
@@ -25,5 +38,8 @@
     "thumbnailMaxHeight": 400,
     "thumbnailQuality": 80,
     "thumbnailConcurrency": 5,
+    "resizedRoot": "frontend/public/g2data/resized",
+    "resizeMaxSize": 1024,
+    "resizeQuality": 85,
     "layoutHeaderDescriptionOverride": null
 }

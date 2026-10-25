@@ -11,16 +11,16 @@ import sharp from 'sharp';
 import { runExtraction, type ExtractionSql } from './extract.ts';
 import type { Child, Config } from './types.ts';
 
-type Node = { id: number; type: 'GalleryAlbumItem' | 'GalleryPhotoItem'; title: string | null; pc: string; children?: Node[] };
+type Node = { id: number; type: 'GalleryAlbumItem' | 'GalleryPhotoItem'; title: string | null; pc: string; children?: Node[]; w?: number; h?: number };
 
-const photo = (id: number, title: string, pc: string): Node => ({ id, type: 'GalleryPhotoItem', title, pc });
+const photo = (id: number, title: string, pc: string, w = 64, h = 48): Node => ({ id, type: 'GalleryPhotoItem', title, pc, w, h });
 const album = (id: number, title: string | null, pc: string, children: Node[]): Node => ({ id, type: 'GalleryAlbumItem', title, pc, children });
 
 const TREE: Node = album(7, 'Lanbilder', '', [
     album(10, 'Dreamhack', 'dreamhack', [
         album(11, 'Lördag', 'lordag1', [photo(105, 'Secret', 'secret.jpg'), photo(101, 'A', 'a.jpg')]), // 105 in ignoreItems
         album(16, 'Only hidden', 'onlyhidden', [photo(106, 'Secret 2', 'secret2.jpg')]), // only an ignored photo
-        album(12, 'Lördag', 'lordag2', [photo(102, 'B', 'b.jpg')]), // duplicate title
+        album(12, 'Lördag', 'lordag2', [photo(102, 'B', 'b.jpg'), photo(107, 'Big', 'big.jpg', 1300, 900)]), // duplicate title; a photo above 1024px
         album(13, '', 'blank', [photo(103, 'Broken', 'bad.jpg')]), // blank title, truncated JPEG
         album(14, 'image', 'image', [album(15, '2005', '2005', [photo(104, 'Logo', 'c.png')])]), // LOGIC-28 shape
     ]),
@@ -40,7 +40,7 @@ function byId(n: Node, id: number): Node | null {
 function toChild(n: Node): Child {
     return {
         id: n.id, type: n.type, hasChildren: (n.children?.length ?? 0) > 0, title: n.title, description: null,
-        pathComponent: n.pc, timestamp: 1_130_000_000 + n.id, width: 64, height: 48, thumb_width: null, thumb_height: null,
+        pathComponent: n.pc, timestamp: 1_130_000_000 + n.id, width: n.w ?? null, height: n.h ?? null, thumb_width: null, thumb_height: null,
         ownerName: null, summary: null,
     } as Child;
 }
@@ -75,6 +75,7 @@ async function writeImages(albumsRoot: string): Promise<void> {
         ['dreamhack/lordag1/secret.jpg', jpg],
         ['dreamhack/onlyhidden/secret2.jpg', jpg],
         ['dreamhack/lordag2/b.jpg', jpg],
+        ['dreamhack/lordag2/big.jpg', await sharp({ create: { width: 1300, height: 900, channels: 3, background: { r: 20, g: 90, b: 160 } } }).jpeg().toBuffer()],
         ['dreamhack/blank/bad.jpg', jpg.subarray(0, Math.floor(jpg.length * 0.5))],
         ['dreamhack/image/2005/c.png', png],
         ['hidden/h.jpg', jpg],
@@ -102,7 +103,7 @@ async function run(): Promise<void> {
             mysqlSettings: { host: 'x', user: 'x', database: 'x' },
             gallerySettings: { tablePrefix: 'g2_', columnPrefix: 'g_' },
             thumbPrefix: 't__', rootId: 7, ignoreAlbums: [30], ignoreItems: [105, '106'],
-            albumsRoot: 'g2/albums', thumbnailsRoot: 'g2/thumbs', verifyImagePaths: false,
+            albumsRoot: 'g2/albums', thumbnailsRoot: 'g2/thumbs', resizedRoot: 'g2/resized', verifyImagePaths: false,
         } as Config;
 
         const result = await runExtraction({ sql: fakeSql, config, projectRoot: tmp, verify: false });
@@ -166,15 +167,24 @@ async function run(): Promise<void> {
         assert.strictEqual(legacy.albums['dreamhack/blank'], '/dreamhack/album_13');
         assert.strictEqual(legacy.albums['dreamhack/image/2005'], '/dreamhack/image/2005');
         assert.ok(!('hidden' in legacy.albums) && !('dreamhack/onlyhidden' in legacy.albums), 'ignored/unexported albums absent');
-        assert.deepStrictEqual(legacy.photoAlbum, { 101: 11, 102: 12, 103: 13, 104: 15 }, 'ignored photos absent');
+        assert.deepStrictEqual(legacy.photoAlbum, { 101: 11, 102: 12, 103: 13, 104: 15, 107: 12 }, 'ignored photos absent');
 
         // childCount (THEME-01): the album's exported items; ignored photos and unexported albums left out
         const dhFile = JSON.parse(await fs.readFile(path.join(data, '10.json'), 'utf8'));
         const childCounts = Object.fromEntries(dhFile.children.map((c: Child) => [c.id, c.childCount]));
-        assert.deepStrictEqual(childCounts, { 11: 1, 12: 1, 13: 1, 14: 1 });
+        assert.deepStrictEqual(childCounts, { 11: 1, 12: 2, 13: 1, 14: 1 });
         // totalDescendantCount (PRIO-THEME-04): photos + exported sub-albums below
         assert.strictEqual(dhFile.children.find((c: Child) => c.id === 14).totalDescendantCount, 2, 'image: album 2005 + its photo');
-        assert.strictEqual(dhFile.metadata.totalDescendantCount, 4 + 5, 'dreamhack: 4 photos + 5 exported albums (16 not exported)');
+        assert.strictEqual(dhFile.metadata.totalDescendantCount, 5 + 5, 'dreamhack: 5 photos + 5 exported albums (16 not exported)');
+
+        // photo-page resizes (PRIO-THEME-05): only photos above the resize size get one
+        const l2 = JSON.parse(await fs.readFile(path.join(data, '12.json'), 'utf8'));
+        const big = l2.children.find((c: Child) => c.id === 107);
+        assert.strictEqual(big.resizeUrlPath, 'dreamhack/lordag2/big.jpg');
+        const bigMeta = await sharp(path.join(tmp, 'g2/resized/dreamhack/lordag2/big.jpg')).metadata();
+        assert.deepStrictEqual([bigMeta.width, bigMeta.height], [1024, 709]);
+        assert.ok(!('resizeUrlPath' in l2.children.find((c: Child) => c.id === 102)), 'small photo: no resize');
+        await assert.rejects(() => fs.access(path.join(tmp, 'g2/resized/dreamhack/lordag2/b.jpg')));
         const rootFile = JSON.parse(await fs.readFile(path.join(data, '7.json'), 'utf8'));
         assert.strictEqual(rootFile.children.find((c: Child) => c.id === 10).childCount, 4, '16 (only hidden photos) not counted');
 

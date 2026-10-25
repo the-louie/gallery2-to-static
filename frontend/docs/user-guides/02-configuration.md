@@ -188,7 +188,7 @@ This prefix is used when processing image paths. The export pipeline (extract.py
 ### Numeric settings are checked at start
 
 `rootId`, `thumbnailConcurrency`, `verifyConcurrency` (1–64), `verifyTimeoutMs` (1–600000),
-`thumbnailMaxWidth`, `thumbnailMaxHeight` (1–10000) and `thumbnailQuality` (1–100) must be JSON
+`thumbnailMaxWidth`, `thumbnailMaxHeight` (1–10000), `thumbnailQuality` (1–100), `resizeMaxSize` and `resizeQuality` must be JSON
 integers (not strings) in range, or absent. Otherwise the backend stops before connecting to the
 database and lists every invalid field (`backend/configValidation.ts`).
 
@@ -340,3 +340,8 @@ After configuring your settings:
 1. Test the configuration by running the conversion script
 2. See [03-backend-usage.md](03-backend-usage.md) for how to run the conversion
 3. See [07-troubleshooting.md](07-troubleshooting.md) if you encounter configuration errors
+
+## Photo-page resizes (PRIO-THEME-05)
+
+Besides thumbnails, the export writes a resized copy of every photo whose longest side is above `resizeMaxSize` (default 1024, the size lanbilder.se's Gallery 2 served on photo pages) into `resizedRoot` (default `frontend/public/g2data/resized`, same relative paths as the photos), JPEG quality `resizeQuality` (default 85). The photo page shows it instead of the original (`Child.resizeUrlPath`); `?size=full` and the "Full size" link still give the original. Existing resizes are skipped when newer than their source, like thumbnails. Serve the directory at `/g2data/resized/`.
+

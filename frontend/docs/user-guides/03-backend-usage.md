@@ -134,6 +134,7 @@ Each item in the JSON array contains:
 - **thumb_width/thumb_height**: Thumbnail dimensions (null if no thumbnail)
 - `data/legacy.json` (URL-02): `albums` (Gallery 2 path components → new path, e.g. `"dreamhack/dhw05/dhphotos": "/dreamhack/dreamhack_winter_05/battlefrag.com"`) and `photoAlbum` (photo id → album id), for redirecting old Gallery 2 URLs
 - **highlightImageUrl / highlightThumbnailUrlPath / thumbnailUrlPath** (albums): the highlight Gallery 2 chose for the album (its thumbnail derivative chain, `getAlbumHighlight`), or the first photo of the subtree when there is none or it is hidden
+- **resizeUrlPath** (photos above `resizeMaxSize`): the 1024px resize, same relative path under `resizedRoot`, served at `/g2data/resized/`
 - **childCount** (albums): number of items directly in the album that the export writes (photos, and sub-albums that are not hidden and hold images); "Size: N items" in the classic theme
 - **viewCount** (optional): Gallery 2's view counter at export time; absent when Gallery 2 has none. Shown as "Views:" in the classic theme
 

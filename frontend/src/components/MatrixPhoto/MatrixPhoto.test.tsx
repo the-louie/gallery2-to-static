@@ -18,7 +18,7 @@ const photo = (id: number, name: string, w = 1200, h = 1600) =>
     timestamp: 1132995297, ownerName: 'Patrick', width: w, height: h,
   }) as unknown as Child;
 const children = [
-  photo(1, 'CIMG0053_.JPG'),
+  { ...photo(1, 'CIMG0053_.JPG'), resizeUrlPath: 'x/CIMG0053_.JPG' } as Child,
   { id: 9, type: 'GalleryAlbumItem', title: 'Sub', path: `${PATH}/sub` } as unknown as Child,
   photo(2, 'CIMG0053h.JPG'),
   photo(3, 'small.jpg', 640, 480),
@@ -56,7 +56,12 @@ describe('MatrixPhoto (THEME-01)', () => {
     expect(screen.getByRole('link', { name: '1200x1600' })).toHaveAttribute('href', `${PATH}/cimg0053_?size=full`);
     const img = screen.getByRole('img', { name: 'CIMG0053_.JPG' });
     expect(img).toHaveAttribute('width', '768');
-    expect(img).toHaveAttribute('src', '/g2data/albums/x/CIMG0053_.JPG');
+    expect(img).toHaveAttribute('src', '/g2data/resized/x/CIMG0053_.JPG');
+  });
+
+  it('a photo without a resize shows the original scaled down', () => {
+    show(2);
+    expect(screen.getByRole('img', { name: 'CIMG0053h.JPG' })).toHaveAttribute('src', '/g2data/albums/x/CIMG0053h.JPG');
   });
 
   it('navigator over the photos only (sub-albums skipped)', () => {
@@ -73,6 +78,7 @@ describe('MatrixPhoto (THEME-01)', () => {
   it('?size=full shows the original; the select switches between the two', async () => {
     show(1, `${PATH}/cimg0053_?size=full`);
     expect(screen.getByRole('img', { name: 'CIMG0053_.JPG' })).toHaveAttribute('width', '1200');
+    expect(screen.getByRole('img', { name: 'CIMG0053_.JPG' })).toHaveAttribute('src', '/g2data/albums/x/CIMG0053_.JPG');
     await userEvent.setup().selectOptions(screen.getByRole('combobox', { name: 'Size' }), 'resized');
     expect(screen.getByTestId('where')).toHaveTextContent(new RegExp(`^${PATH}/cimg0053_$`));
   });
@@ -93,6 +99,7 @@ describe('MatrixPhoto (THEME-01)', () => {
   it('the thumbnail stands in, blurred, until the photo has loaded', () => {
     show(1);
     expect(document.querySelector('.gsImagePlaceholder')).toHaveAttribute('src', expect.stringContaining('t__CIMG0053_.JPG'));
+    expect(document.querySelector('.gsImagePlaceholder')).toHaveAttribute('src', expect.stringContaining('/g2data/thumbnails/'));
     fireEvent.load(screen.getByRole('img', { name: 'CIMG0053_.JPG' }));
     expect(document.querySelector('.gsImagePlaceholder')).toBeNull();
   });

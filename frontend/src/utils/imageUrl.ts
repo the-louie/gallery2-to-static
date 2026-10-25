@@ -344,3 +344,17 @@ export function getAlbumHighlightImageUrl(
   const baseUrl = baseUrlOverride ?? getImageBaseUrl();
   return `${baseUrl}/${toUrlPath(album.highlightImageUrl)}`;
 }
+
+/** Where the export's 1024px photo-page resizes are served (PRIO-THEME-05; nginx alias of g2data/resized) */
+export const RESIZED_BASE_URL = '/g2data/resized';
+
+/**
+ * URL of the photo's 1024px resize, or null when the export made none (photo of 1024px or less,
+ * or an older export): the photo page then shows the original.
+ */
+export function getResizedImageUrl(image: { resizeUrlPath?: string | null }): string | null {
+  const p = image.resizeUrlPath;
+  if (!p || p.includes('\0') || p.split('/').includes('..')) return null;
+  return `${RESIZED_BASE_URL}/${toUrlPath(p)}`;
+}
+

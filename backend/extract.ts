@@ -183,6 +183,22 @@ async function resolveHighlightImageUrl(
 
 type FirstPhotoResult = { photo: Child; uipath: Array<string>; pathComponent: Array<string> };
 
+/** Thumbnail (and photo-page resize, PRIO-THEME-05) generation state shared by the whole run. */
+interface ThumbnailContext {
+    albumsRoot: string;
+    thumbnailsRoot: string;
+    /** Where resizes go; null turns them off */
+    resizedRoot: string | null;
+    sem: ReturnType<typeof createSemaphore>;
+    options: { maxWidth: number; maxHeight: number; quality: number };
+    resizeOptions: { maxWidth: number; maxHeight: number; quality: number };
+    skip: boolean;
+    generatedCount: number;
+    skippedCount: number;
+    excludedCount: number;
+    resizedCount: number;
+}
+
 /**
  * What old Gallery 2 URLs need to land on the new ones (URL-02): the Gallery 2 path of every exported
  * album (its pathComponent chain, e.g. `dreamhack/dhw05/dhphotos`) → the new path, and every exported
@@ -318,7 +334,7 @@ const main = async (
     /** Child album walks that failed; collected so one bad subtree doesn't crash the run (LOGIC-21). */
     failures: SubtreeFailure[],
     legacy: LegacyIndex,
-    thumbnailContext: { albumsRoot: string; thumbnailsRoot: string; sem: ReturnType<typeof createSemaphore>; options: { maxWidth: number; maxHeight: number; quality: number }; skip: boolean; generatedCount: number; skippedCount: number; excludedCount: number } | null,
+    thumbnailContext: ThumbnailContext | null,
 ) => {
     const children = await sql.getChildren(root);
     // Exclude child albums that are blacklisted or have no image descendant.
@@ -439,10 +455,35 @@ const main = async (
                         }
                     }
 
+                    // Photo-page resize (PRIO-THEME-05): only for photos larger than the resize size
+                    let resizeUrlPath: string | null = null;
+                    if (thumbnailContext && !thumbnailContext.skip && thumbnailContext.resizedRoot && !thumbFailed) {
+                        const longest = Math.max(child.width ?? 0, child.height ?? 0);
+                        if (longest > thumbnailContext.resizeOptions.maxWidth) {
+                            const sourcePath = path.join(thumbnailContext.albumsRoot, fullPath);
+                            const destPath = path.join(thumbnailContext.resizedRoot, urlPath);
+                            await thumbnailContext.sem.acquire();
+                            try {
+                                const result = await generateThumbnail(sourcePath, destPath, thumbnailContext.resizeOptions);
+                                if (result === 'generated' || result === 'skipped') {
+                                    resizeUrlPath = urlPath;
+                                    if (result === 'generated') thumbnailContext.resizedCount++;
+                                } else {
+                                    console.warn(`No resize (${result}), photo page uses the original: ${sourcePath}`);
+                                }
+                            } catch (err) {
+                                console.warn(`Resize failed, photo page uses the original: ${sourcePath}`, err instanceof Error ? err.message : String(err));
+                            } finally {
+                                thumbnailContext.sem.release();
+                            }
+                        }
+                    }
+
                     return {
                         ...child,
                         thumb_width: thumbSize?.width ?? null,
                         thumb_height: thumbSize?.height ?? null,
+                        ...(resizeUrlPath ? { resizeUrlPath } : {}),
                         ...(thumbFailed ? { thumbnailMissing: true } : {}),
                         pathComponent: fullPath,
                         urlPath,
@@ -704,33 +745,30 @@ export async function runExtraction(options: ExtractionOptions): Promise<Extract
         config.thumbnailsRoot ?? 'frontend/public/g2data/thumbnails',
     );
     const skipThumbnailGeneration = config.skipThumbnailGeneration === true;
-    let thumbnailContext: {
-        albumsRoot: string;
-        thumbnailsRoot: string;
-        sem: ReturnType<typeof createSemaphore>;
-        options: { maxWidth: number; maxHeight: number; quality: number };
-        skip: boolean;
-        generatedCount: number;
-        skippedCount: number;
-        excludedCount: number;
-    } | null = null;
+    const resizedRoot = path.join(projectRoot, config.resizedRoot ?? 'frontend/public/g2data/resized');
+    let thumbnailContext: ThumbnailContext | null = null;
     if (!skipThumbnailGeneration) {
         try {
             await fs.mkdir(thumbnailsRoot, { recursive: true });
+            await fs.mkdir(resizedRoot, { recursive: true });
             const concurrency = Math.max(1, config.thumbnailConcurrency ?? 5);
+            const resizeMax = config.resizeMaxSize ?? 1024;
             thumbnailContext = {
                 albumsRoot,
                 thumbnailsRoot,
+                resizedRoot,
                 sem: createSemaphore(concurrency),
                 options: {
                     maxWidth: config.thumbnailMaxWidth ?? 400,
                     maxHeight: config.thumbnailMaxHeight ?? 400,
                     quality: config.thumbnailQuality ?? 80,
                 },
+                resizeOptions: { maxWidth: resizeMax, maxHeight: resizeMax, quality: config.resizeQuality ?? 85 },
                 skip: false,
                 generatedCount: 0,
                 skippedCount: 0,
                 excludedCount: 0,
+                resizedCount: 0,
             };
             console.log(`Thumbnail generation enabled: ${albumsRoot} -> ${thumbnailsRoot}`);
         } catch (err) {
@@ -774,7 +812,7 @@ export async function runExtraction(options: ExtractionOptions): Promise<Extract
     );
 
     if (thumbnailContext) {
-        const parts = [`${thumbnailContext.generatedCount} generated`, `${thumbnailContext.skippedCount} skipped`];
+        const parts = [`${thumbnailContext.generatedCount} generated`, `${thumbnailContext.skippedCount} skipped`, `${thumbnailContext.resizedCount} resizes generated`];
         if (thumbnailContext.excludedCount > 0) {
             parts.push(`${thumbnailContext.excludedCount} failed (photo kept without thumbnail)`);
         }

@@ -42,7 +42,7 @@ The 2006 thumbnails were 150×150 crops made by Gallery 2 (`g2_Derivative.g_deri
 
 Gallery 2's `descendentCount` counted every item below an album; `totalDescendantImageCount` counts photos. 2006: "Size: 9 items (878 items total)"; now "(864 items total)" for DH-Photo (14 sub-albums not counted). Export a `totalDescendantCount` (photos + albums) next to it and show that.
 
-### PRIO-THEME-05: serve a 1024px resize on photo pages, as Gallery 2 did (Sprint 11 T-13)
+### ~~PRIO-THEME-05: serve a 1024px resize on photo pages, as Gallery 2 did (Sprint 11 T-13)~~ — **CLOSED, verified 2026-10-25 (Sprint 12 T-04):** `backend/extract.ts` (resize via `generateThumbnail` with `resizeOptions`, `Child.resizeUrlPath`, config `resizedRoot`/`resizeMaxSize`/`resizeQuality`), `frontend/src/utils/imageUrl.ts` `getResizedImageUrl`, `components/MatrixPhoto/MatrixPhoto.tsx`; nginx `/g2data/resized/` on lanbilder2; tests `extract.test.ts` (1300×900 → 1024×709, small photo none), `imageUrl.test.ts`, `MatrixPhoto.test.tsx`. Original row kept for the record:
 
 The 2006 photo page served a 768×1024 resized JPEG (`g2_imageViewsIndex=0`, about 100 KB) and linked the original as "Full size". `MatrixPhoto` shows the original scaled to 1024px with CSS (1–2 MB per photo), so the page is slower than the old one on the same photo. Generate the resize in the export (`sharp`, longest side 1024, next to the thumbnail) and use it as the default view; `?size=full` keeps the original.
 

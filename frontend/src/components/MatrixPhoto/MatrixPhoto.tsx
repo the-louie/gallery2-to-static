@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import type { Child, Image } from '@/types';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { getAlbumPath, getItemPath } from '@/utils/albumPath';
-import { getImageUrl } from '@/utils/imageUrl';
+import { getImageUrl, getResizedImageUrl } from '@/utils/imageUrl';
 import { parseBBCodeDecoded } from '@/utils/bbcode';
 import { formatG2Date, resizedSize } from '@/utils/matrixPaging';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -53,7 +53,8 @@ function Navigator({ photos, index, albumPath }: { photos: Child[]; index: numbe
  * A photo page in Gallery 2's Matrix theme (classic theme, THEME-01; template
  * `docs/orig-page/2006/photo-CIMG0053_.html`): header block with the title, Date, Owner, a "Size:"
  * select (the 1024px resize or the full size) and "Full size: WxH"; navigator; the photo; navigator.
- * `?size=full` shows the original, as Gallery 2's imageViewsIndex did. While the photo loads, its
+ * `?size=full` shows the original, as Gallery 2's imageViewsIndex did; otherwise the export's 1024px
+ * resize when there is one (`resizeUrlPath`), else the original scaled down. While the photo loads, its
  * thumbnail shows blurred in its place. Left/right arrow keys step through the album's photos.
  *
  * @example
@@ -114,7 +115,9 @@ export function MatrixPhoto({ albumId, imageId }: MatrixPhotoProps) {
   const showFull = searchParams.get('size') === 'full' || resized === null;
   const shown = showFull ? full : resized;
   const photoHref = getItemPath(photo, albumPath);
-  const src = getImageUrl(photo, false);
+  // The export's 1024px resize (as Gallery 2 served) unless the full size is asked for or none exists
+  const resizedSrc = getResizedImageUrl(photo);
+  const src = showFull || resizedSrc === null ? getImageUrl(photo, false) : resizedSrc;
   const thumb = photo.thumbnailMissing ? null : getImageUrl(photo, true);
   const description = photo.description?.trim();
 
