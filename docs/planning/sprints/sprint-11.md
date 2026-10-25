@@ -1,7 +1,7 @@
 # Sprint 11: Gallery 2 Matrix look and clean URLs (THEME-01, URL-01, URL-02)
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-05 (`todo` — Sidebar)
+**Current ticket:** T-05 (`in-progress` — Sidebar)
 **Last completed:** T-04 (`done` — commit `4e845ec`)
 
 **Goal:** in the default theme, an album and a photo look like the 2006 lanbilder.se Matrix pages (`inspo/wayback-2006/dhphotos.html`, `photo-CIMG0053_.html`) and are reached by clean URLs. Old Gallery 2 URLs redirect to them.
@@ -14,7 +14,7 @@
 | T-02 | Clean URLs | URL-01 | 4h | – | done | `BrowserRouter`; album `/<path>/`, photo `/<path>/<slug>`, `?page=N`, `/search?q=`. Old `#/…` links (test host only) redirect. nginx SPA fallback unchanged except no `index.html` for `/data/`, `/g2data/`. Tests for the routes + the hash redirect. Landed in `0859f77` |
 | T-03 | Export view counts | THEME-01 | 1.5h | – | done | backend: `viewCount` from `g2_ItemAttributesMap` per album/photo (57215: 1766). Frozen at export time. Test. Landed in `0cb6fea` |
 | T-04 | Page frame | THEME-01 | 4h | T-01 | done | Classic theme only: no big title header, no theme/sort dropdowns (the album page's own "Up" button, breadcrumb and sort go with T-06, which replaces that page). Nav bar with `»` breadcrumb ("lanbilder.se » DreamHack » …", current unlinked), sidebar column + content column with `gcBorder1` borders, footer badges. Verdana/Arial 11–12px, colours from theme.css. Landed in `4e845ec` |
-| T-05 | Sidebar | THEME-01 | 3h | T-04 | todo | Search box ("Search the Gallery" placeholder) + "Advanced Search"; "View Slideshow", "View Slideshow (Fullscreen)" with icons (no Add Comment, no RSS); peer list "N. title" with the current one bold, first 6, "...", last; long titles wrap (dhw05 bug not copied) |
+| T-05 | Sidebar | THEME-01 | 3h | T-04 | in-progress | Search box ("Search the Gallery" placeholder) + "Advanced Search"; "View Slideshow", "View Slideshow (Fullscreen)" with icons (no Add Comment, no RSS); peer list "N. title" with the current one bold, first 6, "...", last; long titles wrap (dhw05 bug not copied) |
 | T-06 | Album header + navigator + pager | THEME-01 | 3h | T-04 | todo | Header block: h2 title, BBCode description, right 30% "Date: MM/DD/YYYY", "Owner:", "Size: N items". Navigator bars top and bottom (first/previous left, next/last right, arrow icons). Pager "Page: 1 2 3 4 5 6 ... 24" |
 | T-07 | Thumbnail matrix | THEME-01 | 4h | T-03, T-06 | todo | 3 columns × 4 rows = 12 per page (Gallery 2 default for this album: 287 items → 24 pages). 150px box, aspect kept, bold title, "Date:", "Views:". Albums in the matrix show the same cell with their highlight. Replaces the virtual grid in this theme only |
 | T-08 | Photo page | THEME-01 | 4h | T-02, T-06 | todo | Replaces the lightbox in this theme: header block with Date, Owner, Size (we have one size: the original, shown scaled to max 768px wide), "Full size: WxH" link to the original; navigator top and bottom; sidebar peer list of the album's photos. Arrow keys still step |
