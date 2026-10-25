@@ -2,6 +2,125 @@
 
 Rows pruned from `TODO.md` after each sprint, with the proof they were closed on. Newest first.
 
+## Pruned 2026-10-25 (Sprint 05 (pre-retro)): 10 rows
+
+### ~~ARCH-07: two ineffective `vite.config.ts` settings~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-08):** `chunkSizeWarningLimit` moved to `build` (no warning; it was ignored inside `rollupOptions`); `manualChunks` matches package directories (`/node_modules/(react-router|react-router-dom)/` before `/node_modules/(react|react-dom|scheduler)/`), so `router-vendor` now exists (index.html preloads it) and other packages containing "react" no longer land in `react-vendor`. size-limit's initial-load entry includes `router-vendor-*`; still passes. Original row kept for the record:
+
+Minor, noticed while verifying BUILD-02/03:
+
+1. `chunkSizeWarningLimit: 500` is at `vite.config.ts:120`, nested inside `rollupOptions`
+   instead of `build`. Rollup rejects it outright — the build prints
+   `Unknown input options: chunkSizeWarningLimit` and the setting does nothing.
+2. `manualChunks` (`:97-115`) tests `id.includes('react')` before `id.includes('react-router')`,
+   so router code lands in `react-vendor` and the `router-vendor` chunk never materialises as
+   intended. Also matches any `node_modules` path containing the substring "react".
+
+---
+
+### ~~DECISION-01: hosting model — Cloudflare Pages + image server, or one nginx host (needs operator)~~
+
+**DECIDED 2026-10-25 (operator):** start **self-hosted on lanbilder2** for both the JS application and the images (nginx behind the Cloudflare tunnel). A later move (e.g. frontend on Cloudflare Pages, images elsewhere) is not ruled out, so keep the code working for both: fixed same-origin `/g2data/` paths today, images outside `dist/` (BUILD-02). Original row kept for the record:
+
+Operator, 2026-10-25: the code was written for the frontend on **Cloudflare Pages** (load speed)
+with the **images on a second server**; feasibility was never finished. The current plan in
+`/code/misc/hosting` deploys everything on **lanbilder2** (nginx behind a Cloudflare tunnel). Several
+code choices follow from the Pages idea (HashRouter, fixed `/g2data` paths, JSON shipped as static
+files) and work on either model. Points to settle before deploy:
+- Pages limits (as of writing: 20,000 files per deployment, 25 MiB per file): `dist/` + `data/`
+  (~1,400 JSON) fits; the 60,851 images and thumbnails do not, so they need an image origin either way.
+- Same-origin vs. a separate image host: `IMAGE_BASE_URL`/`THUMBNAIL_BASE_URL` are fixed `/g2data/…`
+  today, so a second host means a Cloudflare route/Worker in front, or making the base URL
+  configurable (and CSP `img-src` gets that host).
+- Old lanbilder.se direct image links need a server that can serve the legacy tree (nginx can; Pages
+  cannot serve 57 GB).
+
+Until decided, tickets keep both models working (e.g. BUILD-02 serves `/g2data/` outside `dist/`).
+
+### ~~LOGIC-31: a photo kept without a thumbnail shows the grid's error state (found 2026-10-25, Sprint 02 T-05)~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-07):** the backend sets `thumbnailMissing: true` on a photo whose thumbnail failed (`index.ts`, new optional field in `types.ts`); `ImageThumbnail.tsx` in grid mode then fetches nothing and shows a "No preview" placeholder (still clickable; the lightbox loads the full image). Test: placeholder shown, no `<img>`, hook disabled, click works. Not testable end to end without TEST-03. Original row kept for the record:
+
+Since LOGIC-12 the backend keeps a photo whose thumbnail could not be generated, but the frontend
+builds every photo's thumbnail URL from `urlPath` (`frontend/src/utils/imageUrl.ts:178`
+`getImageUrl(image, true)`), not from `thumbnailUrlPath`/`thumb_width`. Such a photo requests a
+non-existent `/g2data/thumbnails/.../t__x.jpg` (404) and shows the error tile; the lightbox works.
+Fix: emit a flag (or `thumbnailUrlPath: null`) from the backend for these photos and show a
+placeholder (or the downscaled full image) instead of the error state.
+
+### ~~LOGIC-24: image URLs are not encoded per segment~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-01):** `frontend/src/utils/imageUrl.ts` encodes each path segment (`encodePathSegments` / `toUrlPath`) in every image, thumbnail and album-highlight URL; `backend/verifyImagePaths.ts` builds URLs the same way and its local check decodes each segment before the traversal check (an encoded `%2e%2e` or `%2F` is still rejected). Tests: `#`, `?`, `%`, space, å/ö in names (frontend, decoded name round-trips) and encoded URL → file on disk, raw `%` rejected, encoded traversal rejected (backend). nginx decodes `%XX` before mapping to files, so the encoded URLs serve the original names. Original row kept for the record:
+
+`frontend/src/utils/imageUrl.ts:178` (`getImageUrl`) and `backend/pathResolution.ts` join raw
+`pathComponent`s. There is no `encodeURIComponent` anywhere in either. A filename containing
+`#`, `?` or `%` gives a broken URL: `#` cuts the path, `%xx` is decoded to another file. The
+backend's local verify uses `fs.realpath` on the raw path, so it reports "ok". Fix: encode each
+segment when building URLs. Grep the real file list (`backend/all-lanbilder-files.txt`) for
+`[#?%]` to see how many are affected.
+
+### ~~SEC-15: BBCode parse is quadratic, with no length or depth cap~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-02):** `frontend/src/utils/bbcode.ts` `parseBBCode` does not parse input over `BBCODE_MAX_INPUT_LENGTH` (8192 chars) or with more than `BBCODE_MAX_TAGS` (500) `[`; such text is shown with the BBCode tags stripped. Tests: `[b]`×16000 → `"x"` in < 1 s (was 7.6 s), over-long input stripped, normal BBCode still parsed, boundary at 500/501. Original row kept for the record:
+
+`frontend/src/utils/bbcode.ts` (`parseBBCode` at `:581`) has no input length or nesting limit. For
+each open tag it scans to the end and re-parses the nested content: `[b]`×16000 renders in 7.6 s,
+×4000 in 0.5 s (measured at `9790743`, the parser is unchanged in this respect). The content is
+frozen, so this is low risk. Fix: cap the input (e.g. 8 KB) and the depth (e.g. 20), falling back
+to plain text.
+
+### ~~LOGIC-27: nested links in the root album list~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-03):** `parseBBCode` has a `links` option (default true); `RootAlbumListBlock.tsx` passes `links: false` for the title and description (inside the block `<Link>`) and for subalbum titles (inside their own links), so `[url]` renders as text there. Per the design note (20260126-1300), the description's URL is shown as the separate website link outside the block link; it now falls back to the description when the summary has no URL, so no link is lost. Tests: no `a a` in the block; description text kept, its URL only outside the block link; `links:false` vs default in `bbcode.test.tsx`. The old test that asserted an anchor inside the description (pre-dating the block link) was updated. Original row kept for the record:
+
+`components/RootAlbumListBlock/RootAlbumListBlock.tsx:105-132`: the album description is rendered
+with `parseBBCodeDecoded` **inside** the block-level `<Link>`, so any `[url]` in a description
+gives `<a>` inside `<a>`. That is invalid HTML: the click goes to the inner link or the outer one
+depending on the browser, and it triggers React hydration warnings. Fix: render the description
+outside the link, or strip links (`[url]` → text) in this view.
+
+### ~~SEC-16: `url("…")` escaping in the album block is incomplete~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-04):** new `frontend/src/utils/cssUrl.ts` escapes backslash (first), double quote and CR/LF/FF (CSS hex escapes) before wrapping in `url("…")`; `RootAlbumListBlock.tsx` uses it. Since T-01 the highlight URL is also percent-encoded per segment, which already removes `"`, `\\` and newlines from file names. Tests `cssUrl.test.ts` (quote-breakout, newlines, jsdom parse does not pick up an injected declaration). Original row kept for the record:
+
+`RootAlbumListBlock.tsx:87` escapes only `"`: `url("${highlightImageUrl.replace(/"/g, '\\"')}")`.
+A path containing `\"` or a newline breaks out of `url()`. It needs a crafted Gallery 2 filename,
+and a strict CSP blocks external images, so this is low risk. Fix: `encodeURI` the path (or
+`CSS.escape`), or pass it as a CSS custom property.
+
+### ~~LOGIC-28: album named `image` with a numeric child is unreachable~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-05):** `frontend/src/pages/PathResolverPage.tsx` looks the full path up in the path index first; only if no album has that path is `/…/image/<id>` read as an image. Tests: `/fester/image/2005` with an album at that path → album 12; without → image 2005 of `/fester`; the out-of-range-id test now expects exactly one lookup (the full path). The index is cached (PERF-02), so the extra lookup costs no request. Original row kept for the record:
+
+`pages/PathResolverPage.tsx:16,39`: `IMAGE_PATH_RE = /\/image\/(\d+)$/` is checked before the
+path index, so `/x/image/2005` (album "image", sub-album "2005") is read as image 2005 in album
+`/x`. Fix: look up the full path in `pathIndex` first; use the image regex only if that misses.
+
+### ~~LOGIC-30: thumbnails are always JPEG but keep the source extension~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-06):** `thumbnailFileName(prefix, name)` in `backend/pathResolution.ts` and (same rule) `frontend/src/utils/imageUrl.ts`: JPEG sources keep their name (`t__photo.jpg`, so existing thumbnails stay valid), other sources get `.jpg` appended (`t__anim.gif.jpg`), which also prevents `a.png`/`a.jpg` colliding. Used for the generated file (`buildPathsFromPathComponent`), backend verification URLs and frontend thumbnail URLs. Thumbnails stay JPEG (PNG transparency on a JPEG background, GIF first frame): keeping alpha/animation would be a format change, not done. Tests both sides. Original row kept for the record:
+
+`backend/generateThumbnail.ts:69` `.jpeg(...)` is used for every source, while the destination
+keeps the original name (`t__photo.png`, `t__anim.gif`). PNG transparency turns black, GIF
+animation is lost, and the server sends `image/png` for JPEG bytes (browsers sniff it, but
+`nosniff` plus a strict MIME check can break it). Fix: write `.jpg` thumbnails and record the path,
+or keep the format (`.png()`/`.webp()` for alpha).
+
+### ~~HYGIENE-01: repo and package tidy-up~~
+
+**CLOSED, verified 2026-10-25 (Sprint 05 T-09):** removed the root `package-lock.json` stub, `report_fail_20260130.md` (4.6 MB) and the empty `report_20260130.md`; `.gitignore` adds `report_*.md`, `deviation-report_*.md` (the backend writes these to the root) and `frontend/coverage`. The `public/` extras no longer ship since BUILD-02's allowlist (`check:dist`), so they stay where the backend and docs expect them. Backend `typescript` declared since Sprint 04 T-08. `"engines": { "node": ">=22.23.4" }` in both `package.json`s (the first 22.x with the Brotli fix, SEC-18). README "How" now has install/extract, build, deploy and release-check steps. Original row kept for the record:
+
+- Delete the root `package-lock.json` stub (97 bytes, there is no root `package.json`),
+  `report_fail_20260130.md` (4.6 MB) and the empty `report_20260130.md`. Add `report_*.md` and
+  `frontend/coverage` to `.gitignore`.
+- `frontend/public/` still ships `*.example*`, `image-config.json` (frontend never reads it) and
+  `IMAGES-LOCAL.md` into `dist/`: move them out of `public/`.
+- Backend: add `typescript` to `devDependencies` (today it arrives only as ts-node's peer).
+  Add `"engines": { "node": ">=22" }` to both `package.json`s.
+- README: add `npm ci` in both folders and the frontend build/deploy steps (the current README
+  only shows the backend run).
+
 ## Pruned 2026-10-25 (Sprint 04): 3 rows
 
 ### ~~DOCS-01: README links to `__docs/`, which is not in the repository (operator, 2026-10-25; before deploy)~~

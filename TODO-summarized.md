@@ -1,6 +1,6 @@
 # TODO Summarized
 
-Generated 2026-10-25 from `TODO.md` (Sprint 04). Closed rows: `docs/planning/done.md`.
+Generated 2026-10-25 from `TODO.md` (Sprint 05 (pre-retro)). Closed rows: `docs/planning/done.md`.
 
 ## P0 — Blocks all other work
 
@@ -13,24 +13,12 @@ Generated 2026-10-25 from `TODO.md` (Sprint 04). Closed rows: `docs/planning/don
 ## P3 — Quality, hygiene and latent bugs
 
 - **LINT-01**: 117 lint errors — including 6 real conditional-hook violations
-- **ARCH-07**: two ineffective `vite.config.ts` settings
 
 ## P1 (second review pass)
 
-- **DECISION-01**: hosting model — Cloudflare Pages + image server, or one nginx host (needs operator)
 - **DEPS-01**: two majors blocked upstream — ESLint 10, TypeScript 7 (operator, 2026-10-25)
 - **TEST-03**: no end-to-end test of the backend extraction (found 2026-10-25, Sprint 02 T-03)
-- **LOGIC-31**: a photo kept without a thumbnail shows the grid's error state (found 2026-10-25, Sprint 02 T-05)
-
-## P3 (second review pass)
-
-- **LOGIC-24**: image URLs are not encoded per segment
-- **SEC-15**: BBCode parse is quadratic, with no length or depth cap
-- **LOGIC-27**: nested links in the root album list
-- **SEC-16**: `url("…")` escaping in the album block is incomplete
-- **LOGIC-28**: album named `image` with a numeric child is unreachable
-- **LOGIC-30**: thumbnails are always JPEG but keep the source extension
-- **HYGIENE-01**: repo and package tidy-up
+- **LOGIC-32**: old lanbilder.se path URLs open the home page, not the album (found 2026-10-25, Sprint 05 T-09)
 
 ## FUTURE (after production deploy)
 
@@ -44,4 +32,4 @@ Generated 2026-10-25 from `TODO.md` (Sprint 04). Closed rows: `docs/planning/don
 
 ## Summary
 
-**Open rows:** 20
+**Open rows:** 11
