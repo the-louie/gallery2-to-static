@@ -76,12 +76,31 @@
   color: #0b6cff;
 }
 
+/* "Theme: modern" at the bottom: styled as the other sidebar links (a button, since it changes state) */
+.g2-matrix .gbThemeSwitch {
+  display: block;
+  padding: 3px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: bold;
+  color: #6b8cb7;
+  cursor: pointer;
+  text-align: left;
+}
+
+.g2-matrix .gbThemeSwitch:hover {
+  text-decoration: underline;
+  color: #f4560f;
+}
+
 /* Phones: 44px tap targets in the sidebar */
 @media (max-width: 699px) {
   .g2-matrix .block-core-PeerList a,
   .g2-matrix .block-core-PeerList span,
   .g2-matrix .block-core-ItemLinks a,
-  .g2-matrix .block-search-SearchBlock a.advanced {
+  .g2-matrix .block-search-SearchBlock a.advanced,
+  .g2-matrix .gbThemeSwitch {
     padding-top: 13px;
     padding-bottom: 13px;
     line-height: 18px; /* 13 + 18 + 13 = 44px tap target */

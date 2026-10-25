@@ -5,6 +5,11 @@ import type { AlbumFile, Child } from '@/types';
 import type { MatrixLocation } from '@/utils/matrixLocation';
 
 const mockNavigate = vi.fn();
+const mockSetTheme = vi.fn();
+vi.mock('@/contexts/ThemeContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts/ThemeContext')>()),
+  useTheme: () => ({ setTheme: mockSetTheme, theme: 'classic', effectiveTheme: 'classic', isClassic: true, isDark: false, isLight: false, availableThemes: [] }),
+}));
 vi.mock('react-router-dom', async () => ({
   ...(await vi.importActual('react-router-dom')),
   useNavigate: () => mockNavigate,
@@ -60,6 +65,16 @@ describe('MatrixSidebar (THEME-01)', () => {
     expect(screen.getByRole('link', { name: 'View Slideshow' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'View Slideshow (Fullscreen)' })).toBeInTheDocument();
     expect(screen.queryByText(/Add Comment/)).toBeNull();
+  });
+
+  it('"Theme: modern" at the bottom switches to the light theme (T-10)', async () => {
+    render(<MatrixSidebar location={null} />);
+    const blocks = document.querySelectorAll('.gbBlock');
+    const last = blocks[blocks.length - 1];
+    const button = screen.getByRole('button', { name: 'Theme: modern' });
+    expect(last.contains(button)).toBe(true);
+    await userEvent.setup().click(button);
+    expect(mockSetTheme).toHaveBeenCalledWith('light');
   });
 
   it('search: Enter goes to the results; an empty box does nothing', async () => {

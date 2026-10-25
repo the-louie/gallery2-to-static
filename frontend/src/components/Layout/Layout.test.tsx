@@ -530,7 +530,8 @@ describe('Layout in the classic theme (Matrix frame, THEME-01)', () => {
     expect(document.querySelector('.g2-matrix')).not.toBeNull();
     expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument();
     expect(screen.getByRole('main')).toHaveTextContent('page');
-    expect(screen.queryByRole('button', { name: /theme/i })).toBeNull();
+    expect(document.querySelector('.theme-dropdown')).toBeNull(); // the header's theme dropdown
+    expect(screen.getByRole('button', { name: 'Theme: modern' })).toBeInTheDocument(); // the sidebar's way out (T-10)
     expect(screen.getByText('Skip to main content')).toBeInTheDocument();
   });
 

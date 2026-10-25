@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
 import type { AlbumFile, Child } from '@/types';
 import type { MatrixLocation } from '@/utils/matrixLocation';
 import { getAlbumPath, getItemPath } from '@/utils/albumPath';
@@ -50,7 +51,7 @@ function peerTitle(peer: Child): string {
 
 /**
  * Sidebar of Gallery 2's Matrix theme (classic theme, THEME-01): search block, item links
- * (slideshow), peer list. "Add Comment" is left out (operator, 2026-10-25). Spec:
+ * (slideshow), peer list, and at the bottom the link to the modern themes. "Add Comment" is left out (operator, 2026-10-25). Spec:
  * `frontend/docs/theme-matrix.md`.
  *
  * @example
@@ -60,6 +61,7 @@ function peerTitle(peer: Child): string {
  */
 export function MatrixSidebar({ location }: MatrixSidebarProps) {
   const navigate = useNavigate();
+  const { setTheme } = useTheme();
   const [query, setQuery] = useState('');
   const peers = getPeers(location);
   const currentIndex = peers ? peers.items.findIndex((p) => p.id === peers.currentId) : -1;
@@ -125,6 +127,13 @@ export function MatrixSidebar({ location }: MatrixSidebarProps) {
           })}
         </div>
       )}
+      {/* The way out of the 2006 look (operator, 2026-10-25): the modern light theme, whose header
+          dropdown offers dark and classic. Stays on the same page. */}
+      <div className="block-core-ThemeSwitch gbBlock">
+        <button type="button" className="gbThemeSwitch" onClick={() => setTheme('light')}>
+          Theme: modern
+        </button>
+      </div>
     </>
   );
 }
