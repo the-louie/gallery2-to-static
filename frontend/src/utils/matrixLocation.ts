@@ -12,6 +12,8 @@ export interface MatrixLocation {
   album: AlbumFile;
   /** The photo on a photo URL, else null */
   photo: Child | null;
+  /** On an album URL, the album's parent (for the sidebar peer list); null for the root and on photo URLs */
+  parent: AlbumFile | null;
 }
 
 const ID_ALBUM_RE = /^\/album\/(\d+)\/?$/;
@@ -21,7 +23,15 @@ const PATH_PHOTO_ID_RE = /^(.*)\/image\/(\d+)\/?$/;
 async function albumWithPhoto(albumId: number, match: (c: Child) => boolean): Promise<MatrixLocation | null> {
   const album = await loadAlbum(albumId);
   const photo = album.children.find((c) => c.type !== 'GalleryAlbumItem' && match(c));
-  return photo ? { album, photo } : null;
+  return photo ? { album, photo, parent: null } : null;
+}
+
+/** The album with its parent album (loaded too; the peer list needs its children). */
+async function albumWithParent(albumId: number): Promise<MatrixLocation> {
+  const album = await loadAlbum(albumId);
+  const trail = album.metadata.breadcrumbPath ?? [];
+  const parentId = trail.length >= 2 ? trail[trail.length - 2].id : null;
+  return { album, photo: null, parent: parentId === null ? null : await loadAlbum(parentId) };
 }
 
 /**
@@ -38,10 +48,10 @@ export async function loadMatrixLocation(pathname: string): Promise<MatrixLocati
   const idPhoto = path.match(ID_PHOTO_RE);
   if (idPhoto) return albumWithPhoto(Number(idPhoto[1]), (c) => c.id === Number(idPhoto[2]));
   const idAlbum = path.match(ID_ALBUM_RE);
-  if (idAlbum) return { album: await loadAlbum(Number(idAlbum[1])), photo: null };
+  if (idAlbum) return albumWithParent(Number(idAlbum[1]));
 
   const albumId = await resolvePathToAlbumId(path);
-  if (albumId !== null) return { album: await loadAlbum(albumId), photo: null };
+  if (albumId !== null) return albumWithParent(albumId);
   if (path.endsWith('/')) return null;
 
   const pathPhotoId = path.match(PATH_PHOTO_ID_RE);

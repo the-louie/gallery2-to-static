@@ -28,6 +28,10 @@ Spec for THEME-01 (Sprint 11). The default theme (`classic`) reproduces Gallery 
 
 Photo page: same frame. Header block: h2 photo title | 30%: Date, Owner, "Size:" select (we have one size), "Full size: 1200x1600" link. Navigator, `#gsImageView` with the image (Gallery 2 showed a 768px resize), navigator. Sidebar peer list lists the album's photos ("1. CIMG0053_.JPG" … "287. CIMG0056h.JPG").
 
+## Peer list
+
+Ported from Gallery 2.3.2 (`utils/matrixPeers.ts`): the window of `core.LoadPeers` with the theme's windowSize 6 (the current peer with neighbours to six entries, widened when it touches an end, plus the first and the last; "..." for a gap) and `entitytruncate:14` for titles (cut to 11 characters at a word boundary, then "..."). An album lists its siblings under the parent's title; a photo lists its album's items. Checked against both 2006 pages (`inspo/screens/t05-sidebar-compare.png`).
+
 ## Values (from `matrix-theme.css`)
 
 | What | Value |

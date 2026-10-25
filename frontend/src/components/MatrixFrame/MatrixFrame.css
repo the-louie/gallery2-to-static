@@ -156,3 +156,11 @@
     border-top-width: 1px;
   }
 }
+
+/* Gallery 2 ran on the browser's content-box sizing; the app's global reset sets border-box */
+.g2-matrix,
+.g2-matrix *,
+.g2-matrix *::before,
+.g2-matrix *::after {
+  box-sizing: content-box;
+}

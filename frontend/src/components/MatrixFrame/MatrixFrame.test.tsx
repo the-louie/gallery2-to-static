@@ -64,8 +64,8 @@ describe('MatrixFrame (THEME-01)', () => {
   });
 
   it('renders the sidebar, the page in main, and the three footer badges', () => {
-    render(<MatrixFrame sidebar={<p>side</p>}>the page</MatrixFrame>);
-    expect(screen.getByRole('complementary')).toHaveTextContent('side');
+    render(<MatrixFrame>the page</MatrixFrame>);
+    expect(screen.getByRole('complementary')).toHaveTextContent('Advanced Search');
     expect(screen.getByRole('main')).toHaveTextContent('the page');
     expect(screen.getByAltText('XHTML 1.0')).toBeInTheDocument();
     expect(screen.getByAltText('Gallery 2.0')).toBeInTheDocument();

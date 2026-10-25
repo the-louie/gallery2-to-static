@@ -1,0 +1,77 @@
+/*
+ * Matrix sidebar blocks (THEME-01): search, item links, peer list.
+ * Values from docs/orig-page/2006/matrix-theme.css and icons.css (icon pack paularmstrongdesigns).
+ */
+
+.g2-matrix .block-search-SearchBlock .textbox {
+  /* The browser's own text box, as in 2006: the global reset removed its padding and border */
+  padding: 1px 2px;
+  border: 2px inset #eee;
+  font: 13.333px Arial, Helvetica, sans-serif;
+  color: #000;
+  background: #fff;
+}
+
+.g2-matrix .block-search-SearchBlock .textbox::placeholder {
+  /* Gallery 2 put "Search the Gallery" in the box as its value */
+  color: #000;
+  opacity: 1;
+}
+
+.g2-matrix .block-search-SearchBlock .textbox:focus {
+  background-color: #ffc;
+  color: #000;
+}
+
+.g2-matrix .block-search-SearchBlock .textbox:focus::placeholder {
+  color: transparent;
+}
+
+.g2-matrix .block-search-SearchBlock a.advanced {
+  display: block;
+  padding: 3px;
+}
+
+.g2-matrix .gbAdminLink {
+  padding-left: 22px !important;
+}
+
+.g2-matrix .gbLink-search_SearchScan {
+  background: url("../../assets/matrix/advanced_search.gif") left center no-repeat;
+}
+
+.g2-matrix .gbLink-slideshow_Slideshow {
+  background: url("../../assets/matrix/view_slideshow.gif") left bottom no-repeat;
+}
+
+.g2-matrix .gbLink-slideshowapplet_SlideshowApplet {
+  background: url("../../assets/matrix/view_fullscreen_slideshow.gif") left center no-repeat;
+}
+
+.g2-matrix .block-core-ItemLinks {
+  margin: 3px 0;
+}
+
+.g2-matrix .block-core-ItemLinks a {
+  display: block;
+  padding: 3px;
+}
+
+.g2-matrix .gbBlock h3 {
+  margin-bottom: 0.5em;
+}
+
+.g2-matrix .block-core-PeerList a {
+  display: block;
+  padding: 3px;
+}
+
+.g2-matrix .block-core-PeerList span {
+  font-weight: bold;
+  display: block;
+  padding: 3px;
+}
+
+.g2-matrix .block-core-PeerList span.current {
+  color: #0b6cff;
+}

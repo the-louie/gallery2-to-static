@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useMatrixLocation } from '@/hooks/useMatrixLocation';
 import { useSiteMetadata } from '@/hooks/useSiteMetadata';
 import { withTrailingSlash } from '@/utils/albumPath';
+import { MatrixSidebar } from '../MatrixSidebar';
 import xhtmlBadge from '@/assets/matrix/xhtml10.png';
 import galleryBadge from '@/assets/matrix/gallery.gif';
 import unpossibleBadge from '@/assets/matrix/g2-unpossible.png';
@@ -14,8 +15,6 @@ import './MatrixFrame.css';
 export interface MatrixFrameProps {
   /** The page: album or photo content, search results, … */
   children: React.ReactNode;
-  /** Sidebar blocks (search, item links, peer list) */
-  sidebar?: React.ReactNode;
 }
 
 interface Crumb {
@@ -25,17 +24,17 @@ interface Crumb {
 
 /**
  * The page frame of Gallery 2's Matrix theme as lanbilder.se ran it in 2006 (classic theme,
- * THEME-01; spec `frontend/docs/theme-matrix.md`): nav bar with the breadcrumb, sidebar column,
+ * THEME-01; spec `frontend/docs/theme-matrix.md`): nav bar with the breadcrumb, sidebar (MatrixSidebar),
  * content column, footer badges. The breadcrumb comes from the URL (useMatrixLocation), so pages
  * render only their content. Class names follow Gallery 2's (`gsNavBar`, `gbBreadCrumb`, …) so the
  * CSS reads against `docs/orig-page/2006/matrix-theme.css`.
  *
  * @example
  * ```tsx
- * <MatrixFrame sidebar={<SearchBlock />}>{page}</MatrixFrame>
+ * <MatrixFrame>{page}</MatrixFrame>
  * ```
  */
-export function MatrixFrame({ children, sidebar }: MatrixFrameProps) {
+export function MatrixFrame({ children }: MatrixFrameProps) {
   const { pathname } = useLocation();
   const { location } = useMatrixLocation(pathname);
   const { siteName } = useSiteMetadata();
@@ -78,7 +77,7 @@ export function MatrixFrame({ children, sidebar }: MatrixFrameProps) {
       <div className="gsColumns">
         <div className="gsSidebarCol">
           <aside className="gsSidebar gcBorder1" aria-label="Gallery navigation">
-            {sidebar}
+            <MatrixSidebar location={location} />
           </aside>
         </div>
         <main id="main-content" className="gsContent gcBorder1" tabIndex={-1}>

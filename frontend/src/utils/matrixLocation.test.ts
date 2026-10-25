@@ -5,9 +5,10 @@ import type { AlbumFile } from '@/types';
 
 vi.mock('@/utils/dataLoader', () => ({ loadAlbum: vi.fn(), resolvePathToAlbumId: vi.fn() }));
 
+const trails: Record<number, number[]> = { 7: [7], 10: [7, 10], 20: [7, 10, 20] };
 const album = (id: number, children: Array<{ id: number; type?: string; pathComponent?: string }> = []) =>
   ({
-    metadata: { albumId: id, albumTitle: `A${id}`, breadcrumbPath: [] },
+    metadata: { albumId: id, albumTitle: `A${id}`, breadcrumbPath: (trails[id] ?? [id]).map((t) => ({ id: t, title: `A${t}`, path: '' })) },
     children: children.map((c) => ({ type: 'GalleryPhotoItem', title: null, ...c })),
   }) as unknown as AlbumFile;
 
@@ -27,15 +28,16 @@ describe('loadMatrixLocation (THEME-01)', () => {
     });
   });
 
-  it('an album URL gives the album and no photo', async () => {
-    expect(await loadMatrixLocation('/dh/dhw05/')).toEqual({ album: albums[20], photo: null });
-    expect((await loadMatrixLocation('/'))?.album).toBe(albums[7]);
+  it('an album URL gives the album, its parent and no photo', async () => {
+    expect(await loadMatrixLocation('/dh/dhw05/')).toEqual({ album: albums[20], photo: null, parent: albums[10] });
+    expect(await loadMatrixLocation('/')).toEqual({ album: albums[7], photo: null, parent: null });
   });
 
   it('a photo URL gives the album and the photo', async () => {
     const loc = await loadMatrixLocation('/dh/dhw05/cimg0053_');
     expect(loc?.album).toBe(albums[20]);
     expect(loc?.photo?.id).toBe(31);
+    expect(loc?.parent).toBeNull();
   });
 
   it('the id forms work too', async () => {

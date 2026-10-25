@@ -93,31 +93,7 @@ export function Layout({ children, className }: LayoutProps) {
     return (
       <div className={className ? `layout layout-matrix ${className}` : 'layout layout-matrix'}>
         {skipLink}
-        <MatrixFrame
-          sidebar={
-            <>
-              <div className="layout-sidebar-block">
-                <h2 className="layout-sidebar-title">Search the Gallery</h2>
-                <div className="layout-sidebar-search">
-                  <SearchBar />
-                </div>
-                <Link to="/search" className="layout-sidebar-link">
-                  Advanced Search
-                </Link>
-              </div>
-              <div className="layout-sidebar-block">
-                <Link to="/slideshow" className="layout-sidebar-link layout-sidebar-link-icon">
-                  View Slideshow
-                </Link>
-                <Link to="/slideshow-fullscreen" className="layout-sidebar-link layout-sidebar-link-icon">
-                  View Slideshow (Fullscreen)
-                </Link>
-              </div>
-            </>
-          }
-        >
-          {children}
-        </MatrixFrame>
+        <MatrixFrame>{children}</MatrixFrame>
       </div>
     );
   }
