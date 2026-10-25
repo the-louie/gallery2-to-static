@@ -1,8 +1,8 @@
 # Sprint 11: Gallery 2 Matrix look and clean URLs (THEME-01, URL-01, URL-02)
 
 **Status:** in progress (opened 2026-10-25)
-**Current ticket:** T-01 (`in-progress` — Reference doc + assets)
-**Last completed:** —
+**Current ticket:** T-02 (`todo` — Clean URLs)
+**Last completed:** T-01 (`done` — commit `a24363d`)
 
 **Goal:** in the default theme, an album and a photo look like the 2006 lanbilder.se Matrix pages (`inspo/wayback-2006/dhphotos.html`, `photo-CIMG0053_.html`) and are reached by clean URLs. Old Gallery 2 URLs redirect to them.
 
@@ -10,7 +10,7 @@
 
 | # | Ticket | Backlog | Est | Deps | Status | Acceptance / Notes |
 |---|---|---|---|---|---|---|
-| T-01 | Reference doc + assets | THEME-01 | 2h | – | in-progress | `frontend/docs/theme-matrix.md`: the template's blocks, measured CSS values from the 2006 `theme.css`, leave-outs, the Login/Register notes (also in TODO). Nav arrows, item-link icons and footer badges copied from Gallery 2.3.2 (GPL-2, attribution in the doc) into `frontend/src/assets/matrix/` (all < 1.3 KB: Vite inlines them, `check:dist` stays image-free, nginx 402 rule unaffected). `docs/orig-page/` today holds a *reconstructed* Classic CSS (its README says so; 811 diff lines against the real 2006 file): replace it with the captured 2006 files |
+| T-01 | Reference doc + assets | THEME-01 | 2h | – | done | `frontend/docs/theme-matrix.md`: the template's blocks, measured CSS values from the 2006 `theme.css`, leave-outs, the Login/Register notes (also in TODO). Nav arrows, item-link icons and footer badges copied from Gallery 2.3.2 (GPL-2, attribution in the doc) into `frontend/src/assets/matrix/` (all < 1.3 KB: Vite inlines them, `check:dist` stays image-free, nginx 402 rule unaffected). `docs/orig-page/` today holds a *reconstructed* Classic CSS (its README says so; 811 diff lines against the real 2006 file): replace it with the captured 2006 files. Landed in `a24363d` |
 | T-02 | Clean URLs | URL-01 | 4h | – | todo | `BrowserRouter`; album `/<path>/`, photo `/<path>/<slug>`, `?page=N`, `/search?q=`. Old `#/…` links (test host only) redirect. nginx SPA fallback unchanged except no `index.html` for `/data/`, `/g2data/`. Tests for the routes + the hash redirect |
 | T-03 | Export view counts | THEME-01 | 1.5h | – | todo | backend: `viewCount` from `g2_ItemAttributesMap` per album/photo (57215: 1766). Frozen at export time. Test |
 | T-04 | Page frame | THEME-01 | 4h | T-01 | todo | Classic theme only: no big title header, no theme/sort dropdowns, no "Up" button. Nav bar with `»` breadcrumb ("lanbilder.se » DreamHack » …", current unlinked), sidebar column + content column with `gcBorder1` borders, footer badges. Verdana/Arial 11–12px, colours from theme.css |
