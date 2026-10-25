@@ -143,7 +143,7 @@ export function matchSubsequence(
  * ```
  */
 export function calculateSubsequenceScore(
-  text: string,
+  _text: string,
   query: string,
   matchIndices: number[],
 ): number {

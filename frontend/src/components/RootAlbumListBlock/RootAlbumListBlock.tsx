@@ -15,7 +15,7 @@
  * @module frontend/src/components/RootAlbumListBlock
  */
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { parseBBCodeDecoded, extractUrlFromBBCode } from '@/utils/bbcode';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';

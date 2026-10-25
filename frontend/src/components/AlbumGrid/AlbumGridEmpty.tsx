@@ -6,7 +6,6 @@
  * @module frontend/src/components/AlbumGrid
  */
 
-import React from 'react';
 import './AlbumGridEmpty.css';
 
 /**

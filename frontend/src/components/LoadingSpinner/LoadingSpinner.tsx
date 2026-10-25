@@ -7,7 +7,6 @@
  * @module frontend/src/components/LoadingSpinner
  */
 
-import React from 'react';
 import './LoadingSpinner.css';
 
 /**

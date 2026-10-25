@@ -93,7 +93,7 @@ export function SearchBar({
 }: SearchBarProps): React.ReactElement {
   const navigate = useNavigate();
   const location = useLocation();
-  const [query, setQuery] = useState<string>('');
+  const [, setQuery] = useState<string>('');
   const [localQuery, setLocalQuery] = useState<string>('');
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);

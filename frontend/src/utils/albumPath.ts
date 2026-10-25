@@ -113,7 +113,7 @@ export function getAlbumPathFromAlbum(album: { path?: string | null; title?: str
 export function getChildAlbumPath(
   parentBreadcrumbPath: BreadcrumbPath,
   childTitle: string | null | undefined,
-  childId: number,
+  _childId: number,
   childPath?: string | null,
 ): string {
   if (childPath != null && childPath !== '') return childPath;

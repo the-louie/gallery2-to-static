@@ -18,6 +18,7 @@ Nothing below this line can be validated until the build runs.
 
 **PARTLY CLOSED 2026-10-25 (Sprint 01 T-01):** steps 1–2 done: duplicate block removed (`Breadcrumbs.integration.test.tsx` is now 114 lines, its suite collects: 37 tests pass with the other Breadcrumbs file); `tsconfig.json` now covers shipped code only (`npm run build`/`npm run typecheck`: 82 errors, 0 in test files), tests via `tsconfig.test.json` / `npm run typecheck:test` (343). Steps 3–4 open (Sprint 01 T-02..T-04).
 **T-02 (2026-10-25):** `vite/client` types added (33× `import.meta.env`); pages/ and contexts/ at 0 errors (`RouteParams` is now a `type`, `PathResolverPage` state `| undefined`, `SearchIndexItem.summary/ownerName` declared). App type-check: 82 → 27.
+**T-03 (2026-10-25):** hooks/, utils/, components/ at 0 errors; **`npm run build` exits 0** (step 3 done). Remaining: step 4 + TEST-01 (T-04), and the 256 test-fixture errors behind `npm run typecheck:test`.
 
 **Confirms list item 1, but the scale was understated by 20x.**
 
@@ -488,6 +489,47 @@ throws `NetworkError` on a 5xx, on a network failure or on bad JSON. That reject
 lanbilder.se album links) depends on this. Fix: catch the error and render an error state with
 Retry. Treat `null` (404) as not-found, as today.
 
+### DEPS-01: all dependencies on their latest version (operator, 2026-10-25)
+
+Operator requirement before deploy: every dependency in `frontend/package.json` and
+`backend/package.json` (direct and dev) on its latest release, lockfiles regenerated, and
+`npm audit` (full, not only `--omit=dev`) clean in both folders. This includes the majors that
+SEC-14 and ARCH-08 list:
+- frontend: vite 5 → current, vitest 1 → current, eslint 8 → current (flat config),
+  `@typescript-eslint` 6 → current, React 18 → 19, react-router 6 → current, `@vitejs/plugin-react`,
+  jsdom, Testing Library, size-limit;
+- backend: sharp 0.33 → current, mysql2 → current, ts-node/typescript, `@types/node` matching the
+  Node major we deploy on (22).
+
+Split per toolchain (build, test, lint, runtime libraries, backend) so each step lands green.
+Verify with `npm outdated` (empty) + `npm audit` (0) in both folders, `npm run build`, the full
+vitest run and the backend tests. Add `engines` (HYGIENE-01) so the Node version is pinned too.
+Supersedes the "can wait" note in ARCH-08 and the version part of SEC-14.
+
+### SEC-18: no Brotli decoder vulnerable to CVE-2026-111497 is shipped or used (operator, 2026-10-25)
+
+CVE-2026-111497 is in Google's C Brotli decoder 1.0.3–1.2.0 (fixed 1.0.10, 1.1.1, 1.2.1); see
+`/srv/share/brotli-cve-2026-111497-phetast.md`. Neither lockfile has a brotli npm package today
+(no `node_modules/*brotli*` in either `package-lock.json`), so the decoder can only come in
+through the runtimes and native libraries. Check each place and record the version:
+1. **Node.js** used for the backend run and the build (bundles brotli; `process.versions.brotli`):
+   must be a release with the fix. Note: Node 22.23.4 here reports `process.versions.brotli` = `1.1.0`,
+   so the version string alone does not prove the fix (Node may backport without bumping it):
+   confirm against the Node security release notes for CVE-2026-111497.
+2. **sharp/libvips bundle** (`@img/sharp-libvips-*`, `versions.json`): libvips, libheif, librsvg,
+   fonts/woff2 — confirm whether any of them links or bundles brotli, and its version after DEPS-01.
+3. **Build and dev tools** that decompress (Vite's compressed-size report, size-limit, puppeteer's
+   Chrome download): Node's zlib, so item 1 covers them; list anything that bundles its own copy.
+4. **The shipped `dist/`**: no WASM or JS Brotli decoder in the bundle (grep the build output), and
+   no `.br` files that need a server-side decoder.
+5. **Serving host (lanbilder2)**: nginx serves static files, and the Brotli *encoder* module is fine.
+   Confirm `libbrotli1` is Debian 13's fixed `1.1.0-2+deb13u1` or newer, and that cloudflared/curl
+   on the host link a fixed version.
+
+Done = each item has a recorded version that is fixed, or proof that no decoder is present. Add a
+check script (e.g. `scripts/check-brotli.mjs`) that prints `process.versions.brotli` and greps
+`dist/` and the lockfiles, so the release checklist can rerun it.
+
 ### P2 additions
 
 ### PERF-02: every path navigation re-downloads and re-parses the whole `index.json`
@@ -542,7 +584,9 @@ Fix: keep both input values in local state, store seconds, and make `end` inclus
 already percentages, then `Math.max(fitZoom, ZOOM_MAX)`. A 4000 px image in a 1000 px container
 allows 2500%. Fix: `maxZoom = ZOOM_MAX`, or the ratio without `* 100`.
 
-### LOGIC-20: `DataLoadError` imported as a type but used as a value
+### ~~LOGIC-20: `DataLoadError` imported as a type but used as a value~~
+
+**CLOSED, verified 2026-10-25 (Sprint 01 T-03):** `frontend/src/hooks/useSiteMetadata.ts:19` is now `import { loadIndex, DataLoadError }` (value import); the 4 TS1361 errors are gone from `npm run typecheck`. Original row kept for the record:
 
 `hooks/useSiteMetadata.ts:19` has `import { loadIndex, type DataLoadError }`, and `:65,67,97,99` use
 `instanceof DataLoadError` / `new DataLoadError(...)`. esbuild drops type-only imports, so the

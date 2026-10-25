@@ -30,7 +30,6 @@
  */
 
 import type { Child, FilterCriteria } from '@/types';
-import { isAlbum, isImage } from '@/types';
 
 /**
  * Apply date range filter to an item

@@ -16,7 +16,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { loadIndex, type DataLoadError } from '@/utils/dataLoader';
+import { loadIndex, DataLoadError } from '@/utils/dataLoader';
 import type { IndexMetadata } from '@/types';
 
 interface UseSiteMetadataResult {

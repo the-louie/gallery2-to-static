@@ -9,7 +9,7 @@
  * @module frontend/src/components/RootAlbumListView
  */
 
-import React, { useMemo, useCallback, useEffect } from 'react';
+import { useMemo, useCallback, useEffect } from 'react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useSort } from '@/hooks/useSort';
@@ -45,7 +45,7 @@ export function RootAlbumListView({
   onAlbumClick,
   className,
 }: RootAlbumListViewProps) {
-  const { data, metadata, isLoading, error, refetch } = useAlbumData(albumId);
+  const { data, isLoading, error, refetch } = useAlbumData(albumId);
   const { criteria } = useFilter();
   const { option: sortOption } = useSort('albums');
 

@@ -195,42 +195,6 @@ export function useImageZoom(
     setPanState({ x: 0, y: 0 });
   }, []);
 
-  // Calculate zoom center point adjustment for pan
-  const adjustPanForZoomCenter = useCallback(
-    (
-      oldZoom: number,
-      newZoom: number,
-      centerX?: number,
-      centerY?: number,
-      currentPan?: PanPosition,
-    ) => {
-      if (!centerX || !centerY || imageWidth === 0 || imageHeight === 0) {
-        return;
-      }
-
-      const panX = currentPan?.x ?? pan.x;
-      const panY = currentPan?.y ?? pan.y;
-
-      // Calculate the point in image coordinates that should remain fixed
-      // Center point is relative to container, need to account for current pan
-      const zoomFactor = oldZoom / 100;
-      const containerCenterX = (containerWidth || imageWidth) / 2;
-      const containerCenterY = (containerHeight || imageHeight) / 2;
-
-      // Convert screen coordinates to image coordinates
-      const imageX = (centerX - containerCenterX - panX) / zoomFactor;
-      const imageY = (centerY - containerCenterY - panY) / zoomFactor;
-
-      // Calculate new pan to keep that point fixed
-      const newZoomFactor = newZoom / 100;
-      const newPanX = centerX - containerCenterX - imageX * newZoomFactor;
-      const newPanY = centerY - containerCenterY - imageY * newZoomFactor;
-
-      setPan(newPanX, newPanY);
-    },
-    [imageWidth, imageHeight, containerWidth, containerHeight, pan, setPan],
-  );
-
   // Set zoom level directly
   const setZoom = useCallback(
     (newZoom: number, centerX?: number, centerY?: number) => {

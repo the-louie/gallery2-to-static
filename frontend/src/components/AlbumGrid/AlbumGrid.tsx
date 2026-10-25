@@ -8,7 +8,7 @@
  * @module frontend/src/components/AlbumGrid
  */
 
-import React, { useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
@@ -108,7 +108,7 @@ export function AlbumGrid({
 
   // Render function for virtual grid
   const renderAlbum = useCallback(
-    (album: Album, index: number) => (
+    (album: Album) => (
       <AlbumCard key={album.id} album={album} onClick={handleAlbumClick} />
     ),
     [handleAlbumClick],

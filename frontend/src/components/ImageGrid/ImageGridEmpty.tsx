@@ -6,7 +6,6 @@
  * @module frontend/src/components/ImageGrid
  */
 
-import React from 'react';
 import './ImageGridEmpty.css';
 
 /**

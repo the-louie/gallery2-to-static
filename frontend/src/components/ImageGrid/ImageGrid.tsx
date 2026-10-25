@@ -8,7 +8,7 @@
  * @module frontend/src/components/ImageGrid
  */
 
-import React, { useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { useScrollPosition } from '@/hooks/useScrollPosition';
@@ -108,7 +108,7 @@ export function ImageGrid({
 
   // Render function for virtual grid
   const renderImage = useCallback(
-    (image: Image, index: number) => (
+    (image: Image) => (
       <ImageThumbnail
         key={image.id}
         image={image}

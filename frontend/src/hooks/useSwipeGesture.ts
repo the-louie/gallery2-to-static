@@ -325,7 +325,7 @@ export function useSwipeGesture(options: SwipeOptions = {}): SwipeHandlers {
    * Handle touch end
    */
   const handleTouchEnd = useCallback(
-    (event: React.TouchEvent) => {
+    (_event: React.TouchEvent) => {
       if (!enabled || !swipeStateRef.current.isDetecting) {
         resetSwipeState();
         return;

@@ -93,7 +93,7 @@ export class SearchIndex {
    * @param rootAlbumId - Root album ID (kept for API compatibility, not used)
    * @returns Promise that resolves when index is loaded
    */
-  async buildIndex(rootAlbumId: number): Promise<void> {
+  async buildIndex(_rootAlbumId: number): Promise<void> {
     // If already loading, return the existing promise
     if (this.loadPromise) {
       return this.loadPromise;

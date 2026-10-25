@@ -133,7 +133,7 @@ export class ErrorBoundary extends Component<
 
       // Check if any key value changed
       const hasResetKeyChanged = resetKeys.some(
-        (key, index) => key !== prevProps.resetKeys[index],
+        (key, index) => key !== prevProps.resetKeys?.[index],
       );
 
       if (hasResetKeyChanged) {

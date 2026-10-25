@@ -111,7 +111,7 @@ export function collectErrorContext(
 ): ErrorContext {
   return {
     category: categorizeError(error),
-    componentStack: errorInfo?.componentStack,
+    componentStack: errorInfo?.componentStack ?? undefined,
     message: error.message,
     stack: error.stack,
     errorInfo,

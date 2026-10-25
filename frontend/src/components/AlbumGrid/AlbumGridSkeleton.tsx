@@ -7,7 +7,6 @@
  * @module frontend/src/components/AlbumGrid
  */
 
-import React from 'react';
 import './AlbumGridSkeleton.css';
 
 /**
