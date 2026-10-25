@@ -155,21 +155,27 @@ function ImageThumbnailComponent({
     };
   }, []);
 
-  // Reset lazy loading state when image changes
+  // Reset lazy loading state when the image changes: adjusted during render, so the new image
+  // never renders with the previous one's state (was an effect, one render late; REFAC-01)
+  const imageKey = `${image.id}|${image.pathComponent}|${image.urlPath}|${useThumbnail}`;
+  const [stateImageKey, setStateImageKey] = useState(imageKey);
+  if (stateImageKey !== imageKey) {
+    setStateImageKey(imageKey);
+    setShouldLoad(false);
+    setDomFullImageLoaded(false);
+  }
+  // ... and drop the previous image's observer
   useEffect(() => {
     if (observerRef.current) {
       observerRef.current.disconnect();
       observerRef.current = null;
     }
-    setShouldLoad(false);
-    setDomFullImageLoaded(false);
-  }, [image.id, image.pathComponent, image.urlPath, useThumbnail]);
+  }, [imageKey]);
 
   // Set up Intersection Observer for lazy loading
   useEffect(() => {
-    // If Intersection Observer is not supported, load immediately
+    // If Intersection Observer is not supported, the image loads immediately (shouldRenderImage)
     if (typeof IntersectionObserver === 'undefined') {
-      setShouldLoad(true);
       return;
     }
 

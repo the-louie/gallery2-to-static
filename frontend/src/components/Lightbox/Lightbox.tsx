@@ -413,14 +413,13 @@ export function Lightbox({
 
   // Reset DOM image load state when image changes
   // Keyed on the identifying fields, not the object: a new object for the same image must not reset.
-  const hasImage = image != null;
-  const imagePathComponent = image?.pathComponent;
-  const imageUrlPath = image?.urlPath;
-  useEffect(() => {
-    if (hasImage) {
-      setDomFullImageLoaded(false);
-    }
-  }, [hasImage, image?.id, imagePathComponent, imageUrlPath]);
+  // Adjusted during render, so the new image never renders with the previous load state (REFAC-01)
+  const imageKey = image == null ? null : `${image.id}|${image.pathComponent}|${image.urlPath}`;
+  const [stateImageKey, setStateImageKey] = useState(imageKey);
+  if (stateImageKey !== imageKey) {
+    setStateImageKey(imageKey);
+    if (imageKey !== null) setDomFullImageLoaded(false);
+  }
 
   // Reset zoom when image ID changes (separate effect to avoid dependency issues)
   const imageId = image?.id;

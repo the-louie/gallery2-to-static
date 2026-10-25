@@ -62,6 +62,8 @@ _Sprint 10 T-02: `useAlbumMetadata` only copied its `albumProp` into state one r
 
 _Sprint 10 T-03: `AlbumCard` stores the failed URL (a new URL is tried without a reset), `PathResolverPage` stores the failed (attempt, path) key, `useImageZoom` and `DateRangeFilter` adjust state during render when the image size / range changes (React's documented pattern instead of an effect one render late). New tests for the AlbumCard retry and the outside clear of DateRangeFilter. 6 hits gone._
 
+_Sprint 10 T-04: `ImageThumbnail` and `Lightbox` reset their load state during render when the image key changes (the observer disconnect stays an effect, without state); `ImageThumbnail` no longer sets `shouldLoad` when IntersectionObserver is missing (already derived where used); `SearchBar` takes its initial text from the URL and follows location changes during render (the debounce-timer clear stays an effect). Covered by the existing reset/navigation tests. 7 hits gone._
+
 ## FUTURE (after production deploy)
 
 Operator, 2026-10-25. Not scheduled until lanbilder.se runs on the new code. The notes under each

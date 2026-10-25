@@ -94,7 +94,9 @@ export function SearchBar({
 }: SearchBarProps): React.ReactElement {
   const navigate = useNavigate();
   const location = useLocation();
-  const [localQuery, setLocalQuery] = useState<string>('');
+  const [localQuery, setLocalQuery] = useState<string>(() =>
+    location.pathname === '/search' ? new URLSearchParams(location.search).get('q') || '' : '',
+  );
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -196,25 +198,23 @@ export function SearchBar({
     };
   }, []);
 
-  // Sync with URL query param on search page; clear search field when navigating away from /search
+  // Sync with URL query param on search page; clear search field when navigating away from /search.
+  // Adjusted during render when the location changes (was an effect, one render late; REFAC-01).
+  const locationKey = `${location.pathname}?${location.search}`;
+  const [syncedLocationKey, setSyncedLocationKey] = useState(locationKey);
+  if (syncedLocationKey !== locationKey) {
+    setSyncedLocationKey(locationKey);
+    setLocalQuery(
+      location.pathname === '/search' ? new URLSearchParams(location.search).get('q') || '' : '',
+    );
+  }
+  // Leaving /search: a pending debounced search must not run
   useEffect(() => {
-    if (location.pathname === '/search') {
-      const urlParams = new URLSearchParams(location.search);
-      const urlQuery = urlParams.get('q') || '';
-      setLocalQuery((prevLocalQuery) => {
-        if (urlQuery !== prevLocalQuery) {
-          return urlQuery;
-        }
-        return prevLocalQuery;
-      });
-    } else {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-        debounceTimerRef.current = null;
-      }
-      setLocalQuery('');
+    if (location.pathname !== '/search' && debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
     }
-  }, [location.pathname, location.search]);
+  }, [location.pathname]);
 
   const containerClassName = className
     ? `search-bar ${className}`
