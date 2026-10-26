@@ -71,7 +71,7 @@ try {
   await page.waitForFunction(() => document.querySelectorAll('ul[aria-label="Photos"] li').length >= 2, { timeout: 30000 });
   out.push('2 photos uploaded and listed');
   // unhide
-  await page.click(`#hidden-${albumId}`);
+  await page.click('button[aria-label="Publish album"]');
   await page.waitForFunction(() => /Publishing/.test(document.body.innerText), { timeout: 10000 }).catch(() => out.push('(no Publishing… seen, fast run)'));
   await page.waitForFunction(() => /\bPublished\b/.test(document.body.innerText) && !/Publishing/.test(document.body.innerText), { timeout: 40000 });
   out.push('regeneration finished (Published)');

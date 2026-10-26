@@ -183,16 +183,16 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
               >
                 ↓
               </button>
-              <span className="field-inline">
-                <input
-                  id={`photo-${photo.id}-hidden`}
-                  type="checkbox"
-                  checked={photo.hidden}
-                  disabled={disabled}
-                  onChange={(ev) => void toggleHidden(ev.target.checked)}
-                />
-                <label htmlFor={`photo-${photo.id}-hidden`}>Hidden</label>
-              </span>
+              <button
+                type="button"
+                disabled={disabled}
+                aria-label={
+                  photo.hidden ? `Publish ${name}` : `Unpublish ${name}`
+                }
+                onClick={() => void toggleHidden(!photo.hidden)}
+              >
+                {photo.hidden ? "Publish" : "Unpublish"}
+              </button>
               {!props.isHighlight && (
                 <button
                   type="button"

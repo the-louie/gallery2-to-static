@@ -203,7 +203,9 @@ describe("AlbumPage", () => {
     });
     renderAt("/albums/root");
     await screen.findByRole("heading", { name: /Root/ });
-    await userEvent.click(screen.getByLabelText("Hidden"));
+    await userEvent.click(
+      screen.getByRole("button", { name: "Unpublish album" })
+    );
     expect(f.bodyOf("PUT /api/albums/1/hidden")).toEqual({ hidden: true });
     expect(await screen.findByText("hidden")).toBeInTheDocument();
 

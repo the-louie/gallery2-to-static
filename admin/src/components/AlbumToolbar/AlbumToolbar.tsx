@@ -52,22 +52,24 @@ export function AlbumToolbar({
         <button type="button" onClick={onEdit} disabled={busy || deleted}>
           Edit
         </button>
-        <span className="field-inline album-toolbar-hidden">
-          <input
-            id={`hidden-${album.id}`}
-            type="checkbox"
-            checked={album.hidden}
-            disabled={busy || deleted}
-            onChange={(ev) =>
-              void run(async () =>
-                onAlbumChanged(
-                  await api.setAlbumHidden(album.id, ev.target.checked)
-                )
-              )
-            }
-          />
-          <label htmlFor={`hidden-${album.id}`}>Hidden</label>
-        </span>
+        <button
+          type="button"
+          className={album.hidden ? "primary" : ""}
+          disabled={busy || deleted}
+          aria-label={album.hidden ? "Publish album" : "Unpublish album"}
+          title={
+            album.hidden
+              ? "Make the album visible on the site (published a minute after the last change)"
+              : "Take the album off the site"
+          }
+          onClick={() =>
+            void run(async () =>
+              onAlbumChanged(await api.setAlbumHidden(album.id, !album.hidden))
+            )
+          }
+        >
+          {album.hidden ? "Publish" : "Unpublish"}
+        </button>
         {album.highlightPhotoId !== null && (
           <button
             type="button"
