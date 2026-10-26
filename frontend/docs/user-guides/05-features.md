@@ -417,3 +417,23 @@ Several features improve application performance.
 
 - **Build and Deploy**: See [06-building-deployment.md](06-building-deployment.md)
 - **Troubleshooting**: See [07-troubleshooting.md](07-troubleshooting.md) if you encounter issues
+
+## Adding albums and photos (the admin site)
+
+The gallery is edited on its own hostname (not linked from the gallery), behind Cloudflare Access
+(GitHub or Google login) and a one-time code from an authenticator app. Accounts are invite-only:
+the administrator adds your e-mail first.
+
+1. Open the admin hostname, log in with GitHub or Google, enrol your authenticator app the first
+   time (scan the QR code), enter the code.
+2. You see the albums delegated to you (administrators see the whole gallery). Open one and press
+   **New album**: title, description, summary, event date. The album starts **hidden**.
+3. Drop photos on the album (JPEG, PNG, GIF, WebP or HEIC; up to 50 MB each). Each file is checked,
+   GPS positions are removed, HEIC becomes JPEG. The photo's date comes from the camera's EXIF.
+4. Edit titles, reorder with the arrows, pick the album's highlight, delete what should not be
+   there (deletions are reversible by the administrator).
+5. Untick **hidden** when the album is ready. The public site shows it within about a minute
+   ("Publishing…" turns into "Published").
+
+Your profile holds the nickname shown as "Owner:" on the public pages, an optional full name you
+can choose to show instead, and a picture that only the admin site shows.

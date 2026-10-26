@@ -28,11 +28,11 @@ the master and the static files become derived output that is regenerated per ch
 ```
 migrations     (id INTEGER PK, applied_at TEXT)
 
-owners         (id INTEGER PK,                 -- Gallery 2 user id for imported rows; new ids from 1000000
+owners         (id INTEGER PK,                 -- imported rows: one per Gallery 2 display name (ids from 1)
                 nickname TEXT NOT NULL,        -- shown as "Owner:"; unique (FUT-03)
                 full_name TEXT,                -- optional; shown instead of the nickname when show_full_name = 1
                 show_full_name INTEGER NOT NULL DEFAULT 0,
-                email TEXT UNIQUE,             -- NULL for imported Gallery 2 users (FUT-02 keys users by email)
+                email TEXT UNIQUE,             -- the admin user's e-mail (profile.ts keeps the row in step); NULL for imported owners
                 created_at TEXT NOT NULL)
 
 items          (id INTEGER PK,                 -- Gallery 2 ids kept; new ids continue the sequence
@@ -71,6 +71,10 @@ dirty_albums   (album_id INTEGER PK REFERENCES items(id), since TEXT NOT NULL)
 settings       (key TEXT PK, value TEXT)       -- root_id, site_name, site_description(_override), thumb/resize sizes
 ```
 
+Added since: `items.url_locked_at` (migration 003), `items.order_weight`, `thumb_width/height`
+(the Gallery 2 values the extractor emitted), `media.thumb_failed`; the generator shows
+`owners.full_name` instead of the nickname when `show_full_name = 1`.
+
 Not carried over on purpose: Gallery 2 comments (operator, 2026-10-26: not imported), Gallery 2
 users beyond the owner names, thumbnail crops (Sprint 12 measured 57,741 of 58,574 thumbnails as
 plain centre crops, the rest trivial: `object-fit: cover` reproduces them).
@@ -85,9 +89,10 @@ plain centre crops, the rest trivial: `object-fit: cover` reproduces them).
 3. **`changed_at` propagates.** Triggers on `items` (insert, update of the generated columns, change
    of `hidden`/`deleted_at`) and on `highlights`/`media` insert the item's album and every ancestor
    up to the root into `dirty_albums`. Moving an item marks both the old and the new parent chain.
-4. **`url_segment` is locked** once the album has been generated while not hidden (recorded in
-   `settings`/the generation log). Renaming the title afterwards changes the heading, not the URL;
-   a deliberate URL change is an admin action that also writes the old path into `legacy_paths`.
+4. **`url_segment` is locked** once the album has been generated while not hidden
+   (`items.url_locked_at`, set by `generateAll`; migration 003). Renaming the title afterwards
+   changes the heading, not the URL; a deliberate URL change is an admin action (`PATCH` with
+   `force: true`) that also writes the old clean path into `legacy_paths` (`clean:/old/path/`).
 5. **Ids are stable.** Gallery 2 ids are kept so `/album/<id>` routes, `legacy.json` and the search
    index keep working; new items get ids above the imported maximum.
 

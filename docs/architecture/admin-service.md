@@ -44,6 +44,41 @@ is decided before any lookup, so a non-admin never learns whether a user or albu
 The API returns users without `totp_secret`, ever (`publicUser`). Request logs (one JSON line per
 request on stdout: method, path, status, ms, ip) carry no headers, cookies or bodies.
 
+## Content routes (Sprint 18)
+
+The album, photo, upload, highlight, order, regeneration and profile routes are specified in
+[admin-api.md](./admin-api.md) (the contract the admin UI is built against) and implemented in
+`routes/albums.ts`, `routes/regen.ts`, `routes/profile.ts` over `albums.ts`, `upload.ts`,
+`multipart.ts`, `profile.ts`. Rules that hold for all of them:
+
+- **Authorisation**: `canWrite(user, item)` on the target (for a new album: on the parent);
+  admins everywhere. 403 is decided before any lookup and audited (`authorize denied`).
+- **Every write** is audited (`album create|update|hide|unhide|delete|restore|highlight|order`,
+  `photo upload|update|delete|restore`, `profile update|picture`, `regen request`) and asks the
+  regeneration queue, so the public site follows within about a minute (`GET /api/regen/status`).
+- **Soft delete only**: `deleted_at` on the item (its subtree follows by the parent chain); the files
+  move to `<albumsRoot>/.trash/<id>/` and come back on restore (admin only).
+- **New albums start hidden** (`hidden = 1`) and get their directory under `albumsRoot` at once;
+  their URL segment comes from the title (`getSegmentForAlbum` among the siblings) and is **locked**
+  (`items.url_locked_at`) the first time the generator publishes the album; afterwards only an
+  admin may change it with `force: true`, which records the old clean path in `legacy_paths`.
+- **Uploads** (`POST /api/albums/:id/photos`, multipart `files[]`): streamed to temp files
+  (`<albumsRoot>/.upload-tmp/`), 50 MB per file (a larger file is rejected, not the request),
+  500 MB per request (413), at most 500 files; the type is sniffed from the bytes (JPEG, PNG, GIF,
+  WebP, HEIC), sharp decodes with `failOn: 'error'`; JPEG/PNG/GIF/WebP are stored byte for byte
+  (the browser applies the EXIF orientation; `width`/`height` are stored as displayed), GPS tags
+  are removed losslessly with `exiftool` (installed on lanbilder2; without it the file is re-encoded
+  without metadata and a warning is logged); HEIC is converted to JPEG quality 92 with the
+  orientation applied; the event date comes from EXIF `DateTimeOriginal` (Stockholm time), else
+  now; the file name is sanitised (`[A-Za-z0-9._-]`, extension by content) and made unique in the
+  album; the item's owner is the user's `owners` row (by e-mail).
+- **Profiles**: nickname 3–40 characters, unique across users and Gallery 2 owners
+  (case-insensitive); full name shown publicly only with `showFullName`; the picture is a 256×256
+  JPEG under `avatars/` next to the database, served only through the API. At first login the
+  Access token's `name` claim (when present) fills an empty full name.
+- **First admin**: `node --no-warnings=ExperimentalWarning server.ts --invite-admin <email>` on
+  lanbilder2 (as user lanbilder, `GALLERY_DB` set as in the unit).
+
 ## The auth flow: Access -> JWT -> session -> TOTP
 
 ```
