@@ -33,3 +33,29 @@ CREATE TABLE sessions (
     totp_ok INTEGER NOT NULL DEFAULT 0 CHECK (totp_ok IN (0, 1))
 );
 CREATE INDEX sessions_user ON sessions(user_id);
+
+-- A nickname may not collide with a historical Gallery 2 owner name (FUT-03 "Decisions").
+CREATE TRIGGER users_nickname_not_owner_insert BEFORE INSERT ON users
+WHEN NEW.nickname IS NOT NULL AND EXISTS (SELECT 1 FROM owners WHERE nickname = NEW.nickname COLLATE NOCASE)
+BEGIN SELECT RAISE(ABORT, 'nickname taken by a Gallery 2 owner'); END;
+CREATE TRIGGER users_nickname_not_owner_update BEFORE UPDATE OF nickname ON users
+WHEN NEW.nickname IS NOT NULL AND EXISTS (SELECT 1 FROM owners WHERE nickname = NEW.nickname COLLATE NOCASE)
+BEGIN SELECT RAISE(ABORT, 'nickname taken by a Gallery 2 owner'); END;
+
+-- Append-only audit log (FUT-04 "Decisions"): kept forever, mirrored to a JSONL file, admin-only.
+CREATE TABLE audit_log (
+    id INTEGER PRIMARY KEY,
+    at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    user_id INTEGER,                      -- no FK: the row must survive anything that happens to the user
+    email TEXT,
+    ip TEXT,
+    action TEXT NOT NULL,                 -- login, logout, session, totp_setup, totp_verify, authorize, invite, enable, disable, delegate, undelegate, totp_reset, ...
+    target TEXT,                          -- what it concerned (user id, album id, route)
+    result TEXT NOT NULL CHECK (result IN ('ok', 'denied', 'error')),
+    detail TEXT                           -- JSON
+);
+CREATE INDEX audit_log_user ON audit_log(user_id, id);
+CREATE TRIGGER audit_log_no_update BEFORE UPDATE ON audit_log
+BEGIN SELECT RAISE(ABORT, 'audit_log is append-only'); END;
+CREATE TRIGGER audit_log_no_delete BEFORE DELETE ON audit_log
+BEGIN SELECT RAISE(ABORT, 'audit_log is append-only'); END;

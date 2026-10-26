@@ -12,6 +12,7 @@ import type { Db } from './db/db.ts';
 import { Router, HttpError, send, json, error, readJsonBody, clientIp, type Ctx, type Logger, type Reply } from './http.ts';
 import { registerViewRoutes } from './routes/view.ts';
 import { registerAuthRoutes } from './routes/auth.ts';
+import { registerAdminRoutes } from './routes/admin.ts';
 import { verifyAccessJwt, type AccessIdentity } from './auth/access.ts';
 import { sessionSecret } from './auth/session.ts';
 import type { AuthDeps, AuditSink } from './auth/guard.ts';
@@ -62,7 +63,9 @@ export function buildRouter(opts: ServerOptions): Router {
     const router = new Router();
     router.get('/healthz', () => json(200, { ok: true }));
     registerViewRoutes(router);
-    registerAuthRoutes(router, authDeps(opts));
+    const deps = authDeps(opts);
+    registerAuthRoutes(router, deps);
+    registerAdminRoutes(router, deps);
     opts.routes?.(router);
     return router;
 }
