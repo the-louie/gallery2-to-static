@@ -47,10 +47,11 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
   - raw `ownerId` in the output: rows are now mapped field by field (LOGIC-05), `ownerId` is not emitted.
 - **Per-album themes for paths with é/æ/ø** (was "not re-verified"): checked 2026-10-25 (Sprint 11 T-02): all 1,389 `pathIndex` keys are ASCII (titles are transliterated), so a percent-encoded `location.pathname` (BrowserRouter) cannot miss a key.
 
-## FUTURE (after production deploy)
+## BEFORE GO-LIVE (operator 2026-10-26: "lift FUT tasks to before go-alive so we are ready to add new albums")
 
-Operator, 2026-10-25. Not scheduled until lanbilder.se runs on the new code. The notes under each
-row are first answers to the questions asked, to verify when the row is planned.
+Operator, 2026-10-25, lifted 2026-10-26: **all five rows ship before lanbilder.se switches** to the new
+site (interview 2026-10-26, decision 1: "All five rows"). The notes under each row are first answers
+to the questions asked; the **Decisions** blocks are the operator's rulings from the interview.
 
 ### FUT-01: SQLite as the master of the data; regenerate only changed branches
 
@@ -64,6 +65,18 @@ item, plus their search-index entries) instead of the whole tree.
   dirty. Deletes must be recorded too (tombstones), so stale JSON is reported (see LOGIC-22's
   no-delete policy).
 - Fits DECISION-01 either way: the generator writes the same static files.
+
+**Decisions (interview 2026-10-26):**
+- Runs on lanbilder2 itself: a Node service on 127.0.0.1 holding the SQLite file, writing the static
+  files in place into the directory nginx serves; the operator raises the VM's RAM 3.9 → 8 GB when
+  convenient (reboot + manual unlock of the encrypted disk).
+- View counters keep counting: a small endpoint on lanbilder2 records page views; the regeneration
+  folds the counts into the JSON daily. Old Gallery 2 comments are **not** imported (they stay in the
+  Gallery 2 backup only).
+- Settled without asking: the originals keep the Gallery 2 directory layout (`g2data/albums/<album
+  path>/<file>`; uploads get sanitised file names); an album's URL segment is derived from its title
+  and locked once the album has been public; the event date is editable; the highlight defaults to
+  the first image and can be chosen.
 
 ### FUT-02: admin can add albums and delegate them; delegated users add subalbums and images
 
@@ -86,6 +99,24 @@ upload/add images under it. Requirements (operator):
 - Uploads go through the image pipeline (sharp, failOn, size limits, EXIF strip) and into FUT-01's
   database, then trigger a branch regeneration.
 
+**Decisions (interview 2026-10-26):**
+- Admin hostname: a random label under **phetast.nu** (proposed `82j17zj.phetast.nu`; own nginx vhost
+  on lanbilder2, same tunnel, Cloudflare Access in front).
+- Login providers in Access: **GitHub and Google** (Microsoft and Facebook not now; Facebook needs
+  Meta business verification).
+- Second factor: **our own TOTP step** (authenticator app) in the admin backend after the Access
+  login, required every session; the admin can reset a user's secret.
+- Accounts: **invite-only by email** — the admin adds the email first (admin UI + the Access policy);
+  unknown identities are refused at both walls. Users are keyed by email.
+- Delegate rights: **everything inside the delegated subtree** — edit the delegated album's own text
+  and date, add/edit/soft-delete any sub-album or image below it, choose highlights. Only the admin
+  creates, delegates and un-delegates top-level albums, and only the admin restores or purges
+  soft-deleted items (no-delete policy: soft delete = hidden + file moved to a trash area).
+- Publishing: **immediate, debounced regeneration** (one run a few seconds after the last change);
+  **new albums start hidden** until their creator unticks "hidden"; no publish button.
+- Uploads: JPEG/PNG/GIF/WebP kept byte for byte (orientation applied), **GPS tags stripped**, other
+  EXIF kept; **HEIC converted to JPEG** (quality 92); 50 MB per file, 500 MB per batch.
+
 ### FUT-03: user profiles
 
 Each user has a profile with a nickname and a profile picture. The federated providers usually
@@ -96,6 +127,11 @@ having: a stable internal user id (not the email), the linked provider identitie
 user), the delegated albums, created/last-login timestamps, and an "enabled" flag to lock a user
 out without deleting them. Pictures should be stored by us (not hot-linked from the provider).
 
+**Decisions (interview 2026-10-26):**
+- Public site shows the **nickname only** as "Owner:"; a user may opt in to showing their full name
+  instead. Pictures appear only in the admin UI (stored by us, copied at first login).
+- Nicknames are unique and may not collide with the historical Gallery 2 owner names.
+
 ### FUT-04: audit logging
 
 Every user action, login and other event is logged, successful or not: logins and denials (ours
@@ -103,6 +139,11 @@ and Cloudflare Access's audit log), album/image create/edit/delete/upload, deleg
 profile changes, admin actions, failed authorisation checks. Append-only (writes only, no
 updates/deletes from the application), with timestamp, user id, source IP (`CF-Connecting-IP`),
 action, target, result. Decide retention and who can read it.
+
+**Decisions (interview 2026-10-26):**
+- **Kept forever, full entries** (source address included); **read by the admin only** (admin-UI page
+  with export). Settled without asking: an append-only SQLite table (triggers forbid update/delete)
+  mirrored to a JSONL file; a daily copy to the operator share is optional, say if wanted.
 
 ### FUT-05: privacy-friendly statistics (European)
 
@@ -112,3 +153,7 @@ has a self-hostable Community Edition), Simple Analytics (Netherlands), Pirsch (
 cookieless operation (no consent banner) and a self-hosted or EU-hosted instance. Any of them adds a
 script/endpoint origin to the CSP (`script-src`, `connect-src`). Cloudflare Web Analytics exists but
 is not European.
+
+**Decisions (interview 2026-10-26):**
+- **Plausible Community Edition, self-hosted on lanbilder2** (Docker: ClickHouse + PostgreSQL),
+  cookieless; needs the RAM raise to 8 GB; one script origin added to the CSP.
