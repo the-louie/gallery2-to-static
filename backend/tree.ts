@@ -57,7 +57,7 @@ export class Tree {
     constructor(db: Db) {
         this.rootId = Number(db.setting('root_id'));
         this.thumbPrefix = db.setting('thumb_prefix') ?? 't__';
-        const rows = db.all<ItemRow>(`SELECT i.*, o.nickname AS owner_name FROM items i LEFT JOIN owners o ON o.id = i.owner_id
+        const rows = db.all<ItemRow>(`SELECT i.*, CASE WHEN o.show_full_name = 1 AND o.full_name IS NOT NULL AND trim(o.full_name) <> '' THEN o.full_name ELSE o.nickname END AS owner_name FROM items i LEFT JOIN owners o ON o.id = i.owner_id
             WHERE i.deleted_at IS NULL AND i.hidden = 0 ORDER BY i.parent_id, i.position, i.id`);
         for (const r of rows) this.byId.set(r.id, r);
         // a visible item needs a visible parent chain

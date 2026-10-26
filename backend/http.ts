@@ -10,6 +10,8 @@ import type { Db } from './db/db.ts';
 export interface Reply {
     status: number;
     json?: unknown;
+    /** raw body (pictures); `headers['content-type']` must be set by the route */
+    body?: Buffer;
     headers?: Record<string, string>;
 }
 
@@ -135,6 +137,12 @@ export function send(res: ServerResponse, reply: Reply): void {
         'x-content-type-options': 'nosniff',
         ...reply.headers,
     };
+    if (reply.body !== undefined && reply.json === undefined) {
+        headers['content-length'] = String(reply.body.length);
+        res.writeHead(reply.status, headers);
+        res.end(reply.body);
+        return;
+    }
     if (reply.json === undefined || reply.status === 204 || reply.status === 304) {
         res.writeHead(reply.status, headers);
         res.end();

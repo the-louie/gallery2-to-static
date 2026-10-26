@@ -13,6 +13,8 @@ export interface AccessIdentity {
     sub: string;
     /** Expiry, seconds since the epoch. */
     exp: number;
+    /** Display name when the token carries a `name` claim (copied to the profile at first login). */
+    name?: string;
 }
 
 export interface Jwk {
@@ -134,7 +136,8 @@ export async function verifyAccessJwt(token: string, opts: VerifyOptions): Promi
     if (claims.iat !== undefined && (typeof claims.iat !== 'number' || claims.iat - skew > nowSec)) throw new AccessError('JWT issued in the future');
     if (typeof claims.email !== 'string' || !claims.email.includes('@')) throw new AccessError('JWT without email');
     if (typeof claims.sub !== 'string' || !claims.sub) throw new AccessError('JWT without sub');
-    return { email: claims.email.trim().toLowerCase(), sub: claims.sub, exp: claims.exp };
+    const name = typeof claims.name === 'string' && claims.name.trim() ? claims.name.trim().slice(0, 120) : undefined;
+    return { email: claims.email.trim().toLowerCase(), sub: claims.sub, exp: claims.exp, ...(name ? { name } : {}) };
 }
 
 function pickKey(jwks: Jwks, kid: string | undefined): Jwk | undefined {

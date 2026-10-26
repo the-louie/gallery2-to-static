@@ -87,6 +87,10 @@ export async function authenticate(ctx: Ctx, deps: AuthDeps, opts: GuardOptions 
     }
     let setCookie: string | undefined;
     if (!session) {
+        if (identity.name && !user.full_name && user.last_login_at === null) {
+            ctx.db.run('UPDATE users SET full_name = ? WHERE id = ? AND full_name IS NULL', identity.name, user.id);
+            user.full_name = identity.name;
+        }
         session = createSession(ctx.db, user.id, now);
         setCookie = sessionCookie(session.id, deps.secret);
         deps.audit({ userId: user.id, email: user.email, ip: ctx.ip, action: 'session', result: 'ok', detail: { sub: identity.sub } });

@@ -52,7 +52,7 @@ interface Row {
 }
 
 const SELECT = `SELECT i.id, i.type, i.parent_id, i.position, i.title, i.description, i.summary, i.path_component, i.url_segment,
-    i.url_locked_at, i.event_at, i.width, i.height, o.nickname AS owner_name, i.view_count, i.hidden, i.deleted_at
+    i.url_locked_at, i.event_at, i.width, i.height, CASE WHEN o.show_full_name = 1 AND o.full_name IS NOT NULL AND trim(o.full_name) <> '' THEN o.full_name ELSE o.nickname END AS owner_name, i.view_count, i.hidden, i.deleted_at
     FROM items i LEFT JOIN owners o ON o.id = i.owner_id`;
 
 export function getRow(db: Db, id: number): Row | undefined {

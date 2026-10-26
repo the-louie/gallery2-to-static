@@ -15,6 +15,7 @@ import { registerAuthRoutes } from './routes/auth.ts';
 import { registerAdminRoutes } from './routes/admin.ts';
 import { registerAlbumRoutes } from './routes/albums.ts';
 import { registerRegenRoutes } from './routes/regen.ts';
+import { registerProfileRoutes } from './routes/profile.ts';
 import { RegenQueue } from './regenQueue.ts';
 import { verifyAccessJwt, type AccessIdentity } from './auth/access.ts';
 import { sessionSecret } from './auth/session.ts';
@@ -48,6 +49,8 @@ export interface ServerOptions {
     onChange?: () => void;
     /** The regeneration queue (status route, manual run); the CLI builds one around generate.ts. */
     regen?: RegenQueue;
+    /** Profile pictures (default: `avatars/` next to the database file). */
+    avatarsDir?: string;
 }
 
 /** The auth dependencies the routes share, from the server options. */
@@ -83,6 +86,7 @@ export function buildRouter(opts: ServerOptions): Router {
         onChange,
     });
     registerRegenRoutes(router, deps, opts.regen, onChange);
+    registerProfileRoutes(router, deps, { avatarsDir: opts.avatarsDir ?? path.join(path.dirname(opts.db.file === ':memory:' ? path.join(import.meta.dirname, 'db', 'x') : opts.db.file), 'avatars'), onChange });
     opts.routes?.(router);
     return router;
 }
@@ -134,6 +138,19 @@ export function createServer(opts: ServerOptions): http.Server {
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
     const { openDb } = await import('./db/db.ts');
     const file = process.env.GALLERY_DB ?? path.join(import.meta.dirname, 'db', 'gallery.sqlite');
+    // `server.ts --invite-admin <email>`: the first admin (or another one), then exit
+    const inviteAt = process.argv.indexOf('--invite-admin');
+    if (inviteAt !== -1) {
+        const { inviteUser } = await import('./auth/users.ts');
+        const db0 = openDb(file);
+        try {
+            const u = inviteUser(db0, process.argv[inviteAt + 1] ?? '', 'admin');
+            stdoutLogger({ msg: 'admin invited', id: u.id, email: u.email, db: file });
+        } finally {
+            db0.close();
+        }
+        process.exit(0);
+    }
     const port = process.env.PORT ? Number(process.env.PORT) : DEFAULT_PORT;
     const host = process.env.HOST ?? DEFAULT_HOST;
     const db = openDb(file);
