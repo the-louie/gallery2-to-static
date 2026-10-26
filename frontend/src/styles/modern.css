@@ -334,11 +334,9 @@
   font-size: 0.78rem;
   line-height: 1.35;
   color: var(--color-text-muted);
-  max-width: 60ch;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
+  max-width: 72ch;
+  /* the whole sentence, wrapped (operator, 2026-10-26, QA-04: it was clamped to one line) */
+  overflow-wrap: anywhere;
 }
 
 :is([data-theme="light"], [data-theme="dark"]) .layout-header-actions {
@@ -938,7 +936,7 @@
   }
 
   :is([data-theme="light"], [data-theme="dark"]) .layout-header-description {
-    display: none;
+    font-size: 0.74rem;
   }
 
   :is([data-theme="light"], [data-theme="dark"]) .layout-header-actions {

@@ -69,9 +69,8 @@ verified against the code at `b79dc10` before planning (Sprint 13).
 - **QA-03: modern themes: more vertical margin above "...and more!"** — "when there are many
   sub-albums the '...and more' button is too close to the sub-album buttons".
   `RootAlbumListBlock.css:269` has `margin-top: auto` and no gap from the list.
-- **QA-04: modern themes: the header description is cut off** — "lanbilder.se är världens största
-  samling lanparty-bilder. Om du vill visa..." `modern.css:333` clamps `.layout-header-description`
-  to one line (`-webkit-line-clamp: 1`).
+- ~~**QA-04: modern themes: the header description is cut off**~~ — **CLOSED, verified 2026-10-26 (Sprint 13 T-02):** `frontend/src/styles/modern.css` `.layout-header-description` has no line clamp any more (wraps, max 72ch) and is shown on phones at 0.74rem; screenshot with T-04's deploy.
+  Original row kept for the record: "lanbilder.se är världens största samling lanparty-bilder. Om du vill visa..." `modern.css:333` clamps `.layout-header-description` to one line (`-webkit-line-clamp: 1`).
 - ~~**QA-05: classic theme: "Theme: modern" goes to the dark variant**~~ — **CLOSED, verified 2026-10-26 (Sprint 13 T-01):** `frontend/src/components/MatrixSidebar/MatrixSidebar.tsx:133` calls `setTheme('dark')`; test `MatrixSidebar.test.tsx` asserts it.
   Original row kept for the record: `MatrixSidebar.tsx:133` calls `setTheme('light')`.
 - **QA-06: classic theme on phones: thumbnails flow two per row without gaps** — Pixel 9
