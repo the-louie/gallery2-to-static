@@ -7,7 +7,7 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import type { Db } from './db/db.ts';
-import { Tree, type ItemRow } from './generate.ts';
+import { Tree, type ItemRow } from './tree.ts';
 import { generateThumbnail, readThumbnailSize, type ThumbnailOptions } from './generateThumbnail.ts';
 import { buildPathsFromPathComponent } from './pathResolution.ts';
 
