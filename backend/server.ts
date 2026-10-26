@@ -13,6 +13,7 @@ import { Router, HttpError, send, json, error, readJsonBody, clientIp, type Ctx,
 import { registerViewRoutes } from './routes/view.ts';
 import { registerAuthRoutes } from './routes/auth.ts';
 import { registerAdminRoutes } from './routes/admin.ts';
+import { registerAlbumRoutes } from './routes/albums.ts';
 import { verifyAccessJwt, type AccessIdentity } from './auth/access.ts';
 import { sessionSecret } from './auth/session.ts';
 import type { AuthDeps, AuditSink } from './auth/guard.ts';
@@ -39,6 +40,10 @@ export interface ServerOptions {
     audit?: AuditSink;
     /** Clock (tests). */
     now?: () => Date;
+    /** Where the originals live (Sprint 18 album/upload routes); default <repo>/frontend/public/g2data/albums. */
+    albumsRoot?: string;
+    /** Called after every content write (the RegenQueue's request). */
+    onChange?: () => void;
 }
 
 /** The auth dependencies the routes share, from the server options. */
@@ -67,6 +72,11 @@ export function buildRouter(opts: ServerOptions): Router {
     const deps = authDeps(opts);
     registerAuthRoutes(router, deps);
     registerAdminRoutes(router, deps);
+    registerAlbumRoutes(router, {
+        auth: deps,
+        albumsRoot: opts.albumsRoot ?? path.join(import.meta.dirname, '..', 'frontend', 'public', 'g2data', 'albums'),
+        onChange: opts.onChange ?? (() => {}),
+    });
     opts.routes?.(router);
     return router;
 }
@@ -104,7 +114,8 @@ export function createServer(opts: ServerOptions): http.Server {
         const m = router.match(req.method ?? 'GET', url.pathname);
         if (!m) return error(404, 'not found');
         if ('allow' in m) return { status: 405, json: { error: 'method not allowed' }, headers: { allow: m.allow.join(', ') } };
-        const body = req.method === 'GET' || req.method === 'HEAD' ? undefined : await readJsonBody(req);
+        const multipart = (req.headers['content-type'] ?? '').startsWith('multipart/form-data');
+        const body = req.method === 'GET' || req.method === 'HEAD' || multipart ? undefined : await readJsonBody(req);
         const ctx: Ctx = { req, res, url, params: m.params, db: opts.db, ip, log, body };
         return m.handler(ctx);
     }

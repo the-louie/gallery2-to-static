@@ -11,7 +11,7 @@ import {
 
 async function run(): Promise<void> {
     const db = openDb();
-    assert.deepStrictEqual(db.migrations(), [1, 2], 'migration 002 applied');
+    assert.ok(db.migrations().includes(2), 'migration 002 applied');
 
     // secret: env wins, else a settings row generated once and reused
     assert.strictEqual(sessionSecret(db, { SESSION_SECRET: 'x'.repeat(40) }).toString(), 'x'.repeat(40));

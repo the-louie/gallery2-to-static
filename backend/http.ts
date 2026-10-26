@@ -63,6 +63,7 @@ export class Router {
     post(path: string, handler: Handler): this { return this.add('POST', path, handler); }
     put(path: string, handler: Handler): this { return this.add('PUT', path, handler); }
     delete(path: string, handler: Handler): this { return this.add('DELETE', path, handler); }
+    patch(path: string, handler: Handler): this { return this.add('PATCH', path, handler); }
 
     /** The handler and params for a request, `undefined` when the path is unknown and 405 info when only the method differs. */
     match(method: string, pathname: string): { handler: Handler; params: Record<string, string> } | { allow: string[] } | undefined {
