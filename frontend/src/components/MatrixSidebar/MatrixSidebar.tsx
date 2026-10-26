@@ -127,10 +127,10 @@ export function MatrixSidebar({ location }: MatrixSidebarProps) {
           })}
         </div>
       )}
-      {/* The way out of the 2006 look (operator, 2026-10-25): the modern light theme, whose header
-          dropdown offers dark and classic. Stays on the same page. */}
+      {/* The way out of the 2006 look (operator, 2026-10-25): the modern theme, dark variant (operator,
+          2026-10-26, QA-05); its header dropdown offers light and classic. Stays on the same page. */}
       <div className="block-core-ThemeSwitch gbBlock">
-        <button type="button" className="gbThemeSwitch" onClick={() => setTheme('light')}>
+        <button type="button" className="gbThemeSwitch" onClick={() => setTheme('dark')}>
           Theme: modern
         </button>
       </div>

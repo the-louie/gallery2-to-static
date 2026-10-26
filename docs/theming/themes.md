@@ -12,7 +12,7 @@ Soft off-white page (`#f4f6fb`) with white elevated cards, ink text (`#0f172a`),
 
 **Identifier:** `dark` (Sprint 12 T-11)
 
-Same layout and components as Light with the dark palette: deep navy page (`#0b0f19`) with surfaces `#121826` / `#1a2236`, light text (`#e6edf7`), sky-blue accent (`#38bdf8`), a faint cyan/indigo glow at the top, deeper shadows. Search highlights in amber. Switching: the header dropdown (Light / Dark / Classic); from the classic theme the sidebar's "Theme: modern" button lands in Light.
+Same layout and components as Light with the dark palette: deep navy page (`#0b0f19`) with surfaces `#121826` / `#1a2236`, light text (`#e6edf7`), sky-blue accent (`#38bdf8`), a faint cyan/indigo glow at the top, deeper shadows. Search highlights in amber. Switching: the header dropdown (Light / Dark / Classic); from the classic theme the sidebar's "Theme: modern" button lands in Dark (operator, 2026-10-26).
 
 ## Classic (Gallery 2 Matrix, as lanbilder.se ran it)
 

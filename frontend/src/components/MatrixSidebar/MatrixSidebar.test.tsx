@@ -67,14 +67,14 @@ describe('MatrixSidebar (THEME-01)', () => {
     expect(screen.queryByText(/Add Comment/)).toBeNull();
   });
 
-  it('"Theme: modern" at the bottom switches to the light theme (T-10)', async () => {
+  it('"Theme: modern" at the bottom switches to the modern dark theme (S12 T-10, S13 T-01)', async () => {
     render(<MatrixSidebar location={null} />);
     const blocks = document.querySelectorAll('.gbBlock');
     const last = blocks[blocks.length - 1];
     const button = screen.getByRole('button', { name: 'Theme: modern' });
     expect(last.contains(button)).toBe(true);
     await userEvent.setup().click(button);
-    expect(mockSetTheme).toHaveBeenCalledWith('light');
+    expect(mockSetTheme).toHaveBeenCalledWith('dark');
   });
 
   it('search: Enter goes to the results; an empty box does nothing', async () => {
