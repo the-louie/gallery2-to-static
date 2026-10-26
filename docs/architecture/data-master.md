@@ -73,7 +73,7 @@ settings       (key TEXT PK, value TEXT)       -- root_id, site_name, site_descr
 
 Added since: `items.blocked` (migration 004: the Gallery 2 ignore lists, never served and never a
 highlight; `hidden` alone is the operator's choice and a hidden photo may still be an album's chosen
-highlight), `settings.album_sort` (`title` default: sub-albums alphabetically before the photos;
+highlight), `settings.album_sort` (`title` default: sub-albums alphabetically before the photos, "Internationella" then "Demoparties" pinned first (`shared/albumOrder.ts`);
 `position` = Gallery 2 order), `items.url_locked_at` (migration 003), `items.order_weight`, `thumb_width/height`
 (the Gallery 2 values the extractor emitted), `media.thumb_failed`; the generator shows
 `owners.full_name` instead of the nickname when `show_full_name = 1`.

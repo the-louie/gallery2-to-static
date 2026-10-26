@@ -12,18 +12,20 @@ export function albumSortSetting(db: Db): AlbumSort {
     return db.setting('album_sort') === 'position' ? 'position' : 'title';
 }
 
+import { compareAlbumTitles } from '../shared/albumOrder.ts';
+
 const SV = new Intl.Collator('sv', { sensitivity: 'base', numeric: true });
 
 /**
  * Child order (operator, 2026-10-26, items 1 and 9): sub-albums always before the photos; the
- * albums alphabetically (Swedish collation, numbers in order) or, with 'position', in Gallery 2
- * order; the photos in their Gallery 2 position. The default highlight is the first photo directly
+ * albums alphabetically (Swedish collation, numbers in order; "Internationella" then "Demoparties"
+ * pinned to the top, shared/albumOrder.ts) or, with 'position', in Gallery 2 order; the photos in their Gallery 2 position. The default highlight is the first photo directly
  * in the album (generate.ts firstPhotoRecursive looks at direct photos first).
  */
 export function sortChildren<T extends { type: 'album' | 'photo'; title: string | null; position: number; id: number }>(list: T[], mode: AlbumSort): T[] {
     return list.sort((a, b) => {
         if (a.type !== b.type) return a.type === 'album' ? -1 : 1;
-        if (a.type === 'album' && mode === 'title') return SV.compare(a.title ?? '', b.title ?? '') || a.id - b.id;
+        if (a.type === 'album' && mode === 'title') return compareAlbumTitles(SV, a.title, b.title) || a.id - b.id;
         return a.position - b.position || a.id - b.id;
     });
 }

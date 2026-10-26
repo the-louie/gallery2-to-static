@@ -120,6 +120,10 @@ npm run mock          # terminal 1: mock API on 127.0.0.1:3101 (MOCK_SKIP_TOTP=1
 npm run dev           # terminal 2: Vite on http://localhost:5174, /api and /g2data proxied to the mock
 ```
 
+**Album order** (operator, 2026-10-26): sub-albums alphabetically (Swedish collation) with
+"Internationella" then "Demoparties" pinned on top, from `shared/albumOrder.ts` (the generator
+uses the same module for the public site).
+
 **Pending** (operator, 2026-10-26): an item whose `pending` flag is set (changed since its
 album's last publish run, `admin-api.md`) gets a yellow background (`is-pending`, tokens
 `--pending-bg/--pending-border/--pending-text`) and a "pending" pill. When the regeneration

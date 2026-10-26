@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import { useAlbum } from "../../hooks/useAlbum";
 import { notifyWrite, onPublished } from "../../hooks/useRegenStatus";
+import { compareAlbumTitles } from "../../../../shared/albumOrder";
 import { useSession } from "../../session/SessionContext";
 import { AlbumForm } from "../../components/AlbumForm";
 import { DelegateBox } from "../../components/DelegateBox";
@@ -59,7 +60,8 @@ function AlbumPageBody({ id }: { id: number | "root" }): ReactNode {
   });
   const albums = view.children
     .filter((c) => c.type === "album")
-    .sort((a, b) => collator.compare(a.title ?? "", b.title ?? ""));
+    // alphabetical, "Internationella" then "Demoparties" pinned on top (operator, 2026-10-26)
+    .sort((a, b) => compareAlbumTitles(collator, a.title, b.title));
   const photos = view.children.filter((c) => c.type === "photo");
   const title = album ? album.title || "untitled" : "Your albums";
   const canWrite = album?.canWrite ?? false;

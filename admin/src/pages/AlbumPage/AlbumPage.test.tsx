@@ -52,6 +52,8 @@ describe("AlbumPage", () => {
             deletedAt: "2026-01-01T00:00:00Z",
             position: 2,
           }),
+          item({ id: 22, type: "album", title: "Demoparties", position: 3 }),
+          item({ id: 23, type: "album", title: "Internationella", position: 4 }),
         ],
       }),
     });
@@ -62,18 +64,21 @@ describe("AlbumPage", () => {
 
     const albums = screen.getByRole("list", { name: "Sub-albums" });
     const rows = within(albums).getAllByRole("listitem");
-    expect(rows).toHaveLength(2);
-    // albums are listed alphabetically (operator, 2026-10-26): "Gone album" before "Hidden album"
-    expect(within(rows[0]!).getByText("Gone album")).toBeInTheDocument();
-    expect(within(rows[0]!).getByText("deleted")).toBeInTheDocument();
-    expect(within(rows[1]!).getByText("Hidden album")).toBeInTheDocument();
-    expect(within(rows[1]!).getByText("hidden")).toBeInTheDocument();
+    expect(rows).toHaveLength(4);
+    // albums are listed alphabetically (operator, 2026-10-26), with "Internationella" then
+    // "Demoparties" pinned on top: Internationella, Demoparties, Gone album, Hidden album
+    expect(rows.map((r) => r.textContent?.includes("Internationella"))[0]).toBe(true);
+    expect(within(rows[1]!).getByText("Demoparties")).toBeInTheDocument();
+    expect(within(rows[2]!).getByText("Gone album")).toBeInTheDocument();
+    expect(within(rows[2]!).getByText("deleted")).toBeInTheDocument();
+    expect(within(rows[3]!).getByText("Hidden album")).toBeInTheDocument();
+    expect(within(rows[3]!).getByText("hidden")).toBeInTheDocument();
     // pending (operator, 2026-10-26): yellow row + pill until the album is published
-    expect(within(rows[1]!).getByText("pending")).toBeInTheDocument();
-    expect(rows[1]).toHaveClass("is-pending");
-    expect(rows[0]).not.toHaveClass("is-pending");
-    expect(within(rows[1]!).getByText(/3 items/)).toBeInTheDocument();
-    expect(within(rows[1]!).getByRole("link")).toHaveAttribute(
+    expect(within(rows[3]!).getByText("pending")).toBeInTheDocument();
+    expect(rows[3]).toHaveClass("is-pending");
+    expect(rows[2]).not.toHaveClass("is-pending");
+    expect(within(rows[3]!).getByText(/3 items/)).toBeInTheDocument();
+    expect(within(rows[3]!).getByRole("link")).toHaveAttribute(
       "href",
       "/albums/20"
     );
