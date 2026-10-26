@@ -190,15 +190,21 @@ export function createAlbum(db: Db, parentId: number, input: Record<string, unkn
     const summary = optText(input.summary, 'summary', 1024) ?? null;
     const eventAt = optTime(input.eventAt) ?? Math.floor(Date.now() / 1000);
     const used = new Set(db.all<{ s: string }>(`SELECT url_segment AS s FROM items WHERE parent_id = ? AND type = 'album' UNION SELECT path_component FROM items WHERE parent_id = ?`, parentId, parentId).map((r) => r.s));
+    const nextId = db.get<{ m: number }>('SELECT max(id) AS m FROM items')!.m + 1;
+    const segment = getSegmentForAlbum(title, nextId, used);
+    // the directory first: a failing mkdir (permissions, a read-only mount) leaves no row behind
+    const dir = path.join(albumsRoot, ...g2Chain(db, parentId), segment);
+    try {
+        fs.mkdirSync(dir, { recursive: true });
+    } catch (e) {
+        throw new HttpError(500, `cannot create the album directory: ${e instanceof Error ? e.message : String(e)}`);
+    }
     const id = db.transaction(() => {
         const position = (db.get<{ m: number | null }>('SELECT max(position) AS m FROM items WHERE parent_id = ?', parentId)!.m ?? 0) + 1;
-        const nextId = db.get<{ m: number }>('SELECT max(id) AS m FROM items')!.m + 1;
-        const segment = getSegmentForAlbum(title, nextId, used);
         const r = db.run(`INSERT INTO items (id, type, parent_id, position, title, description, summary, path_component, url_segment, event_at, owner_id, hidden)
             VALUES (?, 'album', ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`, nextId, parentId, position, title, description, summary, segment, segment, eventAt, ownerForUser(db, user));
         return r.lastInsertRowid;
     });
-    fs.mkdirSync(path.join(albumsRoot, ...g2Chain(db, id)), { recursive: true });
     return toAdminItem(db, getRow(db, id)!, user);
 }
 

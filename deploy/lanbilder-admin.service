@@ -30,7 +30,8 @@ TimeoutStopSec=30
 NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes
-ReadWritePaths=/mnt/storage/lanbilder-app
+ReadWritePaths=/mnt/storage/lanbilder-app /mnt/storage/lanbilder.se/g2extractor/gall
+# ^ the albums tree (frontend/public/g2data/albums is a symlink into it): uploads and new album directories land there
 PrivateTmp=yes
 PrivateDevices=yes
 ProtectKernelTunables=yes

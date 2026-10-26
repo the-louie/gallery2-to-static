@@ -63,6 +63,13 @@ async function run(): Promise<void> {
         assert.ok(a.id > 301, 'ids continue above the imported ones');
         assert.ok(fs.statSync(path.join(albumsRoot, 'dreamhack', 'testlan_2026')).isDirectory(), 'directory created');
         assert.strictEqual(changes, 1);
+        // an unwritable albums root leaves no row behind (the operator's first attempt hit a read-only sandbox)
+        fs.chmodSync(path.join(albumsRoot, 'dreamhack'), 0o500);
+        const ro = await call(kalle, 'POST', '/api/albums', { parentId: 10, title: 'Nowrite' });
+        fs.chmodSync(path.join(albumsRoot, 'dreamhack'), 0o755);
+        assert.strictEqual(ro.status, 500);
+        assert.match(ro.body.error, /cannot create the album directory/);
+        assert.strictEqual(db.get("SELECT 1 FROM items WHERE title = 'Nowrite'"), undefined, 'no row for a failed mkdir');
         const dup = await call(kalle, 'POST', '/api/albums', { parentId: 10, title: 'Testlan 2026' });
         assert.notStrictEqual(dup.body.urlSegment, a.urlSegment, 'a duplicate title gets a distinct segment');
         assert.strictEqual((await call(kalle, 'POST', '/api/albums', { parentId: 10, title: '' })).status, 400);
