@@ -1,18 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { AlbumPage, parseAlbumParam } from "./AlbumPage";
 import { albumView, installFetchMock, item } from "../../test/mockFetch";
+import { renderWithSession, session } from "../../test/renderWithSession";
 
-function renderAt(path: string) {
-  return render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route path="/albums/:id" element={<AlbumPage />} />
-      </Routes>
-    </MemoryRouter>
-  );
+function renderAt(path: string, role: "admin" | "user" = "admin") {
+  return renderWithSession(<AlbumPage />, {
+    path,
+    routePattern: "/albums/:id",
+    session: session({ role }),
+  });
 }
 
 describe("parseAlbumParam", () => {
@@ -150,6 +148,74 @@ describe("AlbumPage", () => {
     expect(screen.getByText("Mine")).toBeInTheDocument();
     expect(
       screen.queryByRole("heading", { name: /Photos/ })
+    ).not.toBeInTheDocument();
+  });
+
+  it("hides write actions when canWrite is false and shows them otherwise", async () => {
+    const f = installFetchMock();
+    f.on("GET /api/albums/7", {
+      status: 200,
+      body: albumView({
+        album: item({ id: 7, type: "album", title: "RO", canWrite: false }),
+        children: [item({ id: 8, type: "photo", title: "P", canWrite: false })],
+      }),
+    });
+    renderAt("/albums/7", "user");
+    expect(
+      await screen.findByRole("heading", { name: /RO/ })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "New album" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Upload photos" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Delete P/ })
+    ).not.toBeInTheDocument();
+  });
+
+  it("toggles hidden, opens the new-album form and appends the created album", async () => {
+    const f = installFetchMock();
+    const root = item({
+      id: 1,
+      type: "album",
+      title: "Root",
+      path: "/",
+      parentId: null,
+    });
+    f.on("GET /api/albums/root", {
+      status: 200,
+      body: albumView({ album: root }),
+    });
+    f.on("PUT /api/albums/1/hidden", (init) => ({
+      status: 200,
+      body: {
+        ...root,
+        hidden: (JSON.parse(String(init?.body)) as { hidden: boolean }).hidden,
+      },
+    }));
+    f.on("POST /api/albums", {
+      status: 201,
+      body: item({ id: 50, type: "album", title: "Fresh", hidden: true }),
+    });
+    renderAt("/albums/root");
+    await screen.findByRole("heading", { name: /Root/ });
+    await userEvent.click(screen.getByLabelText("Hidden"));
+    expect(f.bodyOf("PUT /api/albums/1/hidden")).toEqual({ hidden: true });
+    expect(await screen.findByText("hidden")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "New album" }));
+    await userEvent.type(screen.getByLabelText("Title"), "Fresh");
+    await userEvent.click(screen.getByRole("button", { name: "Create" }));
+    expect(await screen.findByText("Fresh")).toBeInTheDocument();
+    expect(f.bodyOf("POST /api/albums")).toEqual({
+      parentId: 1,
+      title: "Fresh",
+      eventAt: null,
+    });
+    expect(
+      screen.queryByRole("form", { name: "New album" })
     ).not.toBeInTheDocument();
   });
 

@@ -1,0 +1,63 @@
+.photo-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.photo-card.is-deleted {
+  opacity: 0.55;
+}
+
+.photo-card.is-highlight {
+  border-color: var(--accent);
+}
+
+.photo-card .thumb {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 1;
+}
+
+.photo-card-title {
+  font-size: 0.9em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.photo-card-description {
+  font-size: 0.8em;
+  max-height: 3.6em;
+  overflow: hidden;
+}
+
+.photo-card-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.photo-card-edit textarea {
+  min-height: 3em;
+}
+
+.photo-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.photo-card-actions button {
+  font-size: 0.85em;
+  padding: 2px 7px;
+}
+
+.photo-card-error {
+  font-size: 0.85em;
+  margin: 0;
+}

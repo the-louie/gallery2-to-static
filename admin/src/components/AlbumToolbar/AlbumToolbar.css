@@ -1,0 +1,7 @@
+.album-toolbar {
+  margin: var(--space) 0 calc(var(--space) * 2);
+}
+
+.album-toolbar-hidden {
+  padding: 0 4px;
+}

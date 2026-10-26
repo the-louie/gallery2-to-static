@@ -12,6 +12,10 @@ export interface AlbumState {
   replaceChild: (item: AdminItem) => void;
   /** Replace the album itself in place. */
   replaceAlbum: (item: AdminItem) => void;
+  /** Append freshly created children (uploads, new sub-albums). */
+  addChildren: (items: AdminItem[]) => void;
+  /** Apply a new order of all direct children (ids as sent to the server). */
+  reorder: (ids: number[]) => void;
 }
 
 /**
@@ -68,5 +72,31 @@ export function useAlbum(id: number | "root"): AlbumState {
     setView((v) => (v ? { ...v, album: item } : v));
   }, []);
 
-  return { view, loading, error, reload, replaceChild, replaceAlbum };
+  const addChildren = useCallback((items: AdminItem[]) => {
+    setView((v) => (v ? { ...v, children: [...v.children, ...items] } : v));
+  }, []);
+
+  const reorder = useCallback((ids: number[]) => {
+    setView((v) => {
+      if (!v) return v;
+      const byId = new Map(v.children.map((c) => [c.id, c]));
+      const ordered: AdminItem[] = [];
+      ids.forEach((id, i) => {
+        const c = byId.get(id);
+        if (c) ordered.push({ ...c, position: i });
+      });
+      return { ...v, children: ordered };
+    });
+  }, []);
+
+  return {
+    view,
+    loading,
+    error,
+    reload,
+    replaceChild,
+    replaceAlbum,
+    addChildren,
+    reorder,
+  };
 }
