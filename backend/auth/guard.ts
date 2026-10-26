@@ -76,7 +76,7 @@ export async function authenticate(ctx: Ctx, deps: AuthDeps, opts: GuardOptions 
     const user = findUserByEmail(ctx.db, identity.email);
     if (!user || user.enabled !== 1) {
         deps.audit({ userId: user?.id ?? null, email: identity.email, ip: ctx.ip, action: 'login', result: 'denied', detail: { reason: user ? 'disabled' : 'unknown' } });
-        throw new AuthError(403, 'not an enabled user');
+        throw new AuthError(403, 'not an enabled user', { email: identity.email });
     }
 
     let session: Session | undefined;
