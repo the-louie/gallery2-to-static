@@ -394,6 +394,17 @@ describe('ThemeContext', () => {
       expect(result.current.isDark).toBe(false);
       expect(result.current.isLight).toBe(false);
     });
+
+    it('isClassic and isClassicList are true for the classic-list theme (S13 T-09)', () => {
+      const { result } = renderHook(() => useTheme(), {
+        wrapper: createWrapper('classic-list'),
+      });
+
+      expect(result.current.isClassic).toBe(true);
+      expect(result.current.isClassicList).toBe(true);
+      expect(result.current.isDark).toBe(false);
+      expect(result.current.isLight).toBe(false);
+    });
   });
 
   describe('Theme Validation', () => {

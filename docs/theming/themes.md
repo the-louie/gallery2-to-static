@@ -39,6 +39,18 @@ Same layout and components as Light with the dark palette: deep navy page (`#0b0
 
 ---
 
+## Classic list (the 2013 root page)
+
+**Identifier:** `classic-list`
+
+**Description:** The classic theme with the root album shown as lanbilder.se showed it from about 2008 to 2013 (operator, 2026-10-26, QA-09): Gallery 2's Classic theme `album.tpl` with one column and `showSubalbums`, every album on one page. The operator switched the old site to this list when the number of root albums made paging the front page hostile. Template: https://web.archive.org/web/20130410092639/http://www.lanbilder.se/main.php (the 2006 root, `docs/orig-page/2006/main.html`, used the same layout with 10 rows per page).
+
+**Layout:** the same frame, sidebar and footer badges as `classic`; the root page's header block as in `classic`, then `MatrixAlbumList` — a table with one row per album: the `giAlbumCell` thumbnail (150×150), a cell with "Album: title" (a link), the summary and Date / Size / Views, and a `td.tree` with "Subalbums:" and the album's direct sub-albums (loaded from each album's data file, in the album's order). No navigator and no pager. Every other page (albums, photos, search) is the `classic` page. Dates keep the MM/DD/YYYY form of the 2006 pages (the 2013 site showed DD/MM/YY). Below 700px: thumbnail and info side by side, the sub-album list under them.
+
+**CSS selector:** `[data-theme="classic-list"]` — shares every `classic` token in `themes.css` (`:is([data-theme="classic"], [data-theme="classic-list"])`); `useTheme().isClassic` is true for both, `isClassicList` only here.
+
+---
+
 ## Default Theme
 
 The application default is `classic`. This can be overridden per album via `album-themes.json` (`defaultTheme` field).

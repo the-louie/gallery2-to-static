@@ -6,6 +6,7 @@ import { getAlbumPath } from '@/utils/albumPath';
 import { formatG2Date, jumpRange, MATRIX_PER_PAGE, pageHref, parsePage } from '@/utils/matrixPaging';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { MatrixThumbMatrix } from './MatrixThumbMatrix';
+import { MatrixAlbumList } from './MatrixAlbumList';
 import './MatrixAlbum.css';
 
 /**
@@ -14,6 +15,8 @@ import './MatrixAlbum.css';
 export interface MatrixAlbumProps {
   /** Album to show */
   albumId: number;
+  /** The 2013 list layout (classic-list theme, QA-09): every item on one page, one row per item, sub-albums listed */
+  list?: boolean;
 }
 
 /**
@@ -89,14 +92,15 @@ function Pager({ path, page, totalPages }: { path: string; page: number; totalPa
  * An album page in Gallery 2's Matrix theme (classic theme, THEME-01; spec
  * `frontend/docs/theme-matrix.md`): header block with title, description, Date / Owner / Size,
  * the navigator, the thumbnail matrix (12 per page, `?page=N`), the navigator again and the pager.
- * The navigator shows only with more than one page, as in Gallery 2.
+ * The navigator shows only with more than one page, as in Gallery 2. With `list` (the root album in
+ * the classic-list theme) the items are the 2013 one-row-per-album list, all on one page, no pager.
  *
  * @example
  * ```tsx
  * <MatrixAlbum albumId={57207} />
  * ```
  */
-export function MatrixAlbum({ albumId }: MatrixAlbumProps) {
+export function MatrixAlbum({ albumId, list = false }: MatrixAlbumProps) {
   const [searchParams] = useSearchParams();
   const { data: children, metadata, isLoading, error, refetch } = useAlbumData(albumId);
 
@@ -117,12 +121,12 @@ export function MatrixAlbum({ albumId }: MatrixAlbumProps) {
   }
 
   const path = getAlbumPath(metadata.breadcrumbPath ?? []);
-  const totalPages = Math.max(Math.ceil(children.length / MATRIX_PER_PAGE), 1);
+  const totalPages = list ? 1 : Math.max(Math.ceil(children.length / MATRIX_PER_PAGE), 1);
   const page = parsePage(searchParams.get('page'));
   // Gallery 2 sent a page past the end to the last page
   if (page > totalPages) return <Navigate to={pageHref(path, totalPages)} replace />;
 
-  const pageChildren = children.slice((page - 1) * MATRIX_PER_PAGE, page * MATRIX_PER_PAGE);
+  const pageChildren = list ? children : children.slice((page - 1) * MATRIX_PER_PAGE, page * MATRIX_PER_PAGE);
   const size = getSize(metadata, children);
   const description = metadata.albumDescription?.trim();
 
@@ -159,11 +163,13 @@ export function MatrixAlbum({ albumId }: MatrixAlbumProps) {
         <div className="gbBlock giDescription gbEmptyAlbum">
           <h3 className="emptyAlbum">This album is empty.</h3>
         </div>
+      ) : list ? (
+        <MatrixAlbumList albumPath={path} items={pageChildren} />
       ) : (
         <MatrixThumbMatrix albumPath={path} items={pageChildren} />
       )}
       {totalPages > 1 && <Navigator path={path} page={page} totalPages={totalPages} />}
-      <Pager path={path} page={page} totalPages={totalPages} />
+      {!list && <Pager path={path} page={page} totalPages={totalPages} />}
     </div>
   );
 }

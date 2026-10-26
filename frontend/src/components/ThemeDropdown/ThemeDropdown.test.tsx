@@ -107,8 +107,9 @@ describe('ThemeDropdown', () => {
     const button = screen.getByRole('button');
     await user.click(button);
 
-    const classicOption = screen.getByRole('option', { name: /classic/i });
+    const classicOption = screen.getByRole('option', { name: /^classic$/i });
     expect(classicOption).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /^classic list$/i })).toBeInTheDocument(); // S13 T-09
     await user.click(classicOption);
 
     expect(document.documentElement.getAttribute('data-theme')).toBe('classic');

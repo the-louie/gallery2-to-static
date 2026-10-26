@@ -143,3 +143,8 @@ What still differs is data and export logic, now backlog rows **PRIO-THEME-01..0
 
 Same method as T-13 (`compare.cjs`, 1280px): album page 1 and the photo page have **no block differences** except the sidebar being 32px taller (the "Theme: modern" block the operator asked for, T-10); document height 1118px on both for the album. The banner slot above the nav bar (T-09) is removed on both sides before measuring, like the 2006 ad block; an empty slot takes no height. The root page's 10 album highlights match the 2006 root page 10/10 (T-01). The photo page serves the 1024px resize (175 KB for CIMG0053_.JPG instead of the 1.7 MB original). The modern light/dark redesign (T-11) is scoped to those themes and leaves these measurements unchanged.
 
+
+## Sprint 13 (2026-10-26): operator QA round
+
+- **Phones:** the thumbnail cells flow 2 per line over the whole matrix (T-05; the per-row flex layout left every third cell alone).
+- **`classic-list` theme (T-09, QA-09):** the root album as the 2013 list — Gallery 2's Classic theme `album.tpl` with `columns = 1`, `showSubalbums`, all albums on one page (`MatrixAlbumList`; CSS values from `themes/classic/theme.css`: `td.giAlbumCell { padding: 1em; text-align: center; width: 1% }`, `td.tree ul { list-style: none; margin: 0 0 0 8px; padding: 0 }`, `h4` 1.3em bold). The Classic theme's page frame differs from Matrix's (no peer list, a `gbSystemLinks` row); the list theme keeps the Matrix frame so the other pages stay identical. Measured against the 2013 page in T-10.

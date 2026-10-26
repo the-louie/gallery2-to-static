@@ -228,7 +228,7 @@ npm run typecheck        # Type-check the backend (TypeScript 7; Node only strip
 
 - One `.css` file per component, imported in the component file
 - CSS custom properties for all theme-dependent values
-- Three themes: `light`, `dark`, `classic` (Gallery 2 reproduction)
+- Four themes: `light`, `dark`, `classic` (Gallery 2 reproduction), `classic-list` (classic with the 2013 root-album list)
 - Theme applied via `data-theme` attribute on root element
 - Responsive design with `@media (min-width: 768px)` breakpoint
 - Transitions on theme-dependent properties (disabled under `prefers-reduced-motion`)
@@ -276,19 +276,20 @@ npm run typecheck        # Type-check the backend (TypeScript 7; Node only strip
 
 ## Theme System
 
-Three themes available, selected via `ThemeDropdown` or `ThemeSwitcher`:
+Four themes available, selected via `ThemeDropdown` (modern themes) or the classic sidebar's theme block:
 
 | Theme | Description | CSS Selector |
 |-------|-------------|--------------|
 | `light` | Modern light (Sprint 12 T-11): off-white page, white cards, blue accent; `src/styles/modern.css` | `[data-theme="light"]` |
 | `dark` | Modern dark: deep navy, sky-blue accent; same layout as light (`modern.css`) | `[data-theme="dark"]` |
 | `classic` | Gallery 2 Matrix theme as lanbilder.se ran it in 2006 (`MatrixFrame`; spec `frontend/docs/theme-matrix.md`) | `[data-theme="classic"]` |
+| `classic-list` | `classic`, but the root album is the 2013 list of all albums (`MatrixAlbumList`: one row per album with its sub-albums, no pager; S13 T-09) | `[data-theme="classic-list"]` (shares `classic`'s tokens; `isClassic` is true for both) |
 
 - Default theme: `classic`
 - Per-album theme overrides via `frontend/public/album-themes.json`
 - Theme preference stored in localStorage key `"gallery-theme"` (the old key `"gallery-theme-preference"` is migrated once)
 - Legacy `"original"` value auto-migrated to `"classic"`
-- `ThemeContext` exposes: `theme`, `effectiveTheme`, `setTheme`, `isDark`, `isLight`, `isClassic`
+- `ThemeContext` exposes: `theme`, `effectiveTheme`, `setTheme`, `isDark`, `isLight`, `isClassic`, `isClassicList`
 
 ## Image Handling
 

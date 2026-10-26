@@ -109,6 +109,36 @@
   text-align: center;
 }
 
+/* The 2013 root list (classic-list theme, QA-09): Gallery 2's Classic theme.css for the one-column
+   album.tpl — a narrow thumbnail cell, the info cell, the sub-album tree */
+.g2-matrix .gsAlbumList td {
+  width: auto;
+}
+
+.g2-matrix .gsAlbumList td.giAlbumCell,
+.g2-matrix .gsAlbumList td.giItemCell {
+  width: 1%;
+}
+
+.g2-matrix .gsAlbumList td.tree {
+  width: 30%;
+}
+
+.g2-matrix .gsAlbumList td.tree h4 {
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+.g2-matrix .gsAlbumList td.tree ul {
+  list-style-type: none;
+  margin: 0 0 0 8px;
+  padding: 0;
+}
+
+.g2-matrix .gsAlbumList td.tree li {
+  padding: 0;
+}
+
 /* lanbilder.se's thumbnails were 150x150 crops; ours keep the photo's shape, so crop to fit */
 .g2-matrix .giThumbnail {
   width: 150px;
@@ -151,9 +181,37 @@
     padding: 0.7em 0.3em;
   }
 
+  /* the 2013 list on phones: thumbnail and info side by side, the sub-album tree on its own line */
+  .g2-matrix .gsAlbumList tr {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .g2-matrix .gsAlbumList td {
+    width: auto;
+    flex: 1 1 0;
+  }
+
+  .g2-matrix .gsAlbumList td.giAlbumCell,
+  .g2-matrix .gsAlbumList td.giItemCell {
+    flex: 0 0 auto;
+    width: auto;
+  }
+
+  .g2-matrix .gsAlbumList td.tree {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
   /* the cells Gallery 2 used to fill a short row */
   .g2-matrix .gsThumbMatrix td:not(.giItemCell):not(.giAlbumCell) {
     display: none;
+  }
+
+  /* the list's info and tree cells are real cells */
+  .g2-matrix .gsAlbumList td:not(.giItemCell):not(.giAlbumCell) {
+    display: block;
   }
 
   .g2-matrix .gbHeader,

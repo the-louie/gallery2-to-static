@@ -23,8 +23,9 @@ describe('Theme Registry', () => {
       expect(themeNames).toContain('classic');
     });
 
-    it('has exactly three themes', () => {
-      expect(THEME_REGISTRY.length).toBe(3);
+    it('has exactly four themes (classic-list added in S13 T-09)', () => {
+      expect(THEME_REGISTRY.length).toBe(4);
+      expect(THEME_REGISTRY.map((t) => t.name)).toEqual(['light', 'dark', 'classic', 'classic-list']);
     });
 
     it('has unique theme names', () => {

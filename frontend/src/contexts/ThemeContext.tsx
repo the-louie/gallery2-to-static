@@ -123,8 +123,10 @@ export interface ThemeContextValue {
   isDark: boolean;
   /** Convenience property: true if effective theme is light */
   isLight: boolean;
-  /** Convenience property: true if effective theme is classic (G2 Classic) */
+  /** Convenience property: true if effective theme is classic or classic-list (the Gallery 2 look) */
   isClassic: boolean;
+  /** Convenience property: true if effective theme is classic-list (root album as the 2013 list) */
+  isClassicList: boolean;
 }
 
 /**
@@ -142,6 +144,7 @@ const defaultContextValue: ThemeContextValue = {
   isDark: false,
   isLight: false,
   isClassic: true,
+  isClassicList: false,
 };
 
 /**
@@ -435,7 +438,8 @@ export function ThemeProvider({
       availableThemes,
       isDark: effectiveTheme === 'dark',
       isLight: effectiveTheme === 'light',
-      isClassic: effectiveTheme === 'classic',
+      isClassic: effectiveTheme === 'classic' || effectiveTheme === 'classic-list',
+      isClassicList: effectiveTheme === 'classic-list',
     }),
     [validatedTheme, effectiveTheme, setTheme, availableThemes]
   );
