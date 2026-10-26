@@ -14,7 +14,7 @@
     "unidecode": "^1.1.0"
   },
   "scripts": {
-    "start": "node index.ts",
+    "start": "node --no-warnings=ExperimentalWarning index.ts",
     "test": "node runTests.mjs",
     "typecheck": "tsc -p ."
   }

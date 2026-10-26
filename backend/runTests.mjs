@@ -8,7 +8,7 @@ const filter = process.argv[2] ?? '';
 const files = readdirSync(new URL('.', import.meta.url)).filter((f) => f.endsWith('.test.ts') && f.includes(filter)).sort();
 const failed = [];
 for (const file of files) {
-  const r = spawnSync(process.execPath, [file], { cwd: new URL('.', import.meta.url), stdio: 'inherit', shell: process.platform === 'win32' });
+  const r = spawnSync(process.execPath, ["--no-warnings=ExperimentalWarning", file], { cwd: new URL('.', import.meta.url), stdio: 'inherit', shell: process.platform === 'win32' });
   if (r.status !== 0) failed.push(file);
 }
 console.log(`\n${files.length - failed.length}/${files.length} backend test files passed${failed.length ? `; FAILED: ${failed.join(', ')}` : ''}`);
