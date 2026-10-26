@@ -24,6 +24,8 @@ export interface AuditEvent {
 export type AuditSink = (event: AuditEvent) => void;
 
 export interface AuthDeps {
+    /** Local development only: accept requests without the Access header (the fake verifier). */
+    assertionOptional?: boolean;
     verifyJwt: (token: string) => Promise<AccessIdentity>;
     secret: Buffer;
     audit: AuditSink;
@@ -62,11 +64,12 @@ export async function authenticate(ctx: Ctx, deps: AuthDeps, opts: GuardOptions 
     const now = deps.now ? deps.now() : new Date();
     const header = ctx.req.headers[ACCESS_HEADER];
     const token = Array.isArray(header) ? header[0] : header;
-    if (!token) throw new AuthError(401, 'access assertion required');
+    // local development (DEV_FAKE_ACCESS_EMAIL): no Access in front, so no header; the fake verifier ignores the token
+    if (!token && !deps.assertionOptional) throw new AuthError(401, 'access assertion required');
 
     let identity: AccessIdentity;
     try {
-        identity = await deps.verifyJwt(token);
+        identity = await deps.verifyJwt(token ?? '');
     } catch (e) {
         if (e instanceof HttpError) throw e; // 503: Access not configured
         deps.audit({ userId: null, email: null, ip: ctx.ip, action: 'login', result: 'denied', detail: { reason: 'jwt', error: e instanceof Error ? e.message : String(e) } });

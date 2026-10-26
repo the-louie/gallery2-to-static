@@ -37,6 +37,8 @@ export interface ServerOptions {
     access?: { teamDomain: string; aud: string };
     /** Replaces the Access JWT check (tests, local development). */
     verifyJwt?: (token: string) => Promise<AccessIdentity>;
+    /** With DEV_FAKE_ACCESS_EMAIL: requests without the Access header are accepted. */
+    assertionOptional?: boolean;
     /** Session cookie HMAC key (default: env SESSION_SECRET or the settings row). */
     sessionSecret?: Buffer;
     /** Audit sink (default: backend/audit.ts -> audit_log table + env AUDIT_LOG_FILE). */
@@ -60,6 +62,7 @@ export function authDeps(opts: ServerOptions): AuthDeps {
         ?? (access ? (token: string) => verifyAccessJwt(token, { teamDomain: access.teamDomain, aud: access.aud }) : async () => { throw new HttpError(503, 'access not configured'); });
     return {
         verifyJwt,
+        assertionOptional: opts.assertionOptional,
         secret: opts.sessionSecret ?? sessionSecret(opts.db),
         audit: opts.audit ?? createAuditSink(opts.db),
         now: opts.now,
@@ -170,15 +173,16 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
     // the regeneration queue: the changed branches + the published link tree, 5 s after the last change
     const { regenerateChanged } = await import('./generate.ts');
     const fsSync = await import('node:fs');
-    const projectRoot = path.join(import.meta.dirname, '..');
-    const config = JSON.parse(fsSync.readFileSync(path.join(import.meta.dirname, 'config.json'), 'utf-8')) as import('./types.ts').Config;
+    // PROJECT_ROOT / CONFIG_JSON: another tree (the end-to-end test); default the repo and backend/config.json
+    const projectRoot = process.env.PROJECT_ROOT ?? path.join(import.meta.dirname, '..');
+    const config = JSON.parse(fsSync.readFileSync(process.env.CONFIG_JSON ?? path.join(import.meta.dirname, 'config.json'), 'utf-8')) as import('./types.ts').Config;
     const regen = new RegenQueue(async () => {
         const t0 = Date.now();
         await regenerateChanged(db, config, projectRoot, (l) => stdoutLogger({ level: 'warn', msg: l }));
         stdoutLogger({ msg: 'regenerated', ms: Date.now() - t0 });
     }, { onError: (err) => stdoutLogger({ level: 'error', msg: 'regen failed', error: err instanceof Error ? err.message : String(err) }) });
     const albumsRoot = path.join(projectRoot, config.albumsRoot ?? 'frontend/public/g2data/albums');
-    const server = createServer({ db, port, host, access, verifyJwt, regen, albumsRoot });
+    const server = createServer({ db, port, host, access, verifyJwt, assertionOptional: Boolean(fakeEmail), regen, albumsRoot });
     // expired sessions are dropped once an hour (otherwise only when touched)
     const { purgeExpiredSessions } = await import('./auth/session.ts');
     const purge = setInterval(() => { try { purgeExpiredSessions(db); } catch (e) { stdoutLogger({ level: 'warn', msg: 'session purge failed', error: e instanceof Error ? e.message : String(e) }); } }, 3600_000);
