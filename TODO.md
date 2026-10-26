@@ -47,6 +47,62 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
   - raw `ownerId` in the output: rows are now mapped field by field (LOGIC-05), `ownerId` is not emitted.
 - **Per-album themes for paths with é/æ/ø** (was "not re-verified"): checked 2026-10-25 (Sprint 11 T-02): all 1,389 `pathIndex` keys are ASCII (titles are transliterated), so a percent-encoded `location.pathname` (BrowserRouter) cannot miss a key.
 
+## Added 2026-10-26: operator QA round after Sprint 12 (test site, phone + desktop)
+
+Operator list, 2026-10-26 morning ("0. do the housekeeping and clean up … 10. banners ok"). Each row
+verified against the code at `b79dc10` before planning (Sprint 13).
+
+- ~~**QA-00: housekeeping and clean-up**~~ — **CLOSED, done 2026-10-26 (before Sprint 13):** on
+  lanbilder2 all but the newest of `data.prev-*` (8 of 9), `frontend/dist.prev-*` (29 of 30) and
+  `g2data/published.prev-*` (3 of 4) removed, `/mnt/storage` 65 → 64 GB used; on the build machine
+  the 89 Chrome temp directories in `/tmp` owned by this user (634 MB) removed, `/tmp` 1.7 → 1.1 GB.
+  Original row kept for the record: "0. do the housekeeping and clean up".
+- **QA-01: all thumbnails square** — "when clicking around i saw some rectangle, like
+  003_skateramp.jpg in https://lanbilder-new.phetast.nu/dreamhack/dreamhack_summer_02/ahnberg/".
+  Classic: `MatrixAlbum.css:113` forces 150×150 `object-fit: cover` on `.giThumbnail`, so the
+  rectangle must come from another path (the modern grid, a missing-thumbnail fallback, or the
+  thumbnail file itself). Find it with the album page in both themes; all thumbnails square in all
+  themes.
+- **QA-02: modern themes: the album's head image on the root page is a link to the album** — like
+  the "...and more!" link. `RootAlbumListBlock.tsx:95` renders the highlight as a
+  `role="presentation"` background div outside the block link.
+- **QA-03: modern themes: more vertical margin above "...and more!"** — "when there are many
+  sub-albums the '...and more' button is too close to the sub-album buttons".
+  `RootAlbumListBlock.css:269` has `margin-top: auto` and no gap from the list.
+- **QA-04: modern themes: the header description is cut off** — "lanbilder.se är världens största
+  samling lanparty-bilder. Om du vill visa..." `modern.css:333` clamps `.layout-header-description`
+  to one line (`-webkit-line-clamp: 1`).
+- **QA-05: classic theme: "Theme: modern" goes to the dark variant** — `MatrixSidebar.tsx:133`
+  calls `setTheme('light')`.
+- **QA-06: classic theme on phones: thumbnails flow two per row without gaps** — Pixel 9
+  screenshot `inspo/qa/Skärmbild 2026-10-26 074305.png`: every table row of three becomes 2 + 1,
+  the third cell alone on its own line. `MatrixAlbum.css:131` makes each `tr` its own flex row with
+  50% cells. Fix: let the cells flow as one wrapping row (`tr { display: contents }`), 2 per row at
+  phone widths; root album, sub-album lists and photo lists alike.
+- **QA-08: search failure: "Try again" does nothing** — "when a search fails (network restarting in
+  this case) the 'try again' button doesn't work". `SearchResultsPage.tsx:95` shows only "Go to
+  Home" on an error, so the button is the ErrorBoundary's "Try Again" (`ErrorFallback.tsx:82`,
+  `resetError`) or the browser's; reproduce with the search index request failing, then make retry
+  re-run the search (and reload the index if its load failed; `searchIndex.ts:121` caches the
+  load).
+- **QA-09: alternative classic theme with the 2013 list view on the root album** — "make an
+  alternative classic theme with a list view (all albums, no pagination) for the root album. use
+  the gallery2 code to figure out how it worked. for a visual example see
+  https://web.archive.org/web/20130410092639/http://www.lanbilder.se/main.php … we switched to this
+  list view sometime between 2007-2012 i believe due to the number of albums in the root becoming
+  large and it being hostile-ux to page on the front-page. (keep the three buttons at the bottom
+  from the current implementation (xhtml1.0, gallery 2, unpossible), love them)". The 2013 page is
+  Gallery 2's **Classic** theme (`themes/classic/templates/album.tpl`, extracted to
+  `inspo/gallery2-source/gallery2/themes/classic/`): one table row per album — `giAlbumCell`
+  thumbnail, a cell with "Album: title", description, Date/Size/Views, and a `td.tree` with
+  "Subalbums:" and the sub-album list — with `columns = 1` and all 45 albums on one page
+  ("Page: 1"). New theme `classic-list`: root album in that layout, other pages as `classic`;
+  reachable from the sidebar theme block and the modern theme dropdown; footer badges kept.
+- **QA-10: banner in the page, size by window width** — "banners ok, include them in the page, use
+  windows size to select a approriate sized banner". The classic frame already has the
+  `<picture>` (468 below 760px, 728, 970 from 1024px; `MatrixFrame.tsx:73`); the modern themes have
+  no banner slot. Show it in every theme and check the chosen file at 390, 800, 1280 and 1920px.
+
 ## FUTURE (after production deploy)
 
 Operator, 2026-10-25. Not scheduled until lanbilder.se runs on the new code. The notes under each
