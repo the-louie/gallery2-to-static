@@ -10,7 +10,7 @@ import { openDb, listMigrations } from './db/db.ts';
 
 async function run(): Promise<void> {
     const db = openDb();
-    assert.deepStrictEqual(db.migrations(), [1], 'schema applied as migration 1');
+    assert.deepStrictEqual(db.migrations(), [1, 2], 'schema applied as migration 1, users/audit as migration 2 (Sprint 16)');
     assert.strictEqual(db.get<{ foreign_keys: number }>('PRAGMA foreign_keys')?.foreign_keys, 1);
     const tables = db.all<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").map((r) => r.name);
     for (const t of ['owners', 'items', 'highlights', 'media', 'legacy_paths', 'view_counts', 'dirty_albums', 'settings', 'generation_runs', 'migrations']) {
@@ -67,7 +67,7 @@ async function run(): Promise<void> {
         d1.setSetting('k', 'v');
         d1.close();
         const d2 = openDb(file);
-        assert.deepStrictEqual(d2.migrations(), [1]);
+        assert.deepStrictEqual(d2.migrations(), [1, 2]);
         assert.strictEqual(d2.setting('k'), 'v');
         d2.close();
     } finally {
@@ -75,7 +75,8 @@ async function run(): Promise<void> {
     }
 
     // migration files must be numbered from 002
-    assert.strictEqual(listMigrations().length, 1);
+    assert.strictEqual(listMigrations().length, 2);
+    assert.strictEqual(listMigrations()[1][1], 'users-audit');
     db.close();
     console.log('db tests passed');
 }

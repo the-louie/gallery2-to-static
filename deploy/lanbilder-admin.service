@@ -1,0 +1,42 @@
+# lanbilder-admin: the gallery's admin/API service (Sprint 16 T-01; docs/architecture/admin-service.md).
+# Install: cp deploy/lanbilder-admin.service /etc/systemd/system/ && systemctl daemon-reload && systemctl enable --now lanbilder-admin
+# Secrets and Access settings live in /etc/lanbilder-admin.env (root:lanbilder 640), not here:
+#   CF_ACCESS_TEAM_DOMAIN=<team>.cloudflareaccess.com
+#   CF_ACCESS_AUD=<application audience tag>
+#   SESSION_SECRET=<optional; otherwise generated once into the settings table>
+[Unit]
+Description=lanbilder.se admin service (view counts, admin API, regeneration)
+After=network.target
+Documentation=file:/mnt/storage/lanbilder-app/docs/architecture/admin-service.md
+
+[Service]
+Type=simple
+User=lanbilder
+Group=lanbilder
+WorkingDirectory=/mnt/storage/lanbilder-app/backend
+Environment=NODE_ENV=production
+Environment=GALLERY_DB=/mnt/storage/lanbilder-app/db/gallery.sqlite
+Environment=AUDIT_LOG_FILE=/mnt/storage/lanbilder-app/db/audit.jsonl
+Environment=PORT=3100
+Environment=HOST=127.0.0.1
+EnvironmentFile=-/etc/lanbilder-admin.env
+ExecStart=/usr/bin/node --no-warnings=ExperimentalWarning server.ts
+Restart=on-failure
+RestartSec=3
+MemoryMax=2G
+TimeoutStopSec=30
+
+# Hardening: the service only needs its own tree.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/mnt/storage/lanbilder-app
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target
