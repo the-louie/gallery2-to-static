@@ -47,6 +47,15 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
   - raw `ownerId` in the output: rows are now mapped field by field (LOGIC-05), `ownerId` is not emitted.
 - **Per-album themes for paths with é/æ/ø** (was "not re-verified"): checked 2026-10-25 (Sprint 11 T-02): all 1,389 `pathIndex` keys are ASCII (titles are transliterated), so a percent-encoded `location.pathname` (BrowserRouter) cannot miss a key.
 
+## Added 2026-10-26 (afternoon): operator follow-up after Sprint 13
+
+- **THEME-02: one classic theme only — the list root** — operator: "remove the classic (non-list)
+  theme, only one classic theme should remain". The `classic` theme keeps its name (default theme,
+  stored preferences, `album-themes.json`) and shows the root album as the 2013 list (what
+  `classic-list` does now); `classic-list` is removed from the registry, `themes.css`, the context
+  (`isClassicList`), the sidebar toggle and the dropdown; a stored `classic-list` preference maps to
+  `classic`. Docs and tests follow.
+
 ## FUTURE (after production deploy)
 
 Operator, 2026-10-25. Not scheduled until lanbilder.se runs on the new code. The notes under each
