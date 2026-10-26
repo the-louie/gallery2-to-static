@@ -10,6 +10,7 @@ import * as http from 'node:http';
 import * as path from 'node:path';
 import type { Db } from './db/db.ts';
 import { Router, HttpError, send, json, error, readJsonBody, clientIp, type Ctx, type Logger, type Reply } from './http.ts';
+import { registerViewRoutes } from './routes/view.ts';
 
 export const DEFAULT_PORT = 3100;
 export const DEFAULT_HOST = '127.0.0.1';
@@ -33,6 +34,7 @@ export const stdoutLogger: Logger = (entry) => {
 export function buildRouter(opts: ServerOptions): Router {
     const router = new Router();
     router.get('/healthz', () => json(200, { ok: true }));
+    registerViewRoutes(router);
     opts.routes?.(router);
     return router;
 }
