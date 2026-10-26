@@ -1,8 +1,8 @@
 # Sprint 20: go-live rehearsal and cutover of lanbilder.se
 
 **Status:** in progress (opened 2026-10-26, operator: "run sprint 20")
-**Current ticket:** T-03 (`in-progress` — nginx vhosts for the switch)
-**Last completed:** T-02 (`done` — commit `a9b8af8`)
+**Current ticket:** T-04 (`todo` — Cutover runbook)
+**Last completed:** T-03 (`done` — commit `8c61d0c`)
 
 **Goal:** lanbilder.se and www.lanbilder.se are served by the new site on lanbilder2 through its tunnel, with everything that must be true before and after the switch checked, written down and rehearsed, and a rollback that takes one command.
 
@@ -14,7 +14,7 @@
 |---|---|---|---|---|---|---|
 | T-01 | Pre-flight checks | – | 2h | – | done | read-only comparison of the origin's image tree against the copy (file count + sizes by directory via the rsync daemon used for the copy, dry run, no deletes); test-site smoke (mobilecheck 66/66, beacon, stats proxy, admin healthz); backups present; the `generation_runs` of the last 24 h ok; disk; a note of every finding in the runbook. Landed in `04f224e` |
 | T-02 | Production builds staged | – | 1h | – | done | frontend `dist` (Sentry environment production, site name, banner vars unchanged) and admin UI (`VITE_PUBLIC_SITE=https://lanbilder.se`) built from master and staged on lanbilder2 as `dist.go` / `admin-ui.go`, swapped at go-live. Landed in `a9b8af8` |
-| T-03 | nginx vhosts for the switch | – | 2h | T-01 | in-progress | staged copies: `lanbilder-new` gains `lanbilder.se www.lanbilder.se` (www served as today, no redirect), the old-site vhost keeps only `lanbilder2-test.phetast.nu`; `nginx -t` on the staged files; a `go.sh` on lanbilder2 that swaps the two files, reloads nginx, and a `back.sh` that restores them (both tested on the test hostnames first) |
+| T-03 | nginx vhosts for the switch | – | 2h | T-01 | done | staged copies: `lanbilder-new` gains `lanbilder.se www.lanbilder.se` (www served as today, no redirect), the old-site vhost keeps only `lanbilder2-test.phetast.nu`; `nginx -t` on the staged files; a `go.sh` on lanbilder2 that swaps the two files, reloads nginx, and a `back.sh` that restores them (both tested on the test hostnames first). Landed in `8c61d0c` |
 | T-04 | Cutover runbook | – | 2h | T-02, T-03 | todo | `/srv/share/lanbilder2/cutover-runbook.txt`: the order (vhost swap → `cutover.py cutover lanbilder.se` → dist/admin swap → verification list → watch), the 20 verification URLs with expected answers, the rollback (`back.sh` + `cutover.py rollback lanbilder.se`), what stays off until a week later (test hostnames), who does what; dry-run of every command except the DNS change |
 | T-05 | Go-live | – | 2h | T-04 + the operator's word | todo | run the runbook; verify from outside (this machine and a phone); watch the nginx and service logs 15 min; Plausible shows lanbilder.se page views; ESXi todo updated; the old origin left untouched (read-only) |
 | T-06 | After go-live | – | 2h | T-05 | todo | after one quiet day: remove `lanbilder-new.phetast.nu` and `lanbilder2-test.phetast.nu` from the tunnel ingress and DNS (the old-site vhost may stay disabled for the record); SSH password login off on lanbilder2 (key login confirmed 2026-10-26); drop the `claude` MySQL user on the dev machine and delete the local `.my.cnf`; operator rotates the MySQL password the origin's `config.py` leaks; `cutover.py` SITES note |
