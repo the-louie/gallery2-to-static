@@ -1,7 +1,7 @@
 # Sprint 15: the data master (FUT-01)
 
 **Status:** in progress (opened 2026-10-26)
-**Current ticket:** T-02 (`todo` — SQLite layer)
+**Current ticket:** T-02 (`in-progress` — SQLite layer)
 **Last completed:** T-01 (`done` — commit `499e984`)
 
 **Goal:** a SQLite database on lanbilder2 is the master of the gallery data; the static files are generated from it, a change regenerates only its branch, and the first admin service runs on the VM with the view counter.
@@ -15,7 +15,7 @@
 | # | Ticket | Backlog | Est | Deps | Status | Acceptance / Notes |
 |---|---|---|---|---|---|---|
 | T-01 | Architecture note: the data master | FUT-01 | 2h | – | done | `docs/architecture/data-master.md`: schema (items, owners, highlights, thumbnail crops, legacy paths, view counts, generation state), invariants (no hard delete: `deleted_at`; `hidden`; `changed_at` propagates to ancestors), the generation contract (which files each table feeds), the CLI (`import`, `generate --all/--changed`, `images`), where the file lives (`/mnt/storage/lanbilder-app/db/gallery.sqlite`, 600, user lanbilder, nightly copy to `/mnt/storage/backup/`). Landed in `499e984` |
-| T-02 | SQLite layer | FUT-01 | 3h | T-01 | todo | `backend/db/schema.sql` + `backend/db/db.ts` (`node:sqlite`, WAL, foreign keys, migrations table, typed helpers, `--no-warnings=ExperimentalWarning` in the npm scripts); tests with an in-memory database |
+| T-02 | SQLite layer | FUT-01 | 3h | T-01 | in-progress | `backend/db/schema.sql` + `backend/db/db.ts` (`node:sqlite`, WAL, foreign keys, migrations table, typed helpers, `--no-warnings=ExperimentalWarning` in the npm scripts); tests with an in-memory database |
 | T-03 | Importer: Gallery 2 → SQLite | FUT-01 | 4h | T-02 | todo | `backend/importG2.ts`: items (albums/photos, parent, order, titles decoded + BBCode stripped as today, path components, timestamps, sizes, view counts), owners, chosen highlights (derivative chains, Sprint 12 T-01), legacy paths (no thumbnail crops: Sprint 12 measured them as plain centre crops); `ignoreAlbums`/`ignoreItems` become `hidden = 1` rows (nothing dropped); idempotent (re-import updates, never duplicates); test with the fake sql from `extract.test.ts` |
 | T-04 | Generator: SQLite → static files | FUT-01 | 4h | T-02 | todo | `backend/generate.ts --all`: `data/<id>.json` (metadata + children exactly as `types.ts`), `index.json`, `legacy.json`, `search/index.json`; equivalence test: fake-sql extraction → import → generate equals today's extractor output (deep-equal, key order free) |
 | T-05 | Image pipeline from the database | FUT-01 | 3h | T-04 | todo | thumbnails (with crops), 1024px resizes and the published link tree driven by item rows instead of the file walk (`generateThumbnail.ts`, `publishImages.ts` reused); skipped when up to date; a `media` table records what exists; test |
