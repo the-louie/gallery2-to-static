@@ -47,6 +47,16 @@ export function photoSegment(child: { id: number; pathComponent: string | null; 
     return slug === '' ? `photo_${child.id}` : slug;
 }
 
+/**
+ * Gallery 2 holds a few titles made of NUL bytes (42 photos, 2026-10-26); SQLite cuts a TEXT at the
+ * first NUL, so they are stripped here and an emptied text becomes null (the SPA shows no title).
+ */
+export function cleanText(text: string | null | undefined): string | null {
+    if (text == null) return null;
+    const t = text.replace(/\0/g, '');
+    return t.length === 0 && text.length > 0 ? null : t;
+}
+
 /** Owner rows are keyed by the display name the extractor resolved (no Gallery 2 user ids in the JSON). */
 function ownerId(db: Db, cache: Map<string, number>, name: string | null | undefined): number | null {
     const n = name?.trim();
@@ -123,7 +133,7 @@ export async function importG2(options: ImportOptions): Promise<ImportResult> {
         for (const r of rows) {
             const c = r.child;
             const isAlbum = c.type === 'GalleryAlbumItem';
-            db.run(UPSERT_ITEM, c.id, isAlbum ? 'album' : 'photo', r.parentId, r.position, c.order ?? null, c.title, c.description ?? null, c.summary ?? null,
+            db.run(UPSERT_ITEM, c.id, isAlbum ? 'album' : 'photo', r.parentId, r.position, c.order ?? null, cleanText(c.title), cleanText(c.description), cleanText(c.summary),
                 c.pathComponent ?? '', r.segment, c.timestamp, c.width, c.height, c.thumb_width, c.thumb_height, ownerId(db, owners, c.ownerName),
                 c.viewCount ?? null, r.hidden ? 1 : 0);
             if (isAlbum) {

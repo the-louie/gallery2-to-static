@@ -3,7 +3,7 @@
  * become hidden rows; highlights and legacy paths; a second run changes nothing.
  */
 import assert from 'assert';
-import { importG2, photoSegment } from './importG2.ts';
+import { importG2, photoSegment, cleanText } from './importG2.ts';
 import { openDb } from './db/db.ts';
 import { fakeSql, TREE_CONFIG } from './fakeGallery.ts';
 
@@ -57,6 +57,10 @@ async function run(): Promise<void> {
     assert.strictEqual(photoSegment({ id: 1, pathComponent: 'dh/CIMG0053_.JPG', title: null }), 'cimg0053_');
     assert.strictEqual(photoSegment({ id: 1, pathComponent: 'x/bild 225.jpg', title: null }), 'bild_225');
     assert.strictEqual(photoSegment({ id: 9, pathComponent: '', title: null }), 'photo_9');
+    assert.strictEqual(cleanText('\0\0\0'), null, 'a NUL-only title (42 in Gallery 2) becomes null');
+    assert.strictEqual(cleanText('a\0b'), 'ab');
+    assert.strictEqual(cleanText(''), '');
+    assert.strictEqual(cleanText(null), null);
     db.close();
     console.log('importG2 tests passed');
 }
