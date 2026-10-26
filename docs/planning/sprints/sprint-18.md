@@ -1,8 +1,8 @@
 # Sprint 18: albums, uploads and the admin UI (FUT-02 part 2, FUT-03)
 
 **Status:** in progress (opened 2026-10-26; T-06..T-08 by a worker on branch `s18-admin-ui`, worktree `../wt-admin-ui`)
-**Current ticket:** T-09 (`in-progress` — Deploy on the admin hostname)
-**Last completed:** T-05 (`done` — commit `f8d4d24`)
+**Current ticket:** T-06 (`todo` — Admin UI: app, login, album tree)
+**Last completed:** T-09 (`done` — commit `2c0157d`)
 
 **Goal:** an admin or a delegated user can log in on the admin hostname, create an album, upload photos into it, pick its highlight, hide or soft-delete items, and see the result on the public site within a minute; users have profiles; the first admin exists.
 
@@ -22,7 +22,7 @@
 | T-06 | Admin UI: app, login, album tree | FUT-02 | 4h | T-01, T-05 | todo | `admin/` (Vite + React, its own build, never part of the public dist): login status from `/api/me`, TOTP setup with QR (`qrcode` package) and verify, album tree (root → delegated subtree for users), breadcrumb; `npm run build` → `admin/dist`; tests for the auth flow component |
 | T-07 | Admin UI: album and photo editing, uploads | FUT-02 | 4h | T-06, T-02, T-03 | todo | create/edit album, hidden toggle, soft delete/restore, photo grid with title edit, drag-free reorder (up/down), highlight pick, multi-file upload with progress and errors per file; "regenerating…" indicator from `/api/regen/status`; tests |
 | T-08 | Admin UI: users, audit, profile | FUT-02/03/04 | 3h | T-06 | todo | invite, enable/disable, delegate/undelegate (album picker), TOTP reset; audit list with paging; profile page (nickname, full name, show full name, picture); tests |
-| T-09 | Deploy on the admin hostname | FUT-02 | 3h | T-06..T-08 | in-progress | nginx `sites-available/admin` from `deploy/nginx-admin.conf` for `82j17zj.phetast.nu` (refuses requests without the Access header; `admin/dist` root; `/api/` → 3100), tunnel public hostname + Access application by the operator (`/etc/lanbilder-admin.env`); until Access exists: end-to-end run locally with `DEV_FAKE_ACCESS_EMAIL` and headless Chrome (upload → public site); exiftool/libheif installed; `libimage-exiftool-perl` noted in the ESXi todo |
+| T-09 | Deploy on the admin hostname | FUT-02 | 3h | T-06..T-08 | done | nginx `sites-available/admin` from `deploy/nginx-admin.conf` for `82j17zj.phetast.nu` (refuses requests without the Access header; `admin/dist` root; `/api/` → 3100), tunnel public hostname + Access application by the operator (`/etc/lanbilder-admin.env`); until Access exists: end-to-end run locally with `DEV_FAKE_ACCESS_EMAIL` and headless Chrome (upload → public site); exiftool/libheif installed; `libimage-exiftool-perl` noted in the ESXi todo. Landed in `2c0157d` |
 | T-10 | Docs, runbook, retro | – | 2h | T-01..T-09 | todo | `docs/architecture/admin-service.md` (routes, upload rules, trash layout), `data-master.md` (URL lock, owners.email), user guide "Adding albums and photos", `/srv/share/lanbilder2/admin-runbook.txt` (first admin, invite, Access setup), retro |
 
 Total ≈ 32h. Go-live rehearsal (final sync, cutover, test hostnames off) is Sprint 19.
