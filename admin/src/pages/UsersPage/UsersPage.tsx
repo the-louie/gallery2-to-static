@@ -83,10 +83,10 @@ export function UsersPage(): ReactNode {
     <div className="users-page">
       <h1>Users</h1>
       <p className="muted">
-        Adding a user puts their e-mail on the allowed list; no e-mail is sent.
-        Tell them to open the admin site and log in with that address (GitHub,
-        or Google when enabled). The address must also be allowed in the
-        Cloudflare Access policy.
+        Adding a user puts their e-mail on the allowed list (ours and Cloudflare
+        Access's, automatically); no e-mail is sent. Tell them to open the admin
+        site and log in with that address: GitHub, Google, or a one-time code by
+        e-mail.
       </p>
 
       <form

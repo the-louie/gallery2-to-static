@@ -82,6 +82,11 @@ The album, photo, upload, highlight, order, regeneration and profile routes are 
   (case-insensitive); full name shown publicly only with `showFullName`; the picture is a 256×256
   JPEG under `avatars/` next to the database, served only through the API. At first login the
   Access token's `name` claim (when present) fills an empty full name.
+- **Access policies follow the user list** (`backend/accessPolicy.ts`): after every add/enable/disable the
+  service rewrites the e-mail rules of the Access policies named in `CF_ACCESS_POLICIES`
+  (`appId:policyId,…`) with the enabled users' addresses (`CF_API_TOKEN` scoped to Access: Apps and
+  Policies: Edit, `CF_ACCOUNT_ID`); domain/group rules are kept. Without those variables the service
+  logs a warning and the operator keeps the policies by hand.
 - **First admin**: `node --no-warnings=ExperimentalWarning server.ts --invite-admin <email>` on
   lanbilder2 (as user lanbilder, `GALLERY_DB` set as in the unit).
 

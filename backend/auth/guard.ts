@@ -24,6 +24,8 @@ export interface AuditEvent {
 export type AuditSink = (event: AuditEvent) => void;
 
 export interface AuthDeps {
+    /** After a user was added, enabled or disabled: keep Cloudflare Access's policies in step (accessPolicy.ts). */
+    onUsersChanged?: () => void;
     /** Local development only: accept requests without the Access header (the fake verifier). */
     assertionOptional?: boolean;
     verifyJwt: (token: string) => Promise<AccessIdentity>;

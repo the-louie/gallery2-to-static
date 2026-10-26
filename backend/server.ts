@@ -39,6 +39,8 @@ export interface ServerOptions {
     verifyJwt?: (token: string) => Promise<AccessIdentity>;
     /** With DEV_FAKE_ACCESS_EMAIL: requests without the Access header are accepted. */
     assertionOptional?: boolean;
+    /** Called after a user was added/enabled/disabled (the CLI syncs the Access policies). */
+    onUsersChanged?: () => void;
     /** Session cookie HMAC key (default: env SESSION_SECRET or the settings row). */
     sessionSecret?: Buffer;
     /** Audit sink (default: backend/audit.ts -> audit_log table + env AUDIT_LOG_FILE). */
@@ -67,6 +69,7 @@ export function authDeps(opts: ServerOptions): AuthDeps {
     return {
         verifyJwt,
         assertionOptional: opts.assertionOptional,
+        onUsersChanged: opts.onUsersChanged,
         secret: opts.sessionSecret ?? sessionSecret(opts.db),
         audit: opts.audit ?? createAuditSink(opts.db),
         now: opts.now,
@@ -199,7 +202,22 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
     const publishNow = (): void => { settleNext = 0; regen.request(); };
     const { runtimePaths } = await import('./generate.ts');
     const paths = runtimePaths(config, projectRoot);
-    const server = createServer({ db, port, host, access, verifyJwt, assertionOptional: Boolean(fakeEmail), regen, publishNow, albumsRoot: paths.albumsRoot,
+    // Cloudflare Access policies follow the user list when CF_API_TOKEN/CF_ACCOUNT_ID/CF_ACCESS_POLICIES are set
+    const { syncAccessPolicies, parsePolicyList } = await import('./accessPolicy.ts');
+    const cfPolicies = parsePolicyList(process.env.CF_ACCESS_POLICIES);
+    const cfToken = process.env.CF_API_TOKEN; const cfAccount = process.env.CF_ACCOUNT_ID;
+    let onUsersChanged: (() => void) | undefined;
+    if (cfToken && cfAccount && cfPolicies.length) {
+        onUsersChanged = () => {
+            void syncAccessPolicies(db, { token: cfToken, accountId: cfAccount, policies: cfPolicies })
+                .then((r) => stdoutLogger({ msg: 'access policies synced', emails: r.emails.length, policies: r.updated.length }))
+                .catch((err) => stdoutLogger({ level: 'error', msg: 'access policy sync failed', error: err instanceof Error ? err.message : String(err) }));
+        };
+        stdoutLogger({ msg: 'access policy sync on', policies: cfPolicies.length });
+    } else {
+        stdoutLogger({ level: 'warn', msg: 'CF_API_TOKEN/CF_ACCOUNT_ID/CF_ACCESS_POLICIES not set: Access policies are not kept in step with the user list' });
+    }
+    const server = createServer({ db, port, host, access, verifyJwt, assertionOptional: Boolean(fakeEmail), onUsersChanged, regen, publishNow, albumsRoot: paths.albumsRoot,
         thumbnails: { root: paths.media.thumbnailsRoot, options: paths.media.thumbOptions } });
     // expired sessions are dropped once an hour (otherwise only when touched)
     const { purgeExpiredSessions } = await import('./auth/session.ts');

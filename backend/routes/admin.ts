@@ -35,6 +35,7 @@ export function registerAdminRoutes(router: Router, deps: AuthDeps): void {
         try {
             const u = inviteUser(ctx.db, email, role as Role);
             audit(ctx, 'invite', `user:${u.id}`, 'ok', { email: u.email, role: u.role });
+            deps.onUsersChanged?.();
             return json(201, userJson(ctx, u));
         } catch (e) {
             if (e instanceof HttpError) audit(ctx, 'invite', email.trim().toLowerCase().slice(0, 254), 'error', { error: e.message });
@@ -52,6 +53,7 @@ export function registerAdminRoutes(router: Router, deps: AuthDeps): void {
         }
         const updated = setEnabled(ctx.db, u.id, body.enabled);
         audit(ctx, body.enabled ? 'enable' : 'disable', `user:${u.id}`, 'ok', { email: u.email });
+        deps.onUsersChanged?.();
         return json(200, userJson(ctx, updated));
     }));
 
