@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import { useAlbum } from "../../hooks/useAlbum";
-import { notifyWrite } from "../../hooks/useRegenStatus";
+import { notifyWrite, onPublished } from "../../hooks/useRegenStatus";
 import { useSession } from "../../session/SessionContext";
 import { AlbumForm } from "../../components/AlbumForm";
 import { DelegateBox } from "../../components/DelegateBox";
@@ -39,6 +39,9 @@ function AlbumPageBody({ id }: { id: number | "root" }): ReactNode {
   const [panel, setPanel] = useState<Panel>({ kind: "none" });
 
   useEffect(() => setPanel({ kind: "none" }), [id]);
+  // a publish run clears pending marks: show the fresh state
+  const reload = album$.reload;
+  useEffect(() => onPublished(() => void reload()), [reload]);
 
   if (error) return <p className="error">{error}</p>;
   if (loading && !view)
@@ -89,7 +92,9 @@ function AlbumPageBody({ id }: { id: number | "root" }): ReactNode {
         }
         current={album ? title : null}
       />
-      <header className="album-page-header">
+      <header
+        className={`album-page-header${album?.pending ? " is-pending" : ""}`}
+      >
         <h1>
           {title} {album && <ItemBadges item={album} />}
         </h1>

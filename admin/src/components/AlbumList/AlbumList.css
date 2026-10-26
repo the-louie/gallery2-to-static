@@ -16,6 +16,11 @@
   padding: var(--space);
 }
 
+.album-list-item.is-pending {
+  background: var(--pending-bg);
+  border-color: var(--pending-border);
+}
+
 .album-list-item.is-deleted {
   opacity: 0.55;
 }

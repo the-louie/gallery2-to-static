@@ -24,6 +24,8 @@ export interface AdminItem {
   viewCount: number | null;
   hidden: boolean;
   deletedAt: string | null;
+  /** changed since the album's last publish run */
+  pending: boolean;
   highlightPhotoId: number | null;
   /** albums: the photo shown as the highlight (chosen, else the first photo) */
   currentHighlightPhotoId?: number | null;

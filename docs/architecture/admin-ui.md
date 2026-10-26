@@ -48,7 +48,7 @@ admin/
       AlbumForm/             new (POST) / edit (PATCH) album; URL segment while !urlLocked
       UploadZone/            picker + drop zone, XHR progress, per-file created/rejected
       AlbumPicker/           browse or search the tree by title (for delegation)
-      ItemBadges/, Thumb/    hidden / deleted / highlight / read-only badges; thumbnail or placeholder
+      ItemBadges/, Thumb/    hidden / pending / deleted / highlight / read-only badges; thumbnail or placeholder
     pages/
       AlbumPage/             /#/albums/:id ("root" = entry point)
       UsersPage/             /#/users (admin)
@@ -73,7 +73,7 @@ available on the TOTP screens and in the top bar; it ends the session and shows 
 (Cloudflare Access still knows the visitor, so the next `/api/me` just starts a new session).
 
 **Albums** (`AlbumPage`, `/#/albums/root` then `/#/albums/:id`). Breadcrumb from the reply,
-header with title, path, event date, owner, views and badges (hidden, deleted, read-only), then
+header with title, path, event date, owner, views and badges (hidden, pending, deleted, read-only), then
 sub-albums (albums first) and the photo grid. Thumbnails use `thumbnailUrl`; `null` shows a
 placeholder. Deleted items are greyed. For a delegated user the root is the synthetic list of
 their albums (`album: null`). Every write action is rendered only when the item's `canWrite` is
@@ -119,6 +119,12 @@ cd admin && npm install
 npm run mock          # terminal 1: mock API on 127.0.0.1:3101 (MOCK_SKIP_TOTP=1 skips TOTP, MOCK_ROLE=user plays a delegate)
 npm run dev           # terminal 2: Vite on http://localhost:5174, /api and /g2data proxied to the mock
 ```
+
+**Pending** (operator, 2026-10-26): an item whose `pending` flag is set (changed since its
+album's last publish run, `admin-api.md`) gets a yellow background (`is-pending`, tokens
+`--pending-bg/--pending-border/--pending-text`) and a "pending" pill. When the regeneration
+poll sees a finished run (`lastRun.finishedAt` changed) it fires `onPublished`, and the album
+page reloads so the marks clear.
 
 The mock (`mock/server.mjs`, Node built-ins only) implements every route of the contract with
 in-memory data: an admin and a delegated user, a small album tree with hidden and deleted items,

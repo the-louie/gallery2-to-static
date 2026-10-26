@@ -33,6 +33,8 @@ export interface AdminItem {
     viewCount: number | null;
     hidden: boolean;
     deletedAt: string | null;
+    /** changed since the last publish run of its album (dirty and not yet regenerated) */
+    pending: boolean;
     highlightPhotoId: number | null;
     /** albums: the photo shown as the highlight (the chosen one, else the first photo) */
     currentHighlightPhotoId?: number | null;
@@ -51,11 +53,11 @@ interface Row {
     id: number; type: 'album' | 'photo'; parent_id: number | null; position: number; title: string | null;
     description: string | null; summary: string | null; path_component: string; url_segment: string; url_locked_at: string | null;
     event_at: number | null; width: number | null; height: number | null; owner_name: string | null; view_count: number | null;
-    hidden: number; blocked: number; deleted_at: string | null;
+    hidden: number; blocked: number; deleted_at: string | null; changed_at: string;
 }
 
 const SELECT = `SELECT i.id, i.type, i.parent_id, i.position, i.title, i.description, i.summary, i.path_component, i.url_segment,
-    i.url_locked_at, i.event_at, i.width, i.height, CASE WHEN o.show_full_name = 1 AND o.full_name IS NOT NULL AND trim(o.full_name) <> '' THEN o.full_name ELSE o.nickname END AS owner_name, i.view_count, i.hidden, i.blocked, i.deleted_at
+    i.url_locked_at, i.event_at, i.width, i.height, CASE WHEN o.show_full_name = 1 AND o.full_name IS NOT NULL AND trim(o.full_name) <> '' THEN o.full_name ELSE o.nickname END AS owner_name, i.view_count, i.hidden, i.blocked, i.deleted_at, i.changed_at
     FROM items i LEFT JOIN owners o ON o.id = i.owner_id`;
 
 export function getRow(db: Db, id: number): Row | undefined {
@@ -116,12 +118,21 @@ function highlightPhoto(db: Db, albumId: number): Row | null {
     return null;
 }
 
+/** Dirty album (itself, or the parent for a photo) whose mark is not newer than this item's last change. */
+function isPending(db: Db, r: Row): boolean {
+    const albumId = r.type === 'album' ? r.id : r.parent_id;
+    if (albumId === null) return false;
+    const d = db.get<{ since: string }>('SELECT since FROM dirty_albums WHERE album_id = ?', albumId);
+    if (!d) return false;
+    return r.type === 'album' || r.changed_at >= d.since;
+}
+
 export function toAdminItem(db: Db, r: Row, user: User): AdminItem {
     const chosen = r.type === 'album' ? db.get<{ photo_id: number }>('SELECT photo_id FROM highlights WHERE album_id = ? AND chosen = 1', r.id) : undefined;
     const item: AdminItem = {
         id: r.id, type: r.type, parentId: r.parent_id, position: r.position, title: r.title, description: r.description, summary: r.summary,
         urlSegment: r.url_segment, urlLocked: r.url_locked_at !== null, path: publicPath(db, r), eventAt: r.event_at, width: r.width, height: r.height,
-        owner: r.owner_name, viewCount: r.view_count, hidden: r.hidden === 1, deletedAt: r.deleted_at,
+        owner: r.owner_name, viewCount: r.view_count, hidden: r.hidden === 1, deletedAt: r.deleted_at, pending: isPending(db, r),
         highlightPhotoId: chosen ? chosen.photo_id : null, thumbnailUrl: thumbnailUrl(db, r), canWrite: canWrite(db, user.id, r.id),
     };
     if (r.type === 'album') {

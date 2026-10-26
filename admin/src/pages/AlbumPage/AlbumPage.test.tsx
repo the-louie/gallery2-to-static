@@ -29,12 +29,19 @@ describe("AlbumPage", () => {
       status: 200,
       body: albumView({
         children: [
-          item({ id: 10, type: "photo", title: "A photo", position: 0 }),
+          item({
+            id: 10,
+            type: "photo",
+            title: "A photo",
+            position: 0,
+            pending: true,
+          }),
           item({
             id: 20,
             type: "album",
             title: "Hidden album",
             hidden: true,
+            pending: true,
             childCount: 3,
             position: 1,
           }),
@@ -61,6 +68,10 @@ describe("AlbumPage", () => {
     expect(within(rows[0]!).getByText("deleted")).toBeInTheDocument();
     expect(within(rows[1]!).getByText("Hidden album")).toBeInTheDocument();
     expect(within(rows[1]!).getByText("hidden")).toBeInTheDocument();
+    // pending (operator, 2026-10-26): yellow row + pill until the album is published
+    expect(within(rows[1]!).getByText("pending")).toBeInTheDocument();
+    expect(rows[1]).toHaveClass("is-pending");
+    expect(rows[0]).not.toHaveClass("is-pending");
     expect(within(rows[1]!).getByText(/3 items/)).toBeInTheDocument();
     expect(within(rows[1]!).getByRole("link")).toHaveAttribute(
       "href",
@@ -72,6 +83,8 @@ describe("AlbumPage", () => {
     expect(
       within(photos).getByRole("img", { name: "No thumbnail yet" })
     ).toBeInTheDocument();
+    expect(within(photos).getByText("pending")).toBeInTheDocument();
+    expect(within(photos).getByRole("listitem")).toHaveClass("is-pending");
     // Albums section comes before photos in the DOM.
     expect(
       albums.compareDocumentPosition(photos) & Node.DOCUMENT_POSITION_FOLLOWING

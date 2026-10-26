@@ -2,6 +2,13 @@
   margin-top: calc(var(--space) * 3);
 }
 
+.album-page-header.is-pending {
+  background: var(--pending-bg);
+  border: 1px solid var(--pending-border);
+  border-radius: var(--radius);
+  padding: var(--space);
+}
+
 .album-page-header h1 {
   display: flex;
   flex-wrap: wrap;

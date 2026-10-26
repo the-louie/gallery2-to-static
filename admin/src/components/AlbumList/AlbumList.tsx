@@ -13,7 +13,7 @@ export function AlbumList({ albums }: { albums: AdminItem[] }): ReactNode {
       {albums.map((a) => (
         <li
           key={a.id}
-          className={`album-list-item${a.deletedAt ? " is-deleted" : ""}`}
+          className={`album-list-item${a.deletedAt ? " is-deleted" : ""}${a.pending ? " is-pending" : ""}`}
         >
           <Link to={`/albums/${a.id}`} className="album-list-link">
             <Thumb item={a} size={64} />

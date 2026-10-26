@@ -19,6 +19,7 @@ interface AdminItem {               // one row of `items` as the UI sees it
   owner: string | null;                        // owner display name
   viewCount: number | null;
   hidden: boolean; deletedAt: string | null;   // soft state
+  pending: boolean;                            // changed since the album's last publish run
   highlightPhotoId: number | null;             // albums: the chosen highlight (null = first photo)
   currentHighlightPhotoId?: number | null;     // albums: the photo shown as highlight (chosen, else the first photo)
   thumbnailUrl: string | null;                 // '/g2data/thumbnails/…' on the public site (null until generated)

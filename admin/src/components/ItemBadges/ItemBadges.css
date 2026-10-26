@@ -24,6 +24,12 @@
   border-color: var(--warn);
 }
 
+.item-badge-pending {
+  color: var(--pending-text);
+  border-color: var(--pending-text);
+  background: var(--pending-bg);
+}
+
 .item-badge-highlight {
   color: var(--accent);
   border-color: var(--accent);

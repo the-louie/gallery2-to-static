@@ -8,6 +8,9 @@
   --border: #d9dee5;
   --danger: #b4232c;
   --warn: #9a6400;
+  --pending-bg: #fff8d6;
+  --pending-border: #e0c45a;
+  --pending-text: #7a5a00;
   --ok: #1f7a3d;
   --radius: 6px;
   --space: 8px;

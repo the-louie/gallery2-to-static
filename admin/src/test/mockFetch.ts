@@ -86,6 +86,7 @@ export function item(over: Partial<AdminItem> & { id: number }): AdminItem {
     viewCount: 0,
     hidden: false,
     deletedAt: null,
+    pending: false,
     highlightPhotoId: null,
     thumbnailUrl: null,
     canWrite: true,

@@ -79,6 +79,7 @@ function addItem(partial) {
     viewCount: partial.viewCount ?? 0,
     hidden: partial.hidden ?? false,
     deletedAt: partial.deletedAt ?? null,
+    pending: partial.pending ?? false,
     highlightPhotoId: null,
     thumbnailUrl:
       partial.thumbnailUrl === undefined

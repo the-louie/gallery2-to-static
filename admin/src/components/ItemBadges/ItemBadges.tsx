@@ -17,6 +17,8 @@ export function ItemBadges({
   if (item.deletedAt)
     badges.push({ key: "del", label: "deleted", cls: "deleted" });
   if (item.hidden) badges.push({ key: "hid", label: "hidden", cls: "hidden" });
+  if (item.pending)
+    badges.push({ key: "pend", label: "pending", cls: "pending" });
   if (isHighlight)
     badges.push({
       key: "hl",

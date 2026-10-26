@@ -8,6 +8,11 @@
   gap: 6px;
 }
 
+.photo-card.is-pending {
+  background: var(--pending-bg);
+  border-color: var(--pending-border);
+}
+
 .photo-card.is-deleted {
   opacity: 0.55;
 }

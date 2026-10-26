@@ -141,6 +141,16 @@ async function run(): Promise<void> {
         assert.ok(fs.existsSync(path.join(albumsRoot, 'dreamhack', 'lordag1', 'a.jpg')), 'photo file back');
         assert.ok(!fs.existsSync(path.join(albumsRoot, '.trash', '101')), 'its trash directory removed');
 
+        // pending (operator): a changed item shows pending until its album is regenerated
+        db.run('DELETE FROM dirty_albums');
+        assert.strictEqual((await call(kalle, 'GET', '/api/albums/11')).body.album.pending, false);
+        await call(kalle, 'PATCH', '/api/photos/101', { title: 'Pending title' });
+        const pv = await call(kalle, 'GET', '/api/albums/11');
+        assert.strictEqual(pv.body.album.pending, true, 'the album is dirty');
+        assert.strictEqual(pv.body.children.find((c: { id: number }) => c.id === 101).pending, true, 'the changed photo');
+        db.run('DELETE FROM dirty_albums');
+        assert.strictEqual((await call(kalle, 'GET', '/api/albums/11')).body.children.find((c: { id: number }) => c.id === 101).pending, false, 'published');
+
         // audit and onChange
         const actions = db.all<{ action: string; result: string }>('SELECT action, result FROM audit_log ORDER BY id').map((r) => `${r.action}:${r.result}`);
         for (const x of ['authorize:denied', 'album create:ok', 'album update:ok', 'album hide:ok', 'album unhide:ok', 'album delete:ok', 'album restore:ok']) assert.ok(actions.includes(x) || actions.includes(x.replace('hide:ok', 'unhide:ok')), `audit has ${x}`);

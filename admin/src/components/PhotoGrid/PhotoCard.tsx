@@ -103,7 +103,7 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
 
   return (
     <li
-      className={`photo-card${deleted ? " is-deleted" : ""}${props.isHighlight ? " is-highlight" : ""}`}
+      className={`photo-card${deleted ? " is-deleted" : ""}${props.isHighlight ? " is-highlight" : ""}${photo.pending ? " is-pending" : ""}`}
       aria-label={name}
     >
       <Thumb item={photo} size={140} />
