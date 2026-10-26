@@ -13,4 +13,14 @@ describe('index.html', () => {
     expect(html).toContain('<title>%VITE_SITE_NAME%</title>');
     expect(html).toContain('name="viewport"');
   });
+
+  // Plausible CE through the same-origin proxy (Sprint 17): deferred, cookieless, random script name,
+  // events to /api/event so ad-blockers never see the stats host
+  it('loads the statistics script through the same-origin proxy', () => {
+    const head = html.slice(0, html.indexOf('</head>'));
+    expect(head).toContain(
+      '<script defer data-domain="lanbilder.se" data-api="/api/event" src="/js/259wlemz.js"></script>',
+    );
+    expect(html).not.toMatch(/stats\.phetast\.nu|plausible\.io/);
+  });
 });
