@@ -20,7 +20,7 @@ Spec for THEME-01 (Sprint 11). The default theme (`classic`) reproduces Gallery 
         ├─ .gbBlock.gcBackground1: [ h2 title + description | 30%: Date / Owner / Size: N items ]
         ├─ .gbBlock.gcBackground2.gbNavigator: first/previous (left) … next/last (right)
         ├─ .gbBlock: table#gsThumbMatrix, 3 columns × 4 rows (width 33% each)
-        │     cell: thumbnail (150px box) / bold title / "Date: 11/26/2005" / "Views: 1074"
+        │     cell: thumbnail (150px box) / bold title / "Date: 26/11/2005" / "Views: 1074"
         ├─ navigator again
         └─ #gsPages.gbBlock.gcBackground1: "Page: 1 2 3 4 5 6 ... 24" (current unlinked)
 #gsFooter: badges XHTML 1.0, Gallery 2, "Unpossible" (80×15 each)
@@ -53,7 +53,7 @@ Ported from Gallery 2.3.2 (`utils/matrixPeers.ts`): the window of `core.LoadPeer
 | Navigator | next/last float right (`text-align: right` when there is no previous); links get 27px padding with the 27×11 arrow gifs (`nav_first/prev/next/last.gif`) |
 | Pager | `#gsPages span`: padding 0 0.3em |
 | Thumbnails | 150×150 centre-cropped squares from Gallery 2's `squarethumb` module (57,741 of 58,574 thumbnails; 630 plain `thumbnail|150/200/250`, 1 hand crop) | ours are 300px for 2× screens, cropped to a 150px square with `object-fit: cover` (same centre crop) |
-| Date format | US, `MM/DD/YYYY` ("Date: 11/26/2005") |
+| Date format | `DD/MM/YYYY` ("Date: 26/11/2005"; operator, 2026-10-26. The 2006 captures are mixed: dhphotos and the photo page show `11/26/2005`, the root and dhw05 pages `17/11/2005`) |
 | Items per page | 12 (3 columns × 4 rows), the site's Matrix setting (287 items → 24 pages) |
 
 Assets (`frontend/src/assets/matrix/`, all under 1.3 KB, so Vite inlines them into the CSS; no image file reaches `dist/`): the 2006 files, byte-identical to Gallery 2.3.2's: `icon_path_separator.gif`, `nav_first|prev|next|last.gif` (themes/matrix/images), `advanced_search.gif`, `view_slideshow.gif`, `view_fullscreen_slideshow.gif` (icon pack paularmstrongdesigns), footer badges `xhtml10.png`, `gallery.gif`, `g2-unpossible.png`. Gallery 2 © the Gallery project, GPL-2.0. The CSS is written for this app from the values above, not copied.

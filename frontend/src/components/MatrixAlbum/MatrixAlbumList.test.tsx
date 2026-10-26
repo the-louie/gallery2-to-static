@@ -39,7 +39,7 @@ describe('MatrixAlbumList (classic-list theme, S13 T-09, QA-09)', () => {
     expect(img.closest('a')).toHaveAttribute('href', '/internationella/');
     expect(cells[1].querySelector('.giTitle')).toHaveTextContent(/^Album: Internationella$/);
     expect(cells[1].querySelector('.giDescription')).toHaveTextContent('Events from around the world.');
-    expect(info(cells[1])).toEqual(['Date: 04/20/2005', 'Size: 12 items (3947 items total)', 'Views: 17910']);
+    expect(info(cells[1])).toEqual(['Date: 20/04/2005', 'Size: 12 items (3947 items total)', 'Views: 17910']);
     expect(cells[2]).toHaveClass('tree');
     expect(cells[2].querySelector('h4')).toHaveTextContent('Subalbums:');
     const links = [...cells[2].querySelectorAll('li a')];

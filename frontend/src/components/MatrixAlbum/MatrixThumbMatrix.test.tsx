@@ -23,7 +23,7 @@ describe('MatrixThumbMatrix (THEME-01)', () => {
     expect(img).toHaveAttribute('src', expect.stringContaining('t__CIMG0053_.JPG'));
     expect(img.closest('a')).toHaveAttribute('href', '/dh/dhw05/cimg0053_');
     expect(cell.querySelector('.giTitle')).toHaveTextContent('CIMG0053_.JPG');
-    expect(info(cell)).toEqual(['Date: 11/26/2005', 'Views: 1074']);
+    expect(info(cell)).toEqual(['Date: 26/11/2005', 'Views: 1074']);
   });
 
   it('album cell as in the 2006 dhw05 page: grey cell, summary, Size with total, Views', () => {
@@ -31,7 +31,7 @@ describe('MatrixThumbMatrix (THEME-01)', () => {
     const cell = document.querySelector('td.giAlbumCell.gcBackground1')!;
     expect(cell.querySelector('.giTitle')).toHaveTextContent(/^DH-Photo$/);
     expect(cell.querySelector('.giDescription')).toHaveTextContent('OFFICIELLA BILDER');
-    expect(info(cell)).toEqual(['Date: 06/09/2005', 'Size: 9 items (878 items total)', 'Views: 65057']);
+    expect(info(cell)).toEqual(['Date: 09/06/2005', 'Size: 9 items (878 items total)', 'Views: 65057']);
     expect(screen.getByRole('img', { name: 'DH-Photo' }).closest('a')).toHaveAttribute('href', '/dreamhack/dreamhack_winter_05/dh-photo/');
   });
 

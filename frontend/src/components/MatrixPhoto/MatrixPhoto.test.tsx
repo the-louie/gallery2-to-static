@@ -47,7 +47,7 @@ describe('MatrixPhoto (THEME-01)', () => {
     show(1);
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('CIMG0053_.JPG');
     expect([...document.querySelectorAll('.block-core-ItemInfo .summary')].map((s) => s.textContent)).toEqual([
-      'Date: 11/26/2005',
+      'Date: 26/11/2005',
       'Owner: Patrick',
     ]);
     const select = screen.getByRole('combobox', { name: 'Size' });

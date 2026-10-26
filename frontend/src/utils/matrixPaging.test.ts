@@ -36,9 +36,9 @@ describe('parsePage / pageHref', () => {
 });
 
 describe('formatG2Date', () => {
-  it('US order in Swedish local time', () => {
-    expect(formatG2Date(1133038025)).toBe('11/26/2005'); // Battlefrag.com album
-    expect(formatG2Date(1132995297)).toBe('11/26/2005'); // CIMG0053_.JPG, 09:54 in Stockholm
+  it('DD/MM/YYYY in Swedish local time (operator, 2026-10-26)', () => {
+    expect(formatG2Date(1133038025)).toBe('26/11/2005'); // Battlefrag.com album
+    expect(formatG2Date(1132995297)).toBe('26/11/2005'); // CIMG0053_.JPG, 09:54 in Stockholm
     expect(formatG2Date(1104534000)).toBe('01/01/2005'); // 2004-12-31 23:00 UTC = midnight in Stockholm
   });
 

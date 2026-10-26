@@ -56,7 +56,7 @@ describe('MatrixAlbum (THEME-01)', () => {
     expect(screen.getByRole('link', { name: 'Battlefrag' })).toHaveAttribute('href', 'http://www.battlefrag.com');
     const info = document.querySelector('.giInfo')!;
     expect([...info.querySelectorAll('.summary')].map((s) => s.textContent)).toEqual([
-      'Date: 11/26/2005',
+      'Date: 26/11/2005',
       'Owner: Ann-peter',
       'Size: 287 items',
     ]);

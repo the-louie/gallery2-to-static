@@ -38,14 +38,14 @@ export function pageHref(albumPath: string, page: number): string {
   return page <= 1 ? albumPath : `${albumPath}?page=${page}`;
 }
 
-const DATE_FORMAT = new Intl.DateTimeFormat('en-US', {
+const DATE_FORMAT = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'Europe/Stockholm',
   year: 'numeric',
   month: '2-digit',
   day: '2-digit',
 });
 
-/** Gallery 2's date: US order, local time of the Swedish server ("11/26/2005"); '' without a timestamp. */
+/** Gallery 2's date as DD/MM/YYYY (operator, 2026-10-26; the 2006 root and dhw05 pages showed "20/04/2005"), local time of the Swedish server; '' without a timestamp. */
 export function formatG2Date(timestamp: number | null | undefined): string {
   if (timestamp == null || !Number.isFinite(timestamp)) return '';
   return DATE_FORMAT.format(new Date(timestamp * 1000));
