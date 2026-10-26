@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import type { BreadcrumbEntry } from "../../types";
 import "./Breadcrumb.css";
 
-/** Root → … → current album, each ancestor a link to `/albums/:id`. */
+/** Site root (its title) → … → current album, each ancestor a link to `/albums/:id`; no extra "Albums" root (operator, 2026-10-26). */
 export function Breadcrumb({
   entries,
   current,
@@ -14,9 +14,11 @@ export function Breadcrumb({
   return (
     <nav className="breadcrumb" aria-label="Breadcrumb">
       <ol>
-        <li>
-          <Link to="/albums/root">Albums</Link>
-        </li>
+        {entries.length === 0 && current === null && (
+          <li aria-current="page">
+            <span>Your albums</span>
+          </li>
+        )}
         {entries.map((e) => (
           <li key={e.id}>
             <Link to={`/albums/${e.id}`}>{e.title || `#${e.id}`}</Link>

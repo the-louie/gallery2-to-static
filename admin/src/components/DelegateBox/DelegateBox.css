@@ -32,3 +32,24 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
 }
+.delegate-box-add {
+  position: relative;
+}
+.delegate-box-matches {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 5;
+  min-width: 18rem;
+  margin: 0.2rem 0 0;
+  padding: 0.25rem;
+  list-style: none;
+  background: var(--bg, #fff);
+  border: 1px solid var(--border, #ccc);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+.delegate-box-matches button {
+  width: 100%;
+  text-align: left;
+}

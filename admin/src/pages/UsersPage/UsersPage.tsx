@@ -83,13 +83,16 @@ export function UsersPage(): ReactNode {
     <div className="users-page">
       <h1>Users</h1>
       <p className="muted">
-        Invited e-mails must also be allowed in the Cloudflare Access policy.
+        Adding a user puts their e-mail on the allowed list; no e-mail is sent.
+        Tell them to open the admin site and log in with that address (GitHub,
+        or Google when enabled). The address must also be allowed in the
+        Cloudflare Access policy.
       </p>
 
       <form
         className="users-invite card"
         onSubmit={(ev) => void invite(ev)}
-        aria-label="Invite user"
+        aria-label="Add user"
       >
         <div className="field users-invite-email">
           <label htmlFor="invite-email">E-mail</label>
@@ -116,7 +119,7 @@ export function UsersPage(): ReactNode {
           </select>
         </div>
         <button type="submit" className="primary" disabled={busy}>
-          Invite
+          Add user
         </button>
       </form>
 

@@ -79,7 +79,7 @@ describe("UsersPage", () => {
     await screen.findByText("dee@example.com");
     await userEvent.type(screen.getByLabelText("E-mail"), "new@example.com");
     await userEvent.selectOptions(screen.getByLabelText("Role"), "admin");
-    await userEvent.click(screen.getByRole("button", { name: "Invite" }));
+    await userEvent.click(screen.getByRole("button", { name: "Add user" }));
     expect(f.bodyOf("POST /api/admin/users")).toEqual({
       email: "new@example.com",
       role: "admin",
@@ -97,7 +97,7 @@ describe("UsersPage", () => {
     renderWithSession(<UsersPage />);
     await screen.findByText("dee@example.com");
     await userEvent.type(screen.getByLabelText("E-mail"), "dee@example.com");
-    await userEvent.click(screen.getByRole("button", { name: "Invite" }));
+    await userEvent.click(screen.getByRole("button", { name: "Add user" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "user exists (409)"
     );

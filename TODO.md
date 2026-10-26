@@ -47,6 +47,10 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
   - raw `ownerId` in the output: rows are now mapped field by field (LOGIC-05), `ownerId` is not emitted.
 - **Per-album themes for paths with é/æ/ø** (was "not re-verified"): checked 2026-10-25 (Sprint 11 T-02): all 1,389 `pathIndex` keys are ASCII (titles are transliterated), so a percent-encoded `location.pathname` (BrowserRouter) cannot miss a key.
 
+## Open for the operator (2026-10-26)
+
+- **QA3-04: Google as a second login method** — needs a Google OAuth client (Google Cloud Console → OAuth consent screen → Credentials → OAuth client ID, Web application, authorised redirect URI `https://telamon.cloudflareaccess.com/cdn-cgi/access/callback`); put the client id and secret in `/srv/share/lanbilder2/google-oauth.txt`; then Claude adds the Google identity provider in Cloudflare Access, allows it on the "lanbilder admin" and "lanbilder statistics" applications and turns off the auto-redirect to GitHub.
+
 ## BEFORE GO-LIVE (operator 2026-10-26: "lift FUT tasks to before go-alive so we are ready to add new albums")
 
 Operator, 2026-10-25, lifted 2026-10-26: **all five rows ship before lanbilder.se switches** to the new

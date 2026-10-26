@@ -2,6 +2,13 @@
 
 Rows pruned from `TODO.md` after each sprint, with the proof they were closed on. Newest first.
 
+## Pruned 2026-10-26 (Sprint 19 follow-up): operator comments on the admin site, second round
+
+- ~~**QA3-01: delegate picker searchable**~~ — **CLOSED, verified 2026-10-26:** `admin/src/components/DelegateBox` is a search field with up to 8 matches (name, e-mail, full name), one click delegates.
+- ~~**QA3-02: breadcrumb without the initial "Albums"**~~ — **CLOSED, verified 2026-10-26:** `Breadcrumb` starts with the site root's title (lanbilder.se); a user's own root view says "Your albums".
+- ~~**QA3-03: no invitation e-mail received**~~ — **CLOSED (by design), 2026-10-26:** no mail exists in the setup; "Add user" only allows the address, the person logs in with it. The Users page says so.
+- ~~**QA3-04: Google login missing**~~ — **OPEN for the operator:** Google needs an OAuth client only the operator can create (Google Cloud Console; redirect URI `https://telamon.cloudflareaccess.com/cdn-cgi/access/callback`); client id + secret on the share → Claude adds the Google identity provider to Access and to both applications and turns off the auto-redirect to GitHub.
+
 ## Pruned 2026-10-26 (Sprint 19): 10 rows (QA2-01..09, 11)
 
 ## Added 2026-10-26 (afternoon): operator comments after the first real albums (admin site)

@@ -9,7 +9,7 @@ import "./DelegateBox.css";
  */
 export function DelegateBox({ album }: { album: AdminItem }): ReactNode {
   const [users, setUsers] = useState<AdminUser[] | null>(null);
-  const [pick, setPick] = useState<string>("");
+  const [query, setQuery] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,6 +29,15 @@ export function DelegateBox({ album }: { album: AdminItem }): ReactNode {
   const candidates = users.filter(
     (u) => u.enabled && !(u.albums ?? []).includes(album.id)
   );
+  const q = query.trim().toLowerCase();
+  const matches = candidates
+    .filter(
+      (u) =>
+        u.email.toLowerCase().includes(q) ||
+        (u.nickname ?? "").toLowerCase().includes(q) ||
+        (u.fullName ?? "").toLowerCase().includes(q)
+    )
+    .slice(0, 8);
 
   async function run(action: () => Promise<void>): Promise<void> {
     setBusy(true);
@@ -70,30 +79,38 @@ export function DelegateBox({ album }: { album: AdminItem }): ReactNode {
           <label htmlFor={`delegate-${album.id}`} className="visually-hidden">
             Delegate to
           </label>
-          <select
+          <input
             id={`delegate-${album.id}`}
-            value={pick}
+            type="search"
+            placeholder="Delegate to… (type a name or e-mail)"
+            value={query}
             disabled={busy}
-            onChange={(ev) => setPick(ev.target.value)}
-          >
-            <option value="">Delegate to…</option>
-            {candidates.map((u) => (
-              <option key={u.id} value={String(u.id)}>
-                {u.nickname ? `${u.nickname} (${u.email})` : u.email}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            disabled={busy || pick === ""}
-            onClick={() =>
-              void run(() =>
-                api.delegate(Number(pick), album.id).then(() => setPick(""))
-              )
-            }
-          >
-            Delegate
-          </button>
+            onChange={(ev) => setQuery(ev.target.value)}
+            autoComplete="off"
+          />
+          {query.trim() !== "" && (
+            <ul className="delegate-box-matches" aria-label="Matching users">
+              {matches.length === 0 ? (
+                <li className="muted">No match</li>
+              ) : (
+                matches.map((u) => (
+                  <li key={u.id}>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() =>
+                        void run(() =>
+                          api.delegate(u.id, album.id).then(() => setQuery(""))
+                        )
+                      }
+                    >
+                      {u.nickname ? `${u.nickname} (${u.email})` : u.email}
+                    </button>
+                  </li>
+                ))
+              )}
+            </ul>
+          )}
         </span>
       )}
       {error && (
