@@ -266,6 +266,8 @@ export async function generateAll(db: Db, dataDir: string, now: Date = new Date(
         if (!onlyAlbums || onlyAlbums.has(id)) {
             await writeAtomic(path.join(dataDir, `${id}.json`), JSON.stringify(file, null, 2));
             albums += 1;
+            // the album has been public: its URL segment is locked from now on (invariant 4)
+            db.run('UPDATE items SET url_locked_at = ? WHERE id = ? AND url_locked_at IS NULL', now.toISOString(), id);
         }
         for (const item of s) search.set(item.id, item);
         for (const [photo, album] of lp) legacyPhotos.set(photo, album);
@@ -344,6 +346,35 @@ export async function generateChanged(db: Db, dataDir: string, media?: Omit<Medi
     return { ...result, dirty: dirtyRows.length };
 }
 
+/** The paths and image options a run needs, from config.json (relative to the project root). */
+export function runtimePaths(config: import('./types.ts').Config, projectRoot: string, log?: (l: string) => void): {
+    dataDir: string; albumsRoot: string; publishedRoot: string; media: MediaOptions;
+} {
+    const albumsRoot = path.join(projectRoot, config.albumsRoot ?? 'frontend/public/g2data/albums');
+    return {
+        dataDir: path.join(projectRoot, 'data'),
+        albumsRoot,
+        publishedRoot: path.join(projectRoot, config.publishedAlbumsRoot ?? 'frontend/public/g2data/published'),
+        media: {
+            albumsRoot,
+            thumbnailsRoot: path.join(projectRoot, config.thumbnailsRoot ?? 'frontend/public/g2data/thumbnails'),
+            resizedRoot: path.join(projectRoot, config.resizedRoot ?? 'frontend/public/g2data/resized'),
+            thumbOptions: { maxWidth: config.thumbnailMaxWidth ?? 400, maxHeight: config.thumbnailMaxHeight ?? 400, quality: config.thumbnailQuality ?? 80 },
+            resizeOptions: { maxWidth: config.resizeMaxSize ?? 1024, maxHeight: config.resizeMaxSize ?? 1024, quality: config.resizeQuality ?? 85 },
+            concurrency: config.thumbnailConcurrency ?? 5,
+            log,
+        },
+    };
+}
+
+/** What the admin service runs after a change: the changed branches, then the published link tree. */
+export async function regenerateChanged(db: Db, config: import('./types.ts').Config, projectRoot: string, log?: (l: string) => void): Promise<void> {
+    const { publishImages } = await import('./publishImages.ts');
+    const p = runtimePaths(config, projectRoot, log);
+    const r = await generateChanged(db, p.dataDir, p.media);
+    if (r) await publishImages(p.dataDir, p.albumsRoot, p.publishedRoot);
+}
+
 // CLI: node --no-warnings=ExperimentalWarning generate.ts --all | --changed | images [--db <file>] [--no-images] [--no-publish]
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
     const [{ openDb }, { publishImages }, { runStamp, prepareStagingDir, promoteStagingDir }, fsSync] = await Promise.all([
@@ -359,18 +390,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
     const config = JSON.parse(fsSync.readFileSync(path.join(import.meta.dirname, 'config.json'), 'utf-8')) as import('./types.ts').Config;
     const dbFile = args.includes('--db') ? args[args.indexOf('--db') + 1]! : (process.env.GALLERY_DB ?? path.join(import.meta.dirname, 'db', 'gallery.sqlite'));
     const db = openDb(dbFile);
-    const albumsRoot = path.join(projectRoot, config.albumsRoot ?? 'frontend/public/g2data/albums');
-    const media = {
-        albumsRoot,
-        thumbnailsRoot: path.join(projectRoot, config.thumbnailsRoot ?? 'frontend/public/g2data/thumbnails'),
-        resizedRoot: path.join(projectRoot, config.resizedRoot ?? 'frontend/public/g2data/resized'),
-        thumbOptions: { maxWidth: config.thumbnailMaxWidth ?? 400, maxHeight: config.thumbnailMaxHeight ?? 400, quality: config.thumbnailQuality ?? 80 },
-        resizeOptions: { maxWidth: config.resizeMaxSize ?? 1024, maxHeight: config.resizeMaxSize ?? 1024, quality: config.resizeQuality ?? 85 },
-        concurrency: config.thumbnailConcurrency ?? 5,
-        log: (l: string) => console.warn(l),
-    };
-    const dataDir = path.join(projectRoot, 'data');
-    const publishedRoot = path.join(projectRoot, config.publishedAlbumsRoot ?? 'frontend/public/g2data/published');
+    const { dataDir, albumsRoot, publishedRoot, media } = runtimePaths(config, projectRoot, (l) => console.warn(l));
     const t0 = Date.now();
     try {
         if (mode === 'images') {

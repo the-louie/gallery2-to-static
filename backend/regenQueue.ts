@@ -39,6 +39,11 @@ export class RegenQueue {
         this.timer.unref?.();
     }
 
+    /** True while a run is in progress. */
+    get isRunning(): boolean {
+        return this.running;
+    }
+
     /** True while a run is in progress or one is scheduled. */
     get busy(): boolean {
         return this.running || this.timer !== undefined || this.pending;

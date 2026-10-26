@@ -14,6 +14,8 @@ import { registerViewRoutes } from './routes/view.ts';
 import { registerAuthRoutes } from './routes/auth.ts';
 import { registerAdminRoutes } from './routes/admin.ts';
 import { registerAlbumRoutes } from './routes/albums.ts';
+import { registerRegenRoutes } from './routes/regen.ts';
+import { RegenQueue } from './regenQueue.ts';
 import { verifyAccessJwt, type AccessIdentity } from './auth/access.ts';
 import { sessionSecret } from './auth/session.ts';
 import type { AuthDeps, AuditSink } from './auth/guard.ts';
@@ -44,6 +46,8 @@ export interface ServerOptions {
     albumsRoot?: string;
     /** Called after every content write (the RegenQueue's request). */
     onChange?: () => void;
+    /** The regeneration queue (status route, manual run); the CLI builds one around generate.ts. */
+    regen?: RegenQueue;
 }
 
 /** The auth dependencies the routes share, from the server options. */
@@ -72,11 +76,13 @@ export function buildRouter(opts: ServerOptions): Router {
     const deps = authDeps(opts);
     registerAuthRoutes(router, deps);
     registerAdminRoutes(router, deps);
+    const onChange = opts.onChange ?? (opts.regen ? () => opts.regen!.request() : () => {});
     registerAlbumRoutes(router, {
         auth: deps,
         albumsRoot: opts.albumsRoot ?? path.join(import.meta.dirname, '..', 'frontend', 'public', 'g2data', 'albums'),
-        onChange: opts.onChange ?? (() => {}),
+        onChange,
     });
+    registerRegenRoutes(router, deps, opts.regen, onChange);
     opts.routes?.(router);
     return router;
 }
@@ -144,7 +150,18 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
     } else if (!access) {
         stdoutLogger({ level: 'warn', msg: 'CF_ACCESS_TEAM_DOMAIN / CF_ACCESS_AUD not set: authenticated routes answer 503' });
     }
-    const server = createServer({ db, port, host, access, verifyJwt });
+    // the regeneration queue: the changed branches + the published link tree, 5 s after the last change
+    const { regenerateChanged } = await import('./generate.ts');
+    const fsSync = await import('node:fs');
+    const projectRoot = path.join(import.meta.dirname, '..');
+    const config = JSON.parse(fsSync.readFileSync(path.join(import.meta.dirname, 'config.json'), 'utf-8')) as import('./types.ts').Config;
+    const regen = new RegenQueue(async () => {
+        const t0 = Date.now();
+        await regenerateChanged(db, config, projectRoot, (l) => stdoutLogger({ level: 'warn', msg: l }));
+        stdoutLogger({ msg: 'regenerated', ms: Date.now() - t0 });
+    }, { onError: (err) => stdoutLogger({ level: 'error', msg: 'regen failed', error: err instanceof Error ? err.message : String(err) }) });
+    const albumsRoot = path.join(projectRoot, config.albumsRoot ?? 'frontend/public/g2data/albums');
+    const server = createServer({ db, port, host, access, verifyJwt, regen, albumsRoot });
     server.on('listening', () => {
         const a = server.address();
         stdoutLogger({ msg: 'listening', host, port: a && typeof a === 'object' ? a.port : port, db: file });
