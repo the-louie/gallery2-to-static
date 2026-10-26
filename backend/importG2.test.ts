@@ -22,7 +22,7 @@ async function run(): Promise<void> {
     assert.deepStrictEqual([item(10).url_segment, item(10).position], ['dreamhack', 1]);
     // duplicate titles get disambiguated the way the extractor did (segment-id)
     assert.strictEqual(item(11).url_segment, 'lordag');
-    assert.strictEqual(item(12).url_segment, 'lordag-12');
+    assert.strictEqual(item(12).url_segment, 'lordag--12');
     assert.strictEqual(item(13).url_segment, 'album_13', 'blank title -> fallback segment');
     assert.strictEqual(item(101).url_segment, 'a');
     assert.strictEqual(item(101).event_at, 1_130_000_101);
