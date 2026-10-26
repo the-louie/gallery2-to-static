@@ -8,6 +8,9 @@ import { json, noContent, intParam, HttpError } from '../http.ts';
 import { requireUser, type AuthDeps, type AuthCtx } from '../auth/guard.ts';
 import { canWrite } from '../auth/users.ts';
 import { createAlbum, getAlbumView, getRootView, updateAlbum, setHidden, softDelete, restore } from '../albums.ts';
+import { readMultipart } from '../multipart.ts';
+import { processUpload, MAX_FILE_BYTES, MAX_REQUEST_BYTES } from '../upload.ts';
+import * as path from 'node:path';
 
 export interface ContentDeps {
     auth: AuthDeps;
@@ -77,6 +80,17 @@ export function registerAlbumRoutes(router: Router, deps: ContentDeps): void {
         audit(ctx, 'album delete', `item:${albumId}`, 'ok');
         deps.onChange();
         return noContent();
+    }));
+
+    router.post('/api/albums/:id/photos', user(async (ctx) => {
+        const albumId = id(ctx);
+        guard(ctx, albumId, 'photo upload');
+        const parts = await readMultipart(ctx.req, path.join(deps.albumsRoot, '.upload-tmp'), { maxFileBytes: MAX_FILE_BYTES, maxTotalBytes: MAX_REQUEST_BYTES, maxFiles: 500 });
+        if (parts.files.length === 0) throw new HttpError(400, 'no files');
+        const r = await processUpload(ctx.db, albumId, parts.files, ctx.user, { albumsRoot: deps.albumsRoot, log: (l) => ctx.log({ level: 'warn', msg: l }) });
+        audit(ctx, 'photo upload', `item:${albumId}`, r.created.length ? 'ok' : 'error', { created: r.created.map((c) => c.id), rejected: r.rejected });
+        if (r.created.length) deps.onChange();
+        return json(201, r);
     }));
 
     router.post('/api/albums/:id/restore', requireUser(deps.auth, (ctx) => {
