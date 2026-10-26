@@ -188,3 +188,23 @@ th {
   color: var(--muted);
   font-size: 0.9em;
 }
+
+/* Publish (greenish) / Unpublish (reddish) on albums and photos (operator, 2026-10-26) */
+button.publish {
+  background: #e6f4ea;
+  border-color: #2e7d4f;
+  color: #1d5e3a;
+}
+button.publish:hover:not(:disabled) {
+  background: #2e7d4f;
+  color: #fff;
+}
+button.unpublish {
+  background: #fbeaea;
+  border-color: #b4232c;
+  color: #8f1c23;
+}
+button.unpublish:hover:not(:disabled) {
+  background: #b4232c;
+  color: #fff;
+}

@@ -185,6 +185,7 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
               </button>
               <button
                 type="button"
+                className={photo.hidden ? "publish" : "unpublish"}
                 disabled={disabled}
                 aria-label={
                   photo.hidden ? `Publish ${name}` : `Unpublish ${name}`

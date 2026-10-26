@@ -54,7 +54,7 @@ export function AlbumToolbar({
         </button>
         <button
           type="button"
-          className={album.hidden ? "primary" : ""}
+          className={album.hidden ? "publish" : "unpublish"}
           disabled={busy || deleted}
           aria-label={album.hidden ? "Publish album" : "Unpublish album"}
           title={
