@@ -1,7 +1,7 @@
 # Sprint 13: operator QA round (QA-01..QA-10)
 
 **Status:** in progress (opened 2026-10-26)
-**Current ticket:** T-02 (`todo` — Header description not cut off (modern))
+**Current ticket:** T-02 (`in-progress` — Header description not cut off (modern))
 **Last completed:** T-01 (`done` — commit `b14b800`)
 
 **Goal:** every item on the operator's morning list fixed on the test site: square thumbnails everywhere, the modern root page's card image and "...and more!" fixed, the header text readable, the classic theme's phone layout flowing, search retry working, the banner in every theme, and a new `classic-list` theme with the 2013 root-album list.
@@ -11,7 +11,7 @@
 | # | Ticket | Backlog | Est | Deps | Status | Acceptance / Notes |
 |---|---|---|---|---|---|---|
 | T-01 | "Theme: modern" goes to the dark variant | QA-05 | 0.5h | – | done | `MatrixSidebar.tsx`: `setTheme('dark')`; test updated; sprint-12 note in `theme-matrix.md` corrected. Landed in `b14b800` |
-| T-02 | Header description not cut off (modern) | QA-04 | 0.5h | – | todo | `modern.css`: no line clamp on `.layout-header-description`; wraps to 2–3 lines at 1280px, hidden or full on phones (check 390px); screenshot |
+| T-02 | Header description not cut off (modern) | QA-04 | 0.5h | – | in-progress | `modern.css`: no line clamp on `.layout-header-description`; wraps to 2–3 lines at 1280px, hidden or full on phones (check 390px); screenshot |
 | T-03 | More space above "...and more!" (modern) | QA-03 | 0.5h | – | todo | `RootAlbumListBlock.css`/`modern.css`: margin-top ≥ 0.75rem between the chip list and the link; screenshot of a card with > 10 sub-albums |
 | T-04 | Root card head image links to the album (modern) | QA-02 | 1h | – | todo | the highlight band becomes (or sits inside) a `Link` to the album; keyboard focusable once (no duplicate tab stop: `aria-hidden`/`tabIndex={-1}` on the image link, or make the whole band part of the existing block link); test: clicking the image navigates |
 | T-05 | Phone thumbnails flow two per row (classic) | QA-06 | 1h | – | todo | `MatrixAlbum.css` phone block: `tbody` flex-wrap, `tr { display: contents }`, cells 50%; flush cells hidden; `mobilecheck.cjs` 66/66; screenshot at 412×915 of root, sub-album list and a photo list |
