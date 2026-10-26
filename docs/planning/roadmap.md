@@ -5,7 +5,7 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 **After every sprint (operator, 2026-10-25):** prune `TODO.md` and regenerate `TODO-summarized.md`: `python3 docs/planning/prune_todo.py . "Sprint NN"` moves closed (~~struck~~) rows, with their proof, to `docs/planning/done.md`.
 
 **Active sprint:** [Sprint 15](./sprints/sprint-15.md) — in progress (FUT-01, the data master); in parallel (operator 2026-10-26): [Sprint 16](./sprints/sprint-16.md) auth/service on `s16-auth`, [Sprint 17](./sprints/sprint-17.md) statistics on `s17-stats`; merged into master when done.
-**Current ticket:** [Sprint 15 T-06](./sprints/sprint-15.md) (`todo` — Dirty tracking and branch regeneration)
+**Current ticket:** [Sprint 15 T-06](./sprints/sprint-15.md) (`in-progress` — Dirty tracking and branch regeneration)
 **Last completed:** Sprint 15 T-05 (commit `0318ea5`).
 
 | Sprint | Goal |
