@@ -118,6 +118,8 @@ export async function updateMedia(db: Db, options: MediaOptions): Promise<MediaR
     const albums = options.albumIds ? [...options.albumIds].filter((id) => t.exported.has(id)) : [...t.exported];
     const photos: ItemRow[] = [];
     for (const id of albums) for (const c of t.kids(id)) if (c.type === 'photo') photos.push(c);
+    // hidden photos chosen as highlights need their thumbnail too
+    for (const p of t.hiddenPhotos.values()) if (albums.includes(p.parent_id!) && [...t.highlights.values()].includes(p.id)) photos.push(p);
     const r: MediaResult = { photos: 0, generated: 0, skipped: 0, resized: 0, failed: 0, missing: 0 };
     await pool(photos, options.concurrency ?? 5, (p) => processPhoto(db, t, p, options, r));
     return r;

@@ -43,7 +43,7 @@ function firstPhotoRecursive(t: Tree, albumId: number): { photo: ItemRow; album:
 function chosenHighlight(t: Tree, albumId: number): { photo: ItemRow; album: number } | null {
     const photoId = t.highlights.get(albumId);
     if (photoId === undefined) return null;
-    const photo = t.byId.get(photoId);
+    const photo = t.byId.get(photoId) ?? t.hiddenPhotos.get(photoId);
     if (!photo || photo.type !== 'photo' || !photo.path_component || photo.parent_id === null) return null;
     // the photo must sit in the album or below it
     for (let a = t.byId.get(photo.parent_id); a; a = a.parent_id === null ? undefined : t.byId.get(a.parent_id)) {

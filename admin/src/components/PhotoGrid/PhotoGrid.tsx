@@ -9,6 +9,8 @@ export interface PhotoGridProps {
   items: AdminItem[];
   albumId: number;
   highlightPhotoId: number | null;
+  /** the photo currently shown as the highlight (chosen or default) */
+  currentHighlightPhotoId?: number | null;
   canWrite: boolean;
   isAdmin: boolean;
   /** A photo or the album came back changed from the server. */
@@ -26,6 +28,7 @@ export interface PhotoGridProps {
  */
 export function PhotoGrid(props: PhotoGridProps): ReactNode {
   const { items, albumId, highlightPhotoId, canWrite, isAdmin } = props;
+  const effectiveHighlight = props.currentHighlightPhotoId ?? highlightPhotoId;
   const photos = items.filter((c) => c.type === "photo");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -80,7 +83,10 @@ export function PhotoGrid(props: PhotoGridProps): ReactNode {
           <PhotoCard
             key={p.id}
             photo={p}
-            isHighlight={p.id === highlightPhotoId}
+            isHighlight={p.id === effectiveHighlight}
+            highlightIsDefault={
+              p.id === effectiveHighlight && highlightPhotoId === null
+            }
             canWrite={canWrite && p.canWrite}
             isAdmin={isAdmin}
             busy={busy}

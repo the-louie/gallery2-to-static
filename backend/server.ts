@@ -53,6 +53,8 @@ export interface ServerOptions {
     regen?: RegenQueue;
     /** Profile pictures (default: `avatars/` next to the database file). */
     avatarsDir?: string;
+    /** Thumbnails generated at upload (the CLI passes config's thumbnail settings). */
+    thumbnails?: { root: string; options: { maxWidth: number; maxHeight: number; quality: number } };
 }
 
 /** The auth dependencies the routes share, from the server options. */
@@ -86,6 +88,7 @@ export function buildRouter(opts: ServerOptions): Router {
     registerAlbumRoutes(router, {
         auth: deps,
         albumsRoot: opts.albumsRoot ?? path.join(import.meta.dirname, '..', 'frontend', 'public', 'g2data', 'albums'),
+        thumbnails: opts.thumbnails,
         onChange,
     });
     registerRegenRoutes(router, deps, opts.regen, onChange);
@@ -181,8 +184,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
         await regenerateChanged(db, config, projectRoot, (l) => stdoutLogger({ level: 'warn', msg: l }));
         stdoutLogger({ msg: 'regenerated', ms: Date.now() - t0 });
     }, { onError: (err) => stdoutLogger({ level: 'error', msg: 'regen failed', error: err instanceof Error ? err.message : String(err) }) });
-    const albumsRoot = path.join(projectRoot, config.albumsRoot ?? 'frontend/public/g2data/albums');
-    const server = createServer({ db, port, host, access, verifyJwt, assertionOptional: Boolean(fakeEmail), regen, albumsRoot });
+    const { runtimePaths } = await import('./generate.ts');
+    const paths = runtimePaths(config, projectRoot);
+    const server = createServer({ db, port, host, access, verifyJwt, assertionOptional: Boolean(fakeEmail), regen, albumsRoot: paths.albumsRoot,
+        thumbnails: { root: paths.media.thumbnailsRoot, options: paths.media.thumbOptions } });
     // expired sessions are dropped once an hour (otherwise only when touched)
     const { purgeExpiredSessions } = await import('./auth/session.ts');
     const purge = setInterval(() => { try { purgeExpiredSessions(db); } catch (e) { stdoutLogger({ level: 'warn', msg: 'session purge failed', error: e instanceof Error ? e.message : String(e) }); } }, 3600_000);

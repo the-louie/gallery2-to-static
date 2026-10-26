@@ -114,6 +114,8 @@ export const api = {
     request<{ ok: true }>("PUT", `/api/albums/${albumId}/order`, { ids }),
   patchPhoto: (id: number, patch: PhotoPatch) =>
     request<AdminItem>("PATCH", `/api/photos/${id}`, patch),
+  setPhotoHidden: (id: number, hidden: boolean) =>
+    request<AdminItem>("PUT", `/api/photos/${id}/hidden`, { hidden }),
   deletePhoto: (id: number) => request<void>("DELETE", `/api/photos/${id}`),
   restorePhoto: (id: number) =>
     request<AdminItem>("POST", `/api/photos/${id}/restore`),

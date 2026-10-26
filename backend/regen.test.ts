@@ -20,6 +20,7 @@ async function run(): Promise<void> {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'regen-'));
     const db = openDb();
     await importG2({ sql: fakeSql, config: TREE_CONFIG, db });
+        db.setSetting('album_sort', 'position');
     db.run("INSERT INTO users (id, email, role, totp_secret, totp_verified_at) VALUES (1, 'admin@example.com', 'admin', 'S', '2026-01-01T00:00:00.000Z')");
     const secret = Buffer.from('s'.repeat(32));
     let runs = 0;

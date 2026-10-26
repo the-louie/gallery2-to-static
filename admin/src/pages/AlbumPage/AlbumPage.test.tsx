@@ -56,11 +56,13 @@ describe("AlbumPage", () => {
     const albums = screen.getByRole("list", { name: "Sub-albums" });
     const rows = within(albums).getAllByRole("listitem");
     expect(rows).toHaveLength(2);
-    expect(within(rows[0]!).getByText("Hidden album")).toBeInTheDocument();
-    expect(within(rows[0]!).getByText("hidden")).toBeInTheDocument();
-    expect(within(rows[0]!).getByText(/3 items/)).toBeInTheDocument();
-    expect(within(rows[1]!).getByText("deleted")).toBeInTheDocument();
-    expect(within(rows[0]!).getByRole("link")).toHaveAttribute(
+    // albums are listed alphabetically (operator, 2026-10-26): "Gone album" before "Hidden album"
+    expect(within(rows[0]!).getByText("Gone album")).toBeInTheDocument();
+    expect(within(rows[0]!).getByText("deleted")).toBeInTheDocument();
+    expect(within(rows[1]!).getByText("Hidden album")).toBeInTheDocument();
+    expect(within(rows[1]!).getByText("hidden")).toBeInTheDocument();
+    expect(within(rows[1]!).getByText(/3 items/)).toBeInTheDocument();
+    expect(within(rows[1]!).getByRole("link")).toHaveAttribute(
       "href",
       "/albums/20"
     );

@@ -22,6 +22,7 @@ async function run(): Promise<void> {
         await writeImages(path.join(tmp, 'g2/albums'));
         const db = openDb();
         await importG2({ sql: fakeSql, config: TREE_CONFIG, db });
+        db.setSetting('album_sort', 'position');
         assert.ok(dirty(db).length > 0, 'the import marks everything dirty');
         const media = {
             albumsRoot: path.join(tmp, 'g2/albums'), thumbnailsRoot: path.join(tmp, 'g2/thumbs'), resizedRoot: path.join(tmp, 'g2/resized'),
@@ -92,6 +93,17 @@ async function run(): Promise<void> {
         db.run('DELETE FROM dirty_albums');
         db.run("UPDATE owners SET nickname = 'Kalle' WHERE id = 5");
         assert.deepStrictEqual(dirty(db), [14, 15]);
+
+        // 4a. a hidden photo is not listed but stays the chosen highlight of its album (item 11)
+        db.run('UPDATE items SET hidden = 1 WHERE id = 101');
+        db.run("INSERT INTO highlights (album_id, photo_id, chosen) VALUES (11, 101, 1) ON CONFLICT(album_id) DO UPDATE SET photo_id = 101, chosen = 1");
+        await generateChanged(db, data, media);
+        const a11h = await readJson(path.join(data, '11.json'));
+        assert.ok(!a11h.children.some((c: { id: number }) => c.id === 101), 'hidden photo not listed');
+        assert.strictEqual(a11h.metadata.highlightImageUrl, 'dreamhack/lordag1/a.jpg', 'still the highlight');
+        assert.strictEqual((await readJson(path.join(data, '10.json'))).children.find((c: { id: number }) => c.id === 11).thumbnailUrlPath, 'dreamhack/lordag1/t__a.jpg');
+        db.run('UPDATE items SET hidden = 0 WHERE id = 101'); db.run('DELETE FROM highlights WHERE album_id = 11');
+        await generateChanged(db, data, media);
 
         // 4b. the nightly fold: pending view counts land in the items and mark their albums dirty
         db.run('DELETE FROM dirty_albums');

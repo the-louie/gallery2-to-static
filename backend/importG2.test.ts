@@ -28,6 +28,7 @@ async function run(): Promise<void> {
     assert.strictEqual(item(101).event_at, 1_130_000_101);
     assert.deepStrictEqual([item(105).hidden, item(106).hidden, item(30).hidden, item(301).hidden, item(101).hidden], [1, 1, 1, 1, 0]);
     assert.strictEqual(item(20).hidden, 0, 'an empty album is kept, not hidden (the generator skips it)');
+    assert.deepStrictEqual(db.all<{ id: number }>('SELECT id FROM items WHERE blocked = 1 ORDER BY id').map((r) => r.id), [30, 105, 106, 301], 'the ignore lists are blocked (never served, never a highlight)');
 
     const legacy = Object.fromEntries(db.all<{ g2_path: string; item_id: number }>('SELECT * FROM legacy_paths').map((r) => [r.g2_path, r.item_id]));
     assert.strictEqual(legacy[''], 7);

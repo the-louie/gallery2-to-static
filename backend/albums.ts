@@ -13,6 +13,7 @@ import { buildPathsFromPathComponent } from './pathResolution.ts';
 import { photoSegment } from './importG2.ts';
 import type { User } from './auth/users.ts';
 import { canWrite } from './auth/users.ts';
+import { albumSortSetting, sortChildren } from './tree.ts';
 
 export interface AdminItem {
     id: number;
@@ -33,6 +34,8 @@ export interface AdminItem {
     hidden: boolean;
     deletedAt: string | null;
     highlightPhotoId: number | null;
+    /** albums: the photo shown as the highlight (the chosen one, else the first photo) */
+    currentHighlightPhotoId?: number | null;
     thumbnailUrl: string | null;
     childCount?: number;
     canWrite: boolean;
@@ -48,11 +51,11 @@ interface Row {
     id: number; type: 'album' | 'photo'; parent_id: number | null; position: number; title: string | null;
     description: string | null; summary: string | null; path_component: string; url_segment: string; url_locked_at: string | null;
     event_at: number | null; width: number | null; height: number | null; owner_name: string | null; view_count: number | null;
-    hidden: number; deleted_at: string | null;
+    hidden: number; blocked: number; deleted_at: string | null;
 }
 
 const SELECT = `SELECT i.id, i.type, i.parent_id, i.position, i.title, i.description, i.summary, i.path_component, i.url_segment,
-    i.url_locked_at, i.event_at, i.width, i.height, CASE WHEN o.show_full_name = 1 AND o.full_name IS NOT NULL AND trim(o.full_name) <> '' THEN o.full_name ELSE o.nickname END AS owner_name, i.view_count, i.hidden, i.deleted_at
+    i.url_locked_at, i.event_at, i.width, i.height, CASE WHEN o.show_full_name = 1 AND o.full_name IS NOT NULL AND trim(o.full_name) <> '' THEN o.full_name ELSE o.nickname END AS owner_name, i.view_count, i.hidden, i.blocked, i.deleted_at
     FROM items i LEFT JOIN owners o ON o.id = i.owner_id`;
 
 export function getRow(db: Db, id: number): Row | undefined {
@@ -102,7 +105,7 @@ function highlightPhoto(db: Db, albumId: number): Row | null {
     const chosen = db.get<{ photo_id: number }>('SELECT photo_id FROM highlights WHERE album_id = ?', albumId);
     if (chosen) {
         const p = getRow(db, chosen.photo_id);
-        if (p && p.type === 'photo' && !p.deleted_at && !p.hidden) return p;
+        if (p && p.type === 'photo' && !p.deleted_at && !p.blocked) return p; // a hidden photo may be the chosen highlight (item 11); a blocked one never
     }
     const direct = db.get<Row>(`${SELECT} WHERE i.parent_id = ? AND i.type = 'photo' AND i.deleted_at IS NULL AND i.hidden = 0 ORDER BY i.position, i.id LIMIT 1`, albumId);
     if (direct) return direct;
@@ -123,6 +126,7 @@ export function toAdminItem(db: Db, r: Row, user: User): AdminItem {
     };
     if (r.type === 'album') {
         item.childCount = db.get<{ n: number }>('SELECT count(*) AS n FROM items WHERE parent_id = ? AND deleted_at IS NULL AND hidden = 0', r.id)!.n;
+        item.currentHighlightPhotoId = highlightPhoto(db, r.id)?.id ?? null;
     }
     return item;
 }
@@ -131,7 +135,7 @@ export function toAdminItem(db: Db, r: Row, user: User): AdminItem {
 export function getAlbumView(db: Db, albumId: number, user: User): AlbumView {
     const album = mustGet(db, albumId, 'album');
     const writer = canWrite(db, user.id, albumId);
-    const rows = db.all<Row>(`${SELECT} WHERE i.parent_id = ?${writer ? '' : ' AND i.deleted_at IS NULL AND i.hidden = 0'} ORDER BY i.type = 'photo', i.position, i.id`, albumId);
+    const rows = sortChildren(db.all<Row>(`${SELECT} WHERE i.parent_id = ?${writer ? '' : ' AND i.deleted_at IS NULL AND i.hidden = 0'}`, albumId), albumSortSetting(db));
     return {
         album: toAdminItem(db, album, user),
         breadcrumb: chain(db, albumId).map((r) => ({ id: r.id, title: r.parent_id === null ? (db.setting('site_name') ?? 'Home') : (r.title ?? `Album ${r.id}`) })),
@@ -319,7 +323,7 @@ export function setHighlight(db: Db, albumId: number, photoId: unknown, user: Us
     } else {
         if (!Number.isInteger(photoId)) throw new HttpError(400, 'photoId must be an integer or null');
         const photo = getRow(db, photoId as number);
-        if (!photo || photo.type !== 'photo' || photo.deleted_at) throw new HttpError(404, 'photo not found');
+        if (!photo || photo.type !== 'photo' || photo.deleted_at || photo.blocked) throw new HttpError(404, 'photo not found');
         if (!chain(db, photo.id).some((r) => r.id === albumId)) throw new HttpError(400, 'the photo is not inside the album');
         db.run('INSERT INTO highlights (album_id, photo_id, chosen) VALUES (?, ?, 1) ON CONFLICT(album_id) DO UPDATE SET photo_id = excluded.photo_id, chosen = 1', albumId, photo.id);
     }

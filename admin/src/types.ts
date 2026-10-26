@@ -25,6 +25,8 @@ export interface AdminItem {
   hidden: boolean;
   deletedAt: string | null;
   highlightPhotoId: number | null;
+  /** albums: the photo shown as the highlight (chosen, else the first photo) */
+  currentHighlightPhotoId?: number | null;
   thumbnailUrl: string | null;
   childCount?: number;
   canWrite: boolean;

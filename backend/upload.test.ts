@@ -79,6 +79,7 @@ async function run(): Promise<void> {
         let changes = 0;
         const warnings: string[] = [];
         const server = createServer({ db, port: 0, log: (e) => { if (e.level === 'warn') warnings.push(String(e.msg)); }, sessionSecret: secret, audit: createAuditSink(db, path.join(tmp, 'audit.jsonl')), albumsRoot, onChange: () => { changes += 1; },
+            thumbnails: { root: path.join(tmp, 'thumbs'), options: { maxWidth: 400, maxHeight: 400, quality: 80 } },
             verifyJwt: async (token) => ({ email: token, sub: token, exp: 0 }) });
         await once(server, 'listening');
         const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
@@ -101,6 +102,9 @@ async function run(): Promise<void> {
             assert.deepStrictEqual([p1.type, p1.parentId, p1.title, p1.path, p1.width, p1.height, p1.owner, p1.canWrite], ['photo', 11, 'IMG_0001.jpg', '/dreamhack/lordag/img_0001', 40, 30, 'kalle', true]);
             assert.strictEqual(p1.eventAt, Date.UTC(2026, 9, 26, 9, 0, 0) / 1000, 'event date from EXIF DateTimeOriginal');
             assert.strictEqual(p2.title, 'logo.png');
+            assert.strictEqual(p1.thumbnailUrl, '/g2data/thumbnails/dreamhack/lordag1/t__IMG_0001.jpg', 'thumbnail generated at upload');
+            await fs.promises.access(path.join(tmp, 'thumbs', 'dreamhack', 'lordag1', 't__IMG_0001.jpg'));
+            assert.strictEqual(p2.thumbnailUrl, '/g2data/thumbnails/dreamhack/lordag1/t__logo.png.jpg');
             assert.strictEqual(p3.title, 'IMG_0001-2.jpg', 'duplicate file name made unique');
             const stored = path.join(albumsRoot, 'dreamhack', 'lordag1', 'IMG_0001.jpg');
             const storedMeta = await sharp(stored).metadata();

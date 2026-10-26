@@ -8,6 +8,8 @@ import "./PhotoCard.css";
 export interface PhotoCardProps {
   photo: AdminItem;
   isHighlight: boolean;
+  /** the highlight by default (first photo), not chosen */
+  highlightIsDefault?: boolean;
   canWrite: boolean;
   isAdmin: boolean;
   busy: boolean;
@@ -65,6 +67,18 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
     try {
       await api.deletePhoto(photo.id);
       props.onDeleted();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function toggleHidden(hidden: boolean): Promise<void> {
+    setSaving(true);
+    setError(null);
+    try {
+      props.onChanged(await api.setPhotoHidden(photo.id, hidden));
     } catch (e) {
       setError(e instanceof ApiError ? e.message : String(e));
     } finally {
@@ -134,7 +148,11 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
           )}
         </>
       )}
-      <ItemBadges item={photo} isHighlight={props.isHighlight} />
+      <ItemBadges
+        item={photo}
+        isHighlight={props.isHighlight}
+        highlightIsDefault={props.highlightIsDefault}
+      />
       {error && (
         <p className="error photo-card-error" role="alert">
           {error}
@@ -165,6 +183,16 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
               >
                 ↓
               </button>
+              <span className="field-inline">
+                <input
+                  id={`photo-${photo.id}-hidden`}
+                  type="checkbox"
+                  checked={photo.hidden}
+                  disabled={disabled}
+                  onChange={(ev) => void toggleHidden(ev.target.checked)}
+                />
+                <label htmlFor={`photo-${photo.id}-hidden`}>Hidden</label>
+              </span>
               {!props.isHighlight && (
                 <button
                   type="button"

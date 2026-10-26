@@ -2,7 +2,8 @@
  * Importer: Gallery 2 → the SQLite data master (FUT-01, Sprint 15 T-03;
  * docs/architecture/data-master.md). Walks the Gallery 2 tree through the same reader the one-shot
  * extractor used (`ExtractionSql`) and writes items, owners, highlights, legacy paths and settings.
- * Nothing is dropped: albums and photos on the ignore lists become `hidden = 1` rows. Idempotent:
+ * Nothing is dropped: albums and photos on the ignore lists become `hidden = 1, blocked = 1` rows (blocked:
+ * never served, never a highlight; hidden alone is the operator's choice and may be a highlight). Idempotent:
  * a second run updates the imported columns and leaves `deleted_at`, `view_count` additions and
  * anything the admin changed alone (see `importItem`).
  *
@@ -70,15 +71,16 @@ function ownerId(db: Db, cache: Map<string, number>, name: string | null | undef
 }
 
 const UPSERT_ITEM = `INSERT INTO items (id, type, parent_id, position, order_weight, title, description, summary, path_component, url_segment,
-        event_at, width, height, thumb_width, thumb_height, owner_id, view_count, hidden)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        event_at, width, height, thumb_width, thumb_height, owner_id, view_count, hidden, blocked)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
         type = excluded.type, parent_id = excluded.parent_id, position = excluded.position, order_weight = excluded.order_weight,
         title = excluded.title, description = excluded.description, summary = excluded.summary, path_component = excluded.path_component,
         url_segment = excluded.url_segment, event_at = excluded.event_at, width = excluded.width, height = excluded.height,
         thumb_width = excluded.thumb_width, thumb_height = excluded.thumb_height, owner_id = excluded.owner_id,
         view_count = CASE WHEN COALESCE(excluded.view_count, -1) > COALESCE(items.view_count, -1) THEN excluded.view_count ELSE items.view_count END,
-        hidden = excluded.hidden,
+        hidden = CASE WHEN excluded.blocked = 1 THEN 1 ELSE items.hidden END,
+        blocked = excluded.blocked,
         changed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`;
 
 /**
@@ -128,14 +130,14 @@ export async function importG2(options: ImportOptions): Promise<ImportResult> {
         // the root row carries the album info (as the extractor's metadata); the raw root info goes to settings (index.json)
         db.run(UPSERT_ITEM, rootId, 'album', null, 0, null, rootInfoAlbum.albumTitle, rootInfoAlbum.albumDescription,
             null, '', '', rootInfoAlbum.albumTimestamp, null, null, null, null, ownerId(db, owners, rootInfoAlbum.ownerName), null,
-            ignoreAlbums.has(rootId) ? 1 : 0);
+            ignoreAlbums.has(rootId) ? 1 : 0, ignoreAlbums.has(rootId) ? 1 : 0);
         db.run('INSERT INTO legacy_paths (g2_path, item_id) VALUES (?, ?) ON CONFLICT(g2_path) DO UPDATE SET item_id = excluded.item_id', '', rootId);
         for (const r of rows) {
             const c = r.child;
             const isAlbum = c.type === 'GalleryAlbumItem';
             db.run(UPSERT_ITEM, c.id, isAlbum ? 'album' : 'photo', r.parentId, r.position, c.order ?? null, cleanText(c.title), cleanText(c.description), cleanText(c.summary),
                 c.pathComponent ?? '', r.segment, c.timestamp, c.width, c.height, c.thumb_width, c.thumb_height, ownerId(db, owners, c.ownerName),
-                c.viewCount ?? null, r.hidden ? 1 : 0);
+                c.viewCount ?? null, r.hidden ? 1 : 0, r.hidden ? 1 : 0);
             if (isAlbum) {
                 result.albums += 1;
                 db.run('INSERT INTO legacy_paths (g2_path, item_id) VALUES (?, ?) ON CONFLICT(g2_path) DO UPDATE SET item_id = excluded.item_id', r.g2Path, c.id);

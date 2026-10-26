@@ -4,6 +4,7 @@ import { useAlbum } from "../../hooks/useAlbum";
 import { notifyWrite } from "../../hooks/useRegenStatus";
 import { useSession } from "../../session/SessionContext";
 import { AlbumForm } from "../../components/AlbumForm";
+import { DelegateBox } from "../../components/DelegateBox";
 import { AlbumList } from "../../components/AlbumList";
 import { AlbumToolbar } from "../../components/AlbumToolbar";
 import { Breadcrumb } from "../../components/Breadcrumb";
@@ -49,7 +50,13 @@ function AlbumPageBody({ id }: { id: number | "root" }): ReactNode {
   if (!view) return null;
 
   const album = view.album;
-  const albums = view.children.filter((c) => c.type === "album");
+  const collator = new Intl.Collator("sv", {
+    sensitivity: "base",
+    numeric: true,
+  });
+  const albums = view.children
+    .filter((c) => c.type === "album")
+    .sort((a, b) => collator.compare(a.title ?? "", b.title ?? ""));
   const photos = view.children.filter((c) => c.type === "photo");
   const title = album ? album.title || "untitled" : "Your albums";
   const canWrite = album?.canWrite ?? false;
@@ -73,7 +80,15 @@ function AlbumPageBody({ id }: { id: number | "root" }): ReactNode {
 
   return (
     <div className="album-page">
-      <Breadcrumb entries={view.breadcrumb} current={album ? title : null} />
+      <Breadcrumb
+        entries={
+          // the API's breadcrumb ends with the album itself; it is shown once, as the current page
+          album && view.breadcrumb.at(-1)?.id === album.id
+            ? view.breadcrumb.slice(0, -1)
+            : view.breadcrumb
+        }
+        current={album ? title : null}
+      />
       <header className="album-page-header">
         <h1>
           {title} {album && <ItemBadges item={album} />}
@@ -107,6 +122,10 @@ function AlbumPageBody({ id }: { id: number | "root" }): ReactNode {
             void album$.reload();
           }}
         />
+      )}
+
+      {album && isAdmin && album.parentId !== null && (
+        <DelegateBox album={album} />
       )}
 
       {panel.kind === "new" && album && (
@@ -148,6 +167,7 @@ function AlbumPageBody({ id }: { id: number | "root" }): ReactNode {
             <PhotoGrid
               items={view.children}
               albumId={album.id}
+              currentHighlightPhotoId={album?.currentHighlightPhotoId ?? null}
               highlightPhotoId={album.highlightPhotoId}
               canWrite={canWrite}
               isAdmin={isAdmin}

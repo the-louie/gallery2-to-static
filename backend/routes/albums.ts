@@ -16,6 +16,8 @@ export interface ContentDeps {
     auth: AuthDeps;
     /** Where the originals live (config.albumsRoot resolved). */
     albumsRoot: string;
+    /** Thumbnails generated at upload (root + sharp options), when the service knows them. */
+    thumbnails?: { root: string; options: { maxWidth: number; maxHeight: number; quality: number } };
     /** Asks for a regeneration (RegenQueue.request). */
     onChange: () => void;
 }
@@ -87,7 +89,7 @@ export function registerAlbumRoutes(router: Router, deps: ContentDeps): void {
         guard(ctx, albumId, 'photo upload');
         const parts = await readMultipart(ctx.req, path.join(deps.albumsRoot, '.upload-tmp'), { maxFileBytes: MAX_FILE_BYTES, maxTotalBytes: MAX_REQUEST_BYTES, maxFiles: 500 });
         if (parts.files.length === 0) throw new HttpError(400, 'no files');
-        const r = await processUpload(ctx.db, albumId, parts.files, ctx.user, { albumsRoot: deps.albumsRoot, log: (l) => ctx.log({ level: 'warn', msg: l }) });
+        const r = await processUpload(ctx.db, albumId, parts.files, ctx.user, { albumsRoot: deps.albumsRoot, thumbnails: deps.thumbnails, log: (l) => ctx.log({ level: 'warn', msg: l }) });
         audit(ctx, 'photo upload', `item:${albumId}`, r.created.length ? 'ok' : 'error', { created: r.created.map((c) => c.id), rejected: r.rejected });
         if (r.created.length) deps.onChange();
         return json(201, r);
@@ -118,6 +120,17 @@ export function registerAlbumRoutes(router: Router, deps: ContentDeps): void {
         guard(ctx, photoId, 'photo update');
         const item = updatePhoto(ctx.db, photoId, body(ctx), ctx.user);
         audit(ctx, 'photo update', `item:${photoId}`, 'ok', { fields: Object.keys(body(ctx)) });
+        deps.onChange();
+        return json(200, item);
+    }));
+
+    router.put('/api/photos/:id/hidden', user((ctx) => {
+        const photoId = id(ctx);
+        guard(ctx, photoId, 'photo hidden');
+        const hidden = body(ctx).hidden;
+        if (typeof hidden !== 'boolean') throw new HttpError(400, 'hidden must be a boolean');
+        const item = setHidden(ctx.db, photoId, hidden, ctx.user);
+        audit(ctx, hidden ? 'photo hide' : 'photo unhide', `item:${photoId}`, 'ok');
         deps.onChange();
         return json(200, item);
     }));

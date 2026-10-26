@@ -86,7 +86,7 @@ describe("UploadZone", () => {
         rejected: [{ name: "b.txt", reason: "not an image" }],
       })
     );
-    expect(await screen.findByText("1 added, 1 rejected.")).toBeInTheDocument();
+    expect(await screen.findByText(/1 added, 1 rejected/)).toBeInTheDocument();
     expect(screen.getByText("a")).toHaveClass("upload-result-ok");
     expect(screen.getByText("b.txt: not an image")).toHaveClass(
       "upload-result-rejected"

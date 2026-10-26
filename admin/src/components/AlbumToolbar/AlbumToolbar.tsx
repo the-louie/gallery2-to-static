@@ -47,7 +47,7 @@ export function AlbumToolbar({
     <div className="album-toolbar">
       <div className="actions">
         <button type="button" onClick={onNewAlbum} disabled={busy || deleted}>
-          New album
+          {album.parentId === null ? "New album" : "New sub-album"}
         </button>
         <button type="button" onClick={onEdit} disabled={busy || deleted}>
           Edit

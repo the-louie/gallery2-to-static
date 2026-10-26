@@ -9,6 +9,8 @@ const MAX_BATCH = 500 * 1024 * 1024;
 type Phase =
   | { kind: "idle" }
   | { kind: "uploading"; loaded: number; total: number; count: number }
+  /** the bytes are up; the server checks, stores and thumbnails the files */
+  | { kind: "processing"; count: number }
   | { kind: "done"; result: UploadResult }
   | { kind: "failed"; message: string };
 
@@ -49,7 +51,11 @@ export function UploadZone({
     }
     setPhase({ kind: "uploading", loaded: 0, total, count: files.length });
     const { promise, abort } = uploadPhotos(albumId, files, (loaded, t) =>
-      setPhase({ kind: "uploading", loaded, total: t, count: files.length })
+      setPhase(
+        loaded >= t
+          ? { kind: "processing", count: files.length }
+          : { kind: "uploading", loaded, total: t, count: files.length }
+      )
     );
     abortRef.current = abort;
     promise
@@ -77,11 +83,11 @@ export function UploadZone({
   function onDrop(ev: DragEvent<HTMLDivElement>): void {
     ev.preventDefault();
     setDragOver(false);
-    if (phase.kind === "uploading") return;
+    if (phase.kind === "uploading" || phase.kind === "processing") return;
     start(ev.dataTransfer.files);
   }
 
-  const uploading = phase.kind === "uploading";
+  const uploading = phase.kind === "uploading" || phase.kind === "processing";
   const percent =
     phase.kind === "uploading" && phase.total > 0
       ? Math.round((phase.loaded / phase.total) * 100)
@@ -135,6 +141,16 @@ export function UploadZone({
         </div>
       )}
 
+      {phase.kind === "processing" && (
+        <div className="upload-progress" role="status">
+          <progress />
+          <span>
+            Uploaded. Checking and storing {phase.count} file
+            {phase.count === 1 ? "" : "s"} on the server (format check, GPS
+            removed, HEIC converted, thumbnails)… large files take a while.
+          </span>
+        </div>
+      )}
       {phase.kind === "failed" && (
         <p className="error" role="alert">
           Upload failed: {phase.message}
@@ -144,10 +160,15 @@ export function UploadZone({
       {phase.kind === "done" && (
         <div className="upload-result" role="status">
           <p>
-            {phase.result.created.length} added
-            {phase.result.rejected.length > 0 &&
-              `, ${phase.result.rejected.length} rejected`}
-            .
+            {`${phase.result.created.length} added${
+              phase.result.rejected.length > 0
+                ? `, ${phase.result.rejected.length} rejected`
+                : ""
+            }.`}
+          </p>
+          <p className="muted">
+            The public site shows them after the next publish run (about a
+            minute; the badge in the header says when).
           </p>
           <ul className="upload-result-list">
             {phase.result.created.map((c) => (

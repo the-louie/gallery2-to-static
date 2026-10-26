@@ -6,6 +6,28 @@ import type { Db } from './db/db.ts';
 import { cleanup_uipathcomponent } from './cleanupUipath.ts';
 import { appendSegment } from './pathSegments.ts';
 
+export type AlbumSort = 'title' | 'position';
+
+export function albumSortSetting(db: Db): AlbumSort {
+    return db.setting('album_sort') === 'position' ? 'position' : 'title';
+}
+
+const SV = new Intl.Collator('sv', { sensitivity: 'base', numeric: true });
+
+/**
+ * Child order (operator, 2026-10-26, items 1 and 9): sub-albums always before the photos; the
+ * albums alphabetically (Swedish collation, numbers in order) or, with 'position', in Gallery 2
+ * order; the photos in their Gallery 2 position. The default highlight is the first photo directly
+ * in the album (generate.ts firstPhotoRecursive looks at direct photos first).
+ */
+export function sortChildren<T extends { type: 'album' | 'photo'; title: string | null; position: number; id: number }>(list: T[], mode: AlbumSort): T[] {
+    return list.sort((a, b) => {
+        if (a.type !== b.type) return a.type === 'album' ? -1 : 1;
+        if (a.type === 'album' && mode === 'title') return SV.compare(a.title ?? '', b.title ?? '') || a.id - b.id;
+        return a.position - b.position || a.id - b.id;
+    });
+}
+
 /** An `items` row as the generator reads it. */
 export interface ItemRow {
     id: number;
@@ -26,6 +48,7 @@ export interface ItemRow {
     owner_name: string | null;
     view_count: number | null;
     hidden: number;
+    blocked: number;
     deleted_at: string | null;
 }
 
@@ -46,6 +69,8 @@ export interface MediaRow {
 /** The whole visible tree, loaded once per run. */
 export class Tree {
     readonly byId = new Map<number, ItemRow>();
+    /** hidden (not deleted) photos: not listed, but a chosen highlight may be one (operator, item 11) */
+    readonly hiddenPhotos = new Map<number, ItemRow>();
     readonly children = new Map<number, ItemRow[]>();
     readonly media = new Map<number, MediaRow>();
     readonly highlights = new Map<number, number>();
@@ -53,10 +78,13 @@ export class Tree {
     readonly exported = new Set<number>();
     readonly rootId: number;
     readonly thumbPrefix: string;
+    /** 'title' (default, operator 2026-10-26: album lists alphabetical) or 'position' (Gallery 2 order) */
+    readonly albumSort: AlbumSort;
 
     constructor(db: Db) {
         this.rootId = Number(db.setting('root_id'));
         this.thumbPrefix = db.setting('thumb_prefix') ?? 't__';
+        this.albumSort = albumSortSetting(db);
         const rows = db.all<ItemRow>(`SELECT i.*, CASE WHEN o.show_full_name = 1 AND o.full_name IS NOT NULL AND trim(o.full_name) <> '' THEN o.full_name ELSE o.nickname END AS owner_name FROM items i LEFT JOIN owners o ON o.id = i.owner_id
             WHERE i.deleted_at IS NULL AND i.hidden = 0 ORDER BY i.parent_id, i.position, i.id`);
         for (const r of rows) this.byId.set(r.id, r);
@@ -65,6 +93,10 @@ export class Tree {
         for (const r of rows) {
             if (!visible(r)) { this.byId.delete(r.id); continue; }
         }
+        for (const r of db.all<ItemRow>(`SELECT i.*, o.nickname AS owner_name FROM items i LEFT JOIN owners o ON o.id = i.owner_id
+            WHERE i.deleted_at IS NULL AND i.hidden = 1 AND i.blocked = 0 AND i.type = 'photo'`)) {
+            if (r.parent_id !== null && this.byId.has(r.parent_id)) this.hiddenPhotos.set(r.id, r);
+        }
         for (const r of this.byId.values()) {
             if (r.parent_id !== null && this.byId.has(r.parent_id)) {
                 const list = this.children.get(r.parent_id) ?? [];
@@ -72,7 +104,7 @@ export class Tree {
                 this.children.set(r.parent_id, list);
             }
         }
-        for (const list of this.children.values()) list.sort((a, b) => a.position - b.position || a.id - b.id);
+        for (const list of this.children.values()) sortChildren(list, this.albumSort);
         for (const m of db.all<MediaRow>('SELECT * FROM media')) this.media.set(m.item_id, m);
         for (const h of db.all<{ album_id: number; photo_id: number }>('SELECT album_id, photo_id FROM highlights')) this.highlights.set(h.album_id, h.photo_id);
         const mark = (id: number): boolean => {

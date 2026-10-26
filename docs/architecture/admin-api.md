@@ -20,6 +20,7 @@ interface AdminItem {               // one row of `items` as the UI sees it
   viewCount: number | null;
   hidden: boolean; deletedAt: string | null;   // soft state
   highlightPhotoId: number | null;             // albums: the chosen highlight (null = first photo)
+  currentHighlightPhotoId?: number | null;     // albums: the photo shown as highlight (chosen, else the first photo)
   thumbnailUrl: string | null;                 // '/g2data/thumbnails/…' on the public site (null until generated)
   childCount?: number;                         // albums: visible children
   canWrite: boolean;                           // for the calling user
@@ -33,7 +34,7 @@ interface Profile { nickname: string | null; fullName: string | null; showFullNa
 
 | Route | Body / params | Reply | Notes |
 |---|---|---|---|
-| `GET /api/albums/:id` | – | `AlbumView` | hidden and soft-deleted children included when `canWrite`; `id` = root id gives the root |
+| `GET /api/albums/:id` | – | `AlbumView` | hidden and soft-deleted children included when `canWrite`; `id` = root id gives the root; children: sub-albums first (alphabetically, Swedish collation), then photos in order |
 | `GET /api/albums/root` | – | `AlbumView` | the root album (admins) or a synthetic list of the user's delegated albums (`album: null`, `children` = delegated albums) |
 | `POST /api/albums` | `{parentId, title, description?, summary?, eventAt?}` | `AdminItem` (201) | admin anywhere; user only under a delegated album. Starts `hidden: true`. `urlSegment` derived from the title |
 | `PATCH /api/albums/:id` | any of `{title, description, summary, eventAt, urlSegment}` | `AdminItem` | `urlSegment` only while `!urlLocked` (admin override: `{urlSegment, force: true}` writes the old path into `legacy_paths`) |
@@ -44,6 +45,7 @@ interface Profile { nickname: string | null; fullName: string | null; showFullNa
 | `PUT /api/albums/:id/order` | `{ids: number[]}` | `{ok: true}` | the album's direct children in the new order (all of them) |
 | `POST /api/albums/:id/photos` | multipart `files[]` (≤ 50 MB each, ≤ 500 MB) | `{created: AdminItem[], rejected: Array<{name, reason}>}` (201) | JPEG/PNG/GIF/WebP/HEIC by content; HEIC → JPEG; GPS stripped |
 | `PATCH /api/photos/:id` | any of `{title, description, eventAt}` | `AdminItem` | |
+| `PUT /api/photos/:id/hidden` | `{hidden: bool}` | `AdminItem` | a hidden photo is not listed publicly but may stay the album's chosen highlight |
 | `DELETE /api/photos/:id` | – | 204 | soft delete; file to `.trash/<id>/` |
 | `POST /api/photos/:id/restore` | – | `AdminItem` | admin |
 

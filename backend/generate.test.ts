@@ -38,6 +38,7 @@ async function run(): Promise<void> {
 
         const db = openDb();
         await importG2({ sql: fakeSql, config, db });
+        db.setSetting('album_sort', 'position'); // the extractor's order, for the equivalence
         const out = path.join(tmp, 'gen');
         const r = await generateAll(db, out, new Date('2026-10-26T12:00:00.000Z'));
 
@@ -62,6 +63,12 @@ async function run(): Promise<void> {
             if (f === 'index.json' || f === 'legacy.json') continue;
             assert.strictEqual(await fs.readFile(path.join(out, f), 'utf-8'), await fs.readFile(path.join(expected, f), 'utf-8'), `${f} not byte-identical`);
         }
+        // album_sort 'title' (default): sub-albums alphabetically before the photos (Swedish collation, numbers in order)
+        db.setSetting('album_sort', 'title');
+        const sorted = path.join(tmp, 'sorted');
+        await generateAll(db, sorted, new Date('2026-10-26T12:00:00.000Z'));
+        const dh = await readJson(path.join(sorted, '10.json'));
+        assert.deepStrictEqual(dh.children.map((c: { title: string | null; type: string }) => c.title), ['', 'image', 'Lördag', 'Lördag'], 'albums A–Ö first (an empty title sorts first)');
         db.close();
 
         // With derivatives (T-05): the extractor generates thumbnails and resizes; the media step
@@ -74,6 +81,7 @@ async function run(): Promise<void> {
             assert.strictEqual(ext2.ok, true);
             const db2 = openDb();
             await importG2({ sql: fakeSql, config: cfg, db: db2 });
+            db2.setSetting('album_sort', 'position');
             const mediaOpts = {
                 albumsRoot: path.join(tmp2, 'g2/albums'), thumbnailsRoot: path.join(tmp2, 'g2/thumbs2'), resizedRoot: path.join(tmp2, 'g2/resized2'),
                 thumbOptions: { maxWidth: 400, maxHeight: 400, quality: 80 }, resizeOptions: { maxWidth: 1024, maxHeight: 1024, quality: 85 },

@@ -15,12 +15,14 @@ import { HttpError } from './http.ts';
 import { getRow, g2Chain, ownerForUser, toAdminItem, type AdminItem } from './albums.ts';
 import { photoSegment } from './importG2.ts';
 import type { MultipartFile } from './multipart.ts';
+import { generateThumbnail, readThumbnailSize, type ThumbnailOptions } from './generateThumbnail.ts';
 
 export const MAX_FILE_BYTES = 50 * 1024 * 1024;
 export const MAX_REQUEST_BYTES = 500 * 1024 * 1024;
 export const HEIC_JPEG_QUALITY = 92;
 
 const execFileP = promisify(execFile);
+const NOW = () => new Date().toISOString();
 
 export type Kind = 'jpeg' | 'png' | 'gif' | 'webp' | 'heic';
 
@@ -127,6 +129,8 @@ export async function stripGps(file: string, kind: Kind, log?: (l: string) => vo
 
 export interface UploadOptions {
     albumsRoot: string;
+    /** When set, the thumbnail is generated at once (the admin UI shows it before the next regeneration). */
+    thumbnails?: { root: string; options: ThumbnailOptions };
     log?: (line: string) => void;
     now?: () => Date;
 }
@@ -191,6 +195,7 @@ export async function processUpload(db: Db, albumId: number, files: MultipartFil
                     VALUES (?, 'photo', ?, ?, ?, ?, ?, ?, ?, ?, ?)`, nextId, albumId, position, name, name, photoSegment({ id: nextId, pathComponent: name, title: name }), eventAt, width, height, ownerForUser(db, user));
                 return nextId;
             });
+            if (opts.thumbnails) await thumbnailNow(db, id, dest, name, dir, opts);
             result.created.push(toAdminItem(db, getRow(db, id)!, user));
         } catch (e) {
             result.rejected.push({ name: f.filename.slice(0, 200), reason: e instanceof Error ? e.message : String(e) });
@@ -198,4 +203,23 @@ export async function processUpload(db: Db, albumId: number, files: MultipartFil
         }
     }
     return result;
+}
+
+/** The photo's thumbnail right away, recorded in `media` as the media step would (a failure only logs). */
+async function thumbnailNow(db: Db, photoId: number, file: string, name: string, dir: string, opts: UploadOptions): Promise<void> {
+    const t = opts.thumbnails!;
+    try {
+        const rel = path.relative(opts.albumsRoot, dir);
+        const thumbName = /\.jpe?g$/i.test(name) ? `${db.setting('thumb_prefix') ?? 't__'}${name}` : `${db.setting('thumb_prefix') ?? 't__'}${name}.jpg`;
+        const dest = path.join(t.root, rel, thumbName);
+        const res = await generateThumbnail(file, dest, t.options);
+        if (res !== 'generated' && res !== 'skipped') throw new Error(`thumbnail ${res}`);
+        const size = await readThumbnailSize(dest);
+        const st = fs.statSync(file);
+        db.run(`INSERT INTO media (item_id, thumb_w, thumb_h, thumb_at, thumb_failed, file_size, file_mtime) VALUES (?, ?, ?, ?, 0, ?, ?)
+            ON CONFLICT(item_id) DO UPDATE SET thumb_w = excluded.thumb_w, thumb_h = excluded.thumb_h, thumb_at = excluded.thumb_at, thumb_failed = 0, file_size = excluded.file_size, file_mtime = excluded.file_mtime`,
+            photoId, size?.width ?? null, size?.height ?? null, NOW(), st.size, Math.floor(st.mtimeMs));
+    } catch (e) {
+        opts.log?.(`thumbnail at upload failed for ${file} (the regeneration will retry): ${e instanceof Error ? e.message : String(e)}`);
+    }
 }

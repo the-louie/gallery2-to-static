@@ -11,11 +11,23 @@ export function RegenIndicator(): ReactNode {
   if (!status) return null;
   const busy = status.pending || status.running;
   const failed = !busy && status.lastRun !== null && !status.lastRun.ok;
-  const label = busy ? "Publishing…" : failed ? "Publish failed" : "Published";
+  const at = status.lastRun?.finishedAt
+    ? new Date(status.lastRun.finishedAt).toLocaleTimeString("sv-SE", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
+  const label = busy
+    ? "Publishing… (the site updates in about a minute)"
+    : failed
+      ? "Publish failed"
+      : at
+        ? `Published ${at}`
+        : "Published";
   const cls = busy ? "busy" : failed ? "failed" : "ok";
   const title = status.lastRun?.finishedAt
-    ? `Last run ${status.lastRun.mode} at ${status.lastRun.finishedAt}`
-    : undefined;
+    ? `Changes are published 5 s after the last edit; last run (${status.lastRun.mode}) finished ${status.lastRun.finishedAt}`
+    : "Changes are published 5 s after the last edit";
   return (
     <span
       className={`regen-indicator regen-indicator-${cls}`}
