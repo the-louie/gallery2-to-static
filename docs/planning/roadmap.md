@@ -4,7 +4,7 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 
 **After every sprint (operator, 2026-10-25):** prune `TODO.md` and regenerate `TODO-summarized.md`: `python3 docs/planning/prune_todo.py . "Sprint NN"` moves closed (~~struck~~) rows, with their proof, to `docs/planning/done.md`.
 
-**Active sprint:** — (Sprints 15, 16, 17 done 2026-10-26). **Next: Sprint 18** = FUT-02 part 2 (albums, uploads, admin UI) + FUT-03 profiles + go-live rehearsal; plan with `/sprint-planning plan-next`.
+**Active sprint:** — (Sprint 18 drafted, waiting for the operator's go: `sprints/sprint-18.md`).
 **Current ticket:** —
 **Last completed:** Sprint 15 T-10 (commit `9ae9789`).
 
@@ -27,6 +27,7 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 | S15 ✅ | FUT-01 the data master: SQLite on lanbilder2, generator, branch regeneration, `lanbilder-admin` service skeleton, view counter. |
 | S16 ✅ | FUT-02 part 1 (parallel worker track): admin service, Cloudflare Access JWT, TOTP, invite-only users, delegation, audit log (FUT-04). |
 | S17 ✅ | FUT-05 (parallel worker track): Plausible CE on lanbilder2, same-origin proxy, script tag. |
-| S18 (sketch) | FUT-02 part 2: album create/edit/hide/soft-delete, uploads (pipeline, HEIC, GPS strip), sub-albums, highlights, admin UI, RegenQueue wiring; FUT-03 profiles; go-live rehearsal. |
+| S18 (planned) | FUT-02 part 2 + FUT-03: album/photo write routes, upload pipeline (HEIC, GPS strip), regeneration wiring + URL lock, profiles + first admin, the admin UI (separate build), deploy on the admin hostname. |
+| S19 (sketch) | Go-live rehearsal: final sync from the origin, cutover, test hostnames off, password SSH off, MySQL password rotation. |
 | Operator | SENTRY-01 (after a Claude Code restart + Sentry login). DECISION-01: self-hosted on lanbilder2. FUT-01..05 **before** go-live (2026-10-26). |
 | (old) S05+ | P3 items, SEC-18 brotli check, hygiene, test-fixture type burn-down (BUILD-01 rest, LINT-01). DECISION-01 (hosting) with the operator. SEC-12 (permissions) when the Gallery 2 DB is available to test against. |

@@ -1,0 +1,39 @@
+# Sprint 18: albums, uploads and the admin UI (FUT-02 part 2, FUT-03)
+
+**Status:** planned (drafted 2026-10-26, waiting for the operator's go)
+**Current ticket:** —
+**Last completed:** —
+
+**Goal:** an admin or a delegated user can log in on the admin hostname, create an album, upload photos into it, pick its highlight, hide or soft-delete items, and see the result on the public site within a minute; users have profiles; the first admin exists.
+
+**Demo:** on `82j17zj.phetast.nu` (or locally with `DEV_FAKE_ACCESS_EMAIL`): log in, pass TOTP, create the album "Testlan 2026" under a delegated parent, upload five photos (one HEIC), set the highlight, hide one photo, press nothing else — https://lanbilder-new.phetast.nu/ shows the album with four photos and the chosen highlight within a minute; the audit page lists every step; the profile page changes the nickname and the public "Owner:" line follows on the next regeneration.
+
+**Decisions this sprint implements** (`TODO.md` FUT-02/FUT-03 "Decisions"): delegates do everything inside their subtree; immediate debounced regeneration, new albums start hidden; uploads keep originals byte for byte, GPS stripped, HEIC → JPEG q92, 50 MB per file, 500 MB per batch; nickname only in public with opt-in full name; pictures admin-side only. Worker questions settled here: the first admin is created with a CLI flag (T-05), no daily copy of the audit log to the share, Access session length 12 h.
+
+**Verified before planning:** the service has `Router`, `requireUser`, `canWrite`, `RegenQueue` (unconnected), users/delegation/audit routes (`backend/server.ts`, `routes/*.ts`, `auth/*.ts`, 1,254 lines, 30 test files green); `readJsonBody` caps at 64 KB and there is no multipart reader yet; `items` has `hidden`, `deleted_at`, `url_segment` (locked once public: not enforced yet), highlights table; `generate.ts --changed` + `media.ts` handle new files; sharp/libvips on lanbilder2 (see T-02 for HEIF support and exiftool).
+
+| # | Ticket | Backlog | Est | Deps | Status | Acceptance / Notes |
+|---|---|---|---|---|---|---|
+| T-01 | Album write routes | FUT-02 | 4h | – | todo | `routes/albums.ts`: `POST /api/albums` {parentId, title, description?, summary?, eventAt?} (admin anywhere, user only under a delegated album; `url_segment` via `getSegmentForAlbum` among the siblings, `path_component` = the segment, directory created under `albumsRoot`; starts `hidden = 1`), `PATCH /api/albums/:id` (title, description, summary, eventAt, position; a title change never changes a locked `url_segment`), `PUT /api/albums/:id/hidden` {hidden}, `DELETE /api/albums/:id` (soft: `deleted_at`, files to `<albumsRoot>/.trash/<id>/`), `POST /api/albums/:id/restore` (admin), `GET /api/albums/:id` (the album with its children for the UI, hidden/deleted included where the user may write); every write `canWrite` + audit + `queue.request()`; tests |
+| T-02 | Upload pipeline | FUT-02 | 4h | T-01 | todo | `backend/upload.ts`: multipart reader (streaming, per-file 50 MB, per-request 500 MB, files to a temp dir then moved); accepted JPEG/PNG/GIF/WebP/HEIC by sniffed magic bytes (not the name); sharp `failOn: 'error'` decode check; HEIC → JPEG q92 (sharp/libvips with libheif; if lanbilder2's libvips lacks HEIF, say so and install `libheif` or reject HEIC with a clear message); GPS stripped with `exiftool -gps:all= -overwrite_original` when present (Debian `libimage-exiftool-perl`), else sharp `keepExif` rewrite; orientation applied to the EXIF flag only (bytes otherwise untouched); file name sanitised + unique within the album; `items` row (photo, width/height from sharp, `event_at` from EXIF DateTimeOriginal else now, owner = the user's owner row), `POST /api/albums/:id/photos` (multipart) returns the new items; tests with generated images (a HEIC fixture only if libheif is present) |
+| T-03 | Photo write routes and highlights | FUT-02 | 3h | T-01 | todo | `PATCH /api/photos/:id` (title, description, eventAt, position), `DELETE /api/photos/:id` (soft + trash), `POST /api/photos/:id/restore` (admin), `PUT /api/albums/:id/highlight` {photoId in the subtree} → `highlights (chosen = 1)`; reorder endpoint `PUT /api/albums/:id/order` {ids[]}; `canWrite`, audit, queue; tests |
+| T-04 | Regeneration wiring and the URL-segment lock | FUT-01/02 | 2h | T-01 | todo | `server.ts` hands `RegenQueue` a runner that calls `generateChanged` + `updateMedia` for the dirty albums and `publishImages`; `settings.generated_public_<albumId>` (or a column `url_locked_at`) set by the generator when an album is written while not hidden; `PATCH` refuses `urlSegment` changes after that (admin override writes `legacy_paths`); `GET /api/regen/status` for the UI; tests |
+| T-05 | Profiles, owner link, first admin | FUT-03 | 3h | – | todo | `GET/PUT /api/me/profile` {nickname, fullName, showFullName} (nickname unique, not a Gallery 2 owner name; `owners` row created/linked per user: `owners.email`), `PUT /api/me/picture` (multipart, ≤ 2 MB, stored as `db/avatars/<userId>.jpg` 256 px, served only through the admin API), name copied from the Access JWT (`name` claim when present) at first login; `server.ts --invite-admin <email>` creates the first admin; the generator shows `full_name` when `show_full_name` (owner rows carry it already); tests |
+| T-06 | Admin UI: app, login, album tree | FUT-02 | 4h | T-01, T-05 | todo | `admin/` (Vite + React, its own build, never part of the public dist): login status from `/api/me`, TOTP setup with QR (`qrcode` package) and verify, album tree (root → delegated subtree for users), breadcrumb; `npm run build` → `admin/dist`; tests for the auth flow component |
+| T-07 | Admin UI: album and photo editing, uploads | FUT-02 | 4h | T-06, T-02, T-03 | todo | create/edit album, hidden toggle, soft delete/restore, photo grid with title edit, drag-free reorder (up/down), highlight pick, multi-file upload with progress and errors per file; "regenerating…" indicator from `/api/regen/status`; tests |
+| T-08 | Admin UI: users, audit, profile | FUT-02/03/04 | 3h | T-06 | todo | invite, enable/disable, delegate/undelegate (album picker), TOTP reset; audit list with paging; profile page (nickname, full name, show full name, picture); tests |
+| T-09 | Deploy on the admin hostname | FUT-02 | 3h | T-06..T-08 | todo | nginx `sites-available/admin` from `deploy/nginx-admin.conf` for `82j17zj.phetast.nu` (refuses requests without the Access header; `admin/dist` root; `/api/` → 3100), tunnel public hostname + Access application by the operator (`/etc/lanbilder-admin.env`); until Access exists: end-to-end run locally with `DEV_FAKE_ACCESS_EMAIL` and headless Chrome (upload → public site); exiftool/libheif installed; `libimage-exiftool-perl` noted in the ESXi todo |
+| T-10 | Docs, runbook, retro | – | 2h | T-01..T-09 | todo | `docs/architecture/admin-service.md` (routes, upload rules, trash layout), `data-master.md` (URL lock, owners.email), user guide "Adding albums and photos", `/srv/share/lanbilder2/admin-runbook.txt` (first admin, invite, Access setup), retro |
+
+Total ≈ 32h. Go-live rehearsal (final sync, cutover, test hostnames off) is Sprint 19.
+
+## Open points
+- HEIC needs libheif in lanbilder2's libvips (checked in T-02's first step); Debian's `libvips` has it, sharp's bundled libvips may not.
+- The admin UI is a second Vite app; shared code with the public frontend is copied, not imported, to keep the public bundle free of admin code.
+- Uploads larger than nginx's `client_max_body_size` need that directive on the admin vhost (500 MB).
+
+## Retro
+(filled at sprint end)
+
+## Demo notes
+(filled at sprint end)
