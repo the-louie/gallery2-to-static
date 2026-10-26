@@ -61,7 +61,7 @@ function peerTitle(peer: Child): string {
  */
 export function MatrixSidebar({ location }: MatrixSidebarProps) {
   const navigate = useNavigate();
-  const { setTheme } = useTheme();
+  const { setTheme, isClassicList } = useTheme();
   const [query, setQuery] = useState('');
   const peers = getPeers(location);
   const currentIndex = peers ? peers.items.findIndex((p) => p.id === peers.currentId) : -1;
@@ -128,11 +128,21 @@ export function MatrixSidebar({ location }: MatrixSidebarProps) {
         </div>
       )}
       {/* The way out of the 2006 look (operator, 2026-10-25): the modern theme, dark variant (operator,
-          2026-10-26, QA-05); its header dropdown offers light and classic. Stays on the same page. */}
+          2026-10-26, QA-05); its header dropdown offers light and classic. Stays on the same page.
+          The second button toggles the 2013 root-album list (classic-list, QA-09). */}
       <div className="block-core-ThemeSwitch gbBlock">
         <button type="button" className="gbThemeSwitch" onClick={() => setTheme('dark')}>
           Theme: modern
         </button>
+        {isClassicList ? (
+          <button type="button" className="gbThemeSwitch" onClick={() => setTheme('classic')}>
+            Theme: classic
+          </button>
+        ) : (
+          <button type="button" className="gbThemeSwitch" onClick={() => setTheme('classic-list')}>
+            Theme: classic list
+          </button>
+        )}
       </div>
     </>
   );

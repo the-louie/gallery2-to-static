@@ -120,11 +120,8 @@
   width: 1%;
 }
 
-.g2-matrix .gsAlbumList td.tree {
-  width: 30%;
-}
-
 .g2-matrix .gsAlbumList td.tree h4 {
+  margin: 0.5em 0 0; /* measured on the 2013 page: 6.5px above, 0 below */
   font-size: 1.3em;
   font-weight: bold;
 }

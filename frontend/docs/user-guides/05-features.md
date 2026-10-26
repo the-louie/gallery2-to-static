@@ -257,33 +257,21 @@ The theme system allows you to customize the appearance of the gallery.
 
 ### Available Themes
 
-- **Light Mode**: Light background, dark text
-- **Dark Mode**: Dark background, light text
-- **System Mode**: Follows your operating system preference
-
-### Accessing Theme Switcher
-
-The theme switcher is located in the header, next to the search bar.
+- **Classic** (default): Gallery 2's Matrix theme as lanbilder.se ran it in 2006
+- **Classic list**: the same, with the root album as the 2013 list of all albums (one row per album with its sub-albums, no paging)
+- **Light** and **Dark**: the modern themes
 
 ### Switching Themes
 
-1. Click the theme switcher button
-2. Theme cycles: Light → Dark → System → Light
-3. Change applies immediately
-4. Preference is saved
-
-### Theme Features
-
-- **Persistent**: Your preference is saved in browser storage
-- **System Detection**: System mode detects OS theme preference
-- **Smooth Transitions**: Theme changes animate smoothly
-- **All Pages**: Theme applies to entire application
+- In the classic themes: the bottom block of the left sidebar — "Theme: modern" (opens the modern dark theme) and "Theme: classic list" / "Theme: classic" (toggles the root-album list).
+- In the modern themes: the theme dropdown in the header, next to the search bar, lists all four.
+- The change applies immediately and is saved in browser storage (`gallery-theme`); it applies to every page.
 
 ### Theme Icons
 
-- **Sun Icon**: Light mode
-- **Moon Icon**: Dark mode
-- **Monitor Icon**: System mode
+- **Sun Icon**: Light
+- **Moon Icon**: Dark
+- **Gallery Icon**: Classic and Classic list
 
 ### Per-Album Theme Configuration
 
