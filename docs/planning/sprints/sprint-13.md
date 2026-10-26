@@ -1,6 +1,6 @@
 # Sprint 13: operator QA round (QA-01..QA-10)
 
-**Status:** in progress (opened 2026-10-26)
+**Status:** done (opened and closed 2026-10-26)
 **Current ticket:** T-11 (`in-progress` — Deploy, phone + desktop QA, docs)
 **Last completed:** T-10 (`done` — commit `d489cde`)
 
@@ -29,7 +29,10 @@ Total ≈ 16h.
 - QA-09: the 2013 page also had "RSS Feed for this Album" in the sidebar and Login/Register links; both stay left out (THEME-01 decision), noted for FUT-02.
 
 ## Retro
-(filled at sprint end)
+**Worked:** every item was reproduced on the test site with headless Chrome before and after the fix (cells per line at 412px, thumbnail boxes, the two search failures with request interception, the banner file per width, the 2013 list measured with `compare.cjs`), so each close carries a measurement; QA-08's real cause (an empty result list cached after a swallowed index-load failure) was found by logging requests after the retry click, not by reading the code first; the `classic-list` theme reused the Matrix frame, `MatrixAlbum` and `useSubalbumsMap`, so the 2013 list was one component and one CSS block.
+**Didn't:** the `vt` helper runs in `frontend/`, so a `frontend/src/...` filter found no tests and the chain went on (T-03) — caught on the next run; the phone list first hid its info and tree cells behind the flush-cell rule.
+**Changed mid-sprint:** QA-10 — the operator said the banner stays classic-only, so T-08 became a verification.
+**Backlog grooming:** QA-00..QA-10 closed (QA-07 never existed in the operator's list). Open rows: 5 (FUT-01..05, after the production deploy).
 
 ## Demo notes
-(filled at sprint end)
+https://lanbilder-new.phetast.nu/ — classic: 2 thumbnails per line on a Pixel 9 with no orphan cell, "Theme: modern" lands in dark, "Theme: classic list" shows the root as the 2013 list (44 rows, every sub-album listed, no pager; measured against the 2013 page: rows and cells at the same positions). Modern dark/light: full header sentence, square photo tiles and album covers, the card's cover band opens the album, "...and more!" clear of the chips, no banner. A search during a network outage recovers with "Try again" (data failure and a failed route chunk). Screenshots: `/srv/share/lanbilder2/inspo/screens/qa-s13/` (modern-dark-root-1280/390, classic-pixel9-root/albums/photos, classic-list-root-1280/412, search-fail-before/after); 2013 comparison: `inspo/screens/compare-2013/index.html`. Gates: vitest 1603/1603 (105 files), lint 0/0, typecheck 0 (app, tests), backend 16/16, `npm audit` 0, check:dist OK (767 KB), check-brotli OK.
