@@ -1,6 +1,6 @@
 # Sprint 14: one classic theme (THEME-02)
 
-**Status:** in progress (opened 2026-10-26)
+**Status:** done (opened and closed 2026-10-26)
 **Current ticket:** —
 **Last completed:** T-02 (`done` — commit `6d8030d`)
 
@@ -14,7 +14,7 @@
 | T-01 | One classic theme: the list root | THEME-02 | 1.5h | – | done | `HomePage` passes `list` for `isClassic`; registry back to three themes; `themes.css` selectors back to `[data-theme="classic"]`; `isClassicList` removed; sidebar toggle removed; ThemeContext maps a stored `classic-list` to `classic` (test); docs (CLAUDE.md, themes.md, features guide, theme-matrix.md); deploy + screenshot. Landed in `031c44d` |
 
 ## Retro
-(filled at sprint end)
+**Worked:** two operator follow-ups turned into two tickets within the hour, each verified on the test site (a stored `classic-list` lands in `classic`; the header image loads under its random name and matches no EasyList rule). **Didn't:** one curl raced the nginx reload and showed a 402 for a second — re-checked before believing it. **Backlog grooming:** THEME-02, BANNER-02 closed. Open rows: 5 (FUT-01..05).
 
 ## Demo notes
-(filled at sprint end)
+https://lanbilder-new.phetast.nu/ — classic (the only classic theme) shows the root as the 2013 list; the sidebar has one theme button; the glitched.se header image is served from `/vu04lg/<random>.jpg` and survives EasyList (0 URL filters, 0 cosmetic rules). Gates: vitest 1603/1603, lint 0, typecheck 0.

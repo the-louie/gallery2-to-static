@@ -1,6 +1,6 @@
 # TODO Summarized
 
-Generated 2026-10-26 from `TODO.md` (Sprint 13). Closed rows: `docs/planning/done.md`.
+Generated 2026-10-26 from `TODO.md` (Sprint 14). Closed rows: `docs/planning/done.md`.
 
 ## FUTURE (after production deploy)
 
