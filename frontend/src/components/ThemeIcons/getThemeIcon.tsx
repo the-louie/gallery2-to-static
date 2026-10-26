@@ -15,7 +15,6 @@ export function getThemeIcon(themeName: ThemeName, className: string): React.Rea
     case 'dark':
       return <MoonIcon className={className} />;
     case 'classic':
-    case 'classic-list':
       return <ClassicIcon className={className} />;
     default:
       return <SunIcon className={className} />;

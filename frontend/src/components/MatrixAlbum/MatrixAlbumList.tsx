@@ -78,7 +78,7 @@ function AlbumRow({ item, albumPath, subalbums }: { item: Child; albumPath: stri
 }
 
 /**
- * The root album as lanbilder.se showed it in 2013 (classic-list theme, QA-09): Gallery 2's
+ * The root album as lanbilder.se showed it in 2013 (classic theme root, QA-09 / THEME-02): Gallery 2's
  * **Classic** theme `album.tpl` with `columns = 1` and `showSubalbums` — one table row per album
  * with the thumbnail cell, a cell with "Album: title", summary and Date / Size / Views, and a `tree`
  * cell listing the album's sub-albums — and every album on one page, so no navigator or pager.

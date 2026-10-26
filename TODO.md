@@ -49,12 +49,8 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
 
 ## Added 2026-10-26 (afternoon): operator follow-up after Sprint 13
 
-- **THEME-02: one classic theme only — the list root** — operator: "remove the classic (non-list)
-  theme, only one classic theme should remain". The `classic` theme keeps its name (default theme,
-  stored preferences, `album-themes.json`) and shows the root album as the 2013 list (what
-  `classic-list` does now); `classic-list` is removed from the registry, `themes.css`, the context
-  (`isClassicList`), the sidebar toggle and the dropdown; a stored `classic-list` preference maps to
-  `classic`. Docs and tests follow.
+- ~~**THEME-02: one classic theme only — the list root**~~ — **CLOSED, verified 2026-10-26 (Sprint 14 T-01):** `frontend/src/pages/HomePage.tsx` renders `<MatrixAlbum list />` for the classic theme; `config/themes.ts` back to three themes; `classic-list` removed from `themes.css`, `ThemeContext` (a stored `classic-list` maps to `classic`, test), the sidebar and the dropdown. Verified on the test site: a browser with `classic-list` stored lands in `classic`, 44 list rows, one theme button.
+  Original row kept for the record: operator: "remove the classic (non-list) theme, only one classic theme should remain". The `classic` theme keeps its name (default theme, stored preferences, `album-themes.json`) and shows the root album as the 2013 list (what `classic-list` does now); `classic-list` is removed from the registry, `themes.css`, the context (`isClassicList`), the sidebar toggle and the dropdown; a stored `classic-list` preference maps to `classic`. Docs and tests follow.
 
 ## FUTURE (after production deploy)
 

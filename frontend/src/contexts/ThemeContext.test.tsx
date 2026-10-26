@@ -395,15 +395,15 @@ describe('ThemeContext', () => {
       expect(result.current.isLight).toBe(false);
     });
 
-    it('isClassic and isClassicList are true for the classic-list theme (S13 T-09)', () => {
+    it('a stored classic-list preference (S13) lands in classic (S14 T-01)', () => {
+      localStorage.setItem('gallery-theme', JSON.stringify('classic-list'));
       const { result } = renderHook(() => useTheme(), {
-        wrapper: createWrapper('classic-list'),
+        wrapper: createWrapper('light'),
       });
 
+      expect(result.current.theme).toBe('classic');
       expect(result.current.isClassic).toBe(true);
-      expect(result.current.isClassicList).toBe(true);
-      expect(result.current.isDark).toBe(false);
-      expect(result.current.isLight).toBe(false);
+      expect(JSON.parse(localStorage.getItem('gallery-theme')!)).toBe('classic');
     });
   });
 

@@ -26,7 +26,7 @@ const skogslan = {
 } as unknown as Child;
 const info = (cell: Element) => [...cell.querySelectorAll('.summary')].map((s) => s.textContent);
 
-describe('MatrixAlbumList (classic-list theme, S13 T-09, QA-09)', () => {
+describe('MatrixAlbumList (the classic root, S13 T-09 / S14 T-01)', () => {
   it('one row per album as on the 2013 root page: thumbnail cell, "Album: title" + summary + info, sub-album tree', () => {
     render(<MatrixAlbumList albumPath="/" items={[international, skogslan]} />);
     const rows = document.querySelectorAll('table.gsAlbumList tr');

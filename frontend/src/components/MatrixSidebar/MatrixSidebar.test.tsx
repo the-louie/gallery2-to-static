@@ -6,10 +6,9 @@ import type { MatrixLocation } from '@/utils/matrixLocation';
 
 const mockNavigate = vi.fn();
 const mockSetTheme = vi.fn();
-let mockIsClassicList = false;
 vi.mock('@/contexts/ThemeContext', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/contexts/ThemeContext')>()),
-  useTheme: () => ({ setTheme: mockSetTheme, theme: 'classic', effectiveTheme: 'classic', isClassic: true, isClassicList: mockIsClassicList, isDark: false, isLight: false, availableThemes: [] }),
+  useTheme: () => ({ setTheme: mockSetTheme, theme: 'classic', effectiveTheme: 'classic', isClassic: true, isDark: false, isLight: false, availableThemes: [] }),
 }));
 vi.mock('react-router-dom', async () => ({
   ...(await vi.importActual('react-router-dom')),
@@ -78,16 +77,9 @@ describe('MatrixSidebar (THEME-01)', () => {
     expect(mockSetTheme).toHaveBeenCalledWith('dark');
   });
 
-  it('"Theme: classic list" switches to the 2013 root list; in that theme the button goes back (S13 T-10)', async () => {
+  it('the theme block has only "Theme: modern" (S14 T-01: one classic theme)', () => {
     render(<MatrixSidebar location={null} />);
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Theme: classic list' }));
-    expect(mockSetTheme).toHaveBeenCalledWith('classic-list');
-    expect(screen.queryByRole('button', { name: 'Theme: classic' })).toBeNull();
-    mockIsClassicList = true;
-    render(<MatrixSidebar location={null} />);
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Theme: classic' }));
-    expect(mockSetTheme).toHaveBeenCalledWith('classic');
-    mockIsClassicList = false;
+    expect(screen.getAllByRole('button', { name: /^Theme:/ })).toHaveLength(1);
   });
 
   it('search: Enter goes to the results; an empty box does nothing', async () => {

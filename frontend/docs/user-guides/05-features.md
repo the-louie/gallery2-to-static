@@ -257,21 +257,20 @@ The theme system allows you to customize the appearance of the gallery.
 
 ### Available Themes
 
-- **Classic** (default): Gallery 2's Matrix theme as lanbilder.se ran it in 2006
-- **Classic list**: the same, with the root album as the 2013 list of all albums (one row per album with its sub-albums, no paging)
+- **Classic** (default): Gallery 2's Matrix theme as lanbilder.se ran it in 2006, with the root album as the 2013 list of all albums (one row per album with its sub-albums, no paging)
 - **Light** and **Dark**: the modern themes
 
 ### Switching Themes
 
-- In the classic themes: the bottom block of the left sidebar — "Theme: modern" (opens the modern dark theme) and "Theme: classic list" / "Theme: classic" (toggles the root-album list).
-- In the modern themes: the theme dropdown in the header, next to the search bar, lists all four.
+- In the classic theme: "Theme: modern" at the bottom of the left sidebar opens the modern dark theme.
+- In the modern themes: the theme dropdown in the header, next to the search bar, lists all three.
 - The change applies immediately and is saved in browser storage (`gallery-theme`); it applies to every page.
 
 ### Theme Icons
 
 - **Sun Icon**: Light
 - **Moon Icon**: Dark
-- **Gallery Icon**: Classic and Classic list
+- **Gallery Icon**: Classic
 
 ### Per-Album Theme Configuration
 

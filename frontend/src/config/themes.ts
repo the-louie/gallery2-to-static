@@ -69,14 +69,6 @@ export const THEME_REGISTRY: readonly ThemeDefinition[] = Object.freeze([
     description: 'Gallery 2 Classic (lanbilder.se) style',
     cssSelector: '[data-theme="classic"]',
   }),
-  Object.freeze({
-    // The same look with the root album as the 2013 list: one row per album, every album on one
-    // page, sub-albums listed (operator, 2026-10-26, QA-09)
-    name: 'classic-list',
-    displayName: 'Classic list',
-    description: 'Gallery 2 Classic with the 2013 root-album list',
-    cssSelector: '[data-theme="classic-list"]',
-  }),
 ] as const);
 
 /**

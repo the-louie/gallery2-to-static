@@ -15,7 +15,7 @@ import './MatrixAlbum.css';
 export interface MatrixAlbumProps {
   /** Album to show */
   albumId: number;
-  /** The 2013 list layout (classic-list theme, QA-09): every item on one page, one row per item, sub-albums listed */
+  /** The 2013 list layout (the root album, QA-09 / THEME-02): every item on one page, one row per item, sub-albums listed */
   list?: boolean;
 }
 
@@ -93,7 +93,7 @@ function Pager({ path, page, totalPages }: { path: string; page: number; totalPa
  * `frontend/docs/theme-matrix.md`): header block with title, description, Date / Owner / Size,
  * the navigator, the thumbnail matrix (12 per page, `?page=N`), the navigator again and the pager.
  * The navigator shows only with more than one page, as in Gallery 2. With `list` (the root album in
- * the classic-list theme) the items are the 2013 one-row-per-album list, all on one page, no pager.
+ * the classic theme) the items are the 2013 one-row-per-album list, all on one page, no pager.
  *
  * @example
  * ```tsx

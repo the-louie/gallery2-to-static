@@ -30,7 +30,7 @@ import './HomePage.css';
  */
 export function HomePage() {
   const navigate = useNavigate();
-  const { isClassic, isClassicList } = useTheme();
+  const { isClassic } = useTheme();
   const [rootAlbumId, setRootAlbumId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<DataLoadError | null>(null);
@@ -120,9 +120,9 @@ export function HomePage() {
     );
   }
 
-  // Classic theme: the root is a Matrix album page like every other album (THEME-01); classic-list
-  // shows it as the 2013 list of all albums (QA-09)
-  if (isClassic) return <MatrixAlbum albumId={rootAlbumId} list={isClassicList} />;
+  // Classic theme: the root is the 2013 list of all albums (THEME-02; the Matrix frame otherwise,
+  // THEME-01)
+  if (isClassic) return <MatrixAlbum albumId={rootAlbumId} list />;
 
   return (
     <div className="home-page">

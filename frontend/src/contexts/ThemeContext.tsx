@@ -123,10 +123,8 @@ export interface ThemeContextValue {
   isDark: boolean;
   /** Convenience property: true if effective theme is light */
   isLight: boolean;
-  /** Convenience property: true if effective theme is classic or classic-list (the Gallery 2 look) */
+  /** Convenience property: true if effective theme is classic (the Gallery 2 look) */
   isClassic: boolean;
-  /** Convenience property: true if effective theme is classic-list (root album as the 2013 list) */
-  isClassicList: boolean;
 }
 
 /**
@@ -144,7 +142,6 @@ const defaultContextValue: ThemeContextValue = {
   isDark: false,
   isLight: false,
   isClassic: true,
-  isClassicList: false,
 };
 
 /**
@@ -305,8 +302,9 @@ export function ThemeProvider({
         const stored = localStorage.getItem(THEME_STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored) as string;
-          // Migrate legacy 'original' theme to 'classic'
-          if (parsed === 'original') {
+          // Migrate legacy 'original' and the short-lived 'classic-list' (S13, folded into
+          // 'classic' in S14 T-01) to 'classic'
+          if (parsed === 'original' || parsed === 'classic-list') {
             try {
               localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify('classic'));
             } catch {
@@ -438,8 +436,7 @@ export function ThemeProvider({
       availableThemes,
       isDark: effectiveTheme === 'dark',
       isLight: effectiveTheme === 'light',
-      isClassic: effectiveTheme === 'classic' || effectiveTheme === 'classic-list',
-      isClassicList: effectiveTheme === 'classic-list',
+      isClassic: effectiveTheme === 'classic',
     }),
     [validatedTheme, effectiveTheme, setTheme, availableThemes]
   );

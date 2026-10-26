@@ -109,7 +109,7 @@
   text-align: center;
 }
 
-/* The 2013 root list (classic-list theme, QA-09): Gallery 2's Classic theme.css for the one-column
+/* The 2013 root list (the classic root, QA-09 / THEME-02): Gallery 2's Classic theme.css for the one-column
    album.tpl — a narrow thumbnail cell, the info cell, the sub-album tree */
 .g2-matrix .gsAlbumList td {
   width: auto;
