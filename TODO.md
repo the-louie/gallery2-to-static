@@ -84,10 +84,8 @@ verified against the code at `b79dc10` before planning (Sprint 13).
   "Subalbums:" and the sub-album list — with `columns = 1` and all 45 albums on one page
   ("Page: 1"). New theme `classic-list`: root album in that layout, other pages as `classic`;
   reachable from the sidebar theme block and the modern theme dropdown; footer badges kept.
-- **QA-10: banner in the page, size by window width** — "banners ok, include them in the page, use
-  windows size to select a approriate sized banner". The classic frame already has the
-  `<picture>` (468 below 760px, 728, 970 from 1024px; `MatrixFrame.tsx:73`); the modern themes have
-  no banner slot. Show it in every theme and check the chosen file at 390, 800, 1280 and 1920px.
+- ~~**QA-10: banner in the page, size by window width**~~ — **CLOSED, verified 2026-10-26 (Sprint 13 T-08):** operator update the same morning: "banner should only be in classic theme!" — so no change to the modern themes. The classic `<picture>` (`MatrixFrame.tsx:73`) measured on the test site: 390px@3x and 412px@2.6x → `glitched-468x60@2x.jpg`, 800px → `728x90`, 1024/1280px → `970x90` (`@2x` on a 2x screen), 1920px → `970x90@2x`; light and dark show 0 banner elements.
+  Original row kept for the record: "banners ok, include them in the page, use windows size to select a approriate sized banner". The classic frame already has the `<picture>` (468 below 760px, 728, 970 from 1024px; `MatrixFrame.tsx:73`); the modern themes have no banner slot. Show it in every theme and check the chosen file at 390, 800, 1280 and 1920px.
 
 ## FUTURE (after production deploy)
 
