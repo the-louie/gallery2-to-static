@@ -17,16 +17,15 @@
 | T-03 | nginx vhosts for the switch | – | 2h | T-01 | todo | staged copies: `lanbilder-new` gains `lanbilder.se www.lanbilder.se` (www served as today, no redirect), the old-site vhost keeps only `lanbilder2-test.phetast.nu`; `nginx -t` on the staged files; a `go.sh` on lanbilder2 that swaps the two files, reloads nginx, and a `back.sh` that restores them (both tested on the test hostnames first) |
 | T-04 | Cutover runbook | – | 2h | T-02, T-03 | todo | `/srv/share/lanbilder2/cutover-runbook.txt`: the order (vhost swap → `cutover.py cutover lanbilder.se` → dist/admin swap → verification list → watch), the 20 verification URLs with expected answers, the rollback (`back.sh` + `cutover.py rollback lanbilder.se`), what stays off until a week later (test hostnames), who does what; dry-run of every command except the DNS change |
 | T-05 | Go-live | – | 2h | T-04 + the operator's word | todo | run the runbook; verify from outside (this machine and a phone); watch the nginx and service logs 15 min; Plausible shows lanbilder.se page views; ESXi todo updated; the old origin left untouched (read-only) |
-| T-06 | After go-live | – | 2h | T-05 | todo | after one quiet day: remove `lanbilder-new.phetast.nu` and `lanbilder2-test.phetast.nu` from the tunnel ingress and DNS (the old-site vhost may stay disabled for the record); SSH password login off on lanbilder2 once the operator's key login is confirmed; drop the `claude` MySQL user on the dev machine and delete the local `.my.cnf`; operator rotates the MySQL password the origin's `config.py` leaks; `cutover.py` SITES note |
-| T-07 | Uptime check for lanbilder.se | – | 1h | T-05 | todo | an HTTP check of https://lanbilder.se/ every 5 min with the operator's alerting (the existing tunnel-health alert covers the tunnel, not the site): a cron curl from kjelle3 to the Healthchecks instance (`hc.phetast.nu`) or a Cloudflare health check — the operator picks; documented in the ESXi todo |
-| T-08 | Retro, docs, prune | – | 1h | T-01..T-07 | todo | sprint retro; CLAUDE.md and user guide 06 say the site is live on lanbilder2; `db-runbook`/`admin-runbook` final; TODO prune |
+| T-06 | After go-live | – | 2h | T-05 | todo | after one quiet day: remove `lanbilder-new.phetast.nu` and `lanbilder2-test.phetast.nu` from the tunnel ingress and DNS (the old-site vhost may stay disabled for the record); SSH password login off on lanbilder2 (key login confirmed 2026-10-26); drop the `claude` MySQL user on the dev machine and delete the local `.my.cnf`; operator rotates the MySQL password the origin's `config.py` leaks; `cutover.py` SITES note |
+| T-07 | ~~Uptime check for lanbilder.se~~ | TODO FUTURE UPTIME-01 | – | – | dropped | operator 2026-10-26: reuse the Healthchecks system, cron on lanbilder2 checks its services and pings `hc.phetast.nu`; **waits until after go-live** (TODO.md FUTURE) |
+| T-08 | Retro, docs, prune | – | 1h | T-01..T-06 | todo | sprint retro; CLAUDE.md and user guide 06 say the site is live on lanbilder2; `db-runbook`/`admin-runbook` final; TODO prune |
 
-Total ≈ 13h (plus the quiet day before T-06).
+Total ≈ 12h (plus the quiet day before T-06).
 
 ## Open points for the operator
 - The go-live moment (T-05 runs on your word; it takes about ten minutes, no visible downtime: DNS moves from the origin to the tunnel with automatic rollback).
-- T-07: Healthchecks ping from kjelle3, or a Cloudflare health check?
-- T-06: confirm that your key login to lanbilder2 works before password login is turned off.
+- ~~T-06: confirm that your key login to lanbilder2 works before password login is turned off.~~ confirmed 2026-10-26 (kjelle3 key, login + su to root work).
 
 ## Retro
 (filled at sprint end)

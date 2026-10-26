@@ -56,3 +56,7 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
 Operator, 2026-10-25, lifted 2026-10-26: **all five rows ship before lanbilder.se switches** to the new
 site (interview 2026-10-26, decision 1: "All five rows"). The notes under each row are first answers
 to the questions asked; the **Decisions** blocks are the operator's rulings from the interview.
+
+## FUTURE (after go-live, operator 2026-10-26: "we wait with this")
+
+- **UPTIME-01: Healthchecks ping from lanbilder2** — operator ruling 2026-10-26: reuse the existing Healthchecks system (`hc.phetast.nu`); lanbilder2 itself runs a cron job that checks its services are up (nginx answers on the public vhost, `lanbilder-admin` healthz, cloudflared, the nightly timer) and pings its check URL only when all pass, so a missed ping alerts. No Cloudflare health check. Was Sprint 20 T-07; moved here on the operator's word, not scheduled.
