@@ -46,8 +46,7 @@ async function run(): Promise<void> {
     db.run('INSERT INTO media (item_id, thumb_w, thumb_h, file_size, file_mtime) VALUES (240, 300, 225, 12345, 1700000000)');
     db.run("INSERT INTO legacy_paths (g2_path, item_id) VALUES ('international', 211)");
     db.run('INSERT INTO view_counts (item_id, pending) VALUES (240, 3)');
-    db.run('INSERT INTO dirty_albums (album_id) VALUES (211)');
-    assert.strictEqual(db.all('SELECT * FROM dirty_albums').length, 1);
+    assert.ok(db.all('SELECT * FROM dirty_albums').length >= 1, 'the inserts marked albums dirty (T-06 triggers)');
 
     // transactions roll back on error
     assert.throws(() => db.transaction(() => {

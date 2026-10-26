@@ -322,14 +322,43 @@ function searchItem(t: Tree, album: ItemRow, parentId: number, parentUipath: str
 }
 
 export interface GenerateAllResult {
+    /** album files written */
     albums: number;
+    /** album files moved to .removed/ (no longer exported) */
+    removed: number;
     pathIndex: Map<string, number>;
 }
 
-/** Writes every exported album, index.json, legacy.json and the search index into `dataDir`. */
-export async function generateAll(db: Db, dataDir: string, now: Date = new Date()): Promise<GenerateAllResult> {
+/** Atomic file write: temp file in the same directory, then rename. */
+async function writeAtomic(file: string, text: string): Promise<void> {
+    const tmp = `${file}.tmp-${process.pid}`;
+    await fs.writeFile(tmp, text);
+    await fs.rename(tmp, file);
+}
+
+/**
+ * Writes the static files into `dataDir`. With `onlyAlbums` (the changed-branch run) only those
+ * album files are written and album files of albums that stopped being exported are moved to
+ * `.removed/`; index.json, legacy.json and the search index are always rebuilt from the whole
+ * tree (they are cheap and must stay complete).
+ */
+export async function generateAll(db: Db, dataDir: string, now: Date = new Date(), onlyAlbums?: Set<number>): Promise<GenerateAllResult> {
     const t = new Tree(db);
     await fs.mkdir(path.join(dataDir, 'search'), { recursive: true });
+    let removed = 0;
+    if (onlyAlbums) {
+        for (const id of onlyAlbums) {
+            if (t.exported.has(id)) continue;
+            const file = path.join(dataDir, `${id}.json`);
+            try {
+                await fs.mkdir(path.join(dataDir, '.removed'), { recursive: true });
+                await fs.rename(file, path.join(dataDir, '.removed', `${id}.json`));
+                removed += 1;
+            } catch (err) {
+                if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
+            }
+        }
+    }
     const memo = new Map<number, { images: number; items: number }>();
     const search = new Map<number, SearchIndexItem>();
     const pathIndex = new Map<string, number>();
@@ -339,16 +368,18 @@ export async function generateAll(db: Db, dataDir: string, now: Date = new Date(
     let albums = 0;
     for (const id of t.exported) {
         const { file, search: s, legacyPhotos: lp } = buildAlbumFile(t, id, memo);
-        await fs.writeFile(path.join(dataDir, `${id}.json`), JSON.stringify(file, null, 2));
+        if (!onlyAlbums || onlyAlbums.has(id)) {
+            await writeAtomic(path.join(dataDir, `${id}.json`), JSON.stringify(file, null, 2));
+            albums += 1;
+        }
         for (const item of s) search.set(item.id, item);
         for (const [photo, album] of lp) legacyPhotos.set(photo, album);
         const p = t.urlPath(id);
         pathIndex.set(p, id);
         legacyAlbums.set(legacyG2.get(id) ?? t.g2Chain(id).join('/'), p);
-        albums += 1;
     }
     const items = [...search.values()].sort((a, b) => a.id - b.id);
-    await fs.writeFile(path.join(dataDir, 'search', 'index.json'), JSON.stringify({ version: 1, generatedAt: now.toISOString(), itemCount: items.length, items }, null, 2));
+    await writeAtomic(path.join(dataDir, 'search', 'index.json'), JSON.stringify({ version: 1, generatedAt: now.toISOString(), itemCount: items.length, items }, null, 2));
     const override = db.setting('site_description_override');
     const rootTs = db.setting('root_timestamp');
     const indexData = {
@@ -365,7 +396,102 @@ export async function generateAll(db: Db, dataDir: string, now: Date = new Date(
             rootAlbumTimestamp: rootTs === null ? null : Number(rootTs),
         },
     };
-    await fs.writeFile(path.join(dataDir, 'index.json'), JSON.stringify(indexData, null, 2));
-    await fs.writeFile(path.join(dataDir, 'legacy.json'), JSON.stringify({ albums: Object.fromEntries(legacyAlbums), photoAlbum: Object.fromEntries(legacyPhotos) }));
-    return { albums, pathIndex };
+    await writeAtomic(path.join(dataDir, 'index.json'), JSON.stringify(indexData, null, 2));
+    await writeAtomic(path.join(dataDir, 'legacy.json'), JSON.stringify({ albums: Object.fromEntries(legacyAlbums), photoAlbum: Object.fromEntries(legacyPhotos) }));
+    return { albums, removed, pathIndex };
+}
+
+/** The dirty albums plus every ancestor up to the root (counts and highlights change up the chain). */
+export function dirtyWithAncestors(db: Db): Set<number> {
+    const dirty = db.all<{ album_id: number }>('SELECT album_id FROM dirty_albums').map((r) => r.album_id);
+    const out = new Set<number>();
+    for (const id of dirty) {
+        let cur: number | null = id;
+        while (cur !== null && !out.has(cur)) {
+            out.add(cur);
+            const row: { parent_id: number | null } | undefined = db.get<{ parent_id: number | null }>('SELECT parent_id FROM items WHERE id = ?', cur);
+            cur = row ? row.parent_id : null;
+        }
+    }
+    return out;
+}
+
+/**
+ * The changed-branch run: derivatives for the dirty albums' photos, their album files (+ancestors),
+ * the always-complete index/legacy/search files, then the dirty rows that existed at the start are
+ * cleared and the run recorded, in one transaction. Returns null when nothing was dirty.
+ */
+export async function generateChanged(db: Db, dataDir: string, media?: Omit<import('./media.ts').MediaOptions, 'albumIds'>, now: Date = new Date()): Promise<(GenerateAllResult & { dirty: number }) | null> {
+    const dirtyRows = db.all<{ album_id: number; since: string }>('SELECT album_id, since FROM dirty_albums');
+    if (dirtyRows.length === 0) return null;
+    const albums = dirtyWithAncestors(db);
+    const runId = db.run("INSERT INTO generation_runs (mode, started_at, albums) VALUES ('changed', ?, ?)", now.toISOString(), albums.size).lastInsertRowid;
+    if (media) {
+        const { updateMedia } = await import('./media.ts');
+        await updateMedia(db, { ...media, albumIds: albums });
+    }
+    const result = await generateAll(db, dataDir, now, albums);
+    db.transaction(() => {
+        for (const r of dirtyRows) db.run('DELETE FROM dirty_albums WHERE album_id = ? AND since = ?', r.album_id, r.since);
+        db.run('UPDATE generation_runs SET finished_at = ?, ok = 1 WHERE id = ?', new Date().toISOString(), runId);
+    });
+    return { ...result, dirty: dirtyRows.length };
+}
+
+// CLI: node --no-warnings=ExperimentalWarning generate.ts --all | --changed | images [--db <file>] [--no-images] [--no-publish]
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
+    const [{ openDb }, { updateMedia }, { publishImages }, { runStamp, prepareStagingDir, promoteStagingDir }, fsSync] = await Promise.all([
+        import('./db/db.ts'), import('./media.ts'), import('./publishImages.ts'), import('./outputDir.ts'), import('node:fs'),
+    ]);
+    const args = process.argv.slice(2);
+    const mode = args.find((a) => a === '--all' || a === '--changed' || a === 'images');
+    if (!mode) {
+        console.error('usage: generate.ts --all | --changed | images [--db <file>] [--no-images] [--no-publish]');
+        process.exit(2);
+    }
+    const projectRoot = path.join(import.meta.dirname, '..');
+    const config = JSON.parse(fsSync.readFileSync(path.join(import.meta.dirname, 'config.json'), 'utf-8')) as import('./types.ts').Config;
+    const dbFile = args.includes('--db') ? args[args.indexOf('--db') + 1]! : (process.env.GALLERY_DB ?? path.join(import.meta.dirname, 'db', 'gallery.sqlite'));
+    const db = openDb(dbFile);
+    const albumsRoot = path.join(projectRoot, config.albumsRoot ?? 'frontend/public/g2data/albums');
+    const media = {
+        albumsRoot,
+        thumbnailsRoot: path.join(projectRoot, config.thumbnailsRoot ?? 'frontend/public/g2data/thumbnails'),
+        resizedRoot: path.join(projectRoot, config.resizedRoot ?? 'frontend/public/g2data/resized'),
+        thumbOptions: { maxWidth: config.thumbnailMaxWidth ?? 400, maxHeight: config.thumbnailMaxHeight ?? 400, quality: config.thumbnailQuality ?? 80 },
+        resizeOptions: { maxWidth: config.resizeMaxSize ?? 1024, maxHeight: config.resizeMaxSize ?? 1024, quality: config.resizeQuality ?? 85 },
+        concurrency: config.thumbnailConcurrency ?? 5,
+        log: (l: string) => console.warn(l),
+    };
+    const dataDir = path.join(projectRoot, 'data');
+    const publishedRoot = path.join(projectRoot, config.publishedAlbumsRoot ?? 'frontend/public/g2data/published');
+    const t0 = Date.now();
+    try {
+        if (mode === 'images') {
+            const r = await updateMedia(db, media);
+            console.log('media:', r);
+        } else if (mode === '--all') {
+            const stamp = runStamp();
+            const runId = db.run("INSERT INTO generation_runs (mode, started_at) VALUES ('all', ?)", new Date().toISOString()).lastInsertRowid;
+            if (!args.includes('--no-images')) console.log('media:', await updateMedia(db, media));
+            const staging = await prepareStagingDir(dataDir, stamp);
+            const r = await generateAll(db, staging);
+            const previous = await promoteStagingDir(dataDir, staging, stamp);
+            db.transaction(() => {
+                db.run('DELETE FROM dirty_albums');
+                db.run('UPDATE generation_runs SET finished_at = ?, ok = 1, albums = ? WHERE id = ?', new Date().toISOString(), r.albums, runId);
+            });
+            console.log(`generated ${r.albums} albums into ${dataDir}${previous ? ` (previous kept as ${previous})` : ''}`);
+        } else {
+            const r = await generateChanged(db, dataDir, args.includes('--no-images') ? undefined : media);
+            console.log(r ? `changed: ${r.dirty} dirty albums -> ${r.albums} files written, ${r.removed} removed` : 'nothing changed');
+        }
+        if (mode !== 'images' && !args.includes('--no-publish')) {
+            const p = await publishImages(dataDir, albumsRoot, publishedRoot);
+            console.log(`published ${p.linked} images${p.previous ? ` (previous tree kept as ${p.previous})` : ''}${p.missing.length ? `, ${p.missing.length} missing` : ''}`);
+        }
+        console.log(`done in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
+    } finally {
+        db.close();
+    }
 }

@@ -82,3 +82,48 @@ CREATE TABLE generation_runs (
     ok INTEGER NOT NULL DEFAULT 0 CHECK (ok IN (0, 1)),
     note TEXT
 );
+
+-- Dirty tracking (data-master.md invariant 3): a change marks the item's album and its parent;
+-- the generator expands the set to every ancestor at run time (SQLite triggers take no CTE).
+-- NOT EXISTS instead of OR IGNORE: the outer statement's conflict policy (an UPSERT) would override OR IGNORE.
+CREATE TRIGGER items_dirty_insert AFTER INSERT ON items BEGIN
+    INSERT INTO dirty_albums (album_id) SELECT NEW.parent_id WHERE NEW.parent_id IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM dirty_albums WHERE album_id = NEW.parent_id);
+    INSERT INTO dirty_albums (album_id) SELECT NEW.id WHERE NEW.type = 'album'
+        AND NOT EXISTS (SELECT 1 FROM dirty_albums WHERE album_id = NEW.id);
+END;
+
+CREATE TRIGGER items_dirty_update AFTER UPDATE OF parent_id, position, order_weight, title, description, summary, path_component,
+    url_segment, event_at, width, height, thumb_width, thumb_height, owner_id, view_count, hidden, deleted_at ON items BEGIN
+    INSERT INTO dirty_albums (album_id) SELECT OLD.parent_id WHERE OLD.parent_id IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM dirty_albums WHERE album_id = OLD.parent_id);
+    INSERT INTO dirty_albums (album_id) SELECT NEW.parent_id WHERE NEW.parent_id IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM dirty_albums WHERE album_id = NEW.parent_id);
+    INSERT INTO dirty_albums (album_id) SELECT NEW.id WHERE NEW.type = 'album'
+        AND NOT EXISTS (SELECT 1 FROM dirty_albums WHERE album_id = NEW.id);
+    UPDATE items SET changed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = NEW.id AND changed_at = OLD.changed_at;
+END;
+
+CREATE TRIGGER highlights_dirty_insert AFTER INSERT ON highlights BEGIN
+    INSERT INTO dirty_albums (album_id) SELECT NEW.album_id WHERE NOT EXISTS (SELECT 1 FROM dirty_albums WHERE album_id = NEW.album_id);
+    INSERT INTO dirty_albums (album_id) SELECT i.parent_id FROM items i WHERE i.id = NEW.album_id AND i.parent_id IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM dirty_albums WHERE album_id = i.parent_id);
+END;
+CREATE TRIGGER highlights_dirty_update AFTER UPDATE ON highlights BEGIN
+    INSERT INTO dirty_albums (album_id) SELECT NEW.album_id WHERE NOT EXISTS (SELECT 1 FROM dirty_albums WHERE album_id = NEW.album_id);
+    INSERT INTO dirty_albums (album_id) SELECT i.parent_id FROM items i WHERE i.id = NEW.album_id AND i.parent_id IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM dirty_albums WHERE album_id = i.parent_id);
+END;
+CREATE TRIGGER highlights_dirty_delete AFTER DELETE ON highlights BEGIN
+    INSERT INTO dirty_albums (album_id) SELECT OLD.album_id WHERE NOT EXISTS (SELECT 1 FROM dirty_albums WHERE album_id = OLD.album_id);
+    INSERT INTO dirty_albums (album_id) SELECT i.parent_id FROM items i WHERE i.id = OLD.album_id AND i.parent_id IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM dirty_albums WHERE album_id = i.parent_id);
+END;
+
+-- an owner's display name appears in every album and child entry they own
+CREATE TRIGGER owners_dirty_update AFTER UPDATE OF nickname, full_name, show_full_name ON owners BEGIN
+    INSERT INTO dirty_albums (album_id) SELECT DISTINCT i.parent_id FROM items i WHERE i.owner_id = NEW.id AND i.parent_id IS NOT NULL
+        AND NOT EXISTS (SELECT 1 FROM dirty_albums WHERE album_id = i.parent_id);
+    INSERT INTO dirty_albums (album_id) SELECT i.id FROM items i WHERE i.owner_id = NEW.id AND i.type = 'album'
+        AND NOT EXISTS (SELECT 1 FROM dirty_albums WHERE album_id = i.id);
+END;
