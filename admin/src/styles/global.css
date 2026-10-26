@@ -77,7 +77,14 @@ button.primary:hover:not(:disabled) {
 }
 
 button.danger {
+  background: #fbeaea;
+  border-color: #d8a5a9;
   color: var(--danger);
+}
+button.danger:hover:not(:disabled) {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
 }
 
 input[type="text"],
