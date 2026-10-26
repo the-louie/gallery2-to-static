@@ -71,10 +71,12 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImage } from '@fortawesome/free-solid-svg-icons';
 import type { Image } from '@/types';
-import { getAspectRatioWithFallback } from '@/utils/aspectRatio';
 import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
 import { useProgressiveImage } from '@/hooks/useProgressiveImage';
 import './ImageThumbnail.css';
+
+/** Thumbnail tiles are square (QA-01): the photo is cropped with object-fit: cover */
+const SQUARE_ASPECT_RATIO = 1;
 
 /**
  * Props for ImageThumbnail component
@@ -131,15 +133,9 @@ function ImageThumbnailComponent({
     enabled: !noThumbnail && (shouldLoad || typeof IntersectionObserver === 'undefined'),
   });
 
-  // Calculate aspect ratio from image dimensions (memoized)
-  const aspectRatio = useMemo(
-    () =>
-      getAspectRatioWithFallback(
-        useThumbnail ? image.thumb_width : image.width,
-        useThumbnail ? image.thumb_height : image.height,
-      ),
-    [image.thumb_width, image.thumb_height, image.width, image.height, useThumbnail],
-  );
+  // Every thumbnail is a square crop, like Gallery 2's squarethumb (operator, 2026-10-26, QA-01);
+  // object-fit: cover crops the photo, so no layout shift either way
+  const aspectRatio = SQUARE_ASPECT_RATIO;
 
   // Generate alt text from image title or description (memoized)
   const altText = useMemo(() => {

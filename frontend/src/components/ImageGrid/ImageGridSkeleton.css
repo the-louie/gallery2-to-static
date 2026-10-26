@@ -22,7 +22,7 @@
 
 .image-grid-skeleton-thumbnail {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1; /* square tiles (QA-01) */
   background: linear-gradient(
     90deg,
     var(--skeleton-bg-1, #e0e0e0) 0%,

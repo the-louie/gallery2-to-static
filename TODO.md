@@ -57,12 +57,8 @@ verified against the code at `b79dc10` before planning (Sprint 13).
   `g2data/published.prev-*` (3 of 4) removed, `/mnt/storage` 65 → 64 GB used; on the build machine
   the 89 Chrome temp directories in `/tmp` owned by this user (634 MB) removed, `/tmp` 1.7 → 1.1 GB.
   Original row kept for the record: "0. do the housekeeping and clean up".
-- **QA-01: all thumbnails square** — "when clicking around i saw some rectangle, like
-  003_skateramp.jpg in https://lanbilder-new.phetast.nu/dreamhack/dreamhack_summer_02/ahnberg/".
-  Classic: `MatrixAlbum.css:113` forces 150×150 `object-fit: cover` on `.giThumbnail`, so the
-  rectangle must come from another path (the modern grid, a missing-thumbnail fallback, or the
-  thumbnail file itself). Find it with the album page in both themes; all thumbnails square in all
-  themes.
+- ~~**QA-01: all thumbnails square**~~ — **CLOSED, verified 2026-10-26 (Sprint 13 T-06):** the classic theme was already square (150×150 `object-fit: cover`); the rectangles were the modern themes' photo tiles, which kept the photo's aspect ratio (`ImageThumbnail.tsx` inline `aspectRatio`), and the 4:3/16:9 album covers. Now `ImageThumbnail.tsx` sets `aspectRatio: 1`, `AlbumCard.css`/`modern.css` `.album-card-thumbnail` 1/1, skeletons 1/1; measured on `/dreamhack/dreamhack_summer_02/ahnberg/` in classic and dark: 0 non-square thumbnails (only the banner and footer badges are rectangles).
+  Original row kept for the record: "when clicking around i saw some rectangle, like 003_skateramp.jpg in https://lanbilder-new.phetast.nu/dreamhack/dreamhack_summer_02/ahnberg/". Classic: `MatrixAlbum.css:113` forces 150×150 `object-fit: cover` on `.giThumbnail`, so the rectangle must come from another path (the modern grid, a missing-thumbnail fallback, or the thumbnail file itself). Find it with the album page in both themes; all thumbnails square in all themes.
 - ~~**QA-02: modern themes: the album's head image on the root page is a link to the album**~~ — **CLOSED, verified 2026-10-26 (Sprint 13 T-04):** `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx:95` renders the highlight band as a `Link` to the album (`aria-hidden`, `tabIndex -1`, the block link stays the accessible one); `modern.css` lets clicks reach it through the content layer's padding; test "the background layer links to the album".
   Original row kept for the record: like the "...and more!" link. `RootAlbumListBlock.tsx:95` renders the highlight as a `role="presentation"` background div outside the block link.
 - ~~**QA-03: modern themes: more vertical margin above "...and more!"**~~ — **CLOSED, verified 2026-10-26 (Sprint 13 T-03):** `frontend/src/styles/modern.css` `.root-album-list-block-subalbums-more` gets `margin-top: 0.85rem` (the chip rows have a 0.4rem gap); screenshot with T-04's deploy.

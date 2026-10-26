@@ -42,7 +42,7 @@
 .album-card-thumbnail {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1 / 1; /* square like every thumbnail (operator, 2026-10-26, QA-01) */
   background-color: var(--album-card-thumbnail-bg, #f5f5f5);
   overflow: hidden;
   display: flex;

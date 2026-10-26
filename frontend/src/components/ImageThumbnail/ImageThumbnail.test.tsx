@@ -328,17 +328,13 @@ describe('ImageThumbnail', () => {
   });
 
   describe('Aspect Ratio', () => {
-    it('applies correct aspect ratio from dimensions', () => {
+    it('is square whatever the photo dimensions (S13 T-06, QA-01)', () => {
       const { container } = render(<ImageThumbnail image={mockPhoto} />);
       const containerEl = container.querySelector(
         '.image-thumbnail-container',
       ) as HTMLElement;
-      // mockPhoto has width: 1920, height: 1080, so aspect ratio should be ~1.777
-      expect(containerEl.style.aspectRatio).toBeTruthy();
-      expect(parseFloat(containerEl.style.aspectRatio)).toBeCloseTo(
-        1920 / 1080,
-        2,
-      );
+      // mockPhoto is 1920x1080; the tile is still 1:1 and object-fit: cover crops it
+      expect(parseFloat(containerEl.style.aspectRatio)).toBe(1);
     });
 
     it('handles null dimensions gracefully', () => {
@@ -360,13 +356,9 @@ describe('ImageThumbnail', () => {
       const containerEl = container.querySelector(
         '.image-thumbnail-container',
       ) as HTMLElement;
-      // mockPhoto has thumb_width: 200, thumb_height: 150, so aspect ratio should be ~1.333
+      // thumb_width: 200, thumb_height: 150: still a square tile (QA-01)
       expect(containerEl).toBeInTheDocument();
-      expect(containerEl.style.aspectRatio).toBeTruthy();
-      expect(parseFloat(containerEl.style.aspectRatio)).toBeCloseTo(
-        200 / 150,
-        2,
-      );
+      expect(parseFloat(containerEl.style.aspectRatio)).toBe(1);
     });
 
     it('prevents layout shift by setting aspect ratio before image loads', () => {

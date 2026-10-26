@@ -824,7 +824,7 @@
 }
 
 :is([data-theme="light"], [data-theme="dark"]) .album-card-thumbnail {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1; /* square like every thumbnail (QA-01) */
   background: var(--album-card-thumbnail-bg);
   overflow: hidden;
 }

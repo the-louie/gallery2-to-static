@@ -22,7 +22,7 @@
 
 .album-grid-skeleton-thumbnail {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1 / 1; /* square covers (QA-01) */
   background: linear-gradient(
     90deg,
     var(--skeleton-bg-1, #e0e0e0) 0%,
