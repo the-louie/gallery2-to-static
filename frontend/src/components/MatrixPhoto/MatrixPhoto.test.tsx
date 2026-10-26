@@ -1,27 +1,46 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, userEvent } from '@/test-utils';
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { MatrixPhoto } from './MatrixPhoto';
-import { useAlbumData } from '@/hooks/useAlbumData';
-import type { AlbumMetadata, Child } from '@/types';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent, userEvent } from "@/test-utils";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { MatrixPhoto } from "./MatrixPhoto";
+import { useAlbumData } from "@/hooks/useAlbumData";
+import type { AlbumMetadata, Child } from "@/types";
 
-vi.mock('@/hooks/useAlbumData', () => ({ useAlbumData: vi.fn() }));
+vi.mock("@/hooks/useAlbumData", () => ({ useAlbumData: vi.fn() }));
 
-const PATH = '/dh/battlefrag.com';
+const PATH = "/dh/battlefrag.com";
 const metadata = {
-  albumId: 57207, albumTitle: 'Battlefrag.com', albumDescription: null, albumTimestamp: null, ownerName: null,
-  breadcrumbPath: [{ id: 7, title: 'Home', path: '/' }, { id: 57207, title: 'Battlefrag.com', path: PATH }],
+  albumId: 57207,
+  albumTitle: "Battlefrag.com",
+  albumDescription: null,
+  albumTimestamp: null,
+  ownerName: null,
+  breadcrumbPath: [
+    { id: 7, title: "Home", path: "/" },
+    { id: 57207, title: "Battlefrag.com", path: PATH },
+  ],
 } as AlbumMetadata;
 const photo = (id: number, name: string, w = 1200, h = 1600) =>
   ({
-    id, type: 'GalleryPhotoItem', title: name, pathComponent: `x/${name}`, urlPath: `x/${name}`,
-    timestamp: 1132995297, ownerName: 'Patrick', width: w, height: h,
+    id,
+    type: "GalleryPhotoItem",
+    title: name,
+    pathComponent: `x/${name}`,
+    urlPath: `x/${name}`,
+    timestamp: 1132995297,
+    ownerName: "Patrick",
+    width: w,
+    height: h,
   }) as unknown as Child;
 const children = [
-  { ...photo(1, 'CIMG0053_.JPG'), resizeUrlPath: 'x/CIMG0053_.JPG' } as Child,
-  { id: 9, type: 'GalleryAlbumItem', title: 'Sub', path: `${PATH}/sub` } as unknown as Child,
-  photo(2, 'CIMG0053h.JPG'),
-  photo(3, 'small.jpg', 640, 480),
+  { ...photo(1, "CIMG0053_.JPG"), resizeUrlPath: "x/CIMG0053_.JPG" } as Child,
+  {
+    id: 9,
+    type: "GalleryAlbumItem",
+    title: "Sub",
+    path: `${PATH}/sub`,
+  } as unknown as Child,
+  photo(2, "CIMG0053h.JPG"),
+  photo(3, "small.jpg", 640, 480),
 ];
 
 function Where() {
@@ -31,84 +50,155 @@ function Where() {
 const show = (imageId: number, url = `${PATH}/x`) =>
   render(
     <Routes>
-      <Route path="*" element={<><MatrixPhoto albumId={57207} imageId={imageId} /><Where /></>} />
+      <Route
+        path="*"
+        element={
+          <>
+            <MatrixPhoto albumId={57207} imageId={imageId} />
+            <Where />
+          </>
+        }
+      />
     </Routes>,
-    { initialEntries: [url] },
+    { initialEntries: [url] }
   );
 const navLinks = () =>
-  [...document.querySelectorAll('.gbNavigator')[0].querySelectorAll('a')].map((a) => `${a.className}:${a.getAttribute('href')}`);
+  [...document.querySelectorAll(".gbNavigator")[0].querySelectorAll("a")].map(
+    (a) => `${a.className}:${a.getAttribute("href")}`
+  );
 
-describe('MatrixPhoto (THEME-01)', () => {
+describe("MatrixPhoto (THEME-01)", () => {
   beforeEach(() => {
-    vi.mocked(useAlbumData).mockReturnValue({ data: children, metadata, isLoading: false, error: null, refetch: vi.fn() });
+    vi.mocked(useAlbumData).mockReturnValue({
+      data: children,
+      metadata,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
   });
 
-  it('header as in the 2006 photo page: title, Date, Owner, Size select, Full size link', () => {
+  it("header as in the 2006 photo page: title, Date, Owner, Size select, Full size link", () => {
     show(1);
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('CIMG0053_.JPG');
-    expect([...document.querySelectorAll('.block-core-ItemInfo .summary')].map((s) => s.textContent)).toEqual([
-      'Date: 26/11/2005',
-      'Owner: Patrick',
+    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
+      "CIMG0053_.JPG"
+    );
+    expect(
+      [...document.querySelectorAll(".block-core-ItemInfo .summary")].map(
+        (s) => s.textContent
+      )
+    ).toEqual(["Date: 26/11/2005", "Owner: Patrick"]);
+    const select = screen.getByRole("combobox", { name: "Size" });
+    expect(
+      [...select.querySelectorAll("option")].map((o) => o.textContent)
+    ).toEqual(["768x1024", "1200x1600"]);
+    expect(select).toHaveValue("resized");
+    expect(screen.getByRole("link", { name: "1200x1600" })).toHaveAttribute(
+      "href",
+      `${PATH}/cimg0053_?size=full`
+    );
+    const img = screen.getByRole("img", { name: "CIMG0053_.JPG" });
+    expect(img).toHaveAttribute("width", "768");
+    expect(img).toHaveAttribute("src", "/g2data/resized/x/CIMG0053_.JPG");
+  });
+
+  it("a photo without a resize shows the original scaled down", () => {
+    show(2);
+    expect(screen.getByRole("img", { name: "CIMG0053h.JPG" })).toHaveAttribute(
+      "src",
+      "/g2data/albums/x/CIMG0053h.JPG"
+    );
+  });
+
+  it("navigator over the photos only (sub-albums skipped)", () => {
+    show(1);
+    expect(navLinks()).toEqual([
+      `next:${PATH}/cimg0053h`,
+      `last:${PATH}/small`,
     ]);
-    const select = screen.getByRole('combobox', { name: 'Size' });
-    expect([...select.querySelectorAll('option')].map((o) => o.textContent)).toEqual(['768x1024', '1200x1600']);
-    expect(select).toHaveValue('resized');
-    expect(screen.getByRole('link', { name: '1200x1600' })).toHaveAttribute('href', `${PATH}/cimg0053_?size=full`);
-    const img = screen.getByRole('img', { name: 'CIMG0053_.JPG' });
-    expect(img).toHaveAttribute('width', '768');
-    expect(img).toHaveAttribute('src', '/g2data/resized/x/CIMG0053_.JPG');
+    expect(document.querySelector(".next-and-last")).toHaveClass("no-previous");
   });
 
-  it('a photo without a resize shows the original scaled down', () => {
+  it("a middle photo has first/previous too", () => {
     show(2);
-    expect(screen.getByRole('img', { name: 'CIMG0053h.JPG' })).toHaveAttribute('src', '/g2data/albums/x/CIMG0053h.JPG');
+    expect(navLinks()).toEqual([
+      `next:${PATH}/small`,
+      `last:${PATH}/small`,
+      `first:${PATH}/cimg0053_`,
+      `previous:${PATH}/cimg0053_`,
+    ]);
   });
 
-  it('navigator over the photos only (sub-albums skipped)', () => {
-    show(1);
-    expect(navLinks()).toEqual([`next:${PATH}/cimg0053h`, `last:${PATH}/small`]);
-    expect(document.querySelector('.next-and-last')).toHaveClass('no-previous');
-  });
-
-  it('a middle photo has first/previous too', () => {
-    show(2);
-    expect(navLinks()).toEqual([`next:${PATH}/small`, `last:${PATH}/small`, `first:${PATH}/cimg0053_`, `previous:${PATH}/cimg0053_`]);
-  });
-
-  it('?size=full shows the original; the select switches between the two', async () => {
+  it("?size=full shows the original; the select switches between the two", async () => {
     show(1, `${PATH}/cimg0053_?size=full`);
-    expect(screen.getByRole('img', { name: 'CIMG0053_.JPG' })).toHaveAttribute('width', '1200');
-    expect(screen.getByRole('img', { name: 'CIMG0053_.JPG' })).toHaveAttribute('src', '/g2data/albums/x/CIMG0053_.JPG');
-    await userEvent.setup().selectOptions(screen.getByRole('combobox', { name: 'Size' }), 'resized');
-    expect(screen.getByTestId('where')).toHaveTextContent(new RegExp(`^${PATH}/cimg0053_$`));
+    expect(screen.getByRole("img", { name: "CIMG0053_.JPG" })).toHaveAttribute(
+      "width",
+      "1200"
+    );
+    expect(screen.getByRole("img", { name: "CIMG0053_.JPG" })).toHaveAttribute(
+      "src",
+      "/g2data/albums/x/CIMG0053_.JPG"
+    );
+    await userEvent
+      .setup()
+      .selectOptions(screen.getByRole("combobox", { name: "Size" }), "resized");
+    expect(screen.getByTestId("where")).toHaveTextContent(
+      new RegExp(`^${PATH}/cimg0053_$`)
+    );
   });
 
-  it('a photo of 1024px or less has only its own size', () => {
+  it("a small photo is shown upscaled to 768px, its own size on ?size=full (operator, 2026-10-26)", () => {
     show(3);
-    const select = screen.getByRole('combobox', { name: 'Size' });
-    expect([...select.querySelectorAll('option')].map((o) => o.textContent)).toEqual(['640x480']);
-    expect(screen.getByRole('img', { name: 'small.jpg' })).toHaveAttribute('width', '640');
+    const select = screen.getByRole("combobox", { name: "Size" });
+    expect(
+      [...select.querySelectorAll("option")].map((o) => o.textContent)
+    ).toEqual(["768x576", "640x480"]);
+    expect(select).toHaveValue("resized");
+    const img = screen.getByRole("img", { name: "small.jpg" });
+    expect(img).toHaveAttribute("width", "768");
+    expect(img).toHaveAttribute("height", "576");
+    // no export copy for this one: the browser scales the original into the 768px box
+    expect(img).toHaveAttribute(
+      "src",
+      expect.stringContaining("/g2data/albums/")
+    );
   });
 
-  it('arrow keys step through the photos', () => {
+  it("arrow keys step through the photos", () => {
     show(2);
-    fireEvent.keyDown(document, { key: 'ArrowRight' });
-    expect(screen.getByTestId('where')).toHaveTextContent(`${PATH}/small`);
+    fireEvent.keyDown(document, { key: "ArrowRight" });
+    expect(screen.getByTestId("where")).toHaveTextContent(`${PATH}/small`);
   });
 
-  it('the thumbnail stands in, blurred, until the photo has loaded', () => {
+  it("the thumbnail stands in, blurred, until the photo has loaded", () => {
     show(1);
-    expect(document.querySelector('.gsImagePlaceholder')).toHaveAttribute('src', expect.stringContaining('t__CIMG0053_.JPG'));
-    expect(document.querySelector('.gsImagePlaceholder')).toHaveAttribute('src', expect.stringContaining('/g2data/thumbnails/'));
-    fireEvent.load(screen.getByRole('img', { name: 'CIMG0053_.JPG' }));
-    expect(document.querySelector('.gsImagePlaceholder')).toBeNull();
+    expect(document.querySelector(".gsImagePlaceholder")).toHaveAttribute(
+      "src",
+      expect.stringContaining("t__CIMG0053_.JPG")
+    );
+    expect(document.querySelector(".gsImagePlaceholder")).toHaveAttribute(
+      "src",
+      expect.stringContaining("/g2data/thumbnails/")
+    );
+    fireEvent.load(screen.getByRole("img", { name: "CIMG0053_.JPG" }));
+    expect(document.querySelector(".gsImagePlaceholder")).toBeNull();
   });
 
-  it('a photo not in the album, and the loading state', () => {
+  it("a photo not in the album, and the loading state", () => {
     show(99);
-    expect(screen.getByRole('alert')).toHaveTextContent('This photo is not in the album.');
-    vi.mocked(useAlbumData).mockReturnValue({ data: null, metadata: null, isLoading: true, error: null, refetch: vi.fn() });
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "This photo is not in the album."
+    );
+    vi.mocked(useAlbumData).mockReturnValue({
+      data: null,
+      metadata: null,
+      isLoading: true,
+      error: null,
+      refetch: vi.fn(),
+    });
     show(1);
-    expect(screen.getByRole('status', { name: 'Loading photo' })).toBeInTheDocument();
+    expect(
+      screen.getByRole("status", { name: "Loading photo" })
+    ).toBeInTheDocument();
   });
 });

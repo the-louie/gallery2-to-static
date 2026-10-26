@@ -38,26 +38,49 @@ export function pageHref(albumPath: string, page: number): string {
   return page <= 1 ? albumPath : `${albumPath}?page=${page}`;
 }
 
-const DATE_FORMAT = new Intl.DateTimeFormat('en-GB', {
-  timeZone: 'Europe/Stockholm',
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
+const DATE_FORMAT = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Europe/Stockholm",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
 });
 
 /** Gallery 2's date as DD/MM/YYYY (operator, 2026-10-26; the 2006 root and dhw05 pages showed "20/04/2005"), local time of the Swedish server; '' without a timestamp. */
 export function formatG2Date(timestamp: number | null | undefined): string {
-  if (timestamp == null || !Number.isFinite(timestamp)) return '';
+  if (timestamp == null || !Number.isFinite(timestamp)) return "";
   return DATE_FORMAT.format(new Date(timestamp * 1000));
 }
 
 /** lanbilder.se's Gallery 2 resize: the longest side 1024px (CIMG0053_.JPG 1200x1600 → 768x1024) */
 export const RESIZE_MAX = 1024;
 
-/** The resized dimensions Gallery 2 showed by default, or null when the original is no larger. */
-export function resizedSize(width: number, height: number): { width: number; height: number } | null {
+/**
+ * Small originals (1997: 200x150) are shown upscaled to this longest side (operator, 2026-10-26),
+ * so a click on the thumbnail never shows a smaller picture. The export makes a Lanczos copy
+ * (backend config `upscaleMinSize`); without one the browser scales the original.
+ */
+export const UPSCALE_MIN = 768;
+
+/**
+ * The dimensions the photo page shows by default: the 1024px resize for large originals, the
+ * 768px upscale for small ones, or null when the original is shown as it is.
+ */
+export function resizedSize(
+  width: number,
+  height: number
+): { width: number; height: number } | null {
   const longest = Math.max(width, height);
-  if (longest <= RESIZE_MAX) return null;
-  const scale = RESIZE_MAX / longest;
-  return { width: Math.round(width * scale), height: Math.round(height * scale) };
+  if (longest <= 0) return null;
+  const target =
+    longest > RESIZE_MAX
+      ? RESIZE_MAX
+      : longest < UPSCALE_MIN
+        ? UPSCALE_MIN
+        : null;
+  if (target === null) return null;
+  const scale = target / longest;
+  return {
+    width: Math.round(width * scale),
+    height: Math.round(height * scale),
+  };
 }

@@ -98,6 +98,18 @@ async function run(): Promise<void> {
             const bigMeta = await sharp(path.join(tmp2, 'g2/resized2/dreamhack/lordag2/big.jpg')).metadata();
             assert.deepStrictEqual([bigMeta.width, bigMeta.height], [1024, 709]);
             assert.strictEqual((await readJson(path.join(out2, '13.json'))).children[0].thumbnailMissing, true, 'the truncated JPEG');
+            // Upscales (operator, 2026-10-26): with `upscale`, the 64x48 photos get a 768px Lanczos copy as their
+            // resize; switching it on is not "unchanged", so the skip rule lets them through
+            const mUp = await updateMedia(db2, { ...mediaOpts, upscale: { minSize: 768, quality: 85 } });
+            assert.deepStrictEqual([mUp.photos, mUp.resized, mUp.generated], [5, 3, 0], 'a.jpg b.jpg c.png upscaled (thumbnails kept), big.jpg and bad.jpg untouched');
+            const out3 = path.join(tmp2, 'gen3');
+            await generateAll(db2, out3);
+            const l3 = await readJson(path.join(out3, '11.json'));
+            assert.strictEqual(l3.children.find((c: { id: number }) => c.id === 101).resizeUrlPath, 'dreamhack/lordag1/a.jpg');
+            const upMeta = await sharp(path.join(tmp2, 'g2/resized2/dreamhack/lordag1/a.jpg')).metadata();
+            assert.deepStrictEqual([upMeta.width, upMeta.height], [768, 576]);
+            const mUp2 = await updateMedia(db2, { ...mediaOpts, upscale: { minSize: 768, quality: 85 } });
+            assert.deepStrictEqual([mUp2.resized, mUp2.generated], [0, 0], 'second run: nothing to do');
             // second run: everything skipped
             const m2 = await updateMedia(db2, mediaOpts);
             assert.deepStrictEqual([m2.generated, m2.skipped, m2.failed], [0, 5, 0], 'the failed one is skipped too (unchanged file, failure recorded)');

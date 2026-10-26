@@ -13,6 +13,8 @@ export interface ThumbnailOptions {
     maxWidth: number;
     maxHeight: number;
     quality: number;
+    /** scale small sources UP to the box (Lanczos3); default false: never enlarge */
+    enlarge?: boolean;
 }
 
 const DEFAULT_OPTIONS: ThumbnailOptions = {
@@ -75,7 +77,7 @@ export async function generateThumbnail(
     try {
         await sharp(sourcePath, { failOn: 'truncated' })
             .autoOrient() // apply EXIF Orientation before fitting; the tag is not kept in the output
-            .resize(opts.maxWidth, opts.maxHeight, { fit: 'inside', withoutEnlargement: true })
+            .resize(opts.maxWidth, opts.maxHeight, { fit: 'inside', withoutEnlargement: !opts.enlarge, kernel: 'lanczos3' })
             .jpeg({ quality: opts.quality })
             .toFile(tmpPath);
         await fs.rename(tmpPath, destPath);

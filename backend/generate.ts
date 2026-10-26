@@ -376,6 +376,7 @@ export function runtimePaths(config: import('./types.ts').Config, projectRoot: s
             resizedRoot: path.join(projectRoot, config.resizedRoot ?? 'frontend/public/g2data/resized'),
             thumbOptions: { maxWidth: config.thumbnailMaxWidth ?? 400, maxHeight: config.thumbnailMaxHeight ?? 400, quality: config.thumbnailQuality ?? 80 },
             resizeOptions: { maxWidth: config.resizeMaxSize ?? 1024, maxHeight: config.resizeMaxSize ?? 1024, quality: config.resizeQuality ?? 85 },
+            ...(config.upscaleMinSize ? { upscale: { minSize: config.upscaleMinSize, quality: config.resizeQuality ?? 85 } } : {}),
             concurrency: config.thumbnailConcurrency ?? 5,
             log,
         },

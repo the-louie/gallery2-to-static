@@ -136,7 +136,7 @@ What still differs is data and export logic, now backlog rows **PRIO-THEME-01..0
 - Album highlights are Gallery 2's own (`getAlbumHighlight`, T-01): the 10 albums on the 2006 root page (`docs/orig-page/2006/main.html`, derivative ids resolved through the DB) show the same photos now, 10/10.
 - Thumbnails: Gallery 2's were `squarethumb` centre crops (T-02); ours are the same crop.
 - "(N items total)" counts photos and sub-albums (T-03); "Owner: Gallery Administrator" stays (T-05).
-- Photo pages serve the export's 1024px resize like Gallery 2's `scale|1024` derivative (T-04), the original on `?size=full`.
+- Photo pages serve the export's 1024px resize like Gallery 2's `scale|1024` derivative (T-04), the original on `?size=full`. Small originals (longest side under 768px) are shown upscaled to 768px (the export's Lanczos copy, `upscaleMinSize`; the browser scales when none exists), so a thumbnail click never shows a smaller picture (operator, 2026-10-26).
 - Search results show BBCode-free text (T-06); the banner slot above the nav bar carries the glitched.se banner (T-09); DHW07 "Inofficiella" is ignored and 404 on the old site (T-08).
 
 ### Measured again after Sprint 12 (T-07, 2026-10-25 late)

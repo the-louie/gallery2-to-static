@@ -57,7 +57,7 @@ highlights     (album_id INTEGER PK REFERENCES items(id),
 
 media          (item_id INTEGER PK REFERENCES items(id),
                 thumb_w INTEGER, thumb_h INTEGER, thumb_at TEXT,   -- thumbnail generated from the current file
-                resize_w INTEGER, resize_h INTEGER, resize_at TEXT, -- 1024px copy, NULL when the original is small enough
+                resize_w INTEGER, resize_h INTEGER, resize_at TEXT, -- 1024px copy, or the 768px upscale of a small photo (config upscaleMinSize); NULL otherwise
                 published_at TEXT,             -- link in the published tree exists
                 file_size INTEGER, file_mtime INTEGER)             -- what the derivatives were made from (skip when unchanged)
 

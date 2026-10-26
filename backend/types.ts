@@ -28,7 +28,8 @@ export interface Child {
     urlPath?: string | null;
     /**
      * Relative path (same as urlPath) of the export's 1024px resize for the photo page (PRIO-THEME-05),
-     * served under the resized root. Absent when the photo is 1024px or smaller, or no resize was made.
+     * served under the resized root, or of the upscaled copy of a small photo (config upscaleMinSize).
+     * Absent when the photo needs neither, or no resize was made.
      */
     resizeUrlPath?: string | null;
     /**
@@ -198,6 +199,12 @@ export interface Config {
     resizeMaxSize?: number;
     /** JPEG quality of the resizes (1-100). Default: 85 */
     resizeQuality?: number;
+    /**
+     * Photos whose longest side is below this get an UPSCALED photo-page copy (Lanczos3) with this
+     * longest side, so a tiny 1997 original is not shown smaller than its thumbnail (operator,
+     * 2026-10-26). Unset: no upscales. lanbilder2: 768 (Gallery 2's old photo-page width).
+     */
+    upscaleMinSize?: number;
     /** Max concurrent thumbnail generations. Default: 5 */
     thumbnailConcurrency?: number;
     /**

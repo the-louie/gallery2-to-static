@@ -42,5 +42,6 @@
     "resizedRoot": "frontend/public/g2data/resized",
     "resizeMaxSize": 1024,
     "resizeQuality": 85,
+    "upscaleMinSize": 768,
     "layoutHeaderDescriptionOverride": null
 }

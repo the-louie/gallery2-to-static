@@ -1,6 +1,6 @@
 /**
- * Derivatives from the data master (FUT-01, Sprint 15 T-05): thumbnails and 1024px resizes for the
- * visible photos, recorded in the `media` table so the generator can emit `thumb_width`,
+ * Derivatives from the data master (FUT-01, Sprint 15 T-05): thumbnails, 1024px resizes and (with
+ * `upscale`) upscaled copies of small photos for the visible photos, recorded in the `media` table so the generator can emit `thumb_width`,
  * `resizeUrlPath` and `thumbnailMissing` exactly as the extractor did, and so unchanged files are
  * skipped on the next run (same size and mtime, derivative present).
  */
@@ -17,6 +17,8 @@ export interface MediaOptions {
     resizedRoot: string;
     thumbOptions: ThumbnailOptions;
     resizeOptions: ThumbnailOptions;
+    /** photos with a longest side below `minSize` get a Lanczos3 upscale to `minSize` as their resize */
+    upscale?: { minSize: number; quality: number };
     concurrency?: number;
     /** only photos in these albums (default: every exported album) */
     albumIds?: Iterable<number>;
@@ -62,7 +64,10 @@ async function processPhoto(db: Db, t: Tree, photo: ItemRow, o: MediaOptions, r:
         return;
     }
     const mtime = Math.floor(stat.mtimeMs);
-    const unchanged = prev && prev.file_size === stat.size && prev.file_mtime === mtime && (prev.thumb_at || prev.thumb_failed);
+    const longest = Math.max(photo.width ?? 0, photo.height ?? 0);
+    const wantsResize = longest > o.resizeOptions.maxWidth || (o.upscale !== undefined && longest > 0 && longest < o.upscale.minSize);
+    // a photo that now qualifies for a resize (e.g. upscaling switched on) is not "unchanged"
+    const unchanged = prev && prev.file_size === stat.size && prev.file_mtime === mtime && (prev.thumb_at || prev.thumb_failed) && (prev.resize_at || !wantsResize || prev.thumb_failed);
     if (unchanged) {
         // the derivative must still exist on disk
         const thumbThere = prev!.thumb_failed ? true : await fs.access(thumbPath).then(() => true, () => false);
@@ -85,9 +90,11 @@ async function processPhoto(db: Db, t: Tree, photo: ItemRow, o: MediaOptions, r:
     }
     if (failed) r.failed += 1;
     let resize: { width: number; height: number } | null = null;
-    if (!failed && Math.max(photo.width ?? 0, photo.height ?? 0) > o.resizeOptions.maxWidth) {
+    if (!failed && wantsResize) {
+        const opts: ThumbnailOptions = longest > o.resizeOptions.maxWidth ? o.resizeOptions
+            : { maxWidth: o.upscale!.minSize, maxHeight: o.upscale!.minSize, quality: o.upscale!.quality, enlarge: true };
         try {
-            const res = await generateThumbnail(source, resizePath, o.resizeOptions);
+            const res = await generateThumbnail(source, resizePath, opts);
             if (res === 'generated' || res === 'skipped') {
                 resize = await readThumbnailSize(resizePath);
                 if (res === 'generated') r.resized += 1;
