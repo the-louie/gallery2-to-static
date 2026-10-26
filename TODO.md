@@ -53,33 +53,6 @@ Operator, 2026-10-25, lifted 2026-10-26: **all five rows ship before lanbilder.s
 site (interview 2026-10-26, decision 1: "All five rows"). The notes under each row are first answers
 to the questions asked; the **Decisions** blocks are the operator's rulings from the interview.
 
-### ~~FUT-01: SQLite as the master of the data; regenerate only changed branches~~
-
-**CLOSED, verified 2026-10-26 (Sprint 15 T-07):** `/mnt/storage/lanbilder-app/db/gallery.sqlite` on lanbilder2 (58,648 items, 145 owners, 1,353 highlights, 57,149 media rows) imported from Gallery 2 by `backend/importG2.ts`; `backend/generate.ts --all` regenerated the 1,389 album files, `index.json`, `legacy.json` and the search index (1,388 entries) — the semantic diff against the extractor's output (`/root/datadiff.py` on lanbilder2) shows 0 differences except 42 photo titles that were NUL bytes and are now null; `--changed` after a re-import rewrote only the dirty branches in 57 s; the test site serves the generated files; first backup `/mnt/storage/backup/gallery-20261026-0941.sqlite`. The service (`server.ts`, RegenQueue, view counter endpoint) landed on branch `s16-auth` (Sprint 16, merged); the frontend beacon and the nightly fold are Sprint 15 T-09. Original row kept for the record:
-
-All data in a SQLite database whose schema preserves everything the JSON carries (albums, images,
-paths, breadcrumbs, highlight images, descriptions, owners, counts, themes). The database is the
-master; the JSON files are generated from it. Every album/image row records when it last changed,
-so a run regenerates only the affected branch (the albums on the path from the root to the changed
-item, plus their search-index entries) instead of the whole tree.
-- First import: from the Gallery 2 extraction (the current backend), then Gallery 2 is retired.
-- Changed-at must propagate: a changed image marks its album and every ancestor (counts, highlight)
-  dirty. Deletes must be recorded too (tombstones), so stale JSON is reported (see LOGIC-22's
-  no-delete policy).
-- Fits DECISION-01 either way: the generator writes the same static files.
-
-**Decisions (interview 2026-10-26):**
-- Runs on lanbilder2 itself: a Node service on 127.0.0.1 holding the SQLite file, writing the static
-  files in place into the directory nginx serves; the operator raises the VM's RAM 3.9 → 8 GB when
-  convenient (reboot + manual unlock of the encrypted disk).
-- View counters keep counting: a small endpoint on lanbilder2 records page views; the regeneration
-  folds the counts into the JSON daily. Old Gallery 2 comments are **not** imported (they stay in the
-  Gallery 2 backup only).
-- Settled without asking: the originals keep the Gallery 2 directory layout (`g2data/albums/<album
-  path>/<file>`; uploads get sanitised file names); an album's URL segment is derived from its title
-  and locked once the album has been public; the event date is editable; the highlight defaults to
-  the first image and can be chosen.
-
 ### FUT-02: admin can add albums and delegate them; delegated users add subalbums and images
 
 **Done so far (Sprint 16, merged 2026-10-26):** the `lanbilder-admin` service (`backend/server.ts`, installed on lanbilder2), Cloudflare Access JWT verification (`backend/auth/access.ts`), TOTP + sessions (`auth/totp.ts`, `auth/session.ts`), invite-only users with roles and delegation (`auth/users.ts`, migration 002, `canWrite`), the admin routes (`docs/architecture/admin-service.md`). **Open:** album create/edit/hide/soft-delete routes, uploads (pipeline, HEIC, GPS strip), sub-albums, highlights, the admin UI, wiring `RegenQueue` to `generate.ts --changed`; the operator's Cloudflare Access application on the admin hostname.
@@ -137,33 +110,3 @@ out without deleting them. Pictures should be stored by us (not hot-linked from 
 - Public site shows the **nickname only** as "Owner:"; a user may opt in to showing their full name
   instead. Pictures appear only in the admin UI (stored by us, copied at first login).
 - Nicknames are unique and may not collide with the historical Gallery 2 owner names.
-
-### ~~FUT-04: audit logging~~
-
-**CLOSED, verified 2026-10-26 (Sprints 16/17, merged into master):** `backend/audit.ts` writes every login, denial, TOTP event, invite, enable/disable, delegation, TOTP reset and failed authorisation to `audit_log` (migration `002-users-audit.sql`, triggers forbid UPDATE/DELETE) and mirrors each row to `db/audit.jsonl` on lanbilder2; `GET /api/admin/audit` (admin only); kept forever, full entries (decision). Tests `backend/audit.test.ts`. Original row kept for the record:
-
-Every user action, login and other event is logged, successful or not: logins and denials (ours
-and Cloudflare Access's audit log), album/image create/edit/delete/upload, delegation changes,
-profile changes, admin actions, failed authorisation checks. Append-only (writes only, no
-updates/deletes from the application), with timestamp, user id, source IP (`CF-Connecting-IP`),
-action, target, result. Decide retention and who can read it.
-
-**Decisions (interview 2026-10-26):**
-- **Kept forever, full entries** (source address included); **read by the admin only** (admin-UI page
-  with export). Settled without asking: an append-only SQLite table (triggers forbid update/delete)
-  mirrored to a JSONL file; a daily copy to the operator share is optional, say if wanted.
-
-### ~~FUT-05: privacy-friendly statistics (European)~~
-
-**CLOSED, verified 2026-10-26 (Sprints 16/17, merged into master):** Plausible CE v3.2.1 self-hosted on lanbilder2 (Docker, `/mnt/storage/plausible`, 127.0.0.1:8000, host network because the VM's forward chain drops bridged traffic); the gallery loads it through the same-origin proxy `/js/259wlemz.js` + `/api/event` (`frontend/index.html`, test `indexHtml.test.ts`; nginx vhost on the share); `docs/architecture/statistics.md`. **Operator steps left:** tunnel public hostname `stats.phetast.nu` → 127.0.0.1:80, enable the `stats` nginx vhost, first login, `DISABLE_REGISTRATION=invite_only` (`/srv/share/lanbilder2/stats-runbook.txt`). Original row kept for the record:
-
-Visitor statistics similar to Google Analytics, preferably a European service with a healthier
-privacy policy. Candidates to compare: Matomo (France; can be self-hosted), Plausible (EU, Estonia;
-has a self-hostable Community Edition), Simple Analytics (Netherlands), Pirsch (Germany). Prefer
-cookieless operation (no consent banner) and a self-hosted or EU-hosted instance. Any of them adds a
-script/endpoint origin to the CSP (`script-src`, `connect-src`). Cloudflare Web Analytics exists but
-is not European.
-
-**Decisions (interview 2026-10-26):**
-- **Plausible Community Edition, self-hosted on lanbilder2** (Docker: ClickHouse + PostgreSQL),
-  cookieless; needs the RAM raise to 8 GB; one script origin added to the CSP.
