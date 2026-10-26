@@ -52,13 +52,8 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
 - ~~**THEME-02: one classic theme only — the list root**~~ — **CLOSED, verified 2026-10-26 (Sprint 14 T-01):** `frontend/src/pages/HomePage.tsx` renders `<MatrixAlbum list />` for the classic theme; `config/themes.ts` back to three themes; `classic-list` removed from `themes.css`, `ThemeContext` (a stored `classic-list` maps to `classic`, test), the sidebar and the dropdown. Verified on the test site: a browser with `classic-list` stored lands in `classic`, 44 list rows, one theme button.
   Original row kept for the record: operator: "remove the classic (non-list) theme, only one classic theme should remain". The `classic` theme keeps its name (default theme, stored preferences, `album-themes.json`) and shows the root album as the 2013 list (what `classic-list` does now); `classic-list` is removed from the registry, `themes.css`, the context (`isClassicList`), the sidebar toggle and the dropdown; a stored `classic-list` preference maps to `classic`. Docs and tests follow.
 
-- **BANNER-02: the banner survives ad-blockers** — operator: "the banner is hidden by my
-  ad-blocker due to typical naming, since it's not a 'real' banner can you make the directory and
-  filename random characters, and make sure the html around it doesn't indicate it's a banner
-  either". Today: nginx `/banner/`, files `glitched-970x90@2x.jpg` etc. (EasyList blocks `/banner/`
-  and `NNNxNN` size tokens), markup `#gsHeader` (Gallery 2's own id, fine). Serve the files from a
-  random directory with random file names (no size tokens, no "banner"/"glitched"/"ad" in URL,
-  class, id, alt or env-derived strings in the HTML), keep the operator copies on the share.
+- ~~**BANNER-02: the banner survives ad-blockers**~~ — **CLOSED, verified 2026-10-26 (Sprint 14 T-02):** served from nginx `/vu04lg/` (random directory, six 12-character random file names; mapping in `/srv/share/lanbilder2/banner/README.txt`), `frontend/.env.production.local` points at them, the old `/banner/` location is gone. Checked against EasyList: the old `glitched-468x60.jpg` URL matched the `-468x60.` filter; the six new URLs match 0 of 42,977 URL filters, and 0 of 13,619 generic cosmetic rules hide the slot or its ancestors (`MatrixFrame.test.tsx` asserts no banner/ad/size words or width/height attributes in the slot markup). The image loads on the test site (200).
+  Original row kept for the record: operator: "the banner is hidden by my ad-blocker due to typical naming, since it's not a 'real' banner can you make the directory and filename random characters, and make sure the html around it doesn't indicate it's a banner either". Today: nginx `/banner/`, files `glitched-970x90@2x.jpg` etc. (EasyList blocks `/banner/` and `NNNxNN` size tokens), markup `#gsHeader` (Gallery 2's own id, fine). Serve the files from a random directory with random file names (no size tokens, no "banner"/"glitched"/"ad" in URL, class, id, alt or env-derived strings in the HTML), keep the operator copies on the share.
 
 ## FUTURE (after production deploy)
 

@@ -67,14 +67,15 @@ describe('MatrixFrame (THEME-01)', () => {
     expect(document.title).toBe('lanbilder.se');
   });
 
-  it('shows the banner slot only when the build sets VITE_BANNER_SRC and VITE_BANNER_HREF', () => {
+  it('shows the header image slot only when the build sets VITE_BANNER_SRC and VITE_BANNER_HREF', () => {
     render(<MatrixFrame>page</MatrixFrame>);
     expect(document.getElementById('gsHeader')).toBeNull();
-    vi.stubEnv('VITE_BANNER_SRC', '/banner/glitched-728x90.jpg');
-    vi.stubEnv('VITE_BANNER_SRC_2X', '/banner/glitched-728x90@2x.jpg');
-    vi.stubEnv('VITE_BANNER_SRC_SMALL', '/banner/glitched-468x60.jpg');
-    vi.stubEnv('VITE_BANNER_SRC_LARGE', '/banner/glitched-970x90.jpg');
-    vi.stubEnv('VITE_BANNER_SRC_LARGE_2X', '/banner/glitched-970x90@2x.jpg');
+    // random names, as served (BANNER-02): nothing in the URL names a banner or a size
+    vi.stubEnv('VITE_BANNER_SRC', '/vu04lg/030gn6bs6zzx.jpg');
+    vi.stubEnv('VITE_BANNER_SRC_2X', '/vu04lg/khpjl009qnsy.jpg');
+    vi.stubEnv('VITE_BANNER_SRC_SMALL', '/vu04lg/wppw1eunbula.jpg');
+    vi.stubEnv('VITE_BANNER_SRC_LARGE', '/vu04lg/u466yup58fa4.jpg');
+    vi.stubEnv('VITE_BANNER_SRC_LARGE_2X', '/vu04lg/cd34xasasja5.jpg');
     vi.stubEnv('VITE_BANNER_HREF', 'https://glitched.se/sv/');
     vi.stubEnv('VITE_BANNER_ALT', 'Glitched');
     render(<MatrixFrame>page</MatrixFrame>);
@@ -82,13 +83,19 @@ describe('MatrixFrame (THEME-01)', () => {
     expect(link).toHaveAttribute('href', 'https://glitched.se/sv/');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     const img = link.querySelector('img')!;
-    expect(img).toHaveAttribute('src', '/banner/glitched-728x90.jpg');
-    expect(img).toHaveAttribute('srcset', '/banner/glitched-728x90.jpg, /banner/glitched-728x90@2x.jpg 2x');
+    expect(img).toHaveAttribute('src', '/vu04lg/030gn6bs6zzx.jpg');
+    expect(img).toHaveAttribute('srcset', '/vu04lg/030gn6bs6zzx.jpg, /vu04lg/khpjl009qnsy.jpg 2x');
     expect(img).toHaveAttribute('alt', 'Glitched');
     const sources = link.querySelectorAll('source');
     expect(sources[0]).toHaveAttribute('media', '(max-width: 759px)');
     expect(sources[1]).toHaveAttribute('media', '(min-width: 1024px)');
-    expect(sources[1]).toHaveAttribute('srcset', '/banner/glitched-970x90.jpg, /banner/glitched-970x90@2x.jpg 2x');
+    expect(sources[1]).toHaveAttribute('srcset', '/vu04lg/u466yup58fa4.jpg, /vu04lg/cd34xasasja5.jpg 2x');
+    // the markup gives ad-blockers nothing to match on (operator, 2026-10-26, BANNER-02): Gallery 2's own
+    // #gsHeader, no banner/ad words, no width/height size attributes
+    const slot = document.getElementById('gsHeader')!.outerHTML;
+    expect(slot).not.toMatch(/banner|advert|sponsor|\bads?\b|\d{3}x\d{2}\b/i);
+    expect(img).not.toHaveAttribute('width');
+    expect(img).not.toHaveAttribute('height');
     vi.unstubAllEnvs();
   });
 
