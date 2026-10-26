@@ -71,11 +71,8 @@ verified against the code at `b79dc10` before planning (Sprint 13).
   Original row kept for the record: "lanbilder.se är världens största samling lanparty-bilder. Om du vill visa..." `modern.css:333` clamps `.layout-header-description` to one line (`-webkit-line-clamp: 1`).
 - ~~**QA-05: classic theme: "Theme: modern" goes to the dark variant**~~ — **CLOSED, verified 2026-10-26 (Sprint 13 T-01):** `frontend/src/components/MatrixSidebar/MatrixSidebar.tsx:133` calls `setTheme('dark')`; test `MatrixSidebar.test.tsx` asserts it.
   Original row kept for the record: `MatrixSidebar.tsx:133` calls `setTheme('light')`.
-- **QA-06: classic theme on phones: thumbnails flow two per row without gaps** — Pixel 9
-  screenshot `inspo/qa/Skärmbild 2026-10-26 074305.png`: every table row of three becomes 2 + 1,
-  the third cell alone on its own line. `MatrixAlbum.css:131` makes each `tr` its own flex row with
-  50% cells. Fix: let the cells flow as one wrapping row (`tr { display: contents }`), 2 per row at
-  phone widths; root album, sub-album lists and photo lists alike.
+- ~~**QA-06: classic theme on phones: thumbnails flow two per row without gaps**~~ — **CLOSED, verified 2026-10-26 (Sprint 13 T-05):** `frontend/src/components/MatrixAlbum/MatrixAlbum.css` phone block: `tbody` is the wrapping flex row, `tr { display: contents }`; measured on the test site at 412px (Pixel 9): root, `/dreamhack/` and `/dreamhack/dreamhack_summer_02/ahnberg/` all 2 cells per line (6 lines of 2), no horizontal overflow; 66/66 device checks; screenshots `inspo/screens/qa-s13/classic-pixel9-*.png`.
+  Original row kept for the record: Pixel 9 screenshot `inspo/qa/Skärmbild 2026-10-26 074305.png`: every table row of three becomes 2 + 1, the third cell alone on its own line. `MatrixAlbum.css:131` makes each `tr` its own flex row with 50% cells. Fix: let the cells flow as one wrapping row (`tr { display: contents }`), 2 per row at phone widths; root album, sub-album lists and photo lists alike.
 - **QA-08: search failure: "Try again" does nothing** — "when a search fails (network restarting in
   this case) the 'try again' button doesn't work". `SearchResultsPage.tsx:95` shows only "Go to
   Home" on an error, so the button is the ErrorBoundary's "Try Again" (`ErrorFallback.tsx:82`,

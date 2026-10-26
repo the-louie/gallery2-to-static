@@ -129,14 +129,19 @@
 
 /* Phones (theme-matrix.md "Phones", Sprint 11 T-11): 2 columns, stacked header, 44px tap targets */
 @media (max-width: 699px) {
-  .g2-matrix .gsThumbMatrix,
-  .g2-matrix .gsThumbMatrix tbody {
+  .g2-matrix .gsThumbMatrix {
     display: block;
   }
 
-  .g2-matrix .gsThumbMatrix tr {
+  /* The rows of three flow as one wrapping row of 2-per-line cells (operator, 2026-10-26, QA-06:
+     a flex row per <tr> left every third cell alone on its own line) */
+  .g2-matrix .gsThumbMatrix tbody {
     display: flex;
     flex-wrap: wrap;
+  }
+
+  .g2-matrix .gsThumbMatrix tr {
+    display: contents;
   }
 
   .g2-matrix .gsThumbMatrix td {
