@@ -709,6 +709,9 @@
 :is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-subalbums-more {
   color: var(--color-primary);
   background: transparent;
+  /* its own line, clear of the chip rows above (operator, 2026-10-26, QA-03) */
+  margin-top: 0.85rem;
+  align-self: flex-end;
 }
 
 /* ---------- 5. Album page ---------- */
