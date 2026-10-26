@@ -179,6 +179,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
     }, { onError: (err) => stdoutLogger({ level: 'error', msg: 'regen failed', error: err instanceof Error ? err.message : String(err) }) });
     const albumsRoot = path.join(projectRoot, config.albumsRoot ?? 'frontend/public/g2data/albums');
     const server = createServer({ db, port, host, access, verifyJwt, regen, albumsRoot });
+    // expired sessions are dropped once an hour (otherwise only when touched)
+    const { purgeExpiredSessions } = await import('./auth/session.ts');
+    const purge = setInterval(() => { try { purgeExpiredSessions(db); } catch (e) { stdoutLogger({ level: 'warn', msg: 'session purge failed', error: e instanceof Error ? e.message : String(e) }); } }, 3600_000);
+    purge.unref();
     server.on('listening', () => {
         const a = server.address();
         stdoutLogger({ msg: 'listening', host, port: a && typeof a === 'object' ? a.port : port, db: file });

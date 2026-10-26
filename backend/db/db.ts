@@ -35,6 +35,8 @@ export class Db {
         this.file = file;
         this.raw = new DatabaseSync(file);
         this.raw.exec('PRAGMA foreign_keys = ON');
+        // two writers exist at times (the service and the nightly run): wait instead of SQLITE_BUSY
+        this.raw.exec('PRAGMA busy_timeout = 5000');
         if (file !== ':memory:') this.raw.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL');
         this.migrate(migrationsDir);
     }
