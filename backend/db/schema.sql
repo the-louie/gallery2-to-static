@@ -32,10 +32,12 @@ CREATE TABLE items (
     view_count INTEGER,            -- NULL = Gallery 2 had no counter; the view counter adds to it nightly
     hidden INTEGER NOT NULL DEFAULT 0 CHECK (hidden IN (0, 1)),
     deleted_at TEXT,
-    UNIQUE (parent_id, path_component),
-    UNIQUE (parent_id, url_segment)
+    UNIQUE (parent_id, path_component)
 );
 CREATE INDEX items_parent ON items(parent_id, position);
+-- album URL segments are unique among siblings (getSegmentForAlbum disambiguates); photo slugs may
+-- collide (IMG_1.jpg / IMG_1.JPG in one album exist in the data) and the frontend takes the first
+CREATE UNIQUE INDEX items_album_segment ON items(parent_id, url_segment) WHERE type = 'album';
 
 CREATE TABLE highlights (
     album_id INTEGER PRIMARY KEY REFERENCES items(id),

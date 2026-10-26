@@ -31,12 +31,13 @@ async function run(): Promise<void> {
     db.run("INSERT INTO items (id, type, parent_id, position, path_component, url_segment, title) VALUES (211, 'album', 7, 1, 'international', 'internationella', 'Internationella')");
     db.run("INSERT INTO items (id, type, parent_id, position, path_component, url_segment, title, width, height) VALUES (240, 'photo', 211, 1, 'a.jpg', 'a', 'a.jpg', 800, 600)");
     assert.throws(() => db.run("INSERT INTO items (type, parent_id, path_component, url_segment) VALUES ('photo', 211, 'a.jpg', 'x')"), /UNIQUE/, 'same file name under one parent refused');
-    assert.throws(() => db.run("INSERT INTO items (type, parent_id, path_component, url_segment) VALUES ('album', 7, 'b', 'internationella')"), /UNIQUE/, 'url segment unique among siblings');
+    assert.throws(() => db.run("INSERT INTO items (type, parent_id, path_component, url_segment) VALUES ('album', 7, 'b', 'internationella')"), /UNIQUE/, 'album url segment unique among siblings');
+    db.run("INSERT INTO items (type, parent_id, path_component, url_segment) VALUES ('photo', 211, 'a.JPG', 'a')"); // photo slugs may collide (real data)
     assert.throws(() => db.run("INSERT INTO items (type, parent_id, path_component, url_segment) VALUES ('video', 7, 'v', 'v')"), /CHECK/, 'type checked');
     assert.throws(() => db.run("INSERT INTO items (type, parent_id, path_component, url_segment) VALUES ('album', 999, 'v', 'v')"), /FOREIGN KEY/, 'parent must exist');
     const next = db.run("INSERT INTO items (type, parent_id, path_component, url_segment) VALUES ('album', 7, 'new', 'new')");
-    assert.strictEqual(next.lastInsertRowid, 241, 'new ids continue above the imported ones');
-    const row = db.get<{ changed_at: string; hidden: number; deleted_at: string | null }>('SELECT changed_at, hidden, deleted_at FROM items WHERE id = 241');
+    assert.strictEqual(next.lastInsertRowid, 242, 'new ids continue above the imported ones');
+    const row = db.get<{ changed_at: string; hidden: number; deleted_at: string | null }>('SELECT changed_at, hidden, deleted_at FROM items WHERE id = 242');
     assert.match(row!.changed_at, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/, 'timestamps are ISO UTC');
     assert.strictEqual(row!.hidden, 0);
     assert.strictEqual(row!.deleted_at, null);
@@ -55,7 +56,7 @@ async function run(): Promise<void> {
     }), /boom/);
     assert.strictEqual(db.get("SELECT id FROM items WHERE path_component = 'tx'"), undefined, 'rolled back');
     const v = db.transaction(() => db.run("INSERT INTO items (type, parent_id, path_component, url_segment) VALUES ('album', 7, 'tx2', 'tx2')").lastInsertRowid);
-    assert.strictEqual(v, 242);
+    assert.strictEqual(v, 243);
 
     // a file-backed database: WAL, migrations recorded once, reopen is idempotent
     const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'db-'));
