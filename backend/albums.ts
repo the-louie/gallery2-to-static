@@ -277,3 +277,45 @@ export function restore(db: Db, id: number, user: User, albumsRoot: string): Adm
     }
     return toAdminItem(db, getRow(db, id)!, user);
 }
+
+/** Photo field edits (title, description, eventAt). */
+export function updatePhoto(db: Db, photoId: number, input: Record<string, unknown>, user: User): AdminItem {
+    mustGet(db, photoId, 'photo');
+    const sets: string[] = []; const vals: Array<string | number | null> = [];
+    if (input.title !== undefined) { sets.push('title = ?'); vals.push(cleanTitle(input.title)); }
+    const d = optText(input.description, 'description');
+    if (d !== undefined) { sets.push('description = ?'); vals.push(d); }
+    const t = optTime(input.eventAt);
+    if (t !== undefined) { sets.push('event_at = ?'); vals.push(t); }
+    if (sets.length) db.run(`UPDATE items SET ${sets.join(', ')} WHERE id = ?`, ...vals, photoId);
+    return toAdminItem(db, getRow(db, photoId)!, user);
+}
+
+/** The album's direct children in the given order (every current child must be listed exactly once). */
+export function reorderChildren(db: Db, albumId: number, ids: unknown): void {
+    mustGet(db, albumId, 'album');
+    if (!Array.isArray(ids) || !ids.every((v) => Number.isInteger(v))) throw new HttpError(400, 'ids must be an array of integers');
+    const current = db.all<{ id: number }>('SELECT id FROM items WHERE parent_id = ? AND deleted_at IS NULL ORDER BY position, id', albumId).map((r) => r.id);
+    const given = ids as number[];
+    if (given.length !== current.length || new Set(given).size !== given.length || !given.every((id) => current.includes(id))) {
+        throw new HttpError(400, 'ids must list every child of the album exactly once');
+    }
+    db.transaction(() => {
+        given.forEach((id, i) => db.run('UPDATE items SET position = ? WHERE id = ?', i + 1, id));
+    });
+}
+
+/** Chosen highlight: a visible photo below the album; null returns to the default (first photo). */
+export function setHighlight(db: Db, albumId: number, photoId: unknown, user: User): AdminItem {
+    mustGet(db, albumId, 'album');
+    if (photoId === null) {
+        db.run('DELETE FROM highlights WHERE album_id = ?', albumId);
+    } else {
+        if (!Number.isInteger(photoId)) throw new HttpError(400, 'photoId must be an integer or null');
+        const photo = getRow(db, photoId as number);
+        if (!photo || photo.type !== 'photo' || photo.deleted_at) throw new HttpError(404, 'photo not found');
+        if (!chain(db, photo.id).some((r) => r.id === albumId)) throw new HttpError(400, 'the photo is not inside the album');
+        db.run('INSERT INTO highlights (album_id, photo_id, chosen) VALUES (?, ?, 1) ON CONFLICT(album_id) DO UPDATE SET photo_id = excluded.photo_id, chosen = 1', albumId, photo.id);
+    }
+    return toAdminItem(db, getRow(db, albumId)!, user);
+}

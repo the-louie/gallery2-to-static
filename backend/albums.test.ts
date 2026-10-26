@@ -105,6 +105,28 @@ async function run(): Promise<void> {
         assert.strictEqual(l1.body.children.find((c: { id: number }) => c.id === 101).thumbnailUrl, '/g2data/thumbnails/dreamhack/lordag1/t__a.jpg');
         assert.strictEqual(l1.body.children.find((c: { id: number }) => c.id === 101).path, '/dreamhack/lordag/a');
 
+        // photos (T-03): edit, highlight, order, delete/restore
+        const pe = await call(kalle, 'PATCH', '/api/photos/101', { title: 'Första bilden', eventAt: 1_150_000_000 });
+        assert.deepStrictEqual([pe.status, pe.body.title, pe.body.eventAt], [200, 'Första bilden', 1_150_000_000]);
+        assert.strictEqual((await call(kalle, 'PATCH', '/api/photos/301', { title: 'x' })).status, 403, 'outside the delegated subtree');
+        const hl = await call(kalle, 'PUT', '/api/albums/10/highlight', { photoId: 101 });
+        assert.deepStrictEqual([hl.status, hl.body.highlightPhotoId], [200, 101]);
+        assert.strictEqual((await call(kalle, 'PUT', '/api/albums/10/highlight', { photoId: 301 })).status, 400, 'a photo outside the album');
+        assert.strictEqual((await call(kalle, 'PUT', '/api/albums/10/highlight', { photoId: null })).body.highlightPhotoId, null);
+        const kids = (await call(kalle, 'GET', '/api/albums/12')).body.children.map((c: { id: number }) => c.id);
+        const ordered = await call(kalle, 'PUT', '/api/albums/12/order', { ids: [...kids].reverse() });
+        assert.strictEqual(ordered.status, 200);
+        assert.deepStrictEqual((await call(kalle, 'GET', '/api/albums/12')).body.children.map((c: { id: number }) => c.id), [...kids].reverse());
+        assert.strictEqual((await call(kalle, 'PUT', '/api/albums/12/order', { ids: [kids[0]] })).status, 400, 'every child must be listed');
+        const pd = await call(kalle, 'DELETE', '/api/photos/101');
+        assert.strictEqual(pd.status, 204);
+        assert.ok(fs.existsSync(path.join(albumsRoot, '.trash', '101', 'a.jpg')), 'photo file in the trash');
+        assert.strictEqual((await call(kalle, 'POST', '/api/photos/101/restore')).status, 403);
+        const pr = await call(admin, 'POST', '/api/photos/101/restore');
+        assert.strictEqual(pr.body.deletedAt, null);
+        assert.ok(fs.existsSync(path.join(albumsRoot, 'dreamhack', 'lordag1', 'a.jpg')), 'photo file back');
+        assert.ok(!fs.existsSync(path.join(albumsRoot, '.trash', '101')), 'its trash directory removed');
+
         // audit and onChange
         const actions = db.all<{ action: string; result: string }>('SELECT action, result FROM audit_log ORDER BY id').map((r) => `${r.action}:${r.result}`);
         for (const x of ['authorize:denied', 'album create:ok', 'album update:ok', 'album hide:ok', 'album unhide:ok', 'album delete:ok', 'album restore:ok']) assert.ok(actions.includes(x) || actions.includes(x.replace('hide:ok', 'unhide:ok')), `audit has ${x}`);

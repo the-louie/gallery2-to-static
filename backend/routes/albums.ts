@@ -7,7 +7,7 @@ import type { Router } from '../http.ts';
 import { json, noContent, intParam, HttpError } from '../http.ts';
 import { requireUser, type AuthDeps, type AuthCtx } from '../auth/guard.ts';
 import { canWrite } from '../auth/users.ts';
-import { createAlbum, getAlbumView, getRootView, updateAlbum, setHidden, softDelete, restore } from '../albums.ts';
+import { createAlbum, getAlbumView, getRootView, updateAlbum, setHidden, softDelete, restore, updatePhoto, reorderChildren, setHighlight } from '../albums.ts';
 import { readMultipart } from '../multipart.ts';
 import { processUpload, MAX_FILE_BYTES, MAX_REQUEST_BYTES } from '../upload.ts';
 import * as path from 'node:path';
@@ -92,6 +92,52 @@ export function registerAlbumRoutes(router: Router, deps: ContentDeps): void {
         if (r.created.length) deps.onChange();
         return json(201, r);
     }));
+
+    router.put('/api/albums/:id/highlight', user((ctx) => {
+        const albumId = id(ctx);
+        guard(ctx, albumId, 'album highlight');
+        const b = body(ctx);
+        if (!('photoId' in b)) throw new HttpError(400, 'photoId required (or null)');
+        const item = setHighlight(ctx.db, albumId, b.photoId, ctx.user);
+        audit(ctx, 'album highlight', `item:${albumId}`, 'ok', { photoId: b.photoId });
+        deps.onChange();
+        return json(200, item);
+    }));
+
+    router.put('/api/albums/:id/order', user((ctx) => {
+        const albumId = id(ctx);
+        guard(ctx, albumId, 'album order');
+        reorderChildren(ctx.db, albumId, body(ctx).ids);
+        audit(ctx, 'album order', `item:${albumId}`, 'ok');
+        deps.onChange();
+        return json(200, { ok: true });
+    }));
+
+    router.patch('/api/photos/:id', user((ctx) => {
+        const photoId = id(ctx);
+        guard(ctx, photoId, 'photo update');
+        const item = updatePhoto(ctx.db, photoId, body(ctx), ctx.user);
+        audit(ctx, 'photo update', `item:${photoId}`, 'ok', { fields: Object.keys(body(ctx)) });
+        deps.onChange();
+        return json(200, item);
+    }));
+
+    router.delete('/api/photos/:id', user((ctx) => {
+        const photoId = id(ctx);
+        guard(ctx, photoId, 'photo delete');
+        softDelete(ctx.db, photoId, ctx.user, deps.albumsRoot);
+        audit(ctx, 'photo delete', `item:${photoId}`, 'ok');
+        deps.onChange();
+        return noContent();
+    }));
+
+    router.post('/api/photos/:id/restore', requireUser(deps.auth, (ctx) => {
+        const photoId = id(ctx);
+        const item = restore(ctx.db, photoId, ctx.user, deps.albumsRoot);
+        audit(ctx, 'photo restore', `item:${photoId}`, 'ok');
+        deps.onChange();
+        return json(200, item);
+    }, { admin: true }));
 
     router.post('/api/albums/:id/restore', requireUser(deps.auth, (ctx) => {
         const albumId = id(ctx);
