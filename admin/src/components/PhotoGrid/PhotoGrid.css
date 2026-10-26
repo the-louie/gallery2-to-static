@@ -1,0 +1,35 @@
+.photo-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space);
+}
+
+.photo-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.photo-card.is-deleted {
+  opacity: 0.55;
+}
+
+.photo-card .thumb {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 1;
+}
+
+.photo-card-title {
+  font-size: 0.9em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

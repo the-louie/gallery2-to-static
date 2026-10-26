@@ -1,0 +1,23 @@
+.breadcrumb ol {
+  list-style: none;
+  margin: 0 0 var(--space);
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 0.95em;
+}
+
+.breadcrumb li + li::before {
+  content: "›";
+  color: var(--muted);
+  margin-right: 4px;
+}
+
+.breadcrumb a {
+  text-decoration: none;
+}
+
+.breadcrumb [aria-current] {
+  color: var(--muted);
+}

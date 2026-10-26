@@ -1,0 +1,16 @@
+.totp-setup-qr {
+  display: block;
+  margin: var(--space) auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.totp-setup-secret {
+  text-align: center;
+  word-break: break-all;
+}
+
+.totp-setup-secret code {
+  font-size: 0.95em;
+  letter-spacing: 0.08em;
+}

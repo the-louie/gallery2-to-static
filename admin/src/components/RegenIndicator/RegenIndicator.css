@@ -1,0 +1,21 @@
+.regen-indicator {
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.regen-indicator-busy {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.regen-indicator-ok {
+  color: var(--ok);
+}
+
+.regen-indicator-failed {
+  color: var(--danger);
+  border-color: var(--danger);
+}

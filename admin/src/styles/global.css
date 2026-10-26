@@ -1,0 +1,190 @@
+:root {
+  --accent: #1f6fd1;
+  --accent-strong: #15519a;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --text: #1c1e21;
+  --muted: #65707d;
+  --border: #d9dee5;
+  --danger: #b4232c;
+  --warn: #9a6400;
+  --ok: #1f7a3d;
+  --radius: 6px;
+  --space: 8px;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg);
+}
+
+a {
+  color: var(--accent);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 4px 10px;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+button.primary:hover:not(:disabled) {
+  background: var(--accent-strong);
+}
+
+button.danger {
+  color: var(--danger);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="search"],
+select,
+textarea {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 5px 8px;
+  background: var(--surface);
+  width: 100%;
+}
+
+textarea {
+  min-height: 4em;
+  resize: vertical;
+}
+
+label {
+  display: block;
+  font-size: 0.9em;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.field {
+  margin-bottom: calc(var(--space) * 1.5);
+}
+
+.field-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--space);
+}
+
+.field-inline label {
+  margin: 0;
+  color: var(--text);
+}
+
+.field-inline input[type="checkbox"] {
+  width: auto;
+}
+
+.error {
+  color: var(--danger);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: calc(var(--space) * 2);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space);
+  align-items: center;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  margin: 0 0 var(--space);
+}
+
+h1 {
+  font-size: 1.4em;
+}
+
+h2 {
+  font-size: 1.15em;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+th {
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 0.9em;
+}
