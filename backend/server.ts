@@ -11,6 +11,10 @@ import * as path from 'node:path';
 import type { Db } from './db/db.ts';
 import { Router, HttpError, send, json, error, readJsonBody, clientIp, type Ctx, type Logger, type Reply } from './http.ts';
 import { registerViewRoutes } from './routes/view.ts';
+import { registerAuthRoutes } from './routes/auth.ts';
+import { verifyAccessJwt, type AccessIdentity } from './auth/access.ts';
+import { sessionSecret } from './auth/session.ts';
+import type { AuthDeps, AuditSink } from './auth/guard.ts';
 
 export const DEFAULT_PORT = 3100;
 export const DEFAULT_HOST = '127.0.0.1';
@@ -23,6 +27,29 @@ export interface ServerOptions {
     log?: Logger;
     /** Registers additional routes (tests, later tickets). */
     routes?: (router: Router) => void;
+    /** Cloudflare Access application (team domain + audience); without it and without verifyJwt the auth routes answer 503. */
+    access?: { teamDomain: string; aud: string };
+    /** Replaces the Access JWT check (tests, local development). */
+    verifyJwt?: (token: string) => Promise<AccessIdentity>;
+    /** Session cookie HMAC key (default: env SESSION_SECRET or the settings row). */
+    sessionSecret?: Buffer;
+    /** Audit sink (default: none until Sprint 16 T-06 wires backend/audit.ts). */
+    audit?: AuditSink;
+    /** Clock (tests). */
+    now?: () => Date;
+}
+
+/** The auth dependencies the routes share, from the server options. */
+export function authDeps(opts: ServerOptions): AuthDeps {
+    const access = opts.access;
+    const verifyJwt = opts.verifyJwt
+        ?? (access ? (token: string) => verifyAccessJwt(token, { teamDomain: access.teamDomain, aud: access.aud }) : async () => { throw new HttpError(503, 'access not configured'); });
+    return {
+        verifyJwt,
+        secret: opts.sessionSecret ?? sessionSecret(opts.db),
+        audit: opts.audit ?? (() => {}),
+        now: opts.now,
+    };
 }
 
 /** The default logger: `{"t":"...","msg":...}` lines on stdout. */
@@ -35,6 +62,7 @@ export function buildRouter(opts: ServerOptions): Router {
     const router = new Router();
     router.get('/healthz', () => json(200, { ok: true }));
     registerViewRoutes(router);
+    registerAuthRoutes(router, authDeps(opts));
     opts.routes?.(router);
     return router;
 }
@@ -88,7 +116,20 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
     const port = process.env.PORT ? Number(process.env.PORT) : DEFAULT_PORT;
     const host = process.env.HOST ?? DEFAULT_HOST;
     const db = openDb(file);
-    const server = createServer({ db, port, host });
+    const teamDomain = process.env.CF_ACCESS_TEAM_DOMAIN;
+    const aud = process.env.CF_ACCESS_AUD;
+    const access = teamDomain && aud ? { teamDomain, aud } : undefined;
+    // Local development only: treat every request as this e-mail (no Access in front). Loopback only.
+    const fakeEmail = process.env.DEV_FAKE_ACCESS_EMAIL;
+    let verifyJwt: ServerOptions['verifyJwt'];
+    if (fakeEmail) {
+        if (host !== '127.0.0.1' && host !== '::1' && host !== 'localhost') throw new Error('DEV_FAKE_ACCESS_EMAIL only with HOST=127.0.0.1');
+        stdoutLogger({ level: 'warn', msg: 'DEV_FAKE_ACCESS_EMAIL set: every request is treated as this user; never in production', email: fakeEmail });
+        verifyJwt = async () => ({ email: fakeEmail.toLowerCase(), sub: 'dev', exp: Math.floor(Date.now() / 1000) + 3600 });
+    } else if (!access) {
+        stdoutLogger({ level: 'warn', msg: 'CF_ACCESS_TEAM_DOMAIN / CF_ACCESS_AUD not set: authenticated routes answer 503' });
+    }
+    const server = createServer({ db, port, host, access, verifyJwt });
     server.on('listening', () => stdoutLogger({ msg: 'listening', host, port, db: file }));
     const stop = (signal: string) => {
         stdoutLogger({ msg: 'stopping', signal });
