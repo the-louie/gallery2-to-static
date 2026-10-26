@@ -134,7 +134,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
         stdoutLogger({ level: 'warn', msg: 'CF_ACCESS_TEAM_DOMAIN / CF_ACCESS_AUD not set: authenticated routes answer 503' });
     }
     const server = createServer({ db, port, host, access, verifyJwt });
-    server.on('listening', () => stdoutLogger({ msg: 'listening', host, port, db: file }));
+    server.on('listening', () => {
+        const a = server.address();
+        stdoutLogger({ msg: 'listening', host, port: a && typeof a === 'object' ? a.port : port, db: file });
+    });
     const stop = (signal: string) => {
         stdoutLogger({ msg: 'stopping', signal });
         server.close(() => {
