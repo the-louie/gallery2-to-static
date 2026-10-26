@@ -62,7 +62,7 @@ async function processPhoto(db: Db, t: Tree, photo: ItemRow, o: MediaOptions, r:
         return;
     }
     const mtime = Math.floor(stat.mtimeMs);
-    const unchanged = prev && prev.file_size === stat.size && (prev as { file_mtime?: number | null }).file_mtime === mtime && (prev.thumb_at || prev.thumb_failed);
+    const unchanged = prev && prev.file_size === stat.size && prev.file_mtime === mtime && (prev.thumb_at || prev.thumb_failed);
     if (unchanged) {
         // the derivative must still exist on disk
         const thumbThere = prev!.thumb_failed ? true : await fs.access(thumbPath).then(() => true, () => false);

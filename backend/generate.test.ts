@@ -92,7 +92,7 @@ async function run(): Promise<void> {
             assert.strictEqual((await readJson(path.join(out2, '13.json'))).children[0].thumbnailMissing, true, 'the truncated JPEG');
             // second run: everything skipped
             const m2 = await updateMedia(db2, mediaOpts);
-            assert.deepStrictEqual([m2.generated, m2.skipped, m2.failed], [0, 4, 1]);
+            assert.deepStrictEqual([m2.generated, m2.skipped, m2.failed], [0, 5, 0], 'the failed one is skipped too (unchanged file, failure recorded)');
             // a changed file (new mtime/size) is regenerated
             const a = path.join(tmp2, 'g2/albums/dreamhack/lordag1/a.jpg');
             await fs.writeFile(a, await sharp({ create: { width: 80, height: 60, channels: 3, background: { r: 1, g: 2, b: 3 } } }).jpeg().toBuffer());

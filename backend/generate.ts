@@ -50,7 +50,10 @@ export interface MediaRow {
     resize_w: number | null;
     resize_h: number | null;
     resize_at: string | null;
-    thumb_failed?: number | null;
+    thumb_failed: number;
+    published_at: string | null;
+    file_size: number | null;
+    file_mtime: number | null;
 }
 
 /** The whole visible tree, loaded once per run. */
