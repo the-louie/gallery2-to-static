@@ -16,6 +16,9 @@ export function Layout(): ReactNode {
             lanbilder admin
           </NavLink>
           <NavLink to="/albums/root">Albums</NavLink>
+          {isAdmin && <NavLink to="/users">Users</NavLink>}
+          {isAdmin && <NavLink to="/audit">Audit</NavLink>}
+          <NavLink to="/profile">Profile</NavLink>
         </nav>
         <div className="layout-user">
           <RegenIndicator />

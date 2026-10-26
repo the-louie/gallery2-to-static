@@ -3,6 +3,9 @@ import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthGate } from "./components/AuthGate";
 import { Layout } from "./components/Layout";
 import { AlbumPage } from "./pages/AlbumPage";
+import { AuditPage } from "./pages/AuditPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { UsersPage } from "./pages/UsersPage";
 
 /** Route table. A hash router: the app is served from one path, no rewrites. */
 export function AppRoutes(): ReactNode {
@@ -11,6 +14,9 @@ export function AppRoutes(): ReactNode {
       <Route element={<Layout />}>
         <Route index element={<Navigate to="/albums/root" replace />} />
         <Route path="/albums/:id" element={<AlbumPage />} />
+        <Route path="/users" element={<UsersPage />} />
+        <Route path="/audit" element={<AuditPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/albums/root" replace />} />
       </Route>
     </Routes>
