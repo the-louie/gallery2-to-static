@@ -34,6 +34,10 @@ async function run(): Promise<void> {
         db.run('DELETE FROM dirty_albums');
         assert.strictEqual(await generateChanged(db, data, media), null, 'nothing dirty -> nothing to do');
 
+        // 0. an update that changes nothing marks nothing (a re-import must not regenerate the world)
+        db.run("UPDATE items SET title = title, description = description WHERE id = 12");
+        assert.deepStrictEqual(dirty(db), [], 'no-op update -> not dirty');
+
         // 1. a changed title: the album, its parent and the root are rewritten; others untouched
         const before = (await fs.stat(path.join(data, '11.json'))).mtimeMs;
         await new Promise((r) => setTimeout(r, 20));
