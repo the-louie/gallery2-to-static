@@ -9,8 +9,10 @@ import * as path from 'path';
 import { runExtraction } from './extract.ts';
 import { importG2 } from './importG2.ts';
 import { generateAll } from './generate.ts';
+import { updateMedia } from './media.ts';
+import sharp from 'sharp';
 import { openDb } from './db/db.ts';
-import { fakeSql, TREE_CONFIG } from './fakeGallery.ts';
+import { fakeSql, TREE_CONFIG, writeImages } from './fakeGallery.ts';
 import type { Config } from './types.ts';
 
 async function readJson(p: string): Promise<any> {
@@ -61,6 +63,46 @@ async function run(): Promise<void> {
             assert.strictEqual(await fs.readFile(path.join(out, f), 'utf-8'), await fs.readFile(path.join(expected, f), 'utf-8'), `${f} not byte-identical`);
         }
         db.close();
+
+        // With derivatives (T-05): the extractor generates thumbnails and resizes; the media step
+        // does the same from the database and the album files still match byte for byte.
+        const tmp2 = await fs.mkdtemp(path.join(os.tmpdir(), 'generate-media-'));
+        try {
+            await writeImages(path.join(tmp2, 'g2/albums'));
+            const cfg = { ...TREE_CONFIG } as Config;
+            const ext2 = await runExtraction({ sql: fakeSql, config: cfg, projectRoot: tmp2, verify: false });
+            assert.strictEqual(ext2.ok, true);
+            const db2 = openDb();
+            await importG2({ sql: fakeSql, config: cfg, db: db2 });
+            const mediaOpts = {
+                albumsRoot: path.join(tmp2, 'g2/albums'), thumbnailsRoot: path.join(tmp2, 'g2/thumbs2'), resizedRoot: path.join(tmp2, 'g2/resized2'),
+                thumbOptions: { maxWidth: 400, maxHeight: 400, quality: 80 }, resizeOptions: { maxWidth: 1024, maxHeight: 1024, quality: 85 },
+            };
+            const m1 = await updateMedia(db2, mediaOpts);
+            assert.deepStrictEqual([m1.photos, m1.generated, m1.failed, m1.resized, m1.missing], [5, 4, 1, 1, 0], 'a.jpg b.jpg big.jpg c.png generated, bad.jpg failed, big.jpg resized');
+            const out2 = path.join(tmp2, 'gen');
+            await generateAll(db2, out2);
+            for (const f of (await fs.readdir(path.join(tmp2, 'data'))).filter((n) => /^\d+\.json$/.test(n))) {
+                assert.strictEqual(await fs.readFile(path.join(out2, f), 'utf-8'), await fs.readFile(path.join(tmp2, 'data', f), 'utf-8'), `${f} not byte-identical with derivatives`);
+            }
+            const l2 = await readJson(path.join(out2, '12.json'));
+            assert.strictEqual(l2.children.find((c: { id: number }) => c.id === 107).resizeUrlPath, 'dreamhack/lordag2/big.jpg');
+            const bigMeta = await sharp(path.join(tmp2, 'g2/resized2/dreamhack/lordag2/big.jpg')).metadata();
+            assert.deepStrictEqual([bigMeta.width, bigMeta.height], [1024, 709]);
+            assert.strictEqual((await readJson(path.join(out2, '13.json'))).children[0].thumbnailMissing, true, 'the truncated JPEG');
+            // second run: everything skipped
+            const m2 = await updateMedia(db2, mediaOpts);
+            assert.deepStrictEqual([m2.generated, m2.skipped, m2.failed], [0, 4, 1]);
+            // a changed file (new mtime/size) is regenerated
+            const a = path.join(tmp2, 'g2/albums/dreamhack/lordag1/a.jpg');
+            await fs.writeFile(a, await sharp({ create: { width: 80, height: 60, channels: 3, background: { r: 1, g: 2, b: 3 } } }).jpeg().toBuffer());
+            const m3 = await updateMedia(db2, mediaOpts);
+            assert.strictEqual(m3.generated, 1);
+            assert.strictEqual(db2.get<{ thumb_w: number }>('SELECT thumb_w FROM media WHERE item_id = 101')!.thumb_w, 80);
+            db2.close();
+        } finally {
+            await fs.rm(tmp2, { recursive: true, force: true });
+        }
     } finally {
         Object.assign(console, quiet);
         await fs.rm(tmp, { recursive: true, force: true });

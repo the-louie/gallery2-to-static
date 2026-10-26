@@ -256,15 +256,14 @@ export function buildAlbumFile(t: Tree, albumId: number, memo = new Map<number, 
         search.push(searchItem(t, r, albumId, uipath, childPath));
         if (direct) {
             const { thumbnailUrlPath } = buildPathsFromPathComponent([...chain, r.path_component, direct.path_component], t.thumbPrefix);
-            const dm = t.media.get(direct.id);
-            const directHasThumb = Boolean(dm?.thumb_at) && !dm?.thumb_failed;
+            // the extractor copied the first photo's Gallery 2 derivative size here, not the generated thumbnail's
             return {
                 ...baseChild(r),
                 path: childPath,
                 thumbnailPathComponent: [...chain, r.path_component, direct.path_component].join('/'),
                 thumbnailPhotoId: direct.id,
-                thumbnailWidth: directHasThumb ? dm!.thumb_w : null,
-                thumbnailHeight: directHasThumb ? dm!.thumb_h : null,
+                thumbnailWidth: direct.thumb_width,
+                thumbnailHeight: direct.thumb_height,
                 thumbnailUrlPath: chosen && hlPaths ? hlPaths.thumbnailUrlPath : thumbnailUrlPath,
                 ...highlightSpread,
                 ...countSpread,

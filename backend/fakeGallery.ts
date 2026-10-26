@@ -3,6 +3,9 @@
  */
 import type { Child, Config } from './types.ts';
 import type { ExtractionSql } from './extract.ts';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import sharp from 'sharp';
 
 type Node = { id: number; type: 'GalleryAlbumItem' | 'GalleryPhotoItem'; title: string | null; pc: string; children?: Node[]; w?: number; h?: number };
 
@@ -68,3 +71,24 @@ export const TREE_CONFIG = {
     thumbPrefix: 't__', rootId: 7, ignoreAlbums: [30], ignoreItems: [105, '106'],
     albumsRoot: 'g2/albums', thumbnailsRoot: 'g2/thumbs', resizedRoot: 'g2/resized', verifyImagePaths: false,
 } as Config;
+
+/** Real image files for the fake tree under albumsRoot (a truncated JPEG for bad.jpg, a 1300x900 big.jpg). */
+export async function writeImages(albumsRoot: string): Promise<void> {
+    const jpg = await sharp({ create: { width: 64, height: 48, channels: 3, background: { r: 200, g: 50, b: 50 } } }).jpeg().toBuffer();
+    const png = await sharp({ create: { width: 64, height: 48, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0.5 } } }).png().toBuffer();
+    const files: Array<[string, Buffer]> = [
+        ['dreamhack/lordag1/a.jpg', jpg],
+        ['dreamhack/lordag1/secret.jpg', jpg],
+        ['dreamhack/onlyhidden/secret2.jpg', jpg],
+        ['dreamhack/lordag2/b.jpg', jpg],
+        ['dreamhack/lordag2/big.jpg', await sharp({ create: { width: 1300, height: 900, channels: 3, background: { r: 20, g: 90, b: 160 } } }).jpeg().toBuffer()],
+        ['dreamhack/blank/bad.jpg', jpg.subarray(0, Math.floor(jpg.length * 0.5))],
+        ['dreamhack/image/2005/c.png', png],
+        ['hidden/h.jpg', jpg],
+    ];
+    for (const [rel, buf] of files) {
+        await fs.mkdir(path.dirname(path.join(albumsRoot, rel)), { recursive: true });
+        await fs.writeFile(path.join(albumsRoot, rel), buf);
+    }
+}
+

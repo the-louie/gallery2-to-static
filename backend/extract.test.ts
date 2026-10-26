@@ -10,26 +10,7 @@ import * as path from 'path';
 import sharp from 'sharp';
 import { runExtraction } from './extract.ts';
 import type { Child, Config } from './types.ts';
-import { fakeSql, byId, TREE } from './fakeGallery.ts';
-
-async function writeImages(albumsRoot: string): Promise<void> {
-    const jpg = await sharp({ create: { width: 64, height: 48, channels: 3, background: { r: 200, g: 50, b: 50 } } }).jpeg().toBuffer();
-    const png = await sharp({ create: { width: 64, height: 48, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0.5 } } }).png().toBuffer();
-    const files: Array<[string, Buffer]> = [
-        ['dreamhack/lordag1/a.jpg', jpg],
-        ['dreamhack/lordag1/secret.jpg', jpg],
-        ['dreamhack/onlyhidden/secret2.jpg', jpg],
-        ['dreamhack/lordag2/b.jpg', jpg],
-        ['dreamhack/lordag2/big.jpg', await sharp({ create: { width: 1300, height: 900, channels: 3, background: { r: 20, g: 90, b: 160 } } }).jpeg().toBuffer()],
-        ['dreamhack/blank/bad.jpg', jpg.subarray(0, Math.floor(jpg.length * 0.5))],
-        ['dreamhack/image/2005/c.png', png],
-        ['hidden/h.jpg', jpg],
-    ];
-    for (const [rel, buf] of files) {
-        await fs.mkdir(path.dirname(path.join(albumsRoot, rel)), { recursive: true });
-        await fs.writeFile(path.join(albumsRoot, rel), buf);
-    }
-}
+import { fakeSql, byId, TREE, writeImages } from './fakeGallery.ts';
 
 async function readJson(p: string): Promise<any> {
     return JSON.parse(await fs.readFile(p, 'utf-8'));

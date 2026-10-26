@@ -47,6 +47,7 @@ CREATE TABLE media (
     item_id INTEGER PRIMARY KEY REFERENCES items(id),
     thumb_w INTEGER, thumb_h INTEGER, thumb_at TEXT,
     resize_w INTEGER, resize_h INTEGER, resize_at TEXT,
+    thumb_failed INTEGER NOT NULL DEFAULT 0 CHECK (thumb_failed IN (0, 1)),  -- source could not be decoded: photo kept without thumbnail
     published_at TEXT,
     file_size INTEGER, file_mtime INTEGER
 );
