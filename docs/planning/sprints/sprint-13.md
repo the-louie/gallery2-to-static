@@ -1,7 +1,7 @@
 # Sprint 13: operator QA round (QA-01..QA-10)
 
 **Status:** in progress (opened 2026-10-26)
-**Current ticket:** T-05 (`todo` — Phone thumbnails flow two per row (classic))
+**Current ticket:** T-05 (`in-progress` — Phone thumbnails flow two per row (classic))
 **Last completed:** T-04 (`done` — commit `7044f2c`)
 
 **Goal:** every item on the operator's morning list fixed on the test site: square thumbnails everywhere, the modern root page's card image and "...and more!" fixed, the header text readable, the classic theme's phone layout flowing, search retry working, the banner in every theme, and a new `classic-list` theme with the 2013 root-album list.
@@ -14,7 +14,7 @@
 | T-02 | Header description not cut off (modern) | QA-04 | 0.5h | – | done | `modern.css`: no line clamp on `.layout-header-description`; wraps to 2–3 lines at 1280px, hidden or full on phones (check 390px); screenshot. Landed in `4ffca9f` |
 | T-03 | More space above "...and more!" (modern) | QA-03 | 0.5h | – | done | `RootAlbumListBlock.css`/`modern.css`: margin-top ≥ 0.75rem between the chip list and the link; screenshot of a card with > 10 sub-albums. Landed in `18f30d1` |
 | T-04 | Root card head image links to the album (modern) | QA-02 | 1h | – | done | the highlight band becomes (or sits inside) a `Link` to the album; keyboard focusable once (no duplicate tab stop: `aria-hidden`/`tabIndex={-1}` on the image link, or make the whole band part of the existing block link); test: clicking the image navigates. Landed in `7044f2c` |
-| T-05 | Phone thumbnails flow two per row (classic) | QA-06 | 1h | – | todo | `MatrixAlbum.css` phone block: `tbody` flex-wrap, `tr { display: contents }`, cells 50%; flush cells hidden; `mobilecheck.cjs` 66/66; screenshot at 412×915 of root, sub-album list and a photo list |
+| T-05 | Phone thumbnails flow two per row (classic) | QA-06 | 1h | – | in-progress | `MatrixAlbum.css` phone block: `tbody` flex-wrap, `tr { display: contents }`, cells 50%; flush cells hidden; `mobilecheck.cjs` 66/66; screenshot at 412×915 of root, sub-album list and a photo list |
 | T-06 | All thumbnails square | QA-01 | 2h | – | todo | find the rectangle on `/dreamhack/dreamhack_summer_02/ahnberg/` (classic and modern); fix at the source (CSS in the modern grid/`ImageThumbnail`, the fallback path, or the exported thumbnail); every thumbnail element 1:1 in all themes; test |
 | T-07 | Search failure recovers with "Try again" | QA-08 | 2h | – | todo | reproduce with the index request failing (Chrome request interception); the search page gets its own "Try again" that re-runs the search and re-loads the index when its load failed; the ErrorBoundary's "Try Again" also works for errors thrown from the page; tests |
 | T-08 | Banner in every theme, chosen by window width | QA-10 | 1.5h | – | todo | the modern `Layout` shows the same `<picture>` banner (468 < 760px, 728, 970 ≥ 1024px) above or below the header; check with Chrome at 390, 800, 1280, 1920 which file is requested; `docs/user-guides` updated |
