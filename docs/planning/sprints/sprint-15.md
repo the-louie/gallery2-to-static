@@ -1,6 +1,6 @@
 # Sprint 15: the data master (FUT-01)
 
-**Status:** in progress (opened 2026-10-26)
+**Status:** done (opened and closed 2026-10-26)
 **Current ticket:** T-10 (`in-progress` — Docs, runbook, retro)
 **Last completed:** T-09 (`done` — commit `685c74b`)
 
@@ -33,7 +33,10 @@ Total ≈ 31h.
 - Soft-deleted items' files stay on disk (no-delete policy); only the generated JSON stops listing them.
 
 ## Retro
-(filled at sprint end)
+**Worked:** building the generator against the old extractor's output (byte-identical album files on the fake tree, then a semantic diff of all 1,391 real files) made the switch of the master a non-event: 0 differences except 42 NUL-only titles; the parallel tracks (operator's ask) delivered the auth/service layer and the statistics stack while the data master was built, and merged without a conflict; `node:sqlite` needed no native module.
+**Didn't:** three chain commits ran on through masked failures (`| tail` hides exit codes; a `git add -A` swept T-09's files into T-08's commit) — gates now run with `set -o pipefail` and work commits are made before the next ticket starts; the generate/media import cycle hung the CLI (exit 13) until `tree.ts` broke it; a re-import marked every album dirty until the update trigger compared values; the SQLite UPSERT's conflict policy overrides a trigger's `OR IGNORE` (NOT EXISTS instead).
+**Found:** `generate.ts --changed` relinks the whole published tree (57k symlinks, ~45 s of the 57 s): make `publishImages` incremental when it matters. Sessions are never purged (worker note). The Plausible event endpoint ignores headless Chrome, so the beacon check could not see an event; a real browser will.
+**Backlog grooming:** FUT-01, FUT-04, FUT-05 closed; FUT-02 and FUT-03 carry "done so far" notes. Open rows: 2 (FUT-02 part 2, FUT-03).
 
 ## Demo notes
-(filled at sprint end)
+On lanbilder2 `db/gallery.sqlite` (58,648 items) is the master; `generate.ts --all` reproduced the 1,389 album files (diff: only the 42 NUL titles); a re-import + `--changed` rewrote only the dirty branches; https://lanbilder-new.phetast.nu/ serves the generated data; `lanbilder-admin` answers on 127.0.0.1:3100 and every page view sends a beacon (204 in classic and dark); the nightly timer folded the test views (album 14364 shows 5206) and took the backups. Merged in parallel: Sprint 16 (auth/service, 7 tickets, `docs/architecture/admin-service.md`) and Sprint 17 (Plausible, 5 tickets, `docs/architecture/statistics.md`). Gates: backend 30/30, vitest 1606/1606, lint 0, typecheck 0, audit 0.

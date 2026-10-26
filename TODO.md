@@ -82,6 +82,8 @@ item, plus their search-index entries) instead of the whole tree.
 
 ### FUT-02: admin can add albums and delegate them; delegated users add subalbums and images
 
+**Done so far (Sprint 16, merged 2026-10-26):** the `lanbilder-admin` service (`backend/server.ts`, installed on lanbilder2), Cloudflare Access JWT verification (`backend/auth/access.ts`), TOTP + sessions (`auth/totp.ts`, `auth/session.ts`), invite-only users with roles and delegation (`auth/users.ts`, migration 002, `canWrite`), the admin routes (`docs/architecture/admin-service.md`). **Open:** album create/edit/hide/soft-delete routes, uploads (pipeline, HEIC, GPS strip), sub-albums, highlights, the admin UI, wiring `RegenQueue` to `generate.ts --changed`; the operator's Cloudflare Access application on the admin hostname.
+
 An ADMIN creates an album and delegates it to a user; that user can create subalbums and
 upload/add images under it. Requirements (operator):
 - Authentication **must** be secure: federated login (GitHub / Google / Facebook were named).
@@ -121,6 +123,8 @@ upload/add images under it. Requirements (operator):
 
 ### FUT-03: user profiles
 
+**Done so far (Sprint 16):** `users` carries `nickname` (unique, may not equal a Gallery 2 owner name: trigger), `full_name`, `show_full_name`. **Open:** profile routes (edit nickname/full name, picture stored by us), copying name/picture at first login, the owner link from `items` to admin users.
+
 Each user has a profile with a nickname and a profile picture. The federated providers usually
 supply a display name and a picture (Google: `name`, `picture`; GitHub: `login`, `name`,
 `avatar_url`; Facebook: name and picture): check what reaches us through Cloudflare Access (the
@@ -134,7 +138,9 @@ out without deleting them. Pictures should be stored by us (not hot-linked from 
   instead. Pictures appear only in the admin UI (stored by us, copied at first login).
 - Nicknames are unique and may not collide with the historical Gallery 2 owner names.
 
-### FUT-04: audit logging
+### ~~FUT-04: audit logging~~
+
+**CLOSED, verified 2026-10-26 (Sprints 16/17, merged into master):** `backend/audit.ts` writes every login, denial, TOTP event, invite, enable/disable, delegation, TOTP reset and failed authorisation to `audit_log` (migration `002-users-audit.sql`, triggers forbid UPDATE/DELETE) and mirrors each row to `db/audit.jsonl` on lanbilder2; `GET /api/admin/audit` (admin only); kept forever, full entries (decision). Tests `backend/audit.test.ts`. Original row kept for the record:
 
 Every user action, login and other event is logged, successful or not: logins and denials (ours
 and Cloudflare Access's audit log), album/image create/edit/delete/upload, delegation changes,
@@ -147,7 +153,9 @@ action, target, result. Decide retention and who can read it.
   with export). Settled without asking: an append-only SQLite table (triggers forbid update/delete)
   mirrored to a JSONL file; a daily copy to the operator share is optional, say if wanted.
 
-### FUT-05: privacy-friendly statistics (European)
+### ~~FUT-05: privacy-friendly statistics (European)~~
+
+**CLOSED, verified 2026-10-26 (Sprints 16/17, merged into master):** Plausible CE v3.2.1 self-hosted on lanbilder2 (Docker, `/mnt/storage/plausible`, 127.0.0.1:8000, host network because the VM's forward chain drops bridged traffic); the gallery loads it through the same-origin proxy `/js/259wlemz.js` + `/api/event` (`frontend/index.html`, test `indexHtml.test.ts`; nginx vhost on the share); `docs/architecture/statistics.md`. **Operator steps left:** tunnel public hostname `stats.phetast.nu` → 127.0.0.1:80, enable the `stats` nginx vhost, first login, `DISABLE_REGISTRATION=invite_only` (`/srv/share/lanbilder2/stats-runbook.txt`). Original row kept for the record:
 
 Visitor statistics similar to Google Analytics, preferably a European service with a healthier
 privacy policy. Candidates to compare: Matomo (France; can be self-hosted), Plausible (EU, Estonia;

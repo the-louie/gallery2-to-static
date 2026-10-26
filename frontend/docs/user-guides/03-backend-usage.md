@@ -11,7 +11,29 @@ The backend conversion script (`backend/index.ts`) performs the following tasks:
 3. Generates JSON files in the `../data/` directory (project root)
 4. Creates one JSON file per album, named `{albumId}.json`
 
-## Running the Conversion
+## The data master (since Sprint 15)
+
+The gallery's data lives in a SQLite file (`backend/db/gallery.sqlite`; on lanbilder2
+`/mnt/storage/lanbilder-app/db/gallery.sqlite`, user `lanbilder`, mode 600). The static files the
+site serves are generated from it. The one-time conversion below filled it once; after that Gallery 2
+is not needed.
+
+```bash
+cd backend
+node --no-warnings=ExperimentalWarning importG2.ts            # once: Gallery 2 MySQL -> gallery.sqlite (idempotent)
+node --no-warnings=ExperimentalWarning generate.ts --all      # every album file, index, legacy map, search index, derivatives, published links
+node --no-warnings=ExperimentalWarning generate.ts --changed  # only what changed since the last run (dirty albums + ancestors)
+node --no-warnings=ExperimentalWarning generate.ts --fold-views  # the nightly run: view counts into the pages, then --changed
+```
+
+`--all` writes into `data.new-<stamp>/` and promotes it (the previous `data/` is kept as
+`data.prev-<stamp>`); `--changed` writes the changed files in place (atomic per file) and moves the
+file of an album that is no longer shown to `data/.removed/`. Every change in the database (an
+edited title, a new photo, a soft delete, a new highlight, a renamed owner) marks the affected albums
+dirty through triggers. On lanbilder2 the `lanbilder-admin` service and the `lanbilder-nightly`
+timer run these; see `docs/architecture/data-master.md` and `docs/architecture/admin-service.md`.
+
+## Running the Conversion (historical: the one-shot extraction)
 
 ### Basic Usage
 

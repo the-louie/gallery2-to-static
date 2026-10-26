@@ -14,17 +14,20 @@ The original gallery this was built for is a Swedish photography site (lanbilder
 ### Data Flow
 
 ```
-Gallery 2 MySQL DB
-       |
-       v
-  backend/index.ts  (one-time extraction, run manually)
-       |
-       v
-  data/*.json + frontend/public/g2data/thumbnails/
-       |
-       v
-  frontend/ (static React SPA, serves JSON + images)
+Gallery 2 MySQL DB  --(once: backend/importG2.ts)-->  db/gallery.sqlite  (the data master, lanbilder2)
+                                                            |
+            backend/server.ts (lanbilder-admin: view counts, admin API) writes it at runtime
+                                                            |
+                                   backend/generate.ts --all | --changed  (+ media.ts derivatives)
+                                                            v
+                       data/*.json, data/search/index.json, thumbnails, resizes, published links
+                                                            v
+                                   frontend/ (static React SPA, serves JSON + images)
 ```
+
+Since Sprint 15 (2026-10-26) the SQLite database is the master (docs/architecture/data-master.md);
+`backend/index.ts` / `extract.ts` is the historical one-shot extractor, kept as the reference the
+generator's equivalence test runs against. `backend/db/schema.sql` + `db/migrations/NNN-*.sql`.
 
 ### Backend (Extraction Script)
 
@@ -180,8 +183,14 @@ npm run size-check       # Check bundle size limits
 ```bash
 cd backend
 npm install              # Install dependencies
-node index.ts            # Run extraction (requires config.json with DB credentials)
-node publishImages.ts     # After an export: link tree of the exported full images only (serve it at /g2data/albums/)
+node --no-warnings=ExperimentalWarning importG2.ts [db]   # once: Gallery 2 -> gallery.sqlite (config.json + MYSQL_* as index.ts)
+node --no-warnings=ExperimentalWarning generate.ts --all        # everything from the database (staging dir, promoted), then publishImages
+node --no-warnings=ExperimentalWarning generate.ts --changed    # only the dirty branches (+index/legacy/search), then publishImages
+node --no-warnings=ExperimentalWarning generate.ts --fold-views # nightly: view counts into the pages, then --changed
+node --no-warnings=ExperimentalWarning generate.ts images       # derivatives only (thumbnails, 1024px resizes, media table)
+node --no-warnings=ExperimentalWarning server.ts                # lanbilder-admin on 127.0.0.1:3100 (docs/architecture/admin-service.md)
+node index.ts            # (historical) the one-shot extraction straight to data/
+node publishImages.ts     # link tree of the exported full images only (generate.ts runs it itself)
 npm test                 # Run all backend *.test.ts (runTests.mjs); npm test -- <name> for a subset
 node <file>.test.ts      # Run individual test files
 npm run typecheck        # Type-check the backend (TypeScript 7; Node only strips types)
