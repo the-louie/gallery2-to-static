@@ -15,25 +15,25 @@
  * - Missing thumbnails: Component should handle gracefully by falling back to full image
  */
 
-import type { Image, Album } from '../types';
-import { getImageBaseUrl, getThumbnailBaseUrl } from './imageConfig';
+import type { Image, Album } from "../types";
+import { getImageBaseUrl, getThumbnailBaseUrl } from "./imageConfig";
 
 /**
  * Thumbnail filename prefix (e.g. t__photo.jpg under g2data/thumbnails).
  */
-const DEFAULT_THUMB_PREFIX = 't__';
+const DEFAULT_THUMB_PREFIX = "t__";
 
 /**
  * Strip leading slashes and reject path traversal attempts.
  * Throws if path contains '..' segments or null bytes.
  */
 function ensureNoLeadingSlash(path: string): string {
-  if (path.includes('\0')) {
-    throw new Error('Invalid path: contains null byte');
+  if (path.includes("\0")) {
+    throw new Error("Invalid path: contains null byte");
   }
-  const cleaned = path.replace(/^\/+/, '');
-  if (cleaned.split('/').some(seg => seg === '..')) {
-    throw new Error('Invalid path: contains traversal segment');
+  const cleaned = path.replace(/^\/+/, "");
+  if (cleaned.split("/").some((seg) => seg === "..")) {
+    throw new Error("Invalid path: contains traversal segment");
   }
   return cleaned;
 }
@@ -45,9 +45,9 @@ function ensureNoLeadingSlash(path: string): string {
  */
 function encodePathSegments(path: string): string {
   return path
-    .split('/')
+    .split("/")
     .map((segment) => encodeURIComponent(segment))
-    .join('/');
+    .join("/");
 }
 
 /** ensureNoLeadingSlash + encodePathSegments: the form every image URL path takes. */
@@ -60,8 +60,13 @@ function toUrlPath(path: string): string {
  * (backend/pathResolution.ts thumbnailFileName): thumbnails are always JPEG, so a non-JPEG source
  * gets ".jpg" appended (t__anim.gif.jpg); JPEG sources keep their name (t__photo.jpg).
  */
-export function thumbnailFileName(thumbPrefix: string, filename: string): string {
-  return /\.jpe?g$/i.test(filename) ? thumbPrefix + filename : `${thumbPrefix}${filename}.jpg`;
+export function thumbnailFileName(
+  thumbPrefix: string,
+  filename: string
+): string {
+  return /\.jpe?g$/i.test(filename)
+    ? thumbPrefix + filename
+    : `${thumbPrefix}${filename}.jpg`;
 }
 
 /**
@@ -80,8 +85,8 @@ export function thumbnailFileName(thumbPrefix: string, filename: string): string
 function constructThumbnailUrl(
   pathComponent: string | null,
   thumbPrefix: string = DEFAULT_THUMB_PREFIX,
-  format: 'webp' | 'avif' | 'original' = 'original',
-  baseUrlOverride?: string | null,
+  format: "webp" | "avif" | "original" = "original",
+  baseUrlOverride?: string | null
 ): string {
   const baseUrl = baseUrlOverride ?? getThumbnailBaseUrl();
 
@@ -91,14 +96,14 @@ function constructThumbnailUrl(
 
   const path = ensureNoLeadingSlash(pathComponent);
   // Find the last slash to separate directory from filename
-  const lastSlashIndex = path.lastIndexOf('/');
+  const lastSlashIndex = path.lastIndexOf("/");
 
   let directory: string;
   let filename: string;
 
   if (lastSlashIndex === -1) {
     // No directory, just filename
-    directory = '';
+    directory = "";
     filename = path;
   } else {
     // Split into directory and filename
@@ -114,7 +119,7 @@ function constructThumbnailUrl(
   // directory already includes trailing slash if present, or is empty string
   // For absolute URLs, we need to ensure proper concatenation
   const thumbName =
-    format === 'original'
+    format === "original"
       ? thumbnailFileName(thumbPrefix, filenameWithFormat)
       : `${thumbPrefix}${filenameWithFormat}`;
   const pathPart = directory ? `${directory}${thumbName}` : thumbName;
@@ -130,14 +135,14 @@ function constructThumbnailUrl(
  */
 function replaceExtension(
   pathComponent: string,
-  format: 'webp' | 'avif' | 'original',
+  format: "webp" | "avif" | "original"
 ): string {
-  if (format === 'original') {
+  if (format === "original") {
     return pathComponent;
   }
 
   // Find last dot (extension separator)
-  const lastDotIndex = pathComponent.lastIndexOf('.');
+  const lastDotIndex = pathComponent.lastIndexOf(".");
   if (lastDotIndex === -1) {
     // No extension, append format extension
     return `${pathComponent}.${format}`;
@@ -161,8 +166,8 @@ function replaceExtension(
  */
 function constructFullImageUrl(
   pathComponent: string | null,
-  format: 'webp' | 'avif' | 'original' = 'original',
-  baseUrlOverride?: string | null,
+  format: "webp" | "avif" | "original" = "original",
+  baseUrlOverride?: string | null
 ): string {
   const baseUrl = baseUrlOverride ?? getImageBaseUrl();
 
@@ -170,7 +175,10 @@ function constructFullImageUrl(
     return baseUrl;
   }
 
-  const pathWithFormat = replaceExtension(ensureNoLeadingSlash(pathComponent), format);
+  const pathWithFormat = replaceExtension(
+    ensureNoLeadingSlash(pathComponent),
+    format
+  );
   // baseUrl is normalized (no trailing slash)
   // pathComponent is the full path (e.g., "album/photo.jpg")
   return `${baseUrl}/${encodePathSegments(pathWithFormat)}`;
@@ -207,16 +215,16 @@ export function getImageUrl(
   image: Image,
   useThumbnail: boolean = false,
   thumbPrefix?: string,
-  baseUrlOverride?: string | null,
+  baseUrlOverride?: string | null
 ): string {
   const path = image.urlPath ?? image.pathComponent;
   const prefix = thumbPrefix ?? DEFAULT_THUMB_PREFIX;
 
   if (useThumbnail) {
-    return constructThumbnailUrl(path, prefix, 'original', baseUrlOverride);
+    return constructThumbnailUrl(path, prefix, "original", baseUrlOverride);
   }
 
-  return constructFullImageUrl(path, 'original', baseUrlOverride);
+  return constructFullImageUrl(path, "original", baseUrlOverride);
 }
 
 /**
@@ -251,9 +259,9 @@ export function getImageUrl(
 export function getImageUrlWithFormat(
   image: Image,
   useThumbnail: boolean = false,
-  format: 'webp' | 'avif' | 'original' = 'original',
+  format: "webp" | "avif" | "original" = "original",
   thumbPrefix?: string,
-  baseUrlOverride?: string | null,
+  baseUrlOverride?: string | null
 ): string {
   const path = image.urlPath ?? image.pathComponent;
   const prefix = thumbPrefix ?? DEFAULT_THUMB_PREFIX;
@@ -300,21 +308,24 @@ export function getImageUrlWithFormat(
 export function getAlbumThumbnailUrl(
   album: Album,
   thumbPrefix?: string,
-  baseUrlOverride?: string | null,
+  baseUrlOverride?: string | null
 ): string | null {
   const baseUrl = baseUrlOverride ?? getThumbnailBaseUrl();
   if (album.thumbnailUrlPath && album.thumbnailUrlPath.length > 0) {
     return `${baseUrl}/${toUrlPath(album.thumbnailUrlPath)}`;
   }
 
-  if (album.highlightThumbnailUrlPath && album.highlightThumbnailUrlPath.length > 0) {
+  if (
+    album.highlightThumbnailUrlPath &&
+    album.highlightThumbnailUrlPath.length > 0
+  ) {
     return `${baseUrl}/${toUrlPath(album.highlightThumbnailUrlPath)}`;
   }
 
   const pathComponent = album.thumbnailPathComponent;
   if (pathComponent) {
     const prefix = thumbPrefix ?? DEFAULT_THUMB_PREFIX;
-    return constructThumbnailUrl(pathComponent, prefix, 'original', baseUrl);
+    return constructThumbnailUrl(pathComponent, prefix, "original", baseUrl);
   }
 
   if (album.highlightImageUrl && album.highlightImageUrl.length > 0) {
@@ -336,7 +347,7 @@ export function getAlbumThumbnailUrl(
  */
 export function getAlbumHighlightImageUrl(
   album: Album,
-  baseUrlOverride?: string | null,
+  baseUrlOverride?: string | null
 ): string | null {
   if (!album.highlightImageUrl || album.highlightImageUrl.length === 0) {
     return null;
@@ -346,15 +357,33 @@ export function getAlbumHighlightImageUrl(
 }
 
 /** Where the export's 1024px photo-page resizes are served (PRIO-THEME-05; nginx alias of g2data/resized) */
-export const RESIZED_BASE_URL = '/g2data/resized';
+export const RESIZED_BASE_URL = "/g2data/resized";
 
 /**
  * URL of the photo's 1024px resize, or null when the export made none (photo of 1024px or less,
  * or an older export): the photo page then shows the original.
  */
-export function getResizedImageUrl(image: { resizeUrlPath?: string | null }): string | null {
-  const p = image.resizeUrlPath;
-  if (!p || p.includes('\0') || p.split('/').includes('..')) return null;
-  return `${RESIZED_BASE_URL}/${toUrlPath(p)}`;
+/** Photos with a longest side below this are shown upscaled (matrixPaging UPSCALE_MIN mirrors it). */
+export const UPSCALE_MIN_SIDE = 768;
+
+/**
+ * The URL the full-size photo view loads: the export's upscaled copy for a small original
+ * (operator, 2026-10-26: 200x150 photos from 1997 must not show smaller than their thumbnail),
+ * otherwise the original.
+ */
+export function getDisplayImageUrl(image: Image): string {
+  const longest = Math.max(image.width ?? 0, image.height ?? 0);
+  if (longest > 0 && longest < UPSCALE_MIN_SIDE) {
+    const up = getResizedImageUrl(image);
+    if (up) return up;
+  }
+  return getImageUrl(image, false);
 }
 
+export function getResizedImageUrl(image: {
+  resizeUrlPath?: string | null;
+}): string | null {
+  const p = image.resizeUrlPath;
+  if (!p || p.includes("\0") || p.split("/").includes("..")) return null;
+  return `${RESIZED_BASE_URL}/${toUrlPath(p)}`;
+}

@@ -20,12 +20,12 @@
  * @module frontend/src/hooks/useProgressiveImage
  */
 
-import { useState, useEffect, useRef } from 'react';
-import type { Image } from '@/types';
-import { getImageUrl } from '@/utils/imageUrl';
-import { getImageCache } from '@/utils/imageCache';
-import { fetchImageAsObjectUrl } from '@/utils/fetchImageAsObjectUrl';
-import { useViewAbortSignal } from '@/contexts/ViewAbortContext';
+import { useState, useEffect, useRef } from "react";
+import type { Image } from "@/types";
+import { getDisplayImageUrl, getImageUrl } from "@/utils/imageUrl";
+import { getImageCache } from "@/utils/imageCache";
+import { fetchImageAsObjectUrl } from "@/utils/fetchImageAsObjectUrl";
+import { useViewAbortSignal } from "@/contexts/ViewAbortContext";
 
 /**
  * Progressive loading state
@@ -36,10 +36,7 @@ import { useViewAbortSignal } from '@/contexts/ViewAbortContext';
  * - 'error': Error occurred (thumbnail or full image failed)
  */
 export type ProgressiveImageState =
-  | 'thumbnail'
-  | 'thumbnail-loaded'
-  | 'full-loaded'
-  | 'error';
+  "thumbnail" | "thumbnail-loaded" | "full-loaded" | "error";
 
 /**
  * Return type for useProgressiveImage hook
@@ -75,19 +72,19 @@ export interface UseProgressiveImageReturn {
 export function useProgressiveImage(
   image: Image | null,
   useThumbnail: boolean = true,
-  options: { loadFull?: boolean; enabled?: boolean } = {},
+  options: { loadFull?: boolean; enabled?: boolean } = {}
 ): UseProgressiveImageReturn {
   const { loadFull = true, enabled = true } = options;
   const signal = useViewAbortSignal();
-  const [state, setState] = useState<ProgressiveImageState>('thumbnail');
+  const [state, setState] = useState<ProgressiveImageState>("thumbnail");
   const [hasError, setHasError] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
-  const [fullImageUrl, setFullImageUrl] = useState<string>('');
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>("");
+  const [fullImageUrl, setFullImageUrl] = useState<string>("");
   /** Display URL for thumbnail: object URL when loaded, else '' to avoid duplicate request */
-  const [displayThumbnailUrl, setDisplayThumbnailUrl] = useState<string>('');
+  const [displayThumbnailUrl, setDisplayThumbnailUrl] = useState<string>("");
   /** Display URL for full image: object URL when loaded, else server URL (fallback) */
-  const [displayFullImageUrl, setDisplayFullImageUrl] = useState<string>('');
+  const [displayFullImageUrl, setDisplayFullImageUrl] = useState<string>("");
 
   const thumbnailImgRef = useRef<HTMLImageElement | null>(null);
   const fullImgRef = useRef<HTMLImageElement | null>(null);
@@ -101,24 +98,33 @@ export function useProgressiveImage(
   // render shows the new image with the previous image's state (was an effect, one render late;
   // REFAC-01). Keyed on the image's identity fields, not the object: a new object for the same
   // image (re-sorted or re-filtered lists) must not restart the fetches.
-  const imageKey = image ? `${image.id}|${image.pathComponent}|${image.urlPath}` : null;
-  const [syncedFor, setSyncedFor] = useState<{ imageKey: string | null; signal: AbortSignal } | null>(null);
-  if (syncedFor === null || syncedFor.imageKey !== imageKey || syncedFor.signal !== signal) {
+  const imageKey = image
+    ? `${image.id}|${image.pathComponent}|${image.urlPath}`
+    : null;
+  const [syncedFor, setSyncedFor] = useState<{
+    imageKey: string | null;
+    signal: AbortSignal;
+  } | null>(null);
+  if (
+    syncedFor === null ||
+    syncedFor.imageKey !== imageKey ||
+    syncedFor.signal !== signal
+  ) {
     setSyncedFor({ imageKey, signal });
-    setDisplayThumbnailUrl('');
-    setDisplayFullImageUrl('');
+    setDisplayThumbnailUrl("");
+    setDisplayFullImageUrl("");
     if (!image) {
-      setState('error');
+      setState("error");
       setHasError(true);
-      setError('No image provided');
-      setThumbnailUrl('');
-      setFullImageUrl('');
+      setError("No image provided");
+      setThumbnailUrl("");
+      setFullImageUrl("");
     } else {
-      setState('thumbnail');
+      setState("thumbnail");
       setHasError(false);
       setError(null);
       setThumbnailUrl(getImageUrl(image, true));
-      setFullImageUrl(getImageUrl(image, false));
+      setFullImageUrl(getDisplayImageUrl(image));
     }
   }
 
@@ -153,7 +159,7 @@ export function useProgressiveImage(
 
   // Load thumbnail (fetch + object URL when signal provided)
   useEffect(() => {
-    if (!enabled || !image || !thumbnailUrl || state !== 'thumbnail') {
+    if (!enabled || !image || !thumbnailUrl || state !== "thumbnail") {
       return;
     }
 
@@ -161,34 +167,53 @@ export function useProgressiveImage(
     const cache = getImageCache();
 
     if (!useThumbnail) {
-      if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
-        setState('thumbnail-loaded');
+      if (
+        currentImageIdRef.current === imageId &&
+        isMountedRef.current &&
+        !signal.aborted
+      ) {
+        setState("thumbnail-loaded");
       }
       return;
     }
 
     const cachedThumbnail = cache.get(thumbnailUrl);
     if (cachedThumbnail) {
-      if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
+      if (
+        currentImageIdRef.current === imageId &&
+        isMountedRef.current &&
+        !signal.aborted
+      ) {
         setDisplayThumbnailUrl(thumbnailUrl);
-        setState('thumbnail-loaded');
+        setState("thumbnail-loaded");
       }
       return;
     }
 
     fetchImageAsObjectUrl(thumbnailUrl, signal)
       .then((objectUrl) => {
-        if (signal.aborted || !isMountedRef.current || currentImageIdRef.current !== imageId) {
+        if (
+          signal.aborted ||
+          !isMountedRef.current ||
+          currentImageIdRef.current !== imageId
+        ) {
           URL.revokeObjectURL(objectUrl);
           return;
         }
-        if (thumbnailObjectUrlRef.current && thumbnailObjectUrlRef.current !== objectUrl) {
+        if (
+          thumbnailObjectUrlRef.current &&
+          thumbnailObjectUrlRef.current !== objectUrl
+        ) {
           // a second fetch for the same image finished: release the first one
           URL.revokeObjectURL(thumbnailObjectUrlRef.current);
         }
         thumbnailObjectUrlRef.current = objectUrl;
         try {
-          if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
+          if (
+            currentImageIdRef.current === imageId &&
+            isMountedRef.current &&
+            !signal.aborted
+          ) {
             setDisplayThumbnailUrl(objectUrl);
           } else {
             URL.revokeObjectURL(objectUrl);
@@ -198,7 +223,11 @@ export function useProgressiveImage(
           const img = new Image();
           thumbnailImgRef.current = img;
           img.onload = () => {
-            if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
+            if (
+              !isMountedRef.current ||
+              currentImageIdRef.current !== imageId ||
+              signal.aborted
+            ) {
               if (signal.aborted && thumbnailObjectUrlRef.current) {
                 URL.revokeObjectURL(thumbnailObjectUrlRef.current);
                 thumbnailObjectUrlRef.current = null;
@@ -208,7 +237,7 @@ export function useProgressiveImage(
             if (thumbnailTransitionDoneRef.current) return;
             thumbnailTransitionDoneRef.current = true;
             cache.set(thumbnailUrl, img);
-            setState('thumbnail-loaded');
+            setState("thumbnail-loaded");
           };
           img.onerror = () => {
             if (thumbnailObjectUrlRef.current) {
@@ -216,12 +245,17 @@ export function useProgressiveImage(
               thumbnailObjectUrlRef.current = null;
             }
             thumbnailImgRef.current = null;
-            if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) return;
+            if (
+              !isMountedRef.current ||
+              currentImageIdRef.current !== imageId ||
+              signal.aborted
+            )
+              return;
             if (thumbnailTransitionDoneRef.current) return;
             thumbnailTransitionDoneRef.current = true;
             // Fallback to server URL when blob fails (e.g. cross-origin security) so the image still displays.
             setDisplayThumbnailUrl(thumbnailUrl);
-            setState('thumbnail-loaded');
+            setState("thumbnail-loaded");
           };
           img.src = objectUrl;
         } catch {
@@ -232,12 +266,16 @@ export function useProgressiveImage(
         }
       })
       .catch((err) => {
-        if (err?.name === 'AbortError') {
+        if (err?.name === "AbortError") {
           return;
         }
-        if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
+        if (
+          isMountedRef.current &&
+          currentImageIdRef.current === imageId &&
+          !signal.aborted
+        ) {
           setDisplayThumbnailUrl(thumbnailUrl);
-          setState('thumbnail-loaded');
+          setState("thumbnail-loaded");
         }
       });
 
@@ -250,11 +288,26 @@ export function useProgressiveImage(
     // Keyed on the image's identity fields, not the object: a new object for the same image
     // (re-sorted or re-filtered lists) must not restart the fetches.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [image?.id, image?.pathComponent, image?.urlPath, useThumbnail, thumbnailUrl, state, signal, enabled]);
+  }, [
+    image?.id,
+    image?.pathComponent,
+    image?.urlPath,
+    useThumbnail,
+    thumbnailUrl,
+    state,
+    signal,
+    enabled,
+  ]);
 
   // Load full image (fetch + object URL)
   useEffect(() => {
-    if (!loadFull || !enabled || !image || !fullImageUrl || state !== 'thumbnail-loaded') {
+    if (
+      !loadFull ||
+      !enabled ||
+      !image ||
+      !fullImageUrl ||
+      state !== "thumbnail-loaded"
+    ) {
       return;
     }
 
@@ -262,9 +315,13 @@ export function useProgressiveImage(
     const cache = getImageCache();
     const cachedFullImage = cache.get(fullImageUrl);
     if (cachedFullImage) {
-      if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
+      if (
+        currentImageIdRef.current === imageId &&
+        isMountedRef.current &&
+        !signal.aborted
+      ) {
         setDisplayFullImageUrl(fullImageUrl);
-        setState('full-loaded');
+        setState("full-loaded");
         setHasError(false);
         setError(null);
       }
@@ -273,13 +330,21 @@ export function useProgressiveImage(
 
     fetchImageAsObjectUrl(fullImageUrl, signal)
       .then((objectUrl) => {
-        if (signal.aborted || !isMountedRef.current || currentImageIdRef.current !== imageId) {
+        if (
+          signal.aborted ||
+          !isMountedRef.current ||
+          currentImageIdRef.current !== imageId
+        ) {
           URL.revokeObjectURL(objectUrl);
           return;
         }
         fullObjectUrlRef.current = objectUrl;
         try {
-          if (currentImageIdRef.current === imageId && isMountedRef.current && !signal.aborted) {
+          if (
+            currentImageIdRef.current === imageId &&
+            isMountedRef.current &&
+            !signal.aborted
+          ) {
             setDisplayFullImageUrl(objectUrl);
           } else {
             URL.revokeObjectURL(objectUrl);
@@ -289,7 +354,11 @@ export function useProgressiveImage(
           const img = new Image();
           fullImgRef.current = img;
           img.onload = () => {
-            if (!isMountedRef.current || currentImageIdRef.current !== imageId || signal.aborted) {
+            if (
+              !isMountedRef.current ||
+              currentImageIdRef.current !== imageId ||
+              signal.aborted
+            ) {
               if (signal.aborted && fullObjectUrlRef.current) {
                 URL.revokeObjectURL(fullObjectUrlRef.current);
                 fullObjectUrlRef.current = null;
@@ -297,7 +366,7 @@ export function useProgressiveImage(
               return;
             }
             cache.set(fullImageUrl, img);
-            setState('full-loaded');
+            setState("full-loaded");
             setHasError(false);
             setError(null);
           };
@@ -307,10 +376,14 @@ export function useProgressiveImage(
               fullObjectUrlRef.current = null;
             }
             fullImgRef.current = null;
-            if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
+            if (
+              isMountedRef.current &&
+              currentImageIdRef.current === imageId &&
+              !signal.aborted
+            ) {
               // Fallback to server URL when blob fails (e.g. cross-origin security) so the image still displays.
               setDisplayFullImageUrl(fullImageUrl);
-              setState('full-loaded');
+              setState("full-loaded");
               setHasError(false);
               setError(null);
             }
@@ -324,12 +397,16 @@ export function useProgressiveImage(
         }
       })
       .catch((err) => {
-        if (err?.name === 'AbortError') return;
+        if (err?.name === "AbortError") return;
         // On fetch failure (e.g. CORS when loading from another origin), still show
         // full image via server URL so the lightbox can render <img src={fullImageUrl}>.
-        if (isMountedRef.current && currentImageIdRef.current === imageId && !signal.aborted) {
+        if (
+          isMountedRef.current &&
+          currentImageIdRef.current === imageId &&
+          !signal.aborted
+        ) {
           setDisplayFullImageUrl(fullImageUrl);
-          setState('full-loaded');
+          setState("full-loaded");
           setHasError(false);
           setError(null);
         }
@@ -345,7 +422,16 @@ export function useProgressiveImage(
     // Keyed on the image's identity fields, not the object: a new object for the same image
     // (re-sorted or re-filtered lists) must not restart the fetches.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [image?.id, image?.pathComponent, image?.urlPath, fullImageUrl, state, signal, loadFull, enabled]);
+  }, [
+    image?.id,
+    image?.pathComponent,
+    image?.urlPath,
+    fullImageUrl,
+    state,
+    signal,
+    loadFull,
+    enabled,
+  ]);
 
   useEffect(() => {
     return () => {

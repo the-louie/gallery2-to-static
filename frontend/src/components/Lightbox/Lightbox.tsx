@@ -69,8 +69,14 @@
  * @module frontend/src/components/Lightbox
  */
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faXmark,
   faChevronLeft,
@@ -79,18 +85,19 @@ import {
   faMinus,
   faRotateRight,
   faImage,
-} from '@fortawesome/free-solid-svg-icons';
-import type { Image, BreadcrumbPath } from '@/types';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { Breadcrumbs } from '@/components/Breadcrumbs';
-import { parseBBCodeDecoded } from '@/utils/bbcode';
-import { decodeHtmlEntities } from '@/utils/decodeHtmlEntities';
-import { useImageNavigation } from '@/hooks/useImageNavigation';
-import { useImagePreload } from '@/hooks/useImagePreload';
-import { useImageZoom } from '@/hooks/useImageZoom';
-import { useProgressiveImage } from '@/hooks/useProgressiveImage';
-import { useSwipeGesture } from '@/hooks/useSwipeGesture';
-import './Lightbox.css';
+} from "@fortawesome/free-solid-svg-icons";
+import type { Image, BreadcrumbPath } from "@/types";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { parseBBCodeDecoded } from "@/utils/bbcode";
+import { decodeHtmlEntities } from "@/utils/decodeHtmlEntities";
+import { useImageNavigation } from "@/hooks/useImageNavigation";
+import { useImagePreload } from "@/hooks/useImagePreload";
+import { useImageZoom } from "@/hooks/useImageZoom";
+import { UPSCALE_MIN_SIDE } from "@/utils/imageUrl";
+import { useProgressiveImage } from "@/hooks/useProgressiveImage";
+import { useSwipeGesture } from "@/hooks/useSwipeGesture";
+import "./Lightbox.css";
 
 /**
  * Props for Lightbox component
@@ -219,10 +226,10 @@ export function Lightbox({
     };
 
     updateDimensions();
-    window.addEventListener('resize', updateDimensions);
+    window.addEventListener("resize", updateDimensions);
 
     return () => {
-      window.removeEventListener('resize', updateDimensions);
+      window.removeEventListener("resize", updateDimensions);
     };
   }, [isOpen]);
 
@@ -231,14 +238,16 @@ export function Lightbox({
     imageWidth,
     imageHeight,
     containerDimensions.width,
-    containerDimensions.height,
+    containerDimensions.height
   );
   // Stable members of the zoom API, so hook dependency lists name exactly what each hook uses
   const { zoom: zoomLevel, setZoom, setPan, resetZoom } = zoom;
 
   // Determine if navigation is available
   const canNavigate = useMemo(() => {
-    return albumContext.length > 1 && (navigation.hasNext || navigation.hasPrevious);
+    return (
+      albumContext.length > 1 && (navigation.hasNext || navigation.hasPrevious)
+    );
   }, [albumContext.length, navigation.hasNext, navigation.hasPrevious]);
 
   // Determine if swipe gestures should be enabled
@@ -284,33 +293,48 @@ export function Lightbox({
         dx: number;
         dy: number;
         distance: number;
-        direction: 'left' | 'right' | 'up' | 'down' | null;
+        direction: "left" | "right" | "up" | "down" | null;
       }) => {
         // Only update feedback if direction is determined
         if (!direction) {
           return;
         }
 
-        if (direction === 'left' || direction === 'right') {
+        if (direction === "left" || direction === "right") {
           // Horizontal swipe: translate image
           const maxTranslate = 100;
-          const translateX = Math.max(-maxTranslate, Math.min(maxTranslate, dx * 0.5));
-          setSwipeFeedback((prev: { translateX: number; translateY: number; opacity: number }) => ({
-            ...prev,
-            translateX,
-          }));
-        } else if (direction === 'up' || direction === 'down') {
+          const translateX = Math.max(
+            -maxTranslate,
+            Math.min(maxTranslate, dx * 0.5)
+          );
+          setSwipeFeedback(
+            (prev: {
+              translateX: number;
+              translateY: number;
+              opacity: number;
+            }) => ({
+              ...prev,
+              translateX,
+            })
+          );
+        } else if (direction === "up" || direction === "down") {
           // Vertical swipe: reduce backdrop opacity
           const maxDistance = 200;
           const progress = Math.min(1, Math.abs(dy) / maxDistance);
           const opacity = Math.max(0.5, 1 - progress * 0.5);
-          setSwipeFeedback((prev: { translateX: number; translateY: number; opacity: number }) => ({
-            ...prev,
-            opacity,
-          }));
+          setSwipeFeedback(
+            (prev: {
+              translateX: number;
+              translateY: number;
+              opacity: number;
+            }) => ({
+              ...prev,
+              opacity,
+            })
+          );
         }
       },
-      [],
+      []
     ),
     enabled: swipeEnabled && isOpen,
     enableHorizontal: canNavigate,
@@ -320,9 +344,9 @@ export function Lightbox({
   // Generate alt text from image title or description (plain text, no BBCode)
   const altText = useMemo(() => {
     if (!image) {
-      return 'Image';
+      return "Image";
     }
-    const raw = image.title || image.description || 'Image';
+    const raw = image.title || image.description || "Image";
     return decodeHtmlEntities(raw);
   }, [image]);
 
@@ -343,9 +367,9 @@ export function Lightbox({
     try {
       const date = new Date(image.timestamp * 1000);
       return date.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
     } catch {
       return null;
@@ -380,27 +404,60 @@ export function Lightbox({
   }, [albumContext.length, navigation.currentIndex, navigation.totalImages]);
 
   // Determine loading and error states from progressive image hook
-  const isLoading = progressiveImage.state === 'thumbnail' || progressiveImage.state === 'thumbnail-loaded';
-  const isFullLoaded = progressiveImage.state === 'full-loaded';
+  const isLoading =
+    progressiveImage.state === "thumbnail" ||
+    progressiveImage.state === "thumbnail-loaded";
+  const isFullLoaded = progressiveImage.state === "full-loaded";
   // While the full image loads, the blurred thumbnail fills the box the full image will take
   // (same aspect ratio, same size limits), instead of showing at its own 400 px size.
-  const thumbnailPlaceholderStyle = useMemo<React.CSSProperties | undefined>(() => {
-    if (!image?.width || !image?.height) return undefined;
+  // Small originals (longest side under 768px) take a 768px box: upscaled, never smaller than the
+  // thumbnail they were opened from (operator, 2026-10-26); the export's Lanczos copy is loaded when
+  // it exists (getDisplayImageUrl), else the browser scales the original.
+  const shownWidth = useMemo(() => {
+    if (!image?.width || !image?.height) return null;
+    const longest = Math.max(image.width, image.height);
+    return longest < UPSCALE_MIN_SIDE
+      ? Math.round((image.width * UPSCALE_MIN_SIDE) / longest)
+      : image.width;
+  }, [image?.width, image?.height]);
+  const thumbnailPlaceholderStyle = useMemo<
+    React.CSSProperties | undefined
+  >(() => {
+    if (!image?.width || !image?.height || shownWidth === null)
+      return undefined;
     return {
       aspectRatio: `${image.width} / ${image.height}`,
-      width: `min(100%, ${image.width}px, calc((90vh - 200px) * ${image.width / image.height}))`,
-      height: 'auto',
+      width: `min(100%, ${shownWidth}px, calc((90vh - 200px) * ${image.width / image.height}))`,
+      height: "auto",
     };
-  }, [image?.width, image?.height]);
+  }, [image?.width, image?.height, shownWidth]);
+  const upscaledStyle = useMemo<React.CSSProperties | undefined>(() => {
+    if (
+      !image?.width ||
+      !image?.height ||
+      shownWidth === null ||
+      shownWidth === image.width
+    )
+      return undefined;
+    return {
+      width: `min(100%, ${shownWidth}px, calc((90vh - 200px) * ${image.width / image.height}))`,
+      height: "auto",
+    };
+  }, [image?.width, image?.height, shownWidth]);
   const hasError = progressiveImage.hasError;
 
   // Debug: log when image or progressive state changes (DEV only)
-  const debugLoggedRef = useRef<{ imageId: number | undefined; state: string }>({ imageId: undefined, state: '' });
-  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV && image) {
+  const debugLoggedRef = useRef<{ imageId: number | undefined; state: string }>(
+    { imageId: undefined, state: "" }
+  );
+  if (typeof import.meta !== "undefined" && import.meta.env?.DEV && image) {
     const prev = debugLoggedRef.current;
     if (prev.imageId !== image.id || prev.state !== progressiveImage.state) {
-      debugLoggedRef.current = { imageId: image.id, state: progressiveImage.state };
-      console.log('[Lightbox]', {
+      debugLoggedRef.current = {
+        imageId: image.id,
+        state: progressiveImage.state,
+      };
+      console.log("[Lightbox]", {
         imageId: image.id,
         state: progressiveImage.state,
         isFullLoaded,
@@ -414,7 +471,10 @@ export function Lightbox({
   // Reset DOM image load state when image changes
   // Keyed on the identifying fields, not the object: a new object for the same image must not reset.
   // Adjusted during render, so the new image never renders with the previous load state (REFAC-01)
-  const imageKey = image == null ? null : `${image.id}|${image.pathComponent}|${image.urlPath}`;
+  const imageKey =
+    image == null
+      ? null
+      : `${image.id}|${image.pathComponent}|${image.urlPath}`;
   const [stateImageKey, setStateImageKey] = useState(imageKey);
   if (stateImageKey !== imageKey) {
     setStateImageKey(imageKey);
@@ -434,7 +494,7 @@ export function Lightbox({
     if (isOpen) {
       // Store original overflow style
       const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
 
       // Restore on cleanup
       return () => {
@@ -465,7 +525,7 @@ export function Lightbox({
 
     // Handle focus trap - keep focus within modal
     const handleFocusTrap = (event: KeyboardEvent) => {
-      if (event.key !== 'Tab') {
+      if (event.key !== "Tab") {
         return;
       }
 
@@ -494,12 +554,12 @@ export function Lightbox({
       }
     };
 
-    document.addEventListener('keydown', handleFocusTrap);
+    document.addEventListener("keydown", handleFocusTrap);
 
     // Cleanup
     return () => {
       clearTimeout(timer);
-      document.removeEventListener('keydown', handleFocusTrap);
+      document.removeEventListener("keydown", handleFocusTrap);
 
       // Restore focus to previous element when modal closes
       if (previousActiveElementRef.current) {
@@ -507,7 +567,7 @@ export function Lightbox({
           // Check if element is still in the DOM and focusable
           if (
             document.body.contains(previousActiveElementRef.current) &&
-            typeof previousActiveElementRef.current.focus === 'function'
+            typeof previousActiveElementRef.current.focus === "function"
           ) {
             previousActiveElementRef.current.focus();
           }
@@ -525,24 +585,35 @@ export function Lightbox({
     }
 
     const handleKeyboard = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         event.preventDefault();
         onClose();
-      } else if (event.key === 'ArrowRight' && onNext && navigation.hasNext) {
+      } else if (event.key === "ArrowRight" && onNext && navigation.hasNext) {
         event.preventDefault();
         onNext();
-      } else if (event.key === 'ArrowLeft' && onPrevious && navigation.hasPrevious) {
+      } else if (
+        event.key === "ArrowLeft" &&
+        onPrevious &&
+        navigation.hasPrevious
+      ) {
         event.preventDefault();
         onPrevious();
       }
     };
 
-    document.addEventListener('keydown', handleKeyboard);
+    document.addEventListener("keydown", handleKeyboard);
 
     return () => {
-      document.removeEventListener('keydown', handleKeyboard);
+      document.removeEventListener("keydown", handleKeyboard);
     };
-  }, [isOpen, onClose, onNext, onPrevious, navigation.hasNext, navigation.hasPrevious]);
+  }, [
+    isOpen,
+    onClose,
+    onNext,
+    onPrevious,
+    navigation.hasNext,
+    navigation.hasPrevious,
+  ]);
 
   // Handle mouse wheel zoom (Ctrl/Cmd + scroll)
   useEffect(() => {
@@ -572,19 +643,16 @@ export function Lightbox({
 
       // Calculate zoom delta from wheel delta
       const zoomDelta = -event.deltaY * 0.5; // Adjust sensitivity
-      const newZoom = Math.max(
-        100,
-        Math.min(400, currentZoom + zoomDelta),
-      );
+      const newZoom = Math.max(100, Math.min(400, currentZoom + zoomDelta));
 
       setZoom(newZoom, centerX, centerY);
     };
 
     const container = imageContainerRef.current;
-    container.addEventListener('wheel', handleWheel, { passive: false });
+    container.addEventListener("wheel", handleWheel, { passive: false });
 
     return () => {
-      container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener("wheel", handleWheel);
     };
   }, [isOpen, zoomLevel, setZoom]);
 
@@ -598,8 +666,8 @@ export function Lightbox({
 
       // Don't start drag if clicking on buttons or other controls
       if (
-        (event.target as HTMLElement).closest('button') ||
-        (event.target as HTMLElement).closest('.lightbox-counter')
+        (event.target as HTMLElement).closest("button") ||
+        (event.target as HTMLElement).closest(".lightbox-counter")
       ) {
         return;
       }
@@ -615,10 +683,10 @@ export function Lightbox({
 
       // Change cursor to grabbing
       if (imageContainerRef.current) {
-        imageContainerRef.current.style.cursor = 'grabbing';
+        imageContainerRef.current.style.cursor = "grabbing";
       }
     },
-    [zoom.isZoomed, zoom.pan],
+    [zoom.isZoomed, zoom.pan]
   );
 
   const handleMouseMove = useCallback(
@@ -634,17 +702,19 @@ export function Lightbox({
 
       zoom.setPan(
         dragStateRef.current.startPanX + deltaX,
-        dragStateRef.current.startPanY + deltaY,
+        dragStateRef.current.startPanY + deltaY
       );
     },
-    [zoom],
+    [zoom]
   );
 
   const handleMouseUp = useCallback(() => {
     if (dragStateRef.current.isDragging) {
       dragStateRef.current.isDragging = false;
       if (imageContainerRef.current) {
-        imageContainerRef.current.style.cursor = zoom.isZoomed ? 'grab' : 'default';
+        imageContainerRef.current.style.cursor = zoom.isZoomed
+          ? "grab"
+          : "default";
       }
     }
   }, [zoom.isZoomed]);
@@ -655,12 +725,12 @@ export function Lightbox({
       return;
     }
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isOpen, handleMouseMove, handleMouseUp]);
 
@@ -698,7 +768,7 @@ export function Lightbox({
 
         const distance = Math.hypot(
           touch2.clientX - touch1.clientX,
-          touch2.clientY - touch1.clientY,
+          touch2.clientY - touch1.clientY
         );
 
         const rect = imageContainerRef.current?.getBoundingClientRect();
@@ -715,7 +785,7 @@ export function Lightbox({
         }
       }
     },
-    [zoom.isZoomed, zoom.pan, zoom.zoom, swipeHandlers],
+    [zoom.isZoomed, zoom.pan, zoom.zoom, swipeHandlers]
   );
 
   const handleTouchMove = useCallback(
@@ -734,7 +804,7 @@ export function Lightbox({
 
         setPan(
           dragStateRef.current.startPanX + deltaX,
-          dragStateRef.current.startPanY + deltaY,
+          dragStateRef.current.startPanY + deltaY
         );
       } else if (touches.length === 2) {
         // Two touch pinch zoom
@@ -745,14 +815,14 @@ export function Lightbox({
 
         const distance = Math.hypot(
           touch2.clientX - touch1.clientX,
-          touch2.clientY - touch1.clientY,
+          touch2.clientY - touch1.clientY
         );
 
         if (touchStateRef.current.initialDistance > 0) {
           const scale = distance / touchStateRef.current.initialDistance;
           const newZoom = Math.max(
             100,
-            Math.min(400, touchStateRef.current.initialZoom * scale),
+            Math.min(400, touchStateRef.current.initialZoom * scale)
           );
 
           const centerX = (touch1.clientX + touch2.clientX) / 2;
@@ -767,7 +837,7 @@ export function Lightbox({
         }
       }
     },
-    [setPan, setZoom, swipeHandlers],
+    [setPan, setZoom, swipeHandlers]
   );
 
   const handleTouchEnd = useCallback(
@@ -783,7 +853,7 @@ export function Lightbox({
       // Reset visual feedback
       setSwipeFeedback({ translateX: 0, translateY: 0, opacity: 1 });
     },
-    [swipeHandlers],
+    [swipeHandlers]
   );
 
   const handleTouchCancel = useCallback(
@@ -799,7 +869,7 @@ export function Lightbox({
       // Reset visual feedback
       setSwipeFeedback({ translateX: 0, translateY: 0, opacity: 1 });
     },
-    [swipeHandlers],
+    [swipeHandlers]
   );
 
   // Calculate image transform style (includes zoom, pan, and swipe feedback)
@@ -817,7 +887,7 @@ export function Lightbox({
       transforms.push(`translate(${zoom.pan.x}px, ${zoom.pan.y}px)`);
     }
 
-    return transforms.length > 0 ? transforms.join(' ') : undefined;
+    return transforms.length > 0 ? transforms.join(" ") : undefined;
   }, [zoom.zoom, zoom.pan, zoom.isZoomed, swipeFeedback.translateX]);
 
   // Handle thumbnail image load
@@ -827,16 +897,16 @@ export function Lightbox({
 
   // Handle full image load
   const handleFullImageLoad = useCallback(() => {
-    if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
-      console.log('[Lightbox] full image onLoad fired');
+    if (typeof import.meta !== "undefined" && import.meta.env?.DEV) {
+      console.log("[Lightbox] full image onLoad fired");
     }
     setDomFullImageLoaded(true);
   }, []);
 
   // Handle image error (fallback to error state)
   const handleImageError = useCallback(() => {
-    if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
-      console.log('[Lightbox] image onError fired');
+    if (typeof import.meta !== "undefined" && import.meta.env?.DEV) {
+      console.log("[Lightbox] image onError fired");
     }
   }, []);
 
@@ -847,7 +917,7 @@ export function Lightbox({
         onClose();
       }
     },
-    [onClose],
+    [onClose]
   );
 
   // Handle close button click
@@ -858,12 +928,12 @@ export function Lightbox({
   // Handle close button keyboard events
   const handleCloseKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
-      if (event.key === 'Enter' || event.key === ' ') {
+      if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         onClose();
       }
     },
-    [onClose],
+    [onClose]
   );
 
   // Don't render if modal is closed or no image
@@ -875,235 +945,249 @@ export function Lightbox({
   const hasMetadata =
     image.title ||
     image.description ||
-    (typeof image.summary === 'string' && image.summary.trim()) ||
-    (typeof image.ownerName === 'string' && image.ownerName.trim()) ||
+    (typeof image.summary === "string" && image.summary.trim()) ||
+    (typeof image.ownerName === "string" && image.ownerName.trim()) ||
     dimensions ||
     formattedDate;
 
   return (
     <ErrorBoundary>
       <div
-        className={className ? `lightbox-overlay ${className}` : 'lightbox-overlay'}
+        className={
+          className ? `lightbox-overlay ${className}` : "lightbox-overlay"
+        }
         onClick={handleBackdropClick}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={parsedTitle ? 'lightbox-title' : undefined}
-        aria-describedby={hasMetadata ? 'lightbox-metadata' : undefined}
+        aria-labelledby={parsedTitle ? "lightbox-title" : undefined}
+        aria-describedby={hasMetadata ? "lightbox-metadata" : undefined}
         aria-label={!image.title ? altText : undefined}
         style={{
           opacity: swipeFeedback.opacity,
-          transition: swipeFeedback.opacity !== 1 ? 'opacity 0.2s ease-out' : undefined,
+          transition:
+            swipeFeedback.opacity !== 1 ? "opacity 0.2s ease-out" : undefined,
         }}
       >
         <div className="lightbox-container" ref={modalRef}>
-        {/* Close Button – first in DOM for focus order (Close → Breadcrumbs → Nav) */}
-        <button
-          ref={closeButtonRef}
-          className="lightbox-close"
-          onClick={handleClose}
-          onKeyDown={handleCloseKeyDown}
-          aria-label="Close image viewer"
-          type="button"
-        >
-          <FontAwesomeIcon
-            icon={faXmark}
-            className="lightbox-close-icon"
-            aria-hidden
-          />
-        </button>
-        {/* Breadcrumb row – album location when viewing single image */}
-        {breadcrumbPath && breadcrumbPath.length > 1 && (
-          <div className="lightbox-breadcrumb-row" aria-label="Album location">
-            <Breadcrumbs path={breadcrumbPath} className="breadcrumbs-lightbox" />
-          </div>
-        )}
-
-        {/* Navigation Buttons */}
-        {canNavigate && onNext && onPrevious && (
-          <>
-            <button
-              className="lightbox-nav lightbox-nav-previous"
-              onClick={onPrevious}
-              disabled={!navigation.hasPrevious}
-              aria-label="Previous image"
-              type="button"
-            >
-              <FontAwesomeIcon
-                icon={faChevronLeft}
-                className="lightbox-nav-icon"
-                aria-hidden
-              />
-            </button>
-            <button
-              className="lightbox-nav lightbox-nav-next"
-              onClick={onNext}
-              disabled={!navigation.hasNext}
-              aria-label="Next image"
-              type="button"
-            >
-              <FontAwesomeIcon
-                icon={faChevronRight}
-                className="lightbox-nav-icon"
-                aria-hidden
-              />
-            </button>
-          </>
-        )}
-
-        {/* Zoom Controls */}
-        <div className="lightbox-zoom-controls">
+          {/* Close Button – first in DOM for focus order (Close → Breadcrumbs → Nav) */}
           <button
-            className="lightbox-zoom-btn lightbox-zoom-in"
-            onClick={() => zoom.zoomIn()}
-            disabled={!zoom.canZoomIn}
-            aria-label="Zoom in"
+            ref={closeButtonRef}
+            className="lightbox-close"
+            onClick={handleClose}
+            onKeyDown={handleCloseKeyDown}
+            aria-label="Close image viewer"
             type="button"
           >
             <FontAwesomeIcon
-              icon={faPlus}
-              className="lightbox-zoom-icon"
+              icon={faXmark}
+              className="lightbox-close-icon"
               aria-hidden
             />
           </button>
-          <button
-            className="lightbox-zoom-btn lightbox-zoom-out"
-            onClick={() => zoom.zoomOut()}
-            disabled={!zoom.canZoomOut}
-            aria-label="Zoom out"
-            type="button"
-          >
-            <FontAwesomeIcon
-              icon={faMinus}
-              className="lightbox-zoom-icon"
-              aria-hidden
-            />
-          </button>
-          {zoom.isZoomed && (
+          {/* Breadcrumb row – album location when viewing single image */}
+          {breadcrumbPath && breadcrumbPath.length > 1 && (
+            <div
+              className="lightbox-breadcrumb-row"
+              aria-label="Album location"
+            >
+              <Breadcrumbs
+                path={breadcrumbPath}
+                className="breadcrumbs-lightbox"
+              />
+            </div>
+          )}
+
+          {/* Navigation Buttons */}
+          {canNavigate && onNext && onPrevious && (
+            <>
+              <button
+                className="lightbox-nav lightbox-nav-previous"
+                onClick={onPrevious}
+                disabled={!navigation.hasPrevious}
+                aria-label="Previous image"
+                type="button"
+              >
+                <FontAwesomeIcon
+                  icon={faChevronLeft}
+                  className="lightbox-nav-icon"
+                  aria-hidden
+                />
+              </button>
+              <button
+                className="lightbox-nav lightbox-nav-next"
+                onClick={onNext}
+                disabled={!navigation.hasNext}
+                aria-label="Next image"
+                type="button"
+              >
+                <FontAwesomeIcon
+                  icon={faChevronRight}
+                  className="lightbox-nav-icon"
+                  aria-hidden
+                />
+              </button>
+            </>
+          )}
+
+          {/* Zoom Controls */}
+          <div className="lightbox-zoom-controls">
             <button
-              className="lightbox-zoom-btn lightbox-zoom-reset"
-              onClick={() => zoom.resetZoom()}
-              aria-label="Reset zoom"
+              className="lightbox-zoom-btn lightbox-zoom-in"
+              onClick={() => zoom.zoomIn()}
+              disabled={!zoom.canZoomIn}
+              aria-label="Zoom in"
               type="button"
             >
               <FontAwesomeIcon
-                icon={faRotateRight}
+                icon={faPlus}
                 className="lightbox-zoom-icon"
                 aria-hidden
               />
             </button>
-          )}
-        </div>
-
-        {/* Image Container */}
-        <div
-          className="lightbox-image-container"
-          ref={imageContainerRef}
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onTouchCancel={handleTouchCancel}
-          style={{
-            cursor: zoom.isZoomed ? 'grab' : 'default',
-          }}
-        >
-          {hasError ? (
-            <div className="lightbox-error" role="img" aria-label={altText}>
+            <button
+              className="lightbox-zoom-btn lightbox-zoom-out"
+              onClick={() => zoom.zoomOut()}
+              disabled={!zoom.canZoomOut}
+              aria-label="Zoom out"
+              type="button"
+            >
               <FontAwesomeIcon
-                icon={faImage}
-                className="lightbox-error-icon"
+                icon={faMinus}
+                className="lightbox-zoom-icon"
                 aria-hidden
               />
-              <span className="lightbox-error-text">Image unavailable</span>
-            </div>
-          ) : (
-            <>
-              {isLoading && (
-                <div className="lightbox-loading" aria-hidden="true">
-                  <div className="lightbox-skeleton" />
-                </div>
-              )}
-              {/* Thumbnail image (blurred background) */}
-              {progressiveImage.thumbnailUrl && (
-                <img
-                  ref={thumbnailImgRef}
-                  src={progressiveImage.thumbnailUrl}
-                  alt=""
-                  className={`lightbox-image lightbox-image-thumb${isFullLoaded ? '' : ' lightbox-image-thumb-placeholder'}`}
-                  style={thumbnailPlaceholderStyle}
-                  onLoad={handleThumbnailLoad}
-                  onError={handleImageError}
-                  loading="eager"
-                  decoding="async"
-                  aria-hidden="true"
-                  crossOrigin="anonymous"
+            </button>
+            {zoom.isZoomed && (
+              <button
+                className="lightbox-zoom-btn lightbox-zoom-reset"
+                onClick={() => zoom.resetZoom()}
+                aria-label="Reset zoom"
+                type="button"
+              >
+                <FontAwesomeIcon
+                  icon={faRotateRight}
+                  className="lightbox-zoom-icon"
+                  aria-hidden
                 />
-              )}
-              {/* Full image (visible as soon as rendered; onLoad used only for optional fade) */}
-              {isFullLoaded && progressiveImage.fullImageUrl && (
-                <img
-                  ref={fullImgRef}
-                  src={progressiveImage.fullImageUrl}
-                  alt={altText}
-                  className={`lightbox-image lightbox-image-full ${domFullImageLoaded ? 'lightbox-image-loaded' : ''}`}
-                  onLoad={handleFullImageLoad}
-                  onError={handleImageError}
-                  loading="eager"
-                  decoding="async"
-                  style={{
-                    transform: imageTransform,
-                    transformOrigin: 'center center',
-                  }}
-                />
-              )}
-            </>
-          )}
-          {/* Image Counter */}
-          {imageCounter && (
-            <div className="lightbox-counter" aria-label={`Image ${imageCounter}`}>
-              {imageCounter}
-            </div>
-          )}
-        </div>
-
-        {/* Metadata Section */}
-        {(image.title ||
-          image.description ||
-          (typeof image.summary === 'string' && image.summary.trim()) ||
-          (typeof image.ownerName === 'string' && image.ownerName.trim()) ||
-          dimensions ||
-          formattedDate) && (
-          <div className="lightbox-metadata" id="lightbox-metadata">
-            {parsedTitle && (
-              <h2 className="lightbox-title" id="lightbox-title">
-                {parsedTitle}
-              </h2>
+              </button>
             )}
-            {image.description && (
-              <p className="lightbox-description">
-                {decodeHtmlEntities(image.description)}
-              </p>
-            )}
-            {typeof image.summary === 'string' && image.summary.trim() && (
-              <p className="lightbox-summary">
-                {decodeHtmlEntities(image.summary.trim())}
-              </p>
-            )}
-            {typeof image.ownerName === 'string' && image.ownerName.trim() && (
-              <p className="lightbox-owner">
-                Owner: {decodeHtmlEntities(image.ownerName.trim())}
-              </p>
-            )}
-            <div className="lightbox-details">
-              {dimensions && (
-                <span className="lightbox-dimensions">{dimensions}</span>
-              )}
-              {formattedDate && (
-                <span className="lightbox-date">{formattedDate}</span>
-              )}
-            </div>
           </div>
-        )}
+
+          {/* Image Container */}
+          <div
+            className="lightbox-image-container"
+            ref={imageContainerRef}
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchCancel}
+            style={{
+              cursor: zoom.isZoomed ? "grab" : "default",
+            }}
+          >
+            {hasError ? (
+              <div className="lightbox-error" role="img" aria-label={altText}>
+                <FontAwesomeIcon
+                  icon={faImage}
+                  className="lightbox-error-icon"
+                  aria-hidden
+                />
+                <span className="lightbox-error-text">Image unavailable</span>
+              </div>
+            ) : (
+              <>
+                {isLoading && (
+                  <div className="lightbox-loading" aria-hidden="true">
+                    <div className="lightbox-skeleton" />
+                  </div>
+                )}
+                {/* Thumbnail image (blurred background) */}
+                {progressiveImage.thumbnailUrl && (
+                  <img
+                    ref={thumbnailImgRef}
+                    src={progressiveImage.thumbnailUrl}
+                    alt=""
+                    className={`lightbox-image lightbox-image-thumb${isFullLoaded ? "" : " lightbox-image-thumb-placeholder"}`}
+                    style={thumbnailPlaceholderStyle}
+                    onLoad={handleThumbnailLoad}
+                    onError={handleImageError}
+                    loading="eager"
+                    decoding="async"
+                    aria-hidden="true"
+                    crossOrigin="anonymous"
+                  />
+                )}
+                {/* Full image (visible as soon as rendered; onLoad used only for optional fade) */}
+                {isFullLoaded && progressiveImage.fullImageUrl && (
+                  <img
+                    ref={fullImgRef}
+                    src={progressiveImage.fullImageUrl}
+                    alt={altText}
+                    className={`lightbox-image lightbox-image-full ${domFullImageLoaded ? "lightbox-image-loaded" : ""}`}
+                    onLoad={handleFullImageLoad}
+                    onError={handleImageError}
+                    loading="eager"
+                    decoding="async"
+                    style={{
+                      ...upscaledStyle,
+                      transform: imageTransform,
+                      transformOrigin: "center center",
+                    }}
+                  />
+                )}
+              </>
+            )}
+            {/* Image Counter */}
+            {imageCounter && (
+              <div
+                className="lightbox-counter"
+                aria-label={`Image ${imageCounter}`}
+              >
+                {imageCounter}
+              </div>
+            )}
+          </div>
+
+          {/* Metadata Section */}
+          {(image.title ||
+            image.description ||
+            (typeof image.summary === "string" && image.summary.trim()) ||
+            (typeof image.ownerName === "string" && image.ownerName.trim()) ||
+            dimensions ||
+            formattedDate) && (
+            <div className="lightbox-metadata" id="lightbox-metadata">
+              {parsedTitle && (
+                <h2 className="lightbox-title" id="lightbox-title">
+                  {parsedTitle}
+                </h2>
+              )}
+              {image.description && (
+                <p className="lightbox-description">
+                  {decodeHtmlEntities(image.description)}
+                </p>
+              )}
+              {typeof image.summary === "string" && image.summary.trim() && (
+                <p className="lightbox-summary">
+                  {decodeHtmlEntities(image.summary.trim())}
+                </p>
+              )}
+              {typeof image.ownerName === "string" &&
+                image.ownerName.trim() && (
+                  <p className="lightbox-owner">
+                    Owner: {decodeHtmlEntities(image.ownerName.trim())}
+                  </p>
+                )}
+              <div className="lightbox-details">
+                {dimensions && (
+                  <span className="lightbox-dimensions">{dimensions}</span>
+                )}
+                {formattedDate && (
+                  <span className="lightbox-date">{formattedDate}</span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </ErrorBoundary>
