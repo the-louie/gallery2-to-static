@@ -185,6 +185,7 @@ export async function processUpload(db: Db, albumId: number, files: MultipartFil
                 fs.unlinkSync(f.path);
             } else {
                 fs.renameSync(f.path, dest);
+                fs.chmodSync(dest, 0o644); // the spool file is 0600; nginx (www-data) serves the original
                 if (exif.hasGps) await stripGps(dest, kind, opts.log);
                 if (meta.orientation && meta.orientation >= 5) [width, height] = [height, width]; // shown rotated by the browser
             }

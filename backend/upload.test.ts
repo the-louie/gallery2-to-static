@@ -121,6 +121,8 @@ async function run(): Promise<void> {
                 assert.strictEqual(sniff(fs.readFileSync(path.join(albumsRoot, 'dreamhack', 'lordag1', 'phone.jpg'))), 'jpeg');
             }
             assert.strictEqual(fs.readdirSync(path.join(albumsRoot, '.upload-tmp')).length, 0, 'no temp files left');
+            // go-live 2026-10-26: the spool file is 0600; the stored original must be readable by nginx
+            assert.strictEqual(fs.statSync(stored).mode & 0o777, 0o644, 'stored original is 0644');
             assert.strictEqual(changes, 1);
             assert.ok(db.get("SELECT 1 FROM audit_log WHERE action = 'photo upload' AND result = 'ok'"));
             // forbidden album
