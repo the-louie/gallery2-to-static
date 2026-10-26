@@ -47,17 +47,6 @@ open are listed here. The items already fixed are at the end of "Not reproduced 
   - raw `ownerId` in the output: rows are now mapped field by field (LOGIC-05), `ownerId` is not emitted.
 - **Per-album themes for paths with é/æ/ø** (was "not re-verified"): checked 2026-10-25 (Sprint 11 T-02): all 1,389 `pathIndex` keys are ASCII (titles are transliterated), so a percent-encoded `location.pathname` (BrowserRouter) cannot miss a key.
 
-## Added 2026-10-26 (afternoon): operator comments after the first real albums (admin site)
-
-- **QA2-01: album lists alphabetical** — "the list of albums should be alphabetical, both in admin and in classic mode".
-- **QA2-02: delegate a new album from the album page** — admin creates in the root, then delegates to a user.
-- **QA2-03: upload: show the server steps after the progress bar** — the long pause is the server checking and storing the files.
-- **QA2-04: thumbnails right after upload** — they appear only after the next regeneration; generate at upload.
-- **QA2-05: say when the main site updates** — publishing time in the indicator (5 s after the last change, 10–60 s run).
-- **QA2-06: breadcrumb duplicates the album name** — the page added the current album again.
-- **QA2-07: "New album" → "New sub-album"** inside an album.
-- **QA2-08: the effective highlight is marked and has no "Set as highlight" button.**
-
 ## BEFORE GO-LIVE (operator 2026-10-26: "lift FUT tasks to before go-alive so we are ready to add new albums")
 
 Operator, 2026-10-25, lifted 2026-10-26: **all five rows ship before lanbilder.se switches** to the new

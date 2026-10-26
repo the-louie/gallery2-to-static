@@ -10,12 +10,15 @@ export function registerRegenRoutes(router: Router, deps: AuthDeps, queue: Regen
     router.get('/api/regen/status', requireUser(deps, (ctx) => {
         const last = ctx.db.get<{ mode: string; finished_at: string | null; ok: number }>('SELECT mode, finished_at, ok FROM generation_runs ORDER BY id DESC LIMIT 1');
         const dirty = ctx.db.get<{ n: number }>('SELECT count(*) AS n FROM dirty_albums')!.n;
+        const settleMs = Number(process.env.REGEN_SETTLE_MS ?? 60_000);
         const running = queue?.isRunning ?? false;
         return json(200, {
             pending: (queue ? queue.busy && !running : false) || (!queue && dirty > 0),
             running,
             lastRun: last ? { mode: last.mode, finishedAt: last.finished_at, ok: last.ok === 1 } : null,
             dirty,
+            /** albums are published once their last change is older than this (operator, 2026-10-26) */
+            settleMs,
         });
     }));
 

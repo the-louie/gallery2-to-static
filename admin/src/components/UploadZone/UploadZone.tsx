@@ -167,8 +167,8 @@ export function UploadZone({
             }.`}
           </p>
           <p className="muted">
-            The public site shows them after the next publish run (about a
-            minute; the badge in the header says when).
+            The public site shows them one to two minutes after the last change
+            to this album (the badge in the header says when).
           </p>
           <ul className="upload-result-list">
             {phase.result.created.map((c) => (

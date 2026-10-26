@@ -26,7 +26,7 @@ interface AdminItem {               // one row of `items` as the UI sees it
   canWrite: boolean;                           // for the calling user
 }
 interface AlbumView { album: AdminItem; breadcrumb: Array<{id: number; title: string}>; children: AdminItem[]; }
-interface RegenStatus { pending: boolean; running: boolean; lastRun: { mode: string; finishedAt: string | null; ok: boolean } | null; dirty: number; }
+interface RegenStatus { pending: boolean; running: boolean; lastRun: { mode: string; finishedAt: string | null; ok: boolean } | null; dirty: number; settleMs: number; }
 interface Profile { nickname: string | null; fullName: string | null; showFullName: boolean; hasPicture: boolean; email: string; role: 'admin'|'user'; }
 ```
 
@@ -56,7 +56,7 @@ Every write audits and asks the regeneration queue; the public site follows with
 | Route | Reply |
 |---|---|
 | `GET /api/regen/status` | `RegenStatus` |
-| `POST /api/regen` | `{ok: true}` — asks for a run now (admin) |
+| `POST /api/regen` | `{ok: true}` — publishes everything dirty now, without the settle time (admin) |
 
 ## Profile
 

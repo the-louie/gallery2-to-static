@@ -114,6 +114,20 @@ async function run(): Promise<void> {
         assert.strictEqual(db.get<{ pending: number }>('SELECT pending FROM view_counts WHERE item_id = 101')!.pending, 0);
         assert.strictEqual(foldViewCounts(db), 0, 'nothing pending -> nothing changed');
 
+        // 4c. the settle time (operator): a fresh change waits, an older one is published, the fresh one stays dirty
+        db.run('DELETE FROM dirty_albums');
+        db.run("UPDATE items SET title = 'Old change', changed_at = '2026-10-26T10:00:00.000Z' WHERE id = 11");
+        db.run("UPDATE items SET changed_at = '2026-10-26T10:00:00.000Z' WHERE parent_id = 11");
+        db.run("UPDATE items SET title = 'Fresh change' WHERE id = 13");
+        const now = new Date();
+        const settled = await generateChanged(db, data, media, now, { settleMs: 60_000 });
+        assert.deepStrictEqual([settled!.dirty, settled!.waiting], [1, 2], 'one album published; the fresh one and the parent it touched wait (the parent is still rewritten as an ancestor)');
+        assert.strictEqual((await readJson(path.join(data, '11.json'))).metadata.albumTitle, 'Old change');
+        assert.deepStrictEqual(dirty(db), [10, 13], 'the fresh album (and its parent, marked by it) stays dirty');
+        assert.strictEqual(await generateChanged(db, data, media, now, { settleMs: 60_000 }), null, 'nothing settled yet');
+        assert.ok(await generateChanged(db, data, media, new Date(now.getTime() + 61_000), { settleMs: 60_000 }), 'published a minute later');
+        assert.deepStrictEqual(dirty(db), []);
+
         // 5. a change made during a run stays dirty afterwards (cleared rows are matched by their `since`)
         db.run('DELETE FROM dirty_albums');
         db.run("UPDATE items SET title = 'X' WHERE id = 13");

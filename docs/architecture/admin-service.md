@@ -53,6 +53,12 @@ The album, photo, upload, highlight, order, regeneration and profile routes are 
 
 - **Authorisation**: `canWrite(user, item)` on the target (for a new album: on the parent);
   admins everywhere. 403 is decided before any lookup and audited (`authorize denied`).
+- **Publishing cadence** (operator, 2026-10-26): the service ticks every minute (`REGEN_TICK_MS`) and
+  publishes the dirty albums whose last change (the album row or any child) is older than
+  `REGEN_SETTLE_MS` (60 s), so a finished album goes out while someone keeps uploading into
+  another; the waiting ones stay dirty for the next tick. A write also asks the queue (debounced 5 s,
+  same settle rule). `POST /api/regen` ("Publish now", admin) runs without the settle time; the
+  nightly run too. `GET /api/regen/status` reports `dirty` and `settleMs`.
 - **Every write** is audited (`album create|update|hide|unhide|delete|restore|highlight|order`,
   `photo upload|update|delete|restore`, `profile update|picture`, `regen request`) and asks the
   regeneration queue, so the public site follows within about a minute (`GET /api/regen/status`).

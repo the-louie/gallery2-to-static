@@ -49,6 +49,8 @@ export interface RegenStatus {
   running: boolean;
   lastRun: { mode: string; finishedAt: string | null; ok: boolean } | null;
   dirty: number;
+  /** albums are published once their last change is older than this (ms) */
+  settleMs?: number;
 }
 
 export interface Profile {

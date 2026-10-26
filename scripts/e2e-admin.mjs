@@ -26,7 +26,7 @@ const photos = [];
 for (const [n, c] of [['first.jpg', { r: 200, g: 30, b: 30 }], ['second.jpg', { r: 30, g: 200, b: 30 }]]) {
   const p = path.join(tmp, n); fs.writeFileSync(p, await sharp({ create: { width: 640, height: 480, channels: 3, background: c } }).jpeg().toBuffer()); photos.push(p);
 }
-const env = { ...process.env, GALLERY_DB: dbFile, PORT: '3199', HOST: '127.0.0.1', DEV_FAKE_ACCESS_EMAIL: 'e2e@example.com', PROJECT_ROOT: tmp, CONFIG_JSON: path.join(tmp, 'config.json'), AUDIT_LOG_FILE: path.join(tmp, 'audit.jsonl') };
+const env = { ...process.env, GALLERY_DB: dbFile, PORT: '3199', HOST: '127.0.0.1', DEV_FAKE_ACCESS_EMAIL: 'e2e@example.com', PROJECT_ROOT: tmp, CONFIG_JSON: path.join(tmp, 'config.json'), AUDIT_LOG_FILE: path.join(tmp, 'audit.jsonl'), REGEN_TICK_MS: '3000', REGEN_SETTLE_MS: '2000', REGEN_DEBOUNCE_MS: '1000' };
 const server = spawn(process.execPath, ['--no-warnings=ExperimentalWarning', 'server.ts'], { cwd: `${R}/backend`, env, stdio: ['ignore', 'pipe', 'pipe'], detached: true });
 const serverLog = []; server.stdout.on('data', (d) => serverLog.push(String(d))); server.stderr.on('data', (d) => serverLog.push(String(d)));
 const vite = spawn('npx', ['vite', '--port', '5174', '--strictPort', '--host', '127.0.0.1'], { cwd: `${R}/admin`, env: { ...process.env, ADMIN_API: 'http://127.0.0.1:3199' }, stdio: ['ignore', 'pipe', 'pipe'], detached: true });

@@ -2,6 +2,21 @@
 
 Rows pruned from `TODO.md` after each sprint, with the proof they were closed on. Newest first.
 
+## Pruned 2026-10-26 (Sprint 19): 10 rows (QA2-01..09, 11)
+
+## Added 2026-10-26 (afternoon): operator comments after the first real albums (admin site)
+
+- ~~**QA2-01: album lists alphabetical**~~ — **CLOSED, verified 2026-10-26 (Sprint 19 T-01):** `backend/tree.ts sortChildren` + `settings.album_sort` (default `title`, Swedish collation): sub-albums alphabetically before photos in the generated data and in `albums.ts getAlbumView`; the admin list sorts the same way. Original row kept for the record: "the list of albums should be alphabetical, both in admin and in classic mode".
+- ~~**QA2-02: delegate a new album from the album page**~~ — **CLOSED, verified 2026-10-26 (Sprint 19 T-01):** `admin/src/components/DelegateBox` on the album page (admin): shows the delegates, delegate/undelegate via the existing user routes; the Users page keeps its picker. Original row kept for the record: admin creates in the root, then delegates to a user.
+- ~~**QA2-03: upload: show the server steps after the progress bar**~~ — **CLOSED, verified 2026-10-26 (Sprint 19 T-01):** `UploadZone` phase "processing" after the bytes are up ("checking and storing N files on the server…"), then the count and the publish note. Original row kept for the record: the long pause is the server checking and storing the files.
+- ~~**QA2-04: thumbnails right after upload**~~ — **CLOSED, verified 2026-10-26 (Sprint 19 T-01):** `backend/upload.ts thumbnailNow`: the thumbnail is generated at upload and recorded in `media`, so `thumbnailUrl` is set in the upload reply (test in `upload.test.ts`). Original row kept for the record: they appear only after the next regeneration; generate at upload.
+- ~~**QA2-05: say when the main site updates**~~ — **CLOSED, verified 2026-10-26 (Sprint 19 T-01):** `RegenIndicator` shows "Published hh:mm" / "Waiting N albums (published 1 min after the last change)"; the service ticks every minute and publishes albums quiet for a minute (operator item 5b, `REGEN_TICK_MS`/`REGEN_SETTLE_MS`), "Publish now" skips the wait (`generate-changed.test.ts` settle case). Original row kept for the record: publishing time in the indicator (5 s after the last change, 10–60 s run).
+- ~~**QA2-06: breadcrumb duplicates the album name**~~ — **CLOSED, verified 2026-10-26 (Sprint 19 T-01):** `AlbumPage` drops the breadcrumb's last entry when it is the album itself. Original row kept for the record: the page added the current album again.
+- ~~**QA2-07: "New album" → "New sub-album"**~~ — **CLOSED, verified 2026-10-26 (Sprint 19 T-01):** `AlbumToolbar`: "New sub-album" inside an album, "New album" at the root. Original row kept for the record: inside an album.
+- ~~**QA2-09: sub-albums always before photos; the default highlight is the first direct photo**~~ — **CLOSED, verified 2026-10-26 (Sprint 19 T-01):** `sortChildren` puts albums first in both modes; `generate.ts firstPhotoRecursive` checks direct photos first. Original row kept for the record: operator item 9.
+- ~~**QA2-11: hide photos; a hidden photo may still be the album highlight**~~ — **CLOSED, verified 2026-10-26 (Sprint 19 T-01):** `PUT /api/photos/:id/hidden`, Hidden checkbox on the photo card; the generator keeps hidden (not blocked) photos as chosen highlights (`tree.ts hiddenPhotos`, media step thumbnails them); migration 004 `blocked` keeps the Gallery 2 ignore lists out. Original row kept for the record: operator item 11.
+- ~~**QA2-08: the effective highlight is marked and has no "Set as highlight" button.**~~ — **CLOSED, verified 2026-10-26 (Sprint 19 T-01):** `AdminItem.currentHighlightPhotoId`; the card shows "highlight" / "highlight (default)" and no button on it. Original row kept for the record: (the title says it all)
+
 ## Pruned 2026-10-26 (Sprint 18): 2 rows
 
 ### ~~FUT-02: admin can add albums and delegate them; delegated users add subalbums and images~~

@@ -17,17 +17,20 @@ export function RegenIndicator(): ReactNode {
         minute: "2-digit",
       })
     : null;
+  const settleMin = Math.round((status.settleMs ?? 60_000) / 60_000);
   const label = busy
-    ? "Publishing… (the site updates in about a minute)"
+    ? "Publishing…"
     : failed
       ? "Publish failed"
-      : at
-        ? `Published ${at}`
-        : "Published";
+      : status.dirty > 0
+        ? `Waiting ${status.dirty} album${status.dirty === 1 ? "" : "s"} (published ${settleMin} min after the last change)`
+        : at
+          ? `Published ${at}`
+          : "Published";
   const cls = busy ? "busy" : failed ? "failed" : "ok";
   const title = status.lastRun?.finishedAt
-    ? `Changes are published 5 s after the last edit; last run (${status.lastRun.mode}) finished ${status.lastRun.finishedAt}`
-    : "Changes are published 5 s after the last edit";
+    ? `Every minute, albums whose last change is older than ${settleMin} min are published; last run (${status.lastRun.mode}) finished ${status.lastRun.finishedAt}`
+    : `Every minute, albums whose last change is older than ${settleMin} min are published`;
   return (
     <span
       className={`regen-indicator regen-indicator-${cls}`}

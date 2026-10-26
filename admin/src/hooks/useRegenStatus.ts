@@ -30,7 +30,7 @@ export function useRegenStatus(): RegenStatus | null {
         const s = await api.regenStatus();
         if (disposed) return;
         setStatus(s);
-        if (s.pending || s.running) {
+        if (s.pending || s.running || s.dirty > 0) {
           clearTimeout(timer);
           timer = setTimeout(() => void poll(), POLL_MS);
         }

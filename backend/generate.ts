@@ -313,8 +313,8 @@ export function foldViewCounts(db: Db): number {
 }
 
 /** The dirty albums plus every ancestor up to the root (counts and highlights change up the chain). */
-export function dirtyWithAncestors(db: Db): Set<number> {
-    const dirty = db.all<{ album_id: number }>('SELECT album_id FROM dirty_albums').map((r) => r.album_id);
+export function dirtyWithAncestors(db: Db, ids?: number[]): Set<number> {
+    const dirty = ids ?? db.all<{ album_id: number }>('SELECT album_id FROM dirty_albums').map((r) => r.album_id);
     const out = new Set<number>();
     for (const id of dirty) {
         let cur: number | null = id;
@@ -332,10 +332,25 @@ export function dirtyWithAncestors(db: Db): Set<number> {
  * the always-complete index/legacy/search files, then the dirty rows that existed at the start are
  * cleared and the run recorded, in one transaction. Returns null when nothing was dirty.
  */
-export async function generateChanged(db: Db, dataDir: string, media?: Omit<MediaOptions, 'albumIds'>, now: Date = new Date()): Promise<(GenerateAllResult & { dirty: number }) | null> {
-    const dirtyRows = db.all<{ album_id: number; since: string }>('SELECT album_id, since FROM dirty_albums');
+export interface ChangedOptions {
+    /**
+     * Operator, 2026-10-26: publish only albums whose last change (the album row or any child) is
+     * older than this, so a finished album goes out while someone keeps working on another one.
+     * 0 = everything dirty (the nightly run, "Publish now").
+     */
+    settleMs?: number;
+}
+
+export async function generateChanged(db: Db, dataDir: string, media?: Omit<MediaOptions, 'albumIds'>, now: Date = new Date(), opts: ChangedOptions = {}): Promise<(GenerateAllResult & { dirty: number; waiting: number }) | null> {
+    const settle = opts.settleMs ?? 0;
+    const cutoff = new Date(now.getTime() - settle).toISOString();
+    const all = db.all<{ album_id: number; since: string }>('SELECT album_id, since FROM dirty_albums');
+    const dirtyRows = settle > 0
+        ? all.filter((r) => !db.get('SELECT 1 FROM items i WHERE (i.id = ? OR i.parent_id = ?) AND i.changed_at > ?', r.album_id, r.album_id, cutoff))
+        : all;
+    const waiting = all.length - dirtyRows.length;
     if (dirtyRows.length === 0) return null;
-    const albums = dirtyWithAncestors(db);
+    const albums = dirtyWithAncestors(db, dirtyRows.map((r) => r.album_id));
     const runId = db.run("INSERT INTO generation_runs (mode, started_at, albums) VALUES ('changed', ?, ?)", now.toISOString(), albums.size).lastInsertRowid;
     if (media) await updateMedia(db, { ...media, albumIds: albums });
     const result = await generateAll(db, dataDir, now, albums);
@@ -343,7 +358,7 @@ export async function generateChanged(db: Db, dataDir: string, media?: Omit<Medi
         for (const r of dirtyRows) db.run('DELETE FROM dirty_albums WHERE album_id = ? AND since = ?', r.album_id, r.since);
         db.run('UPDATE generation_runs SET finished_at = ?, ok = 1 WHERE id = ?', new Date().toISOString(), runId);
     });
-    return { ...result, dirty: dirtyRows.length };
+    return { ...result, dirty: dirtyRows.length, waiting };
 }
 
 /** The paths and image options a run needs, from config.json (relative to the project root). */
@@ -368,11 +383,12 @@ export function runtimePaths(config: import('./types.ts').Config, projectRoot: s
 }
 
 /** What the admin service runs after a change: the changed branches, then the published link tree. */
-export async function regenerateChanged(db: Db, config: import('./types.ts').Config, projectRoot: string, log?: (l: string) => void): Promise<void> {
+export async function regenerateChanged(db: Db, config: import('./types.ts').Config, projectRoot: string, log?: (l: string) => void, opts: ChangedOptions = {}): Promise<{ dirty: number; waiting: number } | null> {
     const { publishImages } = await import('./publishImages.ts');
     const p = runtimePaths(config, projectRoot, log);
-    const r = await generateChanged(db, p.dataDir, p.media);
+    const r = await generateChanged(db, p.dataDir, p.media, new Date(), opts);
     if (r) await publishImages(p.dataDir, p.albumsRoot, p.publishedRoot);
+    return r ? { dirty: r.dirty, waiting: r.waiting } : null;
 }
 
 // CLI: node --no-warnings=ExperimentalWarning generate.ts --all | --changed | images [--db <file>] [--no-images] [--no-publish]

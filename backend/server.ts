@@ -51,6 +51,8 @@ export interface ServerOptions {
     onChange?: () => void;
     /** The regeneration queue (status route, manual run); the CLI builds one around generate.ts. */
     regen?: RegenQueue;
+    /** 'Publish now' (POST /api/regen): a run without the settle time; default regen.request(). */
+    publishNow?: () => void;
     /** Profile pictures (default: `avatars/` next to the database file). */
     avatarsDir?: string;
     /** Thumbnails generated at upload (the CLI passes config's thumbnail settings). */
@@ -91,7 +93,7 @@ export function buildRouter(opts: ServerOptions): Router {
         thumbnails: opts.thumbnails,
         onChange,
     });
-    registerRegenRoutes(router, deps, opts.regen, onChange);
+    registerRegenRoutes(router, deps, opts.regen, opts.publishNow ?? onChange);
     registerProfileRoutes(router, deps, { avatarsDir: opts.avatarsDir ?? path.join(path.dirname(opts.db.file === ':memory:' ? path.join(import.meta.dirname, 'db', 'x') : opts.db.file), 'avatars'), onChange });
     opts.routes?.(router);
     return router;
@@ -173,20 +175,31 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
     } else if (!access) {
         stdoutLogger({ level: 'warn', msg: 'CF_ACCESS_TEAM_DOMAIN / CF_ACCESS_AUD not set: authenticated routes answer 503' });
     }
-    // the regeneration queue: the changed branches + the published link tree, 5 s after the last change
+    // The regeneration tick (operator, 2026-10-26): every REGEN_TICK_MS (60 s) the changed branches
+    // whose last change is older than REGEN_SETTLE_MS (60 s) are published, so a finished album goes
+    // out while someone keeps working on another one. A write also asks the queue (debounced), and
+    // 'Publish now' (POST /api/regen) runs without the settle time.
     const { regenerateChanged } = await import('./generate.ts');
     const fsSync = await import('node:fs');
     // PROJECT_ROOT / CONFIG_JSON: another tree (the end-to-end test); default the repo and backend/config.json
     const projectRoot = process.env.PROJECT_ROOT ?? path.join(import.meta.dirname, '..');
     const config = JSON.parse(fsSync.readFileSync(process.env.CONFIG_JSON ?? path.join(import.meta.dirname, 'config.json'), 'utf-8')) as import('./types.ts').Config;
+    const tickMs = Number(process.env.REGEN_TICK_MS ?? 60_000);
+    const settleMs = Number(process.env.REGEN_SETTLE_MS ?? 60_000);
+    let settleNext = settleMs;
     const regen = new RegenQueue(async () => {
         const t0 = Date.now();
-        await regenerateChanged(db, config, projectRoot, (l) => stdoutLogger({ level: 'warn', msg: l }));
-        stdoutLogger({ msg: 'regenerated', ms: Date.now() - t0 });
-    }, { onError: (err) => stdoutLogger({ level: 'error', msg: 'regen failed', error: err instanceof Error ? err.message : String(err) }) });
+        const settle = settleNext; settleNext = settleMs;
+        const r = await regenerateChanged(db, config, projectRoot, (l) => stdoutLogger({ level: 'warn', msg: l }), { settleMs: settle });
+        if (r) stdoutLogger({ msg: 'regenerated', albums: r.dirty, waiting: r.waiting, ms: Date.now() - t0 });
+    }, { delayMs: Number(process.env.REGEN_DEBOUNCE_MS ?? 5_000), onError: (err) => stdoutLogger({ level: 'error', msg: 'regen failed', error: err instanceof Error ? err.message : String(err) }) });
+    const tick = setInterval(() => { if (!regen.busy && db.get('SELECT 1 FROM dirty_albums LIMIT 1')) regen.request(); }, tickMs);
+    tick.unref();
+    /** 'Publish now': the next run takes everything dirty */
+    const publishNow = (): void => { settleNext = 0; regen.request(); };
     const { runtimePaths } = await import('./generate.ts');
     const paths = runtimePaths(config, projectRoot);
-    const server = createServer({ db, port, host, access, verifyJwt, assertionOptional: Boolean(fakeEmail), regen, albumsRoot: paths.albumsRoot,
+    const server = createServer({ db, port, host, access, verifyJwt, assertionOptional: Boolean(fakeEmail), regen, publishNow, albumsRoot: paths.albumsRoot,
         thumbnails: { root: paths.media.thumbnailsRoot, options: paths.media.thumbOptions } });
     // expired sessions are dropped once an hour (otherwise only when touched)
     const { purgeExpiredSessions } = await import('./auth/session.ts');
