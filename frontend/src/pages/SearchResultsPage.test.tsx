@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen } from '@/test-utils';
+import { render, screen, fireEvent } from '@/test-utils';
 import { SearchResultsPage } from './SearchResultsPage';
 import { useSearch } from '@/hooks/useSearch';
 import { useSearchParams } from 'react-router-dom';
@@ -51,6 +51,19 @@ describe('SearchResultsPage', () => {
 
     expect(screen.getByRole('heading', { name: /search error/i })).toBeInTheDocument();
     expect(screen.getByText('Search error')).toBeInTheDocument();
+  });
+
+  it('"Try again" in the error state runs the search again (S13 T-07, QA-08)', () => {
+    vi.mocked(useSearch).mockReturnValue({
+      ...mockUseSearch,
+      error: new Error('Root album not found'),
+    } as any);
+
+    render(<SearchResultsPage />);
+    mockSearch.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: /try the search again/i }));
+
+    expect(mockSearch).toHaveBeenCalledWith('test', undefined);
   });
 
   it('displays empty state for empty query', () => {

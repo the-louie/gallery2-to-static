@@ -69,6 +69,26 @@ describe('ErrorFallback', () => {
 
       expect(mockResetError).toHaveBeenCalledTimes(1);
     });
+
+    it('reloads the page instead when a route chunk failed to load (S13 T-07, QA-08)', async () => {
+      const user = userEvent.setup();
+      const reload = vi.fn();
+      const original = window.location;
+      Object.defineProperty(window, 'location', { configurable: true, value: { ...original, reload } });
+      try {
+        renderWithRouter(
+          <ErrorFallback
+            error={new TypeError('Failed to fetch dynamically imported module: https://x/assets/js/SearchResultsPage-abc.js')}
+            resetError={mockResetError}
+          />,
+        );
+        await user.click(screen.getByLabelText(/Retry loading the page/i));
+        expect(reload).toHaveBeenCalledTimes(1);
+        expect(mockResetError).not.toHaveBeenCalled();
+      } finally {
+        Object.defineProperty(window, 'location', { configurable: true, value: original });
+      }
+    });
   });
 
   describe('Navigation Button', () => {

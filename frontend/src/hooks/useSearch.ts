@@ -149,25 +149,16 @@ export function useSearch(): UseSearchReturn {
       return;
     }
 
-    try {
-      setError(null);
-
-      const rootAlbumId = await findRootAlbumId();
-      if (!rootAlbumId) {
-        throw new Error('Root album not found');
-      }
-
-      // buildIndex loads the pre-built index file
-      await index.buildIndex(rootAlbumId);
-    } catch (err) {
-      if (isMountedRef.current) {
-        const searchError =
-          err instanceof Error
-            ? err
-            : new Error('Failed to load search index');
-        setError(searchError);
-      }
+    // Errors propagate to search(), which reports them and caches nothing, so "Try again" loads
+    // the index again (QA-08: a swallowed failure used to cache an empty result list for the query,
+    // and every retry hit that cache without a single request)
+    const rootAlbumId = await findRootAlbumId();
+    if (!rootAlbumId) {
+      throw new Error('Root album not found');
     }
+
+    // buildIndex loads the pre-built index file
+    await index.buildIndex(rootAlbumId);
   }, []);
 
   /**
@@ -196,6 +187,7 @@ export function useSearch(): UseSearchReturn {
       const cachedResults = lruGet(resultsCacheRef.current, cacheKey);
       if (cachedResults !== undefined) {
         if (isMountedRef.current) {
+          setError(null);
           setResults(cachedResults);
           setIsLoading(false);
         }

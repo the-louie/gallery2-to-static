@@ -10,6 +10,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import type { ErrorFallbackProps } from './ErrorBoundary';
+import { isModuleLoadError } from '@/utils/moduleLoadError';
 import './ErrorFallback.css';
 import type { JSX } from 'react'; // React 19 types: no global JSX namespace
 
@@ -28,6 +29,16 @@ export function ErrorFallback({
   errorInfo,
 }: ErrorFallbackProps): JSX.Element {
   const isDevelopment = import.meta.env.MODE === 'development';
+
+  // A route chunk that failed to download (network gone while navigating) stays failed inside
+  // React.lazy, so re-rendering throws the same error: reload the page instead (QA-08)
+  const handleRetry = (): void => {
+    if (isModuleLoadError(error)) {
+      window.location.reload();
+      return;
+    }
+    resetError();
+  };
 
   const handleGoHome = (): void => {
     // ErrorBoundary is outside the Router: a full page load of the root (also resets the broken state)
@@ -75,7 +86,7 @@ export function ErrorFallback({
         <div className="error-fallback-actions">
           <button
             type="button"
-            onClick={resetError}
+            onClick={handleRetry}
             className="error-fallback-button error-fallback-button-primary"
             aria-label="Retry loading the page"
           >

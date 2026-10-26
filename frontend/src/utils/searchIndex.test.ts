@@ -57,11 +57,11 @@ describe('SearchIndex', () => {
       expect(searchIndex.getItemCount()).toBe(0);
     });
 
-    it('handles errors gracefully during index loading', async () => {
+    it('reports a failed index download so the caller can retry (S13 T-07, QA-08)', async () => {
       vi.mocked(loadSearchIndex).mockRejectedValueOnce(new Error('Network error'));
 
-      // Should not throw
-      await expect(searchIndex.buildIndex(7)).resolves.not.toThrow();
+      await expect(searchIndex.buildIndex(7)).rejects.toThrow('Network error');
+      expect(searchIndex.getItemCount()).toBe(0);
     });
 
     it('does not reload index if already loaded', async () => {

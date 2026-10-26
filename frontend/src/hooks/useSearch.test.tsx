@@ -124,6 +124,19 @@ describe('useSearch', () => {
     });
   });
 
+  it('a failed search caches nothing, so the next call loads the index again (S13 T-07, QA-08)', async () => {
+    vi.mocked(mockSearchIndex.buildIndex).mockRejectedValueOnce(new Error('Load failed'));
+
+    const { result } = renderHook(() => useSearch());
+    result.current.search('test');
+    await waitFor(() => expect(result.current.error?.message).toBe('Load failed'));
+
+    vi.mocked(mockSearchIndex.search).mockReturnValue([]);
+    result.current.search('test');
+    await waitFor(() => expect(result.current.error).toBeNull());
+    expect(mockSearchIndex.buildIndex).toHaveBeenCalledTimes(2);
+  });
+
   it('handles search errors', async () => {
     vi.mocked(mockSearchIndex.getItemCount).mockReturnValue(10);
     vi.mocked(mockSearchIndex.search).mockImplementation(() => {

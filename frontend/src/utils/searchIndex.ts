@@ -131,8 +131,10 @@ export class SearchIndex {
         this.index.set(item.id, item);
       }
     } catch (error) {
-      // Log error but don't throw - allow search to work with empty index
+      // A failed download (network) is reported, not swallowed: the caller shows the error and the
+      // next attempt loads again (QA-08). A missing file (404 -> null above) still means "no index".
       console.error('Failed to load search index:', error);
+      throw error instanceof Error ? error : new Error('Failed to load search index');
     }
   }
 

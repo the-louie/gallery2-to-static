@@ -81,12 +81,16 @@ export function SearchResultsPage() {
       .map(result => result.item);
   }, [results]);
 
-  // Error state
+  // Error state: "Try again" re-runs the search (the index is loaded again when its load failed;
+  // operator, 2026-10-26, QA-08: a search during a network restart had no way back)
   if (error) {
     return (
       <div className="search-results-page search-results-page-error" role="alert" aria-live="assertive">
         <h1>Search Error</h1>
         <p>{error.message}</p>
+        <button type="button" onClick={() => search(urlQuery, contextAlbumId)} aria-label="Try the search again">
+          Try again
+        </button>{' '}
         <button type="button" onClick={() => navigate('/')} aria-label="Go to home page">
           Go to Home
         </button>
