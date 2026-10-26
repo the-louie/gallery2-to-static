@@ -296,6 +296,20 @@ export async function generateAll(db: Db, dataDir: string, now: Date = new Date(
     return { albums, removed, pathIndex };
 }
 
+/**
+ * Folds the view counter's pending counts into the items (FUT-01 decision: counters keep counting);
+ * the update trigger marks the albums dirty, so the next changed run shows the new numbers.
+ * Returns the number of items updated.
+ */
+export function foldViewCounts(db: Db): number {
+    return db.transaction(() => {
+        const n = db.run(`UPDATE items SET view_count = COALESCE(view_count, 0) + (SELECT pending FROM view_counts v WHERE v.item_id = items.id)
+            WHERE id IN (SELECT item_id FROM view_counts WHERE pending > 0)`).changes;
+        db.run("UPDATE view_counts SET pending = 0, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE pending > 0");
+        return n;
+    });
+}
+
 /** The dirty albums plus every ancestor up to the root (counts and highlights change up the chain). */
 export function dirtyWithAncestors(db: Db): Set<number> {
     const dirty = db.all<{ album_id: number }>('SELECT album_id FROM dirty_albums').map((r) => r.album_id);
@@ -336,9 +350,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
         import('./db/db.ts'), import('./publishImages.ts'), import('./outputDir.ts'), import('node:fs'),
     ]);
     const args = process.argv.slice(2);
-    const mode = args.find((a) => a === '--all' || a === '--changed' || a === 'images');
+    const mode = args.find((a) => a === '--all' || a === '--changed' || a === 'images' || a === '--fold-views');
     if (!mode) {
-        console.error('usage: generate.ts --all | --changed | images [--db <file>] [--no-images] [--no-publish]');
+        console.error('usage: generate.ts --all | --changed | --fold-views | images [--db <file>] [--no-images] [--no-publish]');
         process.exit(2);
     }
     const projectRoot = path.join(import.meta.dirname, '..');
@@ -375,6 +389,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
             });
             console.log(`generated ${r.albums} albums into ${dataDir}${previous ? ` (previous kept as ${previous})` : ''}`);
         } else {
+            if (mode === '--fold-views') console.log(`view counts folded into ${foldViewCounts(db)} items`);
             const r = await generateChanged(db, dataDir, args.includes('--no-images') ? undefined : media);
             console.log(r ? `changed: ${r.dirty} dirty albums -> ${r.albums} files written, ${r.removed} removed` : 'nothing changed');
         }

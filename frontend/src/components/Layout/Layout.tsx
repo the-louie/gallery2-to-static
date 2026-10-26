@@ -7,6 +7,7 @@ import { getViewKey } from '@/utils/viewKey';
 import { SearchBar } from '../SearchBar';
 import { SortDropdown } from '../SortDropdown';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useViewBeacon } from '@/hooks/useViewBeacon';
 import { useSiteMetadata } from '@/hooks/useSiteMetadata';
 import { parseBBCodeDecoded } from '@/utils/bbcode';
 import { useSort } from '@/hooks/useSort';
@@ -45,6 +46,7 @@ export interface LayoutProps {
 export function Layout({ children, className }: LayoutProps) {
   const { siteName, siteDescription } = useSiteMetadata();
   const { isClassic } = useTheme();
+  useViewBeacon(); // counts the album/photo view in every theme (S15 T-09)
   const { option: sortOption, setOption: setSortOption } = useSort('albums');
   const location = useLocation();
   const isInitialMountRef = useRef(true);

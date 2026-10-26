@@ -9,7 +9,7 @@ import * as os from 'os';
 import * as path from 'path';
 import sharp from 'sharp';
 import { importG2 } from './importG2.ts';
-import { generateAll, generateChanged, dirtyWithAncestors } from './generate.ts';
+import { generateAll, generateChanged, dirtyWithAncestors, foldViewCounts } from './generate.ts';
 import { openDb } from './db/db.ts';
 import { fakeSql, TREE_CONFIG, writeImages } from './fakeGallery.ts';
 
@@ -92,6 +92,15 @@ async function run(): Promise<void> {
         db.run('DELETE FROM dirty_albums');
         db.run("UPDATE owners SET nickname = 'Kalle' WHERE id = 5");
         assert.deepStrictEqual(dirty(db), [14, 15]);
+
+        // 4b. the nightly fold: pending view counts land in the items and mark their albums dirty
+        db.run('DELETE FROM dirty_albums');
+        db.run("INSERT INTO view_counts (item_id, pending) VALUES (101, 3), (11, 2)");
+        assert.strictEqual(foldViewCounts(db), 2);
+        assert.strictEqual(db.get<{ view_count: number }>('SELECT view_count FROM items WHERE id = 101')!.view_count, 3);
+        assert.deepStrictEqual(dirty(db), [10, 11], 'photo 101 marks 11, album 11 marks 11 and 10');
+        assert.strictEqual(db.get<{ pending: number }>('SELECT pending FROM view_counts WHERE item_id = 101')!.pending, 0);
+        assert.strictEqual(foldViewCounts(db), 0, 'nothing pending -> nothing changed');
 
         // 5. a change made during a run stays dirty afterwards (cleared rows are matched by their `since`)
         db.run('DELETE FROM dirty_albums');

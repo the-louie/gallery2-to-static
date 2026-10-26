@@ -1,0 +1,15 @@
+# lanbilder-nightly: view-count fold + changed-branch regeneration + database backup (Sprint 15 T-09).
+# Install: cp deploy/lanbilder-nightly.{service,timer} /etc/systemd/system/ && systemctl daemon-reload && systemctl enable --now lanbilder-nightly.timer
+[Unit]
+Description=lanbilder.se nightly: fold view counts, regenerate, back up the data master
+After=network.target
+
+[Service]
+Type=oneshot
+User=lanbilder
+Group=lanbilder
+WorkingDirectory=/mnt/storage/lanbilder-app/backend
+Environment=GALLERY_DB=/mnt/storage/lanbilder-app/db/gallery.sqlite
+Environment=BACKUP_DIR=/mnt/storage/backup
+ExecStart=/bin/sh /mnt/storage/lanbilder-app/deploy/nightly.sh
+MemoryMax=3G
