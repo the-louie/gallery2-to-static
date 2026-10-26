@@ -1,0 +1,30 @@
+.item-badges {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.item-badge {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.item-badge-deleted {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.item-badge-hidden {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.item-badge-highlight {
+  color: var(--accent);
+  border-color: var(--accent);
+}

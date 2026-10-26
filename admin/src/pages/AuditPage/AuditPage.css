@@ -1,0 +1,33 @@
+.audit-table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.audit-table {
+  font-size: 0.9em;
+}
+
+.audit-when,
+.audit-ip {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.audit-detail {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+  word-break: break-all;
+  max-width: 28em;
+}
+
+.audit-denied td:nth-child(5),
+.audit-error td:nth-child(5) {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.audit-footer {
+  margin-top: var(--space);
+}

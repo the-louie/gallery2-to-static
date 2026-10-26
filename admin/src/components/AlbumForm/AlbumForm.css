@@ -1,0 +1,9 @@
+.album-form {
+  max-width: 640px;
+  margin-bottom: calc(var(--space) * 2);
+}
+
+.album-form-help {
+  margin: 2px 0 var(--space);
+  font-size: 0.85em;
+}
