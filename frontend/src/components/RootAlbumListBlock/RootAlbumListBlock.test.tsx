@@ -341,9 +341,22 @@ describe('RootAlbumListBlock', () => {
       const { container } = render(<RootAlbumListBlock album={albumWithHighlight} subalbums={[]} />);
       const bg = container.querySelector('.root-album-list-block-bg');
       expect(bg).toBeInTheDocument();
-      expect(bg).toHaveAttribute('role', 'presentation');
       expect(bg).toHaveAttribute('aria-hidden', 'true');
       expect((bg as HTMLElement).style.backgroundImage).toContain('path/to/highlight.jpg');
+    });
+
+    it('the background layer links to the album, outside the tab order (S13 T-04, QA-02)', () => {
+      const albumWithHighlight: Album = {
+        ...baseAlbum,
+        id: 99,
+        highlightImageUrl: 'path/to/highlight.jpg',
+      } as Album;
+      const { container } = render(<RootAlbumListBlock album={albumWithHighlight} subalbums={[]} />);
+      const bg = container.querySelector('a.root-album-list-block-bg');
+      expect(bg).toHaveAttribute('href', '/test_album/');
+      expect(bg).toHaveAttribute('tabindex', '-1');
+      // still exactly one accessible link to the album
+      expect(screen.getAllByRole('link', { name: /open album: test album/i })).toHaveLength(1);
     });
 
     it('does not render highlight background when album has only thumbnail path and no highlightImageUrl', () => {

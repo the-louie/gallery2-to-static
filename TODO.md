@@ -63,9 +63,8 @@ verified against the code at `b79dc10` before planning (Sprint 13).
   rectangle must come from another path (the modern grid, a missing-thumbnail fallback, or the
   thumbnail file itself). Find it with the album page in both themes; all thumbnails square in all
   themes.
-- **QA-02: modern themes: the album's head image on the root page is a link to the album** — like
-  the "...and more!" link. `RootAlbumListBlock.tsx:95` renders the highlight as a
-  `role="presentation"` background div outside the block link.
+- ~~**QA-02: modern themes: the album's head image on the root page is a link to the album**~~ — **CLOSED, verified 2026-10-26 (Sprint 13 T-04):** `frontend/src/components/RootAlbumListBlock/RootAlbumListBlock.tsx:95` renders the highlight band as a `Link` to the album (`aria-hidden`, `tabIndex -1`, the block link stays the accessible one); `modern.css` lets clicks reach it through the content layer's padding; test "the background layer links to the album".
+  Original row kept for the record: like the "...and more!" link. `RootAlbumListBlock.tsx:95` renders the highlight as a `role="presentation"` background div outside the block link.
 - ~~**QA-03: modern themes: more vertical margin above "...and more!"**~~ — **CLOSED, verified 2026-10-26 (Sprint 13 T-03):** `frontend/src/styles/modern.css` `.root-album-list-block-subalbums-more` gets `margin-top: 0.85rem` (the chip rows have a 0.4rem gap); screenshot with T-04's deploy.
   Original row kept for the record: "when there are many sub-albums the '...and more' button is too close to the sub-album buttons". `RootAlbumListBlock.css:269` has `margin-top: auto` and no gap from the list.
 - ~~**QA-04: modern themes: the header description is cut off**~~ — **CLOSED, verified 2026-10-26 (Sprint 13 T-02):** `frontend/src/styles/modern.css` `.layout-header-description` has no line clamp any more (wraps, max 72ch) and is shown on phones at 0.74rem; screenshot with T-04's deploy.

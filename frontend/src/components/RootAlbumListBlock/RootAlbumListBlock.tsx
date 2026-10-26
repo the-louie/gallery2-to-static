@@ -93,10 +93,13 @@ export function RootAlbumListBlock({
       aria-labelledby={`root-album-title-${album.id}`}
     >
       {highlightImageUrl != null && !isClassic && (
-        <div
+        // The highlight band opens the album like "...and more!" (operator, 2026-10-26, QA-02); the
+        // block link below is the accessible one, so this one is hidden from assistive tech and tab order
+        <Link
+          to={linkTo}
           className="root-album-list-block-bg"
-          role="presentation"
           aria-hidden="true"
+          tabIndex={-1}
           style={{ backgroundImage: safeBgUrl }}
         />
       )}

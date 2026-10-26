@@ -506,6 +506,23 @@
   transform: scale(1.04);
 }
 
+/* The band is a link (QA-02): clickable, and the content layer above it lets clicks through its
+   padding (the 160px the band shows through) while its own blocks stay interactive */
+:is([data-theme="light"], [data-theme="dark"]) a.root-album-list-block-bg {
+  pointer-events: auto;
+  cursor: pointer;
+  display: block;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-inner {
+  pointer-events: none;
+}
+
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-main,
+:is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-subalbums {
+  pointer-events: auto;
+}
+
 :is([data-theme="light"], [data-theme="dark"]) .root-album-list-block-bg::after {
   content: "";
   position: absolute;
