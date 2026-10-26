@@ -39,9 +39,12 @@ async function run(): Promise<void> {
     assert.strictEqual(db.setting('root_id'), '7');
     assert.strictEqual(db.setting('site_name'), 'Lanbilder');
     assert.strictEqual(db.setting('site_description'), 'Bilder');
+    assert.strictEqual(item(7).title, 'Lanbilder');
+    assert.strictEqual(db.get<{ description: string | null; view_count: number | null }>('SELECT description, view_count FROM items WHERE id = 7')!.description, null, 'the root row carries the album info, not the raw root info');
+    assert.strictEqual(db.get<{ view_count: number | null }>('SELECT view_count FROM items WHERE id = 101')!.view_count, null, 'no counter in Gallery 2 -> NULL');
 
     // idempotent: same counts, no duplicates, admin changes survive
-    db.run("UPDATE items SET deleted_at = '2026-10-26T00:00:00.000Z', view_count = view_count + 5 WHERE id = 101");
+    db.run("UPDATE items SET deleted_at = '2026-10-26T00:00:00.000Z', view_count = COALESCE(view_count, 0) + 5 WHERE id = 101");
     const before = db.get<{ n: number }>('SELECT count(*) AS n FROM items')!.n;
     const r2 = await importG2({ sql: fakeSql, config: TREE_CONFIG, db });
     assert.strictEqual(db.get<{ n: number }>('SELECT count(*) AS n FROM items')!.n, before);

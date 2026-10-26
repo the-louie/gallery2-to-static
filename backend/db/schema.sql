@@ -15,6 +15,7 @@ CREATE TABLE items (
     type TEXT NOT NULL CHECK (type IN ('album', 'photo')),
     parent_id INTEGER REFERENCES items(id),
     position INTEGER NOT NULL DEFAULT 0,
+    order_weight INTEGER,          -- Gallery 2 orderWeight as imported (emitted as "order" when present)
     title TEXT,
     description TEXT,
     summary TEXT,
@@ -25,8 +26,10 @@ CREATE TABLE items (
     changed_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
     width INTEGER,
     height INTEGER,
+    thumb_width INTEGER,           -- Gallery 2's derivative size as imported (photos: replaced by media at generation)
+    thumb_height INTEGER,
     owner_id INTEGER REFERENCES owners(id),
-    view_count INTEGER NOT NULL DEFAULT 0,
+    view_count INTEGER,            -- NULL = Gallery 2 had no counter; the view counter adds to it nightly
     hidden INTEGER NOT NULL DEFAULT 0 CHECK (hidden IN (0, 1)),
     deleted_at TEXT,
     UNIQUE (parent_id, path_component),

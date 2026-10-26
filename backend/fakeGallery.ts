@@ -56,7 +56,7 @@ export const fakeSql = {
     getRootAlbumInfo: async (id: number) => ({ id, title: 'Lanbilder', description: 'Bilder', timestamp: 1_130_000_000 }),
     getAlbumInfo: async (id: number) => {
         const n = byId(TREE, id)!;
-        return { albumId: id, albumTitle: n.title, albumDescription: null, albumTimestamp: 1_130_000_000, ownerName: null };
+        return { albumId: id, albumTitle: n.title, albumDescription: null, albumTimestamp: 1_130_000_000 + id, ownerName: null };
     },
 } as unknown as ExtractionSql;
 
