@@ -16,6 +16,7 @@ import { registerAdminRoutes } from './routes/admin.ts';
 import { verifyAccessJwt, type AccessIdentity } from './auth/access.ts';
 import { sessionSecret } from './auth/session.ts';
 import type { AuthDeps, AuditSink } from './auth/guard.ts';
+import { createAuditSink } from './audit.ts';
 
 export const DEFAULT_PORT = 3100;
 export const DEFAULT_HOST = '127.0.0.1';
@@ -34,7 +35,7 @@ export interface ServerOptions {
     verifyJwt?: (token: string) => Promise<AccessIdentity>;
     /** Session cookie HMAC key (default: env SESSION_SECRET or the settings row). */
     sessionSecret?: Buffer;
-    /** Audit sink (default: none until Sprint 16 T-06 wires backend/audit.ts). */
+    /** Audit sink (default: backend/audit.ts -> audit_log table + env AUDIT_LOG_FILE). */
     audit?: AuditSink;
     /** Clock (tests). */
     now?: () => Date;
@@ -48,7 +49,7 @@ export function authDeps(opts: ServerOptions): AuthDeps {
     return {
         verifyJwt,
         secret: opts.sessionSecret ?? sessionSecret(opts.db),
-        audit: opts.audit ?? (() => {}),
+        audit: opts.audit ?? createAuditSink(opts.db),
         now: opts.now,
     };
 }

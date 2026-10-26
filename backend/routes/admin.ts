@@ -1,12 +1,14 @@
 /**
- * Admin-only user management (Sprint 16 T-05): invite, enable/disable, delegate/undelegate albums,
- * reset a user's TOTP. Every route requires an admin with a TOTP-passed session; every change is
- * audited. 403 (not admin) is answered before any lookup, so non-admins learn nothing.
+ * Admin-only user management (Sprint 16 T-05) and the audit log reader (T-06): invite,
+ * enable/disable, delegate/undelegate albums, reset a user's TOTP, read the audit trail. Every
+ * route requires an admin with a TOTP-passed session; every change is audited. 403 (not admin) is
+ * answered before any lookup, so non-admins learn nothing.
  */
 import type { Router } from '../http.ts';
 import { json, noContent, error, intParam, HttpError } from '../http.ts';
 import { requireUser, type AuthDeps, type AuthCtx } from '../auth/guard.ts';
 import { inviteUser, listUsers, findUserById, setEnabled, delegate, undelegate, resetTotp, delegatedAlbumIds, publicUser, type Role, type User } from '../auth/users.ts';
+import { listAudit } from '../audit.ts';
 
 function userJson(ctx: AuthCtx, u: User): Record<string, unknown> {
     return { ...publicUser(u), albums: delegatedAlbumIds(ctx.db, u.id) };
@@ -68,6 +70,17 @@ export function registerAdminRoutes(router: Router, deps: AuthDeps): void {
         if (albumId === undefined || !undelegate(ctx.db, u.id, albumId)) return error(404, 'delegation not found');
         audit(ctx, 'undelegate', `user:${u.id}`, 'ok', { albumId, email: u.email });
         return json(200, userJson(ctx, u));
+    }));
+
+    // Audit trail, newest first: ?limit=100&before=<id> pages backwards.
+    router.get('/api/admin/audit', admin((ctx) => {
+        const limitRaw = ctx.url.searchParams.get('limit');
+        const beforeRaw = ctx.url.searchParams.get('before');
+        const limit = limitRaw === null ? undefined : intParam(limitRaw);
+        const before = beforeRaw === null ? undefined : intParam(beforeRaw);
+        if ((limitRaw !== null && limit === undefined) || (beforeRaw !== null && before === undefined)) return error(400, 'limit and before must be positive integers');
+        const entries = listAudit(ctx.db, { limit, before });
+        return json(200, { entries, next: entries.length ? entries[entries.length - 1].id : null });
     }));
 
     router.post('/api/admin/users/:id/totp/reset', admin((ctx) => {
