@@ -4,7 +4,7 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 
 **After every sprint (operator, 2026-10-25):** prune `TODO.md` and regenerate `TODO-summarized.md`: `python3 docs/planning/prune_todo.py . "Sprint NN"` moves closed (~~struck~~) rows, with their proof, to `docs/planning/done.md`.
 
-**Active sprint:** — (Sprint 18 done 2026-10-26). **Next: Sprint 19** = go-live rehearsal (operator's Access/tunnel steps, final sync, cutover, test hostnames off); plan with `/sprint-planning plan-next`.
+**Active sprint:** [Sprint 19](./sprints/sprint-19.md) — in progress (admin QA round). Sprint 20 = go-live rehearsal.
 **Current ticket:** —
 **Last completed:** Sprint 18 T-10 (commit `7cd6cb0`).
 
@@ -28,6 +28,7 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 | S16 ✅ | FUT-02 part 1 (parallel worker track): admin service, Cloudflare Access JWT, TOTP, invite-only users, delegation, audit log (FUT-04). |
 | S17 ✅ | FUT-05 (parallel worker track): Plausible CE on lanbilder2, same-origin proxy, script tag. |
 | S18 ✅ | FUT-02 part 2 + FUT-03: album/photo write routes, upload pipeline (HEIC, GPS strip), regeneration wiring + URL lock, profiles + first admin, the admin UI (separate build), deploy on the admin hostname. |
-| S19 (sketch) | Go-live rehearsal: final sync from the origin, cutover, test hostnames off, password SSH off, MySQL password rotation. |
+| S19 | Admin QA round: the operator's eight comments after the first real uploads. |
+| S20 (sketch) | Go-live rehearsal: final sync from the origin, cutover, test hostnames off, password SSH off, MySQL password rotation. |
 | Operator | SENTRY-01 (after a Claude Code restart + Sentry login). DECISION-01: self-hosted on lanbilder2. FUT-01..05 **before** go-live (2026-10-26). |
 | (old) S05+ | P3 items, SEC-18 brotli check, hygiene, test-fixture type burn-down (BUILD-01 rest, LINT-01). DECISION-01 (hosting) with the operator. SEC-12 (permissions) when the Gallery 2 DB is available to test against. |
