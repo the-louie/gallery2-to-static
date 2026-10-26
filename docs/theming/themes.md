@@ -12,7 +12,7 @@ Soft off-white page (`#f4f6fb`) with white elevated cards, ink text (`#0f172a`),
 
 **Identifier:** `dark` (Sprint 12 T-11)
 
-Same layout and components as Light with the dark palette: deep navy page (`#0b0f19`) with surfaces `#121826` / `#1a2236`, light text (`#e6edf7`), sky-blue accent (`#38bdf8`), a faint cyan/indigo glow at the top, deeper shadows. Search highlights in amber. Switching: the header dropdown (Light / Dark / Classic); from the classic theme the sidebar's "Theme: modern" button lands in Dark (operator, 2026-10-26).
+Same layout and components as Light with the dark palette: deep navy page (`#0b0f19`) with surfaces `#121826` / `#1a2236`, light text (`#e6edf7`), sky-blue accent (`#38bdf8`), a faint cyan/indigo glow at the top, deeper shadows. Search highlights in amber. Switching: the header dropdown (Light / Dark / Classic); from the classic theme the sidebar's "Theme:" dropdown (Classic preselected; "Modern: Dark", "Modern: Light"; a plain browser select, operator 2026-10-26).
 
 ## Classic (Gallery 2 Matrix, as lanbilder.se ran it)
 
@@ -32,7 +32,7 @@ Same layout and components as Light with the dark palette: deep navy page (`#0b0
 - No app header, footer, theme or sort dropdown
 - The root album is the 2013 list (THEME-02, S14): Gallery 2's Classic theme `album.tpl` with one column and `showSubalbums` — `MatrixAlbumList`, one row per album (150×150 thumbnail | "Album: title", summary, Date / Size / Views | "Subalbums:" list from the album's data file), every album on one page, no pager. Template: https://web.archive.org/web/20130410092639/http://www.lanbilder.se/main.php. Dates are DD/MM/YYYY. Below 700px: thumbnail and info side by side, the sub-album list under them
 - Nav bar with the breadcrumb (`lanbilder.se » DreamHack » …`, built from the URL by `useMatrixLocation`)
-- 175px sidebar column (search, slideshow links, peer list, "Theme: modern") and the content column
+- 175px sidebar column (search, slideshow links, peer list, the "Theme:" dropdown) and the content column
 - Footer badges (XHTML 1.0, Gallery 2, Unpossible)
 - Below 700px: sidebar under the content, 13px base font
 

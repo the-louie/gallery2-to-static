@@ -1,95 +1,209 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, userEvent } from '@/test-utils';
-import { MatrixSidebar } from './MatrixSidebar';
-import type { AlbumFile, Child } from '@/types';
-import type { MatrixLocation } from '@/utils/matrixLocation';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, userEvent } from "@/test-utils";
+import { MatrixSidebar } from "./MatrixSidebar";
+import type { AlbumFile, Child } from "@/types";
+import type { MatrixLocation } from "@/utils/matrixLocation";
 
 const mockNavigate = vi.fn();
 const mockSetTheme = vi.fn();
-vi.mock('@/contexts/ThemeContext', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/contexts/ThemeContext')>()),
-  useTheme: () => ({ setTheme: mockSetTheme, theme: 'classic', effectiveTheme: 'classic', isClassic: true, isDark: false, isLight: false, availableThemes: [] }),
+vi.mock("@/contexts/ThemeContext", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/contexts/ThemeContext")>()),
+  useTheme: () => ({
+    setTheme: mockSetTheme,
+    theme: "classic",
+    effectiveTheme: "classic",
+    isClassic: true,
+    isDark: false,
+    isLight: false,
+    availableThemes: [],
+  }),
 }));
-vi.mock('react-router-dom', async () => ({
-  ...(await vi.importActual('react-router-dom')),
+vi.mock("react-router-dom", async () => ({
+  ...(await vi.importActual("react-router-dom")),
   useNavigate: () => mockNavigate,
 }));
 
 const trail = [
-  { id: 7, title: 'Home', path: '/' },
-  { id: 4352, title: 'DreamHack', path: '/dreamhack' },
-  { id: 23271, title: 'DreamHack Winter 05', path: '/dreamhack/dreamhack_winter_05' },
+  { id: 7, title: "Home", path: "/" },
+  { id: 4352, title: "DreamHack", path: "/dreamhack" },
+  {
+    id: 23271,
+    title: "DreamHack Winter 05",
+    path: "/dreamhack/dreamhack_winter_05",
+  },
 ];
-const names = ['DH-Photo', 'Bamsegrill', 'Battlefrag.com', 'DeaziD', 'eXinet', 'G3', 'Hinken', 'IQue', 'kasstkniw',
-  'Lindmark', 'Louie', 'Mandisplutten', 'sebbz', 'TukTuk', 'virus84', 'Grattis louie!', 'mave', 'Alla vi som var på dreamhack'];
+const names = [
+  "DH-Photo",
+  "Bamsegrill",
+  "Battlefrag.com",
+  "DeaziD",
+  "eXinet",
+  "G3",
+  "Hinken",
+  "IQue",
+  "kasstkniw",
+  "Lindmark",
+  "Louie",
+  "Mandisplutten",
+  "sebbz",
+  "TukTuk",
+  "virus84",
+  "Grattis louie!",
+  "mave",
+  "Alla vi som var på dreamhack",
+];
 const dhw05 = {
-  metadata: { albumId: 23271, albumTitle: 'DreamHack Winter 05', breadcrumbPath: trail },
+  metadata: {
+    albumId: 23271,
+    albumTitle: "DreamHack Winter 05",
+    breadcrumbPath: trail,
+  },
   children: names.map((title, i) => ({
-    id: 100 + i, type: 'GalleryAlbumItem', title, path: `/dreamhack/dreamhack_winter_05/a${i}`,
+    id: 100 + i,
+    type: "GalleryAlbumItem",
+    title,
+    path: `/dreamhack/dreamhack_winter_05/a${i}`,
   })),
 } as unknown as AlbumFile;
 const battlefrag = {
-  metadata: { albumId: 102, albumTitle: 'Battlefrag.com', breadcrumbPath: [...trail, { id: 102, title: 'Battlefrag.com', path: '/dreamhack/dreamhack_winter_05/a2' }] },
+  metadata: {
+    albumId: 102,
+    albumTitle: "Battlefrag.com",
+    breadcrumbPath: [
+      ...trail,
+      {
+        id: 102,
+        title: "Battlefrag.com",
+        path: "/dreamhack/dreamhack_winter_05/a2",
+      },
+    ],
+  },
   children: Array.from({ length: 287 }, (_, i) => ({
-    id: 1000 + i, type: 'GalleryPhotoItem', title: `CIMG${i}.JPG`, pathComponent: `dreamhack/dhw05/dhphotos/CIMG${i}.JPG`,
+    id: 1000 + i,
+    type: "GalleryPhotoItem",
+    title: `CIMG${i}.JPG`,
+    pathComponent: `dreamhack/dhw05/dhphotos/CIMG${i}.JPG`,
   })),
 } as unknown as AlbumFile;
 
 const peerTexts = () =>
-  [...document.querySelectorAll('.block-core-PeerList a, .block-core-PeerList span')].map((e) => e.textContent);
+  [
+    ...document.querySelectorAll(
+      ".block-core-PeerList a, .block-core-PeerList span"
+    ),
+  ].map((e) => e.textContent);
 
-describe('MatrixSidebar (THEME-01)', () => {
+describe("MatrixSidebar (THEME-01)", () => {
   beforeEach(() => mockNavigate.mockClear());
 
-  it('album page: the siblings as in the 2006 dhphotos page (1–6, ..., last), current bold, no link', () => {
-    render(<MatrixSidebar location={{ album: battlefrag, photo: null, parent: dhw05 }} />);
-    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('DreamHack Winter 05');
-    expect(peerTexts()).toEqual(['1. DH-Photo', '2. Bamsegrill', '3. Battlefrag.com', '4. DeaziD', '5. eXinet', '6. G3', '...', '18. Alla vi som...']);
-    expect(screen.getByText('3. Battlefrag.com')).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: '1. DH-Photo' })).toHaveAttribute('href', '/dreamhack/dreamhack_winter_05/a0/');
-    expect(screen.getByRole('link', { name: '18. Alla vi som...' })).toHaveAttribute('title', 'Alla vi som var på dreamhack');
+  it("album page: the siblings as in the 2006 dhphotos page (1–6, ..., last), current bold, no link", () => {
+    render(
+      <MatrixSidebar
+        location={{ album: battlefrag, photo: null, parent: dhw05 }}
+      />
+    );
+    expect(screen.getByRole("heading", { level: 3 })).toHaveTextContent(
+      "DreamHack Winter 05"
+    );
+    expect(peerTexts()).toEqual([
+      "1. DH-Photo",
+      "2. Bamsegrill",
+      "3. Battlefrag.com",
+      "4. DeaziD",
+      "5. eXinet",
+      "6. G3",
+      "...",
+      "18. Alla vi som...",
+    ]);
+    expect(screen.getByText("3. Battlefrag.com")).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(screen.getByRole("link", { name: "1. DH-Photo" })).toHaveAttribute(
+      "href",
+      "/dreamhack/dreamhack_winter_05/a0/"
+    );
+    expect(
+      screen.getByRole("link", { name: "18. Alla vi som..." })
+    ).toHaveAttribute("title", "Alla vi som var på dreamhack");
   });
 
   it("photo page: the album's photos, links by photo slug", () => {
     const photo = battlefrag.children[0] as Child;
-    render(<MatrixSidebar location={{ album: battlefrag, photo, parent: null } as MatrixLocation} />);
-    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('Battlefrag.com');
-    expect(peerTexts()).toEqual(['1. CIMG0.JPG', '2. CIMG1.JPG', '3. CIMG2.JPG', '4. CIMG3.JPG', '5. CIMG4.JPG', '6. CIMG5.JPG', '...', '287. CIMG286.JPG']);
-    expect(screen.getByRole('link', { name: '2. CIMG1.JPG' })).toHaveAttribute('href', '/dreamhack/dreamhack_winter_05/a2/cimg1');
+    render(
+      <MatrixSidebar
+        location={{ album: battlefrag, photo, parent: null } as MatrixLocation}
+      />
+    );
+    expect(screen.getByRole("heading", { level: 3 })).toHaveTextContent(
+      "Battlefrag.com"
+    );
+    expect(peerTexts()).toEqual([
+      "1. CIMG0.JPG",
+      "2. CIMG1.JPG",
+      "3. CIMG2.JPG",
+      "4. CIMG3.JPG",
+      "5. CIMG4.JPG",
+      "6. CIMG5.JPG",
+      "...",
+      "287. CIMG286.JPG",
+    ]);
+    expect(screen.getByRole("link", { name: "2. CIMG1.JPG" })).toHaveAttribute(
+      "href",
+      "/dreamhack/dreamhack_winter_05/a2/cimg1"
+    );
   });
 
-  it('root and non-album pages: search and item links, no peer list; no Add Comment', () => {
+  it("root and non-album pages: search and item links, no peer list; no Add Comment", () => {
     render(<MatrixSidebar location={null} />);
-    expect(document.querySelector('.block-core-PeerList')).toBeNull();
-    expect(screen.getByRole('link', { name: 'Advanced Search' })).toHaveAttribute('href', '/search');
-    expect(screen.getByRole('link', { name: 'View Slideshow' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'View Slideshow (Fullscreen)' })).toBeInTheDocument();
+    expect(document.querySelector(".block-core-PeerList")).toBeNull();
+    expect(
+      screen.getByRole("link", { name: "Advanced Search" })
+    ).toHaveAttribute("href", "/search");
+    expect(
+      screen.getByRole("link", { name: "View Slideshow" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "View Slideshow (Fullscreen)" })
+    ).toBeInTheDocument();
     expect(screen.queryByText(/Add Comment/)).toBeNull();
   });
 
-  it('"Theme: modern" at the bottom switches to the modern dark theme (S12 T-10, S13 T-01)', async () => {
+  it("the theme dropdown at the bottom: Classic preselected, Modern: Dark / Modern: Light switch (operator 2026-10-26)", async () => {
     render(<MatrixSidebar location={null} />);
-    const blocks = document.querySelectorAll('.gbBlock');
+    const blocks = document.querySelectorAll(".gbBlock");
     const last = blocks[blocks.length - 1];
-    const button = screen.getByRole('button', { name: 'Theme: modern' });
-    expect(last.contains(button)).toBe(true);
-    await userEvent.setup().click(button);
-    expect(mockSetTheme).toHaveBeenCalledWith('dark');
+    const select = screen.getByRole("combobox", { name: "Theme" });
+    expect(last.contains(select)).toBe(true);
+    expect(select).toHaveValue("classic");
+    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual([
+      "Classic",
+      "Modern: Dark",
+      "Modern: Light",
+    ]);
+    const user = userEvent.setup();
+    await user.selectOptions(select, "dark");
+    expect(mockSetTheme).toHaveBeenCalledWith("dark");
+    await user.selectOptions(select, "light");
+    expect(mockSetTheme).toHaveBeenCalledWith("light");
+    await user.selectOptions(select, "classic");
+    expect(mockSetTheme).toHaveBeenCalledTimes(2); // Classic is where we are: no switch
   });
 
-  it('the theme block has only "Theme: modern" (S14 T-01: one classic theme)', () => {
+  it("the theme block is the only theme control in the sidebar (S14 T-01: one classic theme)", () => {
     render(<MatrixSidebar location={null} />);
-    expect(screen.getAllByRole('button', { name: /^Theme:/ })).toHaveLength(1);
+    expect(screen.getAllByRole("combobox", { name: "Theme" })).toHaveLength(1);
+    expect(screen.queryByRole("button", { name: /^Theme:/ })).toBeNull();
   });
 
-  it('search: Enter goes to the results; an empty box does nothing', async () => {
+  it("search: Enter goes to the results; an empty box does nothing", async () => {
     const user = userEvent.setup();
     render(<MatrixSidebar location={null} />);
-    const box = screen.getByRole('textbox', { name: 'Search the Gallery' });
-    expect(box).toHaveAttribute('placeholder', 'Search the Gallery');
-    await user.type(box, '{Enter}');
+    const box = screen.getByRole("textbox", { name: "Search the Gallery" });
+    expect(box).toHaveAttribute("placeholder", "Search the Gallery");
+    await user.type(box, "{Enter}");
     expect(mockNavigate).not.toHaveBeenCalled();
-    await user.type(box, ' dream hack {Enter}');
-    expect(mockNavigate).toHaveBeenCalledWith('/search?q=dream%20hack');
+    await user.type(box, " dream hack {Enter}");
+    expect(mockNavigate).toHaveBeenCalledWith("/search?q=dream%20hack");
   });
 });

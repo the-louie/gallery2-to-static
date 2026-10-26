@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useTheme } from '@/contexts/ThemeContext';
-import type { AlbumFile, Child } from '@/types';
-import type { MatrixLocation } from '@/utils/matrixLocation';
-import { getAlbumPath, getItemPath } from '@/utils/albumPath';
-import { peerWindow, truncateTitle } from '@/utils/matrixPeers';
-import { MAX_SEARCH_QUERY_LENGTH } from '@/utils/searchUtils';
-import './MatrixSidebar.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useTheme } from "@/contexts/ThemeContext";
+import type { AlbumFile, Child } from "@/types";
+import type { MatrixLocation } from "@/utils/matrixLocation";
+import { getAlbumPath, getItemPath } from "@/utils/albumPath";
+import { peerWindow, truncateTitle } from "@/utils/matrixPeers";
+import { MAX_SEARCH_QUERY_LENGTH } from "@/utils/searchUtils";
+import "./MatrixSidebar.css";
 
 /**
  * Props for the MatrixSidebar component
@@ -29,12 +29,17 @@ function getPeers(location: MatrixLocation | null): Peers | null {
   if (!location) return null;
   if (location.photo) {
     const { album, photo } = location;
-    return { parentTitle: album.metadata.albumTitle ?? '', items: album.children, currentId: photo.id, owner: album };
+    return {
+      parentTitle: album.metadata.albumTitle ?? "",
+      items: album.children,
+      currentId: photo.id,
+      owner: album,
+    };
   }
   if (!location.parent) return null;
   const { album, parent } = location;
   return {
-    parentTitle: parent.metadata.albumTitle ?? '',
+    parentTitle: parent.metadata.albumTitle ?? "",
     items: parent.children,
     currentId: album.metadata.albumId,
     owner: parent,
@@ -46,7 +51,7 @@ function peerHref(peer: Child, owner: AlbumFile): string {
 }
 
 function peerTitle(peer: Child): string {
-  return peer.title || (peer.pathComponent ?? '').split('/').pop() || '';
+  return peer.title || (peer.pathComponent ?? "").split("/").pop() || "";
 }
 
 /**
@@ -62,15 +67,17 @@ function peerTitle(peer: Child): string {
 export function MatrixSidebar({ location }: MatrixSidebarProps) {
   const navigate = useNavigate();
   const { setTheme } = useTheme();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const peers = getPeers(location);
-  const currentIndex = peers ? peers.items.findIndex((p) => p.id === peers.currentId) : -1;
+  const currentIndex = peers
+    ? peers.items.findIndex((p) => p.id === peers.currentId)
+    : -1;
   const shown = peers ? peerWindow(peers.items.length, currentIndex) : [];
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const q = query.trim();
-    if (q !== '') navigate(`/search?q=${encodeURIComponent(q)}`);
+    if (q !== "") navigate(`/search?q=${encodeURIComponent(q)}`);
   };
 
   return (
@@ -90,17 +97,26 @@ export function MatrixSidebar({ location }: MatrixSidebarProps) {
             />
           </div>
           <div>
-            <Link to="/search" className="gbAdminLink gbLink-search_SearchScan advanced">
+            <Link
+              to="/search"
+              className="gbAdminLink gbLink-search_SearchScan advanced"
+            >
               Advanced Search
             </Link>
           </div>
         </form>
       </div>
       <div className="block-core-ItemLinks gbBlock">
-        <Link to="/slideshow" className="gbAdminLink gbLink-slideshow_Slideshow">
+        <Link
+          to="/slideshow"
+          className="gbAdminLink gbLink-slideshow_Slideshow"
+        >
           View Slideshow
         </Link>
-        <Link to="/slideshow-fullscreen" className="gbAdminLink gbLink-slideshowapplet_SlideshowApplet">
+        <Link
+          to="/slideshow-fullscreen"
+          className="gbAdminLink gbLink-slideshowapplet_SlideshowApplet"
+        >
           View Slideshow (Fullscreen)
         </Link>
       </div>
@@ -112,13 +128,18 @@ export function MatrixSidebar({ location }: MatrixSidebarProps) {
             const label = `${i + 1}. ${truncateTitle(peerTitle(peer))}`;
             return (
               <React.Fragment key={peer.id}>
-                {k > 0 && i - shown[k - 1] > 1 && <span className="neck">...</span>}
+                {k > 0 && i - shown[k - 1] > 1 && (
+                  <span className="neck">...</span>
+                )}
                 {i === currentIndex ? (
                   <span className="current" aria-current="page">
                     {label}
                   </span>
                 ) : (
-                  <Link to={peerHref(peer, peers.owner)} title={peerTitle(peer)}>
+                  <Link
+                    to={peerHref(peer, peers.owner)}
+                    title={peerTitle(peer)}
+                  >
                     {label}
                   </Link>
                 )}
@@ -127,12 +148,26 @@ export function MatrixSidebar({ location }: MatrixSidebarProps) {
           })}
         </div>
       )}
-      {/* The way out of the 2006 look (operator, 2026-10-25): the modern theme, dark variant (operator,
-          2026-10-26, QA-05); its header dropdown offers light and classic. Stays on the same page. */}
+      {/* The way out of the 2006 look (operator, 2026-10-25). A plain browser <select> with "Classic"
+          preselected (operator, 2026-10-26: "Theme: modern" read as if the current look were modern);
+          picking "Modern: Dark" or "Modern: Light" switches at once and stays on the same page. */}
       <div className="block-core-ThemeSwitch gbBlock">
-        <button type="button" className="gbThemeSwitch" onClick={() => setTheme('dark')}>
-          Theme: modern
-        </button>
+        <label className="gbThemeSwitch">
+          <span className="gbThemeSwitchLabel">Theme:</span>{" "}
+          <select
+            className="gbThemeSelect"
+            aria-label="Theme"
+            value="classic"
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === "dark" || v === "light") setTheme(v);
+            }}
+          >
+            <option value="classic">Classic</option>
+            <option value="dark">Modern: Dark</option>
+            <option value="light">Modern: Light</option>
+          </select>
+        </label>
       </div>
     </>
   );

@@ -262,7 +262,7 @@ The theme system allows you to customize the appearance of the gallery.
 
 ### Switching Themes
 
-- In the classic theme: "Theme: modern" at the bottom of the left sidebar opens the modern dark theme.
+- In the classic theme: the "Theme:" dropdown at the bottom of the left sidebar (Classic preselected) switches to "Modern: Dark" or "Modern: Light".
 - In the modern themes: the theme dropdown in the header, next to the search bar, lists all three.
 - The change applies immediately and is saved in browser storage (`gallery-theme`); it applies to every page.
 

@@ -76,22 +76,20 @@
   color: #0b6cff;
 }
 
-/* "Theme: modern" at the bottom: styled as the other sidebar links (a button, since it changes state) */
+/* Theme block at the bottom: a label like the other sidebar links and a plain, browser-styled
+   <select> (operator, 2026-10-26: "old school vanilla dropdown"); nothing but font size is set on it */
 .g2-matrix .gbThemeSwitch {
   display: block;
   padding: 3px;
-  border: 0;
-  background: none;
-  font: inherit;
   font-weight: bold;
   color: #6b8cb7;
-  cursor: pointer;
-  text-align: left;
 }
 
-.g2-matrix .gbThemeSwitch:hover {
-  text-decoration: underline;
-  color: #f4560f;
+.g2-matrix .gbThemeSelect {
+  font: inherit;
+  font-weight: normal;
+  color: inherit;
+  max-width: 100%;
 }
 
 /* Phones: 44px tap targets in the sidebar */

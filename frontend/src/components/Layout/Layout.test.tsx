@@ -34,32 +34,32 @@
  * - Skip link visibility and positioning works on all sizes
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, userEvent } from '@/test-utils';
-import { Layout } from './Layout';
-import App from '@/App';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, userEvent } from "@/test-utils";
+import { Layout } from "./Layout";
+import App from "@/App";
 import {
   loadIndex,
   loadPathIndex,
   resolvePathToAlbumId,
-} from '@/utils/dataLoader';
-import { mockChildren } from '@/__mocks__/mockData';
+} from "@/utils/dataLoader";
+import { mockChildren } from "@/__mocks__/mockData";
 
 // jsdom does not implement scrollIntoView
 Element.prototype.scrollIntoView = vi.fn();
 
-vi.mock('@/hooks/useSiteMetadata', () => ({
+vi.mock("@/hooks/useSiteMetadata", () => ({
   useSiteMetadata: vi.fn().mockReturnValue({
-    siteName: 'Test Gallery',
-    siteDescription: 'Test',
+    siteName: "Test Gallery",
+    siteDescription: "Test",
     rootAlbumId: 7,
     isLoading: false,
     error: null,
   }),
 }));
 
-vi.mock('@/utils/dataLoader', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/utils/dataLoader')>();
+vi.mock("@/utils/dataLoader", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/utils/dataLoader")>();
   return {
     ...actual,
     findRootAlbumId: vi.fn().mockResolvedValue(7),
@@ -75,14 +75,14 @@ vi.mock('@/utils/dataLoader', async (importOriginal) => {
     }),
     loadIndex: vi.fn().mockResolvedValue({
       rootAlbumId: 7,
-      rootAlbumFile: '7.json',
-      siteName: 'Test Gallery',
-      siteDescription: 'Test',
-      generatedAt: '2026-01-01T00:00:00Z',
+      rootAlbumFile: "7.json",
+      siteName: "Test Gallery",
+      siteDescription: "Test",
+      generatedAt: "2026-01-01T00:00:00Z",
       metadata: {
         rootAlbumId: 7,
-        rootAlbumTitle: 'Test Gallery',
-        rootAlbumDescription: 'Test',
+        rootAlbumTitle: "Test Gallery",
+        rootAlbumDescription: "Test",
         rootAlbumTimestamp: null,
       },
     }),
@@ -91,182 +91,182 @@ vi.mock('@/utils/dataLoader', async (importOriginal) => {
   };
 });
 
-describe('Layout', () => {
-  it('renders the layout component', () => {
+describe("Layout", () => {
+  it("renders the layout component", () => {
     render(
       <Layout>
         <div>Test content</div>
-      </Layout>,
+      </Layout>
     );
 
-    expect(screen.getByText('Test content')).toBeInTheDocument();
+    expect(screen.getByText("Test content")).toBeInTheDocument();
   });
 
-  it('renders header element', () => {
+  it("renders header element", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const header = screen.getByRole('banner');
+    const header = screen.getByRole("banner");
     expect(header).toBeInTheDocument();
-    expect(header).toHaveClass('layout-header');
+    expect(header).toHaveClass("layout-header");
   });
 
-  it('renders main element', () => {
+  it("renders main element", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const main = screen.getByRole('main');
+    const main = screen.getByRole("main");
     expect(main).toBeInTheDocument();
-    expect(main).toHaveClass('layout-main');
-    expect(main).toHaveAttribute('id', 'main-content');
+    expect(main).toHaveClass("layout-main");
+    expect(main).toHaveAttribute("id", "main-content");
   });
 
-  it('renders footer element', () => {
+  it("renders footer element", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const footer = screen.getByRole('contentinfo');
+    const footer = screen.getByRole("contentinfo");
     expect(footer).toBeInTheDocument();
-    expect(footer).toHaveClass('layout-footer');
+    expect(footer).toHaveClass("layout-footer");
   });
 
-  it('renders children in main content area', () => {
+  it("renders children in main content area", () => {
     render(
       <Layout>
         <div data-testid="child-content">Child content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const main = screen.getByRole('main');
-    const child = screen.getByTestId('child-content');
+    const main = screen.getByRole("main");
+    const child = screen.getByTestId("child-content");
     expect(main).toContainElement(child);
   });
 
-  it('applies custom className', () => {
+  it("applies custom className", () => {
     const { container } = render(
       <Layout className="custom-layout">
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const layout = container.querySelector('.layout');
-    expect(layout).toHaveClass('custom-layout');
+    const layout = container.querySelector(".layout");
+    expect(layout).toHaveClass("custom-layout");
   });
 
-  it('renders skip-to-content link', () => {
+  it("renders skip-to-content link", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const skipLink = screen.getByText('Skip to main content');
+    const skipLink = screen.getByText("Skip to main content");
     expect(skipLink).toBeInTheDocument();
-    expect(skipLink).toHaveAttribute('href', '#main-content');
-    expect(skipLink).toHaveClass('skip-link');
+    expect(skipLink).toHaveAttribute("href", "#main-content");
+    expect(skipLink).toHaveClass("skip-link");
   });
 
-  it('renders header title', () => {
+  it("renders header title", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const title = screen.getByText('Test Gallery');
+    const title = screen.getByText("Test Gallery");
     expect(title).toBeInTheDocument();
-    expect(title).toHaveClass('layout-title');
+    expect(title).toHaveClass("layout-title");
   });
 
-  it('renders footer copyright', () => {
+  it("renders footer copyright", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
     expect(screen.getByText(/© 2026 the_louie/)).toBeInTheDocument();
   });
 });
 
-describe('Layout Accessibility', () => {
-  it('has proper ARIA landmarks', () => {
+describe("Layout Accessibility", () => {
+  it("has proper ARIA landmarks", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    expect(screen.getByRole('banner')).toBeInTheDocument();
-    expect(screen.getByRole('main')).toBeInTheDocument();
-    expect(screen.getByRole('contentinfo')).toBeInTheDocument();
+    expect(screen.getByRole("banner")).toBeInTheDocument();
+    expect(screen.getByRole("main")).toBeInTheDocument();
+    expect(screen.getByRole("contentinfo")).toBeInTheDocument();
   });
 
-  it('has main content id for skip link targeting', () => {
+  it("has main content id for skip link targeting", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const main = screen.getByRole('main');
-    expect(main).toHaveAttribute('id', 'main-content');
+    const main = screen.getByRole("main");
+    expect(main).toHaveAttribute("id", "main-content");
   });
 
-  it('skip link is keyboard accessible', () => {
+  it("skip link is keyboard accessible", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const skipLink = screen.getByText('Skip to main content');
+    const skipLink = screen.getByText("Skip to main content");
     skipLink.focus();
     expect(skipLink).toHaveFocus();
   });
 
-  it('skip link has aria-label attribute', () => {
+  it("skip link has aria-label attribute", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const skipLink = screen.getByText('Skip to main content');
-    expect(skipLink).toHaveAttribute('aria-label', 'Skip to main content');
+    const skipLink = screen.getByText("Skip to main content");
+    expect(skipLink).toHaveAttribute("aria-label", "Skip to main content");
   });
 });
 
-describe('Layout Integration', () => {
+describe("Layout Integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(loadPathIndex).mockResolvedValue({});
     vi.mocked(resolvePathToAlbumId).mockResolvedValue(null);
     vi.mocked(loadIndex).mockResolvedValue({
       rootAlbumId: 7,
-      rootAlbumFile: '7.json',
-      siteName: 'Test Gallery',
-      siteDescription: 'Test',
-      generatedAt: '2026-01-01T00:00:00Z',
+      rootAlbumFile: "7.json",
+      siteName: "Test Gallery",
+      siteDescription: "Test",
+      generatedAt: "2026-01-01T00:00:00Z",
       metadata: {
         rootAlbumId: 7,
-        rootAlbumTitle: 'Test Gallery',
-        rootAlbumDescription: 'Test',
+        rootAlbumTitle: "Test Gallery",
+        rootAlbumDescription: "Test",
         rootAlbumTimestamp: null,
       },
     });
   });
 
-  it('works correctly with App component', () => {
+  it("works correctly with App component", () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => mockChildren,
@@ -274,233 +274,239 @@ describe('Layout Integration', () => {
 
     render(<App />);
 
-    expect(screen.getByRole('banner')).toBeInTheDocument();
-    expect(screen.getByRole('main')).toBeInTheDocument();
-    expect(screen.getByRole('contentinfo')).toBeInTheDocument();
+    expect(screen.getByRole("banner")).toBeInTheDocument();
+    expect(screen.getByRole("main")).toBeInTheDocument();
+    expect(screen.getByRole("contentinfo")).toBeInTheDocument();
   });
 
-  it('skip link navigates to main content when clicked', async () => {
+  it("skip link navigates to main content when clicked", async () => {
     const user = userEvent.setup();
 
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const skipLink = screen.getByText('Skip to main content');
-    const main = screen.getByRole('main');
+    const skipLink = screen.getByText("Skip to main content");
+    const main = screen.getByRole("main");
 
     await user.click(skipLink);
 
-    expect(main).toHaveAttribute('id', 'main-content');
-    expect(skipLink).toHaveAttribute('href', '#main-content');
+    expect(main).toHaveAttribute("id", "main-content");
+    expect(skipLink).toHaveAttribute("href", "#main-content");
   });
 });
 
-describe('Layout Responsive Design', () => {
-  it('applies responsive CSS classes correctly', () => {
+describe("Layout Responsive Design", () => {
+  it("applies responsive CSS classes correctly", () => {
     const { container } = render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const layout = container.querySelector('.layout');
-    const header = container.querySelector('.layout-header');
-    const main = container.querySelector('.layout-main');
-    const footer = container.querySelector('.layout-footer');
+    const layout = container.querySelector(".layout");
+    const header = container.querySelector(".layout-header");
+    const main = container.querySelector(".layout-main");
+    const footer = container.querySelector(".layout-footer");
 
-    expect(layout).toHaveClass('layout');
-    expect(header).toHaveClass('layout-header');
-    expect(main).toHaveClass('layout-main');
-    expect(footer).toHaveClass('layout-footer');
+    expect(layout).toHaveClass("layout");
+    expect(header).toHaveClass("layout-header");
+    expect(main).toHaveClass("layout-main");
+    expect(footer).toHaveClass("layout-footer");
   });
 
-  it('renders correctly on mobile viewport (default)', () => {
+  it("renders correctly on mobile viewport (default)", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const header = screen.getByRole('banner');
-    const main = screen.getByRole('main');
-    const footer = screen.getByRole('contentinfo');
+    const header = screen.getByRole("banner");
+    const main = screen.getByRole("main");
+    const footer = screen.getByRole("contentinfo");
 
     expect(header).toBeInTheDocument();
     expect(main).toBeInTheDocument();
     expect(footer).toBeInTheDocument();
   });
 
-  it('has responsive breakpoint styles in CSS', () => {
+  it("has responsive breakpoint styles in CSS", () => {
     const { container } = render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const headerContent = container.querySelector('.layout-header-content');
+    const headerContent = container.querySelector(".layout-header-content");
     expect(headerContent).toBeInTheDocument();
   });
 });
 
-describe('Layout Theme Dropdown', () => {
-  it('renders theme dropdown in header', () => {
+describe("Layout Theme Dropdown", () => {
+  it("renders theme dropdown in header", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const themeDropdown = screen.getByRole('button', { name: /theme/i });
+    const themeDropdown = screen.getByRole("button", { name: /theme/i });
     expect(themeDropdown).toBeInTheDocument();
   });
 
-  it('theme dropdown is in header actions area', () => {
+  it("theme dropdown is in header actions area", () => {
     const { container } = render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const headerActions = container.querySelector('.layout-header-actions');
+    const headerActions = container.querySelector(".layout-header-actions");
     expect(headerActions).toBeInTheDocument();
 
-    const themeDropdown = headerActions?.querySelector('.theme-dropdown');
+    const themeDropdown = headerActions?.querySelector(".theme-dropdown");
     expect(themeDropdown).toBeInTheDocument();
   });
 
-  it('theme dropdown is keyboard accessible', async () => {
+  it("theme dropdown is keyboard accessible", async () => {
     const user = userEvent.setup();
 
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const themeDropdown = screen.getByRole('button', { name: /theme/i });
+    const themeDropdown = screen.getByRole("button", { name: /theme/i });
     themeDropdown.focus();
     expect(themeDropdown).toHaveFocus();
 
     // Should be able to activate with keyboard
-    await user.keyboard('{Enter}');
+    await user.keyboard("{Enter}");
     // The dropdown menu should open
-    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
   });
 
-  it('theme dropdown allows selecting themes', async () => {
+  it("theme dropdown allows selecting themes", async () => {
     const user = userEvent.setup();
 
     render(
       <Layout>
         <div>Content</div>
       </Layout>,
-      { defaultTheme: 'light' },
+      { defaultTheme: "light" }
     );
 
-    const themeDropdown = screen.getByRole('button', { name: /theme/i });
+    const themeDropdown = screen.getByRole("button", { name: /theme/i });
 
     // Initial state: light
-    expect(themeDropdown).toHaveTextContent('Light');
+    expect(themeDropdown).toHaveTextContent("Light");
 
     // Open dropdown
     await user.click(themeDropdown);
-    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
 
     // Select dark theme
-    const darkOption = screen.getByRole('option', { name: /dark/i });
+    const darkOption = screen.getByRole("option", { name: /dark/i });
     await user.click(darkOption);
 
     // Theme should be dark now
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
-    expect(themeDropdown).toHaveTextContent('Dark');
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(themeDropdown).toHaveTextContent("Dark");
   });
 });
 
-describe('Layout Sort Dropdown', () => {
-  it('renders sort dropdown in header', () => {
+describe("Layout Sort Dropdown", () => {
+  it("renders sort dropdown in header", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const sortDropdown = screen.getByRole('combobox', { name: /sort by/i });
+    const sortDropdown = screen.getByRole("combobox", { name: /sort by/i });
     expect(sortDropdown).toBeInTheDocument();
   });
 
-  it('sort dropdown is in header actions area', () => {
+  it("sort dropdown is in header actions area", () => {
     const { container } = render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const headerActions = container.querySelector('.layout-header-actions');
+    const headerActions = container.querySelector(".layout-header-actions");
     expect(headerActions).toBeInTheDocument();
 
-    const sortDropdown = headerActions?.querySelector('.sort-dropdown');
+    const sortDropdown = headerActions?.querySelector(".sort-dropdown");
     expect(sortDropdown).toBeInTheDocument();
   });
 
-  it('sort dropdown is positioned after theme dropdown', () => {
+  it("sort dropdown is positioned after theme dropdown", () => {
     const { container } = render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const themeDropdown = container.querySelector('.theme-dropdown');
-    const sortDropdown = container.querySelector('.sort-dropdown');
+    const themeDropdown = container.querySelector(".theme-dropdown");
+    const sortDropdown = container.querySelector(".sort-dropdown");
     expect(themeDropdown).toBeInTheDocument();
     expect(sortDropdown).toBeInTheDocument();
     /* Assert document order: theme dropdown appears before sort dropdown (robust to wrapper). */
     const position = themeDropdown!.compareDocumentPosition(sortDropdown!);
-    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
   });
 
-  it('sort dropdown is keyboard accessible', () => {
+  it("sort dropdown is keyboard accessible", () => {
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const sortDropdown = screen.getByRole('combobox', { name: /sort by/i });
+    const sortDropdown = screen.getByRole("combobox", { name: /sort by/i });
     sortDropdown.focus();
     expect(sortDropdown).toHaveFocus();
   });
 
-  it('sort dropdown allows selecting sort options', async () => {
+  it("sort dropdown allows selecting sort options", async () => {
     const user = userEvent.setup();
 
     render(
       <Layout>
         <div>Content</div>
-      </Layout>,
+      </Layout>
     );
 
-    const sortDropdown = screen.getByRole('combobox', { name: /sort by/i });
-    
+    const sortDropdown = screen.getByRole("combobox", { name: /sort by/i });
+
     // Change sort option
-    await user.selectOptions(sortDropdown, 'date-desc');
-    
-    expect(sortDropdown).toHaveValue('date-desc');
+    await user.selectOptions(sortDropdown, "date-desc");
+
+    expect(sortDropdown).toHaveValue("date-desc");
   });
 
-  describe('image cache on navigation (PERF-03)', () => {
-    it('keeps the cache between images of one album, clears it for another album', async () => {
-      const { getImageCache } = await import('@/utils/imageCache');
-      const { useNavigate } = await import('react-router-dom');
-      const clearSpy = vi.spyOn(getImageCache(), 'clear');
+  describe("image cache on navigation (PERF-03)", () => {
+    it("keeps the cache between images of one album, clears it for another album", async () => {
+      const { getImageCache } = await import("@/utils/imageCache");
+      const { useNavigate } = await import("react-router-dom");
+      const clearSpy = vi.spyOn(getImageCache(), "clear");
       function Nav() {
         const navigate = useNavigate();
         return (
           <>
-            <button type="button" onClick={() => navigate('/album/7/image/13')}>next image</button>
-            <button type="button" onClick={() => navigate('/album/8')}>other album</button>
+            <button type="button" onClick={() => navigate("/album/7/image/13")}>
+              next image
+            </button>
+            <button type="button" onClick={() => navigate("/album/8")}>
+              other album
+            </button>
           </>
         );
       }
@@ -508,36 +514,50 @@ describe('Layout Sort Dropdown', () => {
         <Layout>
           <Nav />
         </Layout>,
-        { initialEntries: ['/album/7/image/12'] },
+        { initialEntries: ["/album/7/image/12"] }
       );
-      await userEvent.click(screen.getByText('next image'));
+      await userEvent.click(screen.getByText("next image"));
       expect(clearSpy).not.toHaveBeenCalled();
-      await userEvent.click(screen.getByText('other album'));
+      await userEvent.click(screen.getByText("other album"));
       expect(clearSpy).toHaveBeenCalledTimes(1);
       clearSpy.mockRestore();
     });
   });
 });
 
-describe('Layout in the classic theme (Matrix frame, THEME-01)', () => {
+describe("Layout in the classic theme (Matrix frame, THEME-01)", () => {
   // A theme stored by an earlier test would win over defaultTheme
   beforeEach(() => localStorage.clear());
 
-  it('renders the Matrix frame instead of the app header, theme and sort dropdowns', () => {
-    render(<Layout><p>page</p></Layout>, { defaultTheme: 'classic' });
-    expect(document.querySelector('.layout-header')).toBeNull();
-    expect(document.querySelector('.layout-footer')).toBeNull();
-    expect(document.querySelector('.g2-matrix')).not.toBeNull();
-    expect(screen.getByRole('navigation', { name: 'Breadcrumb' })).toBeInTheDocument();
-    expect(screen.getByRole('main')).toHaveTextContent('page');
-    expect(document.querySelector('.theme-dropdown')).toBeNull(); // the header's theme dropdown
-    expect(screen.getByRole('button', { name: 'Theme: modern' })).toBeInTheDocument(); // the sidebar's way out (T-10)
-    expect(screen.getByText('Skip to main content')).toBeInTheDocument();
+  it("renders the Matrix frame instead of the app header, theme and sort dropdowns", () => {
+    render(
+      <Layout>
+        <p>page</p>
+      </Layout>,
+      { defaultTheme: "classic" }
+    );
+    expect(document.querySelector(".layout-header")).toBeNull();
+    expect(document.querySelector(".layout-footer")).toBeNull();
+    expect(document.querySelector(".g2-matrix")).not.toBeNull();
+    expect(
+      screen.getByRole("navigation", { name: "Breadcrumb" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("main")).toHaveTextContent("page");
+    expect(document.querySelector(".theme-dropdown")).toBeNull(); // the header's theme dropdown
+    expect(screen.getByRole("combobox", { name: "Theme" })).toHaveValue(
+      "classic"
+    ); // the sidebar's way out (T-10; a dropdown since 2026-10-26)
+    expect(screen.getByText("Skip to main content")).toBeInTheDocument();
   });
 
-  it('the light theme keeps the app header', () => {
-    render(<Layout><p>page</p></Layout>, { defaultTheme: 'light' });
-    expect(document.querySelector('.layout-header')).not.toBeNull();
-    expect(document.querySelector('.g2-matrix')).toBeNull();
+  it("the light theme keeps the app header", () => {
+    render(
+      <Layout>
+        <p>page</p>
+      </Layout>,
+      { defaultTheme: "light" }
+    );
+    expect(document.querySelector(".layout-header")).not.toBeNull();
+    expect(document.querySelector(".g2-matrix")).toBeNull();
   });
 });

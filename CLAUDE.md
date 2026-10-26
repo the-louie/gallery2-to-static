@@ -300,7 +300,7 @@ npm run typecheck        # Type-check the backend (TypeScript 7; Node only strip
 
 ## Theme System
 
-Three themes available, selected via `ThemeDropdown` (modern themes) or the classic sidebar's "Theme: modern" button:
+Three themes available, selected via `ThemeDropdown` (modern themes) or the classic sidebar's "Theme:" dropdown (Classic preselected, Modern: Dark, Modern: Light):
 
 | Theme | Description | CSS Selector |
 |-------|-------------|--------------|
