@@ -143,7 +143,11 @@ generator's equivalence test runs against. `backend/db/schema.sql` + `db/migrati
     vite.config.ts        # Build config (custom data plugin, chunk splitting, imports aliases.config.ts)
     eslint.config.js      # ESLint 10 flat config (recommended + typescript-eslint + @eslint-react + hooks + prettier)
     .prettierrc           # Prettier config
+  admin/                 # The admin UI (Vite + React, its own build -> admin/dist, served on the admin hostname behind Cloudflare Access; docs/architecture/admin-ui.md)
+  deploy/                # systemd units, nginx proposals, nightly.sh for lanbilder2
+  scripts/e2e-admin.mjs  # end-to-end: backend (fake-Access mode) + admin dev server + headless Chrome
   docs/
+    architecture/         # data-master.md, admin-service.md, admin-api.md, admin-ui.md, statistics.md
     theming/              # Theme system documentation
     dev-notes/            # 45+ implementation session notes
     orig-page/            # Original Gallery 2 design reference (HTML/CSS)
@@ -176,6 +180,17 @@ npm run build:analyze    # Build with bundle visualizer + sourcemaps (--mode ana
 npm run check:dist       # Fail if dist/ has images, g2data/, *.map or stats.html
 node ../scripts/check-brotli.mjs  # CVE-2026-111497 release check: Node, sharp/libvips, lockfiles, dist/, system libbrotli1
 npm run size-check       # Check bundle size limits
+```
+
+### Admin UI
+
+```bash
+cd admin
+npm ci                   # Install dependencies
+npm run mock             # Mock API on 127.0.0.1:3101 (MOCK_SKIP_TOTP=1, MOCK_ROLE=user)
+npm run dev              # Vite on localhost:5174 (/api proxied to the mock, or ADMIN_API=http://127.0.0.1:3100)
+npm test                 # Vitest
+VITE_PUBLIC_SITE=https://lanbilder.se npm run build   # -> admin/dist (thumbnails are loaded from the public site)
 ```
 
 ### Backend

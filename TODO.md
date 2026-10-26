@@ -53,7 +53,9 @@ Operator, 2026-10-25, lifted 2026-10-26: **all five rows ship before lanbilder.s
 site (interview 2026-10-26, decision 1: "All five rows"). The notes under each row are first answers
 to the questions asked; the **Decisions** blocks are the operator's rulings from the interview.
 
-### FUT-02: admin can add albums and delegate them; delegated users add subalbums and images
+### ~~FUT-02: admin can add albums and delegate them; delegated users add subalbums and images~~
+
+**CLOSED, verified 2026-10-26 (Sprint 18):** admin service with Cloudflare Access JWT, TOTP, invite-only users and delegation (Sprint 16), album/photo write routes, the upload pipeline (`backend/upload.ts`: sniffed types, sharp decode, HEIC→JPEG, GPS strip with exiftool, 50 MB/500 MB), highlights, ordering, soft delete/restore, the regeneration queue (`routes/regen.ts`), and the admin UI (`admin/`, served on `82j17zj.phetast.nu` behind the Access assertion check). End to end: `scripts/e2e-admin.mjs` (login → create → upload → publish). **Operator steps left** (`/srv/share/lanbilder2/admin-runbook.txt`): the Access application + IdPs, the tunnel hostname, `/etc/lanbilder-admin.env`, `--invite-admin`. Original row kept for the record:
 
 **Done so far (Sprint 16, merged 2026-10-26):** the `lanbilder-admin` service (`backend/server.ts`, installed on lanbilder2), Cloudflare Access JWT verification (`backend/auth/access.ts`), TOTP + sessions (`auth/totp.ts`, `auth/session.ts`), invite-only users with roles and delegation (`auth/users.ts`, migration 002, `canWrite`), the admin routes (`docs/architecture/admin-service.md`). **Open:** album create/edit/hide/soft-delete routes, uploads (pipeline, HEIC, GPS strip), sub-albums, highlights, the admin UI, wiring `RegenQueue` to `generate.ts --changed`; the operator's Cloudflare Access application on the admin hostname.
 
@@ -94,7 +96,9 @@ upload/add images under it. Requirements (operator):
 - Uploads: JPEG/PNG/GIF/WebP kept byte for byte (orientation applied), **GPS tags stripped**, other
   EXIF kept; **HEIC converted to JPEG** (quality 92); 50 MB per file, 500 MB per batch.
 
-### FUT-03: user profiles
+### ~~FUT-03: user profiles~~
+
+**CLOSED, verified 2026-10-26 (Sprint 18):** `backend/profile.ts` + `routes/profile.ts`: nickname (unique across users and Gallery 2 owners), optional full name with the show-full-name opt-in (the generator shows it as "Owner:"), picture 256×256 served only through the API, name copied from the Access token at first login; Profile page in the admin UI; `profile.test.ts`. Original row kept for the record:
 
 **Done so far (Sprint 16):** `users` carries `nickname` (unique, may not equal a Gallery 2 owner name: trigger), `full_name`, `show_full_name`. **Open:** profile routes (edit nickname/full name, picture stored by us), copying name/picture at first login, the owner link from `items` to admin users.
 
