@@ -1,8 +1,8 @@
 # Sprint 13: operator QA round (QA-01..QA-10)
 
 **Status:** in progress (opened 2026-10-26)
-**Current ticket:** T-08 (`in-progress` — Banner in every theme, chosen by window width)
-**Last completed:** T-07 (`done` — commit `a9a3975`)
+**Current ticket:** T-09 (`todo` — classic-list: the 2013 root-album list)
+**Last completed:** T-08 (`done` — commit `eee6e3d`)
 
 **Goal:** every item on the operator's morning list fixed on the test site: square thumbnails everywhere, the modern root page's card image and "...and more!" fixed, the header text readable, the classic theme's phone layout flowing, search retry working, the banner in every theme, and a new `classic-list` theme with the 2013 root-album list.
 
@@ -17,7 +17,7 @@
 | T-05 | Phone thumbnails flow two per row (classic) | QA-06 | 1h | – | done | `MatrixAlbum.css` phone block: `tbody` flex-wrap, `tr { display: contents }`, cells 50%; flush cells hidden; `mobilecheck.cjs` 66/66; screenshot at 412×915 of root, sub-album list and a photo list. Landed in `57f7dfc` |
 | T-06 | All thumbnails square | QA-01 | 2h | – | done | find the rectangle on `/dreamhack/dreamhack_summer_02/ahnberg/` (classic and modern); fix at the source (CSS in the modern grid/`ImageThumbnail`, the fallback path, or the exported thumbnail); every thumbnail element 1:1 in all themes; test. Landed in `9b0708b` |
 | T-07 | Search failure recovers with "Try again" | QA-08 | 2h | – | done | reproduce with the index request failing (Chrome request interception); the search page gets its own "Try again" that re-runs the search and re-loads the index when its load failed; the ErrorBoundary's "Try Again" also works for errors thrown from the page; tests. Landed in `a9a3975` |
-| T-08 | Banner chosen by window width (classic theme only) | QA-10 | 1.5h | – | in-progress | **Operator update 2026-10-26: "banner should only be in classic theme!"** — no banner in the modern themes. Verify the classic `<picture>` selection (468 < 760px, 728, 970 ≥ 1024px, 2x on dense screens) with Chrome at 390, 412, 800, 1024, 1280, 1920 and that light/dark show none |
+| T-08 | Banner chosen by window width (classic theme only) | QA-10 | 1.5h | – | done | **Operator update 2026-10-26: "banner should only be in classic theme!"** — no banner in the modern themes. Verify the classic `<picture>` selection (468 < 760px, 728, 970 ≥ 1024px, 2x on dense screens) with Chrome at 390, 412, 800, 1024, 1280, 1920 and that light/dark show none. Landed in `eee6e3d` |
 | T-09 | `classic-list`: the 2013 root-album list | QA-09 | 4h | – | todo | new theme `classic-list` in `config/themes.ts` (+ `themes.css` vars same as classic); root album renders `MatrixAlbumList` from the Classic `album.tpl` structure: header block as today, then `gsThumbMatrix` with one row per album (`giAlbumCell` thumbnail 150×150 \| "Album: title" + description + Date/Size/Views \| `td.tree` "Subalbums:" list), all albums, no navigator/pager; CSS values from `themes/classic/theme.css`; other pages unchanged (same frame, sidebar, footer badges); tests |
 | T-10 | Theme switching for `classic-list` + comparison | QA-09 | 2h | T-09 | todo | sidebar bottom block: "Theme: classic list" / "Theme: classic" toggle next to "Theme: modern"; modern dropdown lists it; `compare.cjs` of the 2013 root page vs ours at 1280px (block geometry), result into `theme-matrix.md`; docs (`themes.md`, user guide) |
 | T-11 | Deploy, phone + desktop QA, docs | – | 1h | T-01..T-10 | todo | `deploy-dist.sh`; Chrome screenshots of the demo list at 412×915 and 1280 into `inspo/screens/qa-s13/`; `esxi-todo.md` note; retro |
