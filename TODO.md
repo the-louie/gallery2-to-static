@@ -53,7 +53,9 @@ Operator, 2026-10-25, lifted 2026-10-26: **all five rows ship before lanbilder.s
 site (interview 2026-10-26, decision 1: "All five rows"). The notes under each row are first answers
 to the questions asked; the **Decisions** blocks are the operator's rulings from the interview.
 
-### FUT-01: SQLite as the master of the data; regenerate only changed branches
+### ~~FUT-01: SQLite as the master of the data; regenerate only changed branches~~
+
+**CLOSED, verified 2026-10-26 (Sprint 15 T-07):** `/mnt/storage/lanbilder-app/db/gallery.sqlite` on lanbilder2 (58,648 items, 145 owners, 1,353 highlights, 57,149 media rows) imported from Gallery 2 by `backend/importG2.ts`; `backend/generate.ts --all` regenerated the 1,389 album files, `index.json`, `legacy.json` and the search index (1,388 entries) — the semantic diff against the extractor's output (`/root/datadiff.py` on lanbilder2) shows 0 differences except 42 photo titles that were NUL bytes and are now null; `--changed` after a re-import rewrote only the dirty branches in 57 s; the test site serves the generated files; first backup `/mnt/storage/backup/gallery-20261026-0941.sqlite`. The service (`server.ts`, RegenQueue, view counter endpoint) landed on branch `s16-auth` (Sprint 16, merged); the frontend beacon and the nightly fold are Sprint 15 T-09. Original row kept for the record:
 
 All data in a SQLite database whose schema preserves everything the JSON carries (albums, images,
 paths, breadcrumbs, highlight images, descriptions, owners, counts, themes). The database is the
