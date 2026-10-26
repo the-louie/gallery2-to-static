@@ -1,8 +1,8 @@
 # Sprint 13: operator QA round (QA-01..QA-10)
 
 **Status:** done (opened and closed 2026-10-26)
-**Current ticket:** T-11 (`in-progress` — Deploy, phone + desktop QA, docs)
-**Last completed:** T-10 (`done` — commit `d489cde`)
+**Current ticket:** —
+**Last completed:** T-11 (`done` — commit `ac668e3`)
 
 **Goal:** every item on the operator's morning list fixed on the test site: square thumbnails everywhere, the modern root page's card image and "...and more!" fixed, the header text readable, the classic theme's phone layout flowing, search retry working, the banner in every theme, and a new `classic-list` theme with the 2013 root-album list.
 
@@ -20,7 +20,7 @@
 | T-08 | Banner chosen by window width (classic theme only) | QA-10 | 1.5h | – | done | **Operator update 2026-10-26: "banner should only be in classic theme!"** — no banner in the modern themes. Verify the classic `<picture>` selection (468 < 760px, 728, 970 ≥ 1024px, 2x on dense screens) with Chrome at 390, 412, 800, 1024, 1280, 1920 and that light/dark show none. Landed in `eee6e3d` |
 | T-09 | `classic-list`: the 2013 root-album list | QA-09 | 4h | – | done | new theme `classic-list` in `config/themes.ts` (+ `themes.css` vars same as classic); root album renders `MatrixAlbumList` from the Classic `album.tpl` structure: header block as today, then `gsThumbMatrix` with one row per album (`giAlbumCell` thumbnail 150×150 \| "Album: title" + description + Date/Size/Views \| `td.tree` "Subalbums:" list), all albums, no navigator/pager; CSS values from `themes/classic/theme.css`; other pages unchanged (same frame, sidebar, footer badges); tests. Landed in `3480313` |
 | T-10 | Theme switching for `classic-list` + comparison | QA-09 | 2h | T-09 | done | sidebar bottom block: "Theme: classic list" / "Theme: classic" toggle next to "Theme: modern"; modern dropdown lists it; `compare.cjs` of the 2013 root page vs ours at 1280px (block geometry), result into `theme-matrix.md`; docs (`themes.md`, user guide). Landed in `d489cde` |
-| T-11 | Deploy, phone + desktop QA, docs | – | 1h | T-01..T-10 | in-progress | `deploy-dist.sh`; Chrome screenshots of the demo list at 412×915 and 1280 into `inspo/screens/qa-s13/`; `esxi-todo.md` note; retro |
+| T-11 | Deploy, phone + desktop QA, docs | – | 1h | T-01..T-10 | done | `deploy-dist.sh`; Chrome screenshots of the demo list at 412×915 and 1280 into `inspo/screens/qa-s13/`; `esxi-todo.md` note; retro. Landed in `ac668e3` |
 
 Total ≈ 16h.
 
