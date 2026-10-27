@@ -6,7 +6,7 @@ Backlog: `TODO.md` (repo root). Sprints are scope-boxed (~20–40h, tickets 1–
 
 **Active sprint:** [Sprint 20](./sprints/sprint-20.md) — in progress (go-live rehearsal and cutover).
 **Current ticket:** [Sprint 20 T-06](./sprints/sprint-20.md) (`todo` — After go-live)
-**Last completed:** Sprint 20 T-05 (commit `ff68a04`).
+**Last completed:** Sprint 20 T-03 (commit `907cbee`).
 
 | Sprint | Goal |
 |---|---|
