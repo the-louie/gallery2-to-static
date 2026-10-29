@@ -432,7 +432,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
         }
         if (mode !== 'images' && !args.includes('--no-publish')) {
             const p = await publishImages(dataDir, albumsRoot, publishedRoot);
-            console.log(`published ${p.linked} images${p.previous ? ` (previous tree kept as ${p.previous})` : ''}${p.missing.length ? `, ${p.missing.length} missing` : ''}`);
+            console.log(`published ${p.linked} images${p.unchanged ? ' (tree unchanged)' : p.previous ? ` (previous tree kept as ${p.previous}, older ones pruned)` : ''}${p.missing.length ? `, ${p.missing.length} missing` : ''}`);
         }
         console.log(`done in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
     } finally {

@@ -6,7 +6,7 @@ import assert from 'assert';
 import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
-import { runStamp, prepareStagingDir, listStaleFiles, promoteStagingDir } from './outputDir.ts';
+import { runStamp, prepareStagingDir, listStaleFiles, promoteStagingDir, listPreviousDirs, prunePreviousDirs } from './outputDir.ts';
 
 async function run(): Promise<void> {
     const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'outputDir-'));
@@ -43,6 +43,26 @@ async function run(): Promise<void> {
         assert.strictEqual(await fs.readFile(path.join(prev!, '8.json'), 'utf-8'), '{}', 'previous output kept, not deleted');
         await assert.rejects(() => fs.access(s2), 'staging dir became data/');
         await fs.access(sFail); // failed run's output still there for inspection
+
+        // Retention (T-09): keepPrevious keeps only the newest previous outputs
+        const derived = path.join(tmp, 'published');
+        for (const stamp of ['s1', 's2', 's3']) {
+            const s = await prepareStagingDir(derived, stamp);
+            await fs.writeFile(path.join(s, 'x'), stamp);
+            await promoteStagingDir(derived, s, stamp); // default: keep all
+        }
+        assert.deepStrictEqual((await listPreviousDirs(derived)).map((d) => path.basename(d)), ['published.prev-s3', 'published.prev-s2'], 'newest first; s1 had no previous');
+        const s4 = await prepareStagingDir(derived, 's4');
+        await fs.writeFile(path.join(s4, 'x'), 's4');
+        assert.strictEqual(await promoteStagingDir(derived, s4, 's4', { keepPrevious: 1 }), `${derived}.prev-s4`);
+        assert.deepStrictEqual((await listPreviousDirs(derived)).map((d) => path.basename(d)), ['published.prev-s4'], 'older previous trees pruned');
+        assert.strictEqual(await fs.readFile(path.join(derived, 'x'), 'utf-8'), 's4');
+        const s5 = await prepareStagingDir(derived, 's5');
+        await fs.writeFile(path.join(s5, 'x'), 's5');
+        assert.strictEqual(await promoteStagingDir(derived, s5, 's5', { keepPrevious: 0 }), null, 'keepPrevious 0 keeps nothing and reports no previous');
+        assert.deepStrictEqual(await listPreviousDirs(derived), []);
+        assert.deepStrictEqual(await prunePreviousDirs(derived, 1), [], 'nothing to prune');
+        assert.deepStrictEqual(await listPreviousDirs(data), [`${data}.prev-r2`], 'data/ retention untouched: still kept');
     } finally {
         await fs.rm(tmp, { recursive: true, force: true });
     }
