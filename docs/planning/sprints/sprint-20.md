@@ -1,7 +1,7 @@
 # Sprint 20: go-live rehearsal and cutover of lanbilder.se
 
 **Status:** in progress (opened 2026-10-26, operator: "run sprint 20")
-**Current ticket:** T-04 (`in-progress` — Cutover runbook)
+**Current ticket:** T-09 (`in-progress` — Published-tree retention); T-04 runbook is on the share, T-06/T-08 wait for the quiet day
 **Last completed:** T-03 (`done` — commit `907cbee`)
 
 **Goal:** lanbilder.se and www.lanbilder.se are served by the new site on lanbilder2 through its tunnel, with everything that must be true before and after the switch checked, written down and rehearsed, and a rollback that takes one command.
@@ -20,6 +20,7 @@
 | T-06 | After go-live | – | 2h | T-05 | todo | after one quiet day: remove `lanbilder-new.phetast.nu` and `lanbilder2-test.phetast.nu` from the tunnel ingress and DNS (the old-site vhost may stay disabled for the record); SSH password login off on lanbilder2 (key login confirmed 2026-10-26); drop the `claude` MySQL user on the dev machine and delete the local `.my.cnf`; operator rotates the MySQL password the origin's `config.py` leaks; `cutover.py` SITES note |
 | T-07 | ~~Uptime check for lanbilder.se~~ | TODO FUTURE UPTIME-01 | – | – | dropped | operator 2026-10-26: reuse the Healthchecks system, cron on lanbilder2 checks its services and pings `hc.phetast.nu`; **waits until after go-live** (TODO.md FUTURE) |
 | T-08 | Retro, docs, prune | – | 1h | T-01..T-06 | todo | sprint retro; CLAUDE.md and user guide 06 say the site is live on lanbilder2; `db-runbook`/`admin-runbook` final; TODO prune |
+| T-09 | Published-tree retention | – | 1h | – | in-progress | operator 2026-10-29 ("do both, and then the cleanup"): `publishImages` leaves a 58,538-symlink `published.prev-<stamp>` tree every night (5.7 M inodes free on the data disk ⇒ ~100 nights). (1) `promoteStagingDir` gets `keepPrevious`; the published tree keeps only the newest previous (data/ unchanged, still keeps all). (2) An identical rebuilt tree is discarded instead of rotated. Tests in `outputDir.test.ts` + `publishImages.test.ts`; deploy backend; remove the three existing prev trees on lanbilder2 |
 
 Total ≈ 12h (plus the quiet day before T-06).
 
