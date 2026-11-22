@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useMatrixLocation } from '@/hooks/useMatrixLocation';
 import { useSiteMetadata } from '@/hooks/useSiteMetadata';
@@ -57,6 +57,27 @@ export function MatrixFrame({ children }: MatrixFrameProps) {
   const isAlbumPage = location !== null || pathname === '/';
   const crumbs = trail.map((c, i) => (isAlbumPage && i === trail.length - 1 ? { ...c, path: null } : c));
 
+  // Phones: the theme selector shares the breadcrumb row. When the breadcrumb grows past the row, drop
+  // its "Theme:" label to give the breadcrumb ~45px back (operator, 2026-11-22). Pure CSS can't tell
+  // "doesn't fit", so measure: with the label shown, is the breadcrumb clipped? If so, add the class
+  // that hides the label (CSS scopes both the selector and the label-drop to the phone breakpoint).
+  const navBarRef = useRef<HTMLDivElement>(null);
+  const crumbKey = crumbs.map((c) => c.title).join(' » ');
+  useLayoutEffect(() => {
+    const nav = navBarRef.current;
+    const bc = nav?.querySelector<HTMLElement>('.block-core-BreadCrumb');
+    if (!nav || !bc) return;
+    const update = () => {
+      nav.classList.remove('gsNavBar--tight'); // measure with the label shown (reading reflows)
+      if (bc.scrollWidth > bc.clientWidth) nav.classList.add('gsNavBar--tight');
+    };
+    update();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(update);
+    ro.observe(nav);
+    return () => ro.disconnect();
+  }, [crumbKey]);
+
   // The banner slot above the nav bar, where lanbilder.se had its ad in 2006 (BANNER-01): set at build
   const banner = import.meta.env.VITE_BANNER_SRC && import.meta.env.VITE_BANNER_HREF ? {
     src: import.meta.env.VITE_BANNER_SRC,
@@ -86,7 +107,7 @@ export function MatrixFrame({ children }: MatrixFrameProps) {
           </a>
         </div>
       )}
-      <div className="gsNavBar gcBorder1">
+      <div className="gsNavBar gcBorder1" ref={navBarRef}>
         <div className="gbBreadCrumb">
           <nav className="block-core-BreadCrumb" aria-label="Breadcrumb">
             {/* Gallery 2's markup had whitespace between the crumbs: a space before each » */}
