@@ -106,11 +106,12 @@ export function MatrixFrame({ children }: MatrixFrameProps) {
             ))}
           </nav>
         </div>
+        {/* Phones only (MatrixFrame.css): the theme selector on the breadcrumb row (just below the
+            banner), right-aligned, so a visitor can leave the classic look without scrolling past the
+            content and the whole sidebar (operator, 2026-11-22). The sidebar keeps its own copy on
+            desktop; one shows per breakpoint. */}
+        <MatrixThemeSwitch className="gsThemeSwitchTop" />
       </div>
-      {/* Phones only (MatrixFrame.css): the theme selector above the content, so a visitor can leave
-          the classic look without scrolling past the content and the whole sidebar (operator, 2026-11-22).
-          The sidebar keeps its own copy on desktop; one shows per breakpoint. */}
-      <MatrixThemeSwitch className="gsThemeSwitchTop" />
       <div className="gsColumns">
         <div className="gsSidebarCol">
           <aside className="gsSidebar gcBorder1" aria-label="Gallery navigation">

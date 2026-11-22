@@ -150,8 +150,8 @@
   margin-right: 3px;
 }
 
-/* The theme selector's phone copy (MatrixThemeSwitch in MatrixFrame) is above the content; on
-   desktop only the sidebar's copy shows. */
+/* The theme selector's phone copy (MatrixThemeSwitch in the nav bar) only shows on phones; on
+   desktop the sidebar's copy shows instead. */
 .g2-matrix .gsThemeSwitchTop {
   display: none;
 }
@@ -162,9 +162,28 @@
     font-size: 81.25%; /* 13px base: .giInfo (0.9em) stays >= 12px */
   }
 
-  /* Theme selector at the top of the page, sidebar copy hidden (operator, 2026-11-22) */
-  .g2-matrix .gsThemeSwitchTop {
-    display: block;
+  /* Theme selector on the breadcrumb row (just below the banner), pushed to the right; the sidebar
+     copy is hidden (operator, 2026-11-22). The nav bar becomes a flex row: breadcrumb left, selector
+     right. The .gbBlock look (0.7em padding, bottom border) and the nav bar's own 0.1em top margin on
+     its children are cleared so the selector sits inline on the row. */
+  .g2-matrix .gsNavBar {
+    display: flex;
+    align-items: center;
+  }
+
+  .g2-matrix .gbBreadCrumb {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .g2-matrix .gsNavBar .gsThemeSwitchTop {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    margin: 0 0 0 auto;
+    padding: 0 8px;
+    border: 0;
+    white-space: nowrap;
   }
 
   .g2-matrix .gsSidebar .block-core-ThemeSwitch {
