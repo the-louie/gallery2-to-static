@@ -544,9 +544,11 @@ describe("Layout in the classic theme (Matrix frame, THEME-01)", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("main")).toHaveTextContent("page");
     expect(document.querySelector(".theme-dropdown")).toBeNull(); // the header's theme dropdown
-    expect(screen.getByRole("combobox", { name: "Theme" })).toHaveValue(
-      "classic"
-    ); // the sidebar's way out (T-10; a dropdown since 2026-10-26)
+    // the way out of the classic look (T-10; a dropdown since 2026-10-26): the sidebar copy plus the
+    // phone top-of-page copy (operator 2026-11-22), one shown per breakpoint via CSS
+    const themeSelects = screen.getAllByRole("combobox", { name: "Theme" });
+    expect(themeSelects).toHaveLength(2);
+    themeSelects.forEach((s) => expect(s).toHaveValue("classic"));
     expect(screen.getByText("Skip to main content")).toBeInTheDocument();
   });
 

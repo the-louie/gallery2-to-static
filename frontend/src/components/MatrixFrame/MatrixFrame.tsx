@@ -4,6 +4,7 @@ import { useMatrixLocation } from '@/hooks/useMatrixLocation';
 import { useSiteMetadata } from '@/hooks/useSiteMetadata';
 import { withTrailingSlash } from '@/utils/albumPath';
 import { MatrixSidebar } from '../MatrixSidebar';
+import { MatrixThemeSwitch } from '../MatrixThemeSwitch';
 import xhtmlBadge from '@/assets/matrix/xhtml10.png';
 import galleryBadge from '@/assets/matrix/gallery.gif';
 import unpossibleBadge from '@/assets/matrix/g2-unpossible.png';
@@ -106,6 +107,10 @@ export function MatrixFrame({ children }: MatrixFrameProps) {
           </nav>
         </div>
       </div>
+      {/* Phones only (MatrixFrame.css): the theme selector above the content, so a visitor can leave
+          the classic look without scrolling past the content and the whole sidebar (operator, 2026-11-22).
+          The sidebar keeps its own copy on desktop; one shows per breakpoint. */}
+      <MatrixThemeSwitch className="gsThemeSwitchTop" />
       <div className="gsColumns">
         <div className="gsSidebarCol">
           <aside className="gsSidebar gcBorder1" aria-label="Gallery navigation">
