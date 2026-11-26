@@ -35,7 +35,11 @@ In priority order, as the operator set them:
    only. Touches: migration (owner column on items), tree/generate (effective-owner resolution), admin
    UI (album form field), display already uses `ownerName`.
 
-2. **HILITE-01: highlight selector for subalbum-only albums.** An album with only sub-albums (e.g. the
+2. ~~**HILITE-01: highlight selector for subalbum-only albums**~~ — **DONE 2026-11-26** (Sprint 2).
+   Admin-only: new `AlbumHighlightPicker` shown on an album with sub-albums and no direct photos (e.g.
+   the root), offering each sub-album's current highlight image plus "Default (first photo)". Picking
+   calls the existing `PUT /api/albums/:id/highlight` with that sub-album's highlight photo id (any
+   descendant photo is accepted). No backend/frontend change. Original note: An album with only sub-albums (e.g. the
    root) auto-picks the first descendant image as its highlight. Add a selector to choose among the
    direct sub-albums' highlight images instead. Backend `setHighlight` already stores any descendant
    photo; the gap is the admin UI (no picker when the album has no direct photos) and perhaps a route

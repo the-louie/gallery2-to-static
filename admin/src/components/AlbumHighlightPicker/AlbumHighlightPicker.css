@@ -1,0 +1,59 @@
+.album-highlight-picker {
+  margin: 0 0 var(--space);
+  padding: var(--space);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.album-highlight-picker h3 {
+  margin: 0 0 4px;
+}
+
+.album-highlight-options {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space);
+}
+
+.album-highlight-option,
+.album-highlight-default {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.album-highlight-default {
+  min-height: 110px;
+  justify-content: center;
+}
+
+.album-highlight-option.is-chosen,
+.album-highlight-default.is-chosen {
+  border-color: var(--accent, #2f6fed);
+}
+
+.album-highlight-option[disabled],
+.album-highlight-default[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.album-highlight-option-title {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}

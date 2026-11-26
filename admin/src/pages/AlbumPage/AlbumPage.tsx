@@ -7,6 +7,7 @@ import { useSession } from "../../session/SessionContext";
 import { AlbumForm } from "../../components/AlbumForm";
 import { DelegateBox } from "../../components/DelegateBox";
 import { AlbumList } from "../../components/AlbumList";
+import { AlbumHighlightPicker } from "../../components/AlbumHighlightPicker";
 import { AlbumToolbar } from "../../components/AlbumToolbar";
 import { Breadcrumb } from "../../components/Breadcrumb";
 import { ItemBadges } from "../../components/ItemBadges";
@@ -158,6 +159,13 @@ function AlbumPageBody({ id }: { id: number | "root" }): ReactNode {
 
       <section>
         <h2>Albums ({albums.length})</h2>
+        {album && canWrite && photos.length === 0 && albums.length > 0 && (
+          <AlbumHighlightPicker
+            album={album}
+            subAlbums={albums}
+            onChanged={onAlbumChanged}
+          />
+        )}
         {albums.length === 0 ? (
           <p className="muted">No sub-albums.</p>
         ) : (
