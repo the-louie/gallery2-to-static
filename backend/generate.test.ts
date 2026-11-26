@@ -93,6 +93,17 @@ async function run(): Promise<void> {
         await generateAll(db, photoOv, new Date('2026-10-26T12:00:00.000Z'));
         assert.strictEqual((await readJson(path.join(photoOv, '11.json'))).children.find((c: { id: number }) => c.id === 101).ownerName, 'Anton', 'the photo override wins over the album override');
         db.run('UPDATE items SET owner_override = NULL WHERE id IN (10, 101)');
+
+        // ROOTCAUSE-01: a changed run must never leave the index referencing an album with no page. Even
+        // when an exported album is not in the dirty set, if it has no file on disk yet (e.g. it was just
+        // unhidden) the run backfills it, so every pathIndex entry has a file.
+        const rc = path.join(tmp, 'rootcause');
+        await generateAll(db, rc, new Date('2026-10-26T12:00:00.000Z'), new Set([10])); // only album 10 "dirty"
+        const rcIndex = await readJson(path.join(rc, 'index.json'));
+        for (const id of Object.values(rcIndex.pathIndex) as number[]) {
+            assert.ok((await readJson(path.join(rc, `${id}.json`))).metadata, `index lists ${id} but has no page`);
+        }
+        assert.ok((await readJson(path.join(rc, '11.json'))).metadata, 'album 11 backfilled though not in the dirty set');
         db.close();
 
         // With derivatives (T-05): the extractor generates thumbnails and resizes; the media step

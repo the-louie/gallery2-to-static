@@ -81,7 +81,16 @@ In priority order, as the operator set them:
    titles in the classic grid, the classic photo page and the modern Lightbox; stored title and URL slug
    unchanged. Albums left alone.
 
-4. **ROOTCAUSE-01: generation can leave a visible album with no page.** Found 2026-11-26: album 565659
+4. ~~**ROOTCAUSE-01: generation can leave a visible album with no page**~~ — **DONE 2026-11-26** (Sprint 5).
+   **Root cause:** a `--changed` run rebuilds `index.json`/`pathIndex` from every exported album but
+   writes a data file only for the dirty set. Glitched's photos were uploaded while the album was
+   hidden, then it was unhidden; during the settle window it was "waiting" (not in the write set), so a
+   changed run added its path to the index while never writing its page → the index referenced a page
+   that didn't exist (404). **Fix:** in `generateAll`'s changed path, also write an exported album's
+   file when it is missing on disk, so the index can never list a page that isn't there (self-heals a
+   newly-unhidden or settle-delayed album). Backend-only; test in `generate.test.ts`. Article:
+   [[ts-lanbilder-missing-album-page]].
+   Original note:
    "Glitched 2025" (70 visible photos, in `index.json`) had no `data/565659.json` and was **not** in
    `dirty_albums`, so `--changed` never wrote it → the public page 404'd. Five albums were in this
    missing-page state (only 565659 was index-reachable). Fixed live by a full `generate.ts --all`

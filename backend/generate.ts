@@ -238,6 +238,16 @@ async function writeAtomic(file: string, text: string): Promise<void> {
     await fs.rename(tmp, file);
 }
 
+/** Whether a path exists (used by the changed run to backfill a missing album page; ROOTCAUSE-01). */
+async function fileExists(file: string): Promise<boolean> {
+    try {
+        await fs.access(file);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 /**
  * Writes the static files into `dataDir`. With `onlyAlbums` (the changed-branch run) only those
  * album files are written and album files of albums that stopped being exported are moved to
@@ -270,8 +280,14 @@ export async function generateAll(db: Db, dataDir: string, now: Date = new Date(
     let albums = 0;
     for (const id of t.exported) {
         const { file, search: s, legacyPhotos: lp } = buildAlbumFile(t, id, memo);
-        if (!onlyAlbums || onlyAlbums.has(id)) {
-            await writeAtomic(path.join(dataDir, `${id}.json`), JSON.stringify(file, null, 2));
+        const dest = path.join(dataDir, `${id}.json`);
+        // A changed run writes the dirty albums' files; index.json below always lists every exported
+        // album, so an exported album that is NOT dirty but has NO file on disk (e.g. just unhidden, or
+        // it was dirty while hidden so its page was never written, or it was waiting out the settle
+        // window on an earlier run) would be listed in the index with no page behind it — a 404
+        // (ROOTCAUSE-01). Write it too, so the index never references a missing page.
+        if (!onlyAlbums || onlyAlbums.has(id) || !(await fileExists(dest))) {
+            await writeAtomic(dest, JSON.stringify(file, null, 2));
             albums += 1;
             // the album has been public: its URL segment is locked from now on (invariant 4)
             db.run('UPDATE items SET url_locked_at = ? WHERE id = ? AND url_locked_at IS NULL', now.toISOString(), id);
