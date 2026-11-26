@@ -32,8 +32,46 @@ export function PhotoGrid(props: PhotoGridProps): ReactNode {
   const photos = items.filter((c) => c.type === "photo");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [bulkPhotographer, setBulkPhotographer] = useState("");
 
   if (photos.length === 0) return null;
+
+  // Only photos the user may write can be selected for the bulk edit.
+  const writablePhotoIds = new Set(
+    photos.filter((p) => canWrite && p.canWrite).map((p) => p.id)
+  );
+  const selectedCount = [...selected].filter((id) =>
+    writablePhotoIds.has(id)
+  ).length;
+
+  function toggleSelect(id: number): void {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function applyPhotographer(): Promise<void> {
+    const ids = [...selected].filter((id) => writablePhotoIds.has(id));
+    if (ids.length === 0) return;
+    const value =
+      bulkPhotographer.trim() === "" ? null : bulkPhotographer.trim();
+    setBusy(true);
+    setError(null);
+    try {
+      const updated = await api.setPhotographer(ids, value);
+      for (const item of updated) props.onItemChanged(item);
+      setSelected(new Set());
+      setBulkPhotographer("");
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function move(photoId: number, dir: -1 | 1): Promise<void> {
     const ids = items.map((c) => c.id);
@@ -78,6 +116,36 @@ export function PhotoGrid(props: PhotoGridProps): ReactNode {
           {error}
         </p>
       )}
+      {selectedCount > 0 && (
+        <div className="photo-bulk-bar" role="group" aria-label="Bulk edit">
+          <span className="photo-bulk-count">{selectedCount} selected</span>
+          <label htmlFor="bulk-photographer">Fotograf</label>
+          <input
+            id="bulk-photographer"
+            type="text"
+            value={bulkPhotographer}
+            onChange={(ev) => setBulkPhotographer(ev.target.value)}
+            maxLength={255}
+            placeholder="(empty clears)"
+            disabled={busy}
+          />
+          <button
+            type="button"
+            className="primary"
+            onClick={() => void applyPhotographer()}
+            disabled={busy}
+          >
+            Set photographer on {selectedCount}
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelected(new Set())}
+            disabled={busy}
+          >
+            Clear selection
+          </button>
+        </div>
+      )}
       <ul className="photo-grid" aria-label="Photos">
         {photos.map((p, i) => (
           <PhotoCard
@@ -96,6 +164,10 @@ export function PhotoGrid(props: PhotoGridProps): ReactNode {
             onHighlight={() => void highlight(p.id)}
             onChanged={props.onItemChanged}
             onDeleted={() => props.onPhotoDeleted(p.id)}
+            selected={selected.has(p.id)}
+            onToggleSelect={
+              canWrite && p.canWrite ? () => toggleSelect(p.id) : undefined
+            }
           />
         ))}
       </ul>

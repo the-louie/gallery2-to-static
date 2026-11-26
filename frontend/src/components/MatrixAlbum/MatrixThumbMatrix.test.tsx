@@ -26,6 +26,12 @@ describe('MatrixThumbMatrix (THEME-01)', () => {
     expect(info(cell)).toEqual(['Date: 26/11/2005', 'Views: 1074']);
   });
 
+  it('shows the photographer below the date on a photo cell, trimmed (Fotograf:)', () => {
+    render(<MatrixThumbMatrix albumPath="/dh/dhw05/" items={[{ ...photo, photographer: '  Jane Doe ' } as Child]} />);
+    const cell = document.querySelector('td.giItemCell')!;
+    expect(info(cell)).toEqual(['Date: 26/11/2005', 'Fotograf: Jane Doe', 'Views: 1074']);
+  });
+
   it('album cell as in the 2006 dhw05 page: grey cell, summary, Size with total, Views', () => {
     render(<MatrixThumbMatrix albumPath="/dh/" items={[album]} />);
     const cell = document.querySelector('td.giAlbumCell.gcBackground1')!;

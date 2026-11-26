@@ -47,6 +47,9 @@ function ItemCell({ item, albumPath }: { item: Child; albumPath: string }) {
       {isAlbum && summary && <p className="giDescription">{parseBBCodeDecoded(truncateTitle(summary, 256))}</p>}
       <div className="block-core-ItemInfo giInfo">
         {item.timestamp != null && <span className="date summary">Date: {formatG2Date(item.timestamp)}</span>}
+        {!isAlbum && item.photographer?.trim() && (
+          <span className="photographer summary">Fotograf: {item.photographer.trim()}</span>
+        )}
         {isAlbum && count > 0 && (
           // "(N items total)": Gallery 2 counted all items below; the export counts the photos
           <span className="size summary">

@@ -10,6 +10,48 @@ The reported test failures (214/1249) could **not** be reproduced — see TEST-0
 
 ---
 
+## Operator requests (2026-11-26, Glitched = first hosting customer)
+
+In priority order, as the operator set them:
+
+1. **PHOTOG-01: per-photo photographer field (in progress).** Glitched requires the photographer's
+   name shown on each image. New nullable `photographer` column; admin can edit it on one photo and
+   **in bulk via multi-select**; shown on the public photo page ("Fotograf:") and in the thumbnail
+   caption below the date, only when set. Was put in the description by hand before; that text is left
+   as-is. Backend (migration 005, types, generate, admin API incl. bulk `PATCH /api/photos`) done;
+   admin UI multi-select + public display in progress.
+1b. **OWNER-01: per-album free-text owner override (operator 2026-11-26, priority TBD — likely alongside
+   PHOTOG-01).** The displayed "Owner:" comes from the uploading account (e.g. the operator), but the
+   operator only helps Glitched publish; the album is Glitched's. Add a nullable free-text `owner`
+   override on albums that takes precedence over the account-resolved `ownerName` (set "Glitched",
+   "Anton", …). Proposed semantics: the override applies to the album and **cascades to the photos in
+   its subtree** (each item's effective owner = nearest ancestor-or-self album override, else resolved
+   `owner_name`), computed at generation. Distinct from PHOTOG-01 (photographer = who took the shot,
+   per photo; owner = who the images belong to, per album). **Confirm:** cascade to subtree vs album
+   only. Touches: migration (owner column on items), tree/generate (effective-owner resolution), admin
+   UI (album form field), display already uses `ownerName`.
+
+2. **HILITE-01: highlight selector for subalbum-only albums.** An album with only sub-albums (e.g. the
+   root) auto-picks the first descendant image as its highlight. Add a selector to choose among the
+   direct sub-albums' highlight images instead. Backend `setHighlight` already stores any descendant
+   photo; the gap is the admin UI (no picker when the album has no direct photos) and perhaps a route
+   to list the candidate sub-album highlights.
+3. **GRID-01: responsive thumbnail grid (operator 2026-11-26).** The thumbnail/album grid uses a fixed
+   column count; modern screens are much wider than the 2006 layout. Make the available width dictate
+   the number of columns and let the images flow freely (auto-fill/`minmax`, not a fixed count), and
+   allow up to **10 rows** per page instead of 4. Scoped before ROOTCAUSE-01. (Clarify which themes:
+   classic Matrix grid and/or the modern AlbumGrid; and what the current "4 rows" cap is — pager page
+   size vs a visible-rows limit.)
+4. **ROOTCAUSE-01: generation can leave a visible album with no page.** Found 2026-11-26: album 565659
+   "Glitched 2025" (70 visible photos, in `index.json`) had no `data/565659.json` and was **not** in
+   `dirty_albums`, so `--changed` never wrote it → the public page 404'd. Five albums were in this
+   missing-page state (only 565659 was index-reachable). Fixed live by a full `generate.ts --all`
+   (it also made the album's 70 resizes for the first time). Root cause not yet found: how does an
+   album become visible-with-content without being marked dirty? Fix before the next customer upload so
+   it can't recur. Empty albums are fine (verified: 0 of 73 are linked from a parent or in the index).
+
+---
+
 ## P0 — Blocks all other work
 
 Nothing below this line can be validated until the build runs.

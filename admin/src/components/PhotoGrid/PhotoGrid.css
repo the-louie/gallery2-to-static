@@ -6,3 +6,27 @@
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: var(--space);
 }
+
+.photo-bulk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--space);
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.photo-bulk-bar .photo-bulk-count {
+  font-weight: 600;
+}
+
+.photo-bulk-bar input {
+  flex: 1 1 10rem;
+  min-width: 8rem;
+}

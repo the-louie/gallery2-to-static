@@ -76,6 +76,7 @@ export function item(over: Partial<AdminItem> & { id: number }): AdminItem {
     title: `Item ${over.id}`,
     description: null,
     summary: null,
+    photographer: null,
     urlSegment: `item-${over.id}`,
     urlLocked: false,
     path: `/root/item-${over.id}${type === "album" ? "/" : ""}`,

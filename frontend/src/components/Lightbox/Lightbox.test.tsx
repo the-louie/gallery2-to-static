@@ -411,6 +411,47 @@ describe("Lightbox", () => {
       expect(dialog).toHaveAttribute("aria-describedby", "lightbox-metadata");
     });
 
+    it("displays the photographer (Fotograf:) when set, trimmed", () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={{ ...mockPhoto, photographer: "  Erik Foto " }}
+          onClose={mockOnClose}
+        />
+      );
+      expect(screen.getByText(/Fotograf: Erik Foto/)).toBeInTheDocument();
+    });
+
+    it("does not render the photographer when absent", () => {
+      render(
+        <Lightbox
+          isOpen={true}
+          image={{ ...mockPhoto, photographer: null }}
+          onClose={mockOnClose}
+        />
+      );
+      expect(screen.queryByText(/Fotograf:/)).not.toBeInTheDocument();
+    });
+
+    it("shows the metadata block when only the photographer is present", () => {
+      const onlyPhotographer: Image = {
+        ...mockPhoto,
+        title: "",
+        description: "",
+        width: null,
+        height: null,
+        timestamp: 0,
+        summary: null,
+        ownerName: null,
+        photographer: "Crew",
+      };
+      render(
+        <Lightbox isOpen={true} image={onlyPhotographer} onClose={mockOnClose} />
+      );
+      expect(document.querySelector(".lightbox-metadata")).toBeInTheDocument();
+      expect(screen.getByText(/Fotograf: Crew/)).toBeInTheDocument();
+    });
+
     it("handles missing dimensions gracefully", () => {
       const imageWithoutDimensions: Image = {
         ...mockPhoto,

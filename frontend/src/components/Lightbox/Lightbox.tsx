@@ -1154,6 +1154,8 @@ export function Lightbox({
             image.description ||
             (typeof image.summary === "string" && image.summary.trim()) ||
             (typeof image.ownerName === "string" && image.ownerName.trim()) ||
+            (typeof image.photographer === "string" &&
+              image.photographer.trim()) ||
             dimensions ||
             formattedDate) && (
             <div className="lightbox-metadata" id="lightbox-metadata">
@@ -1176,6 +1178,12 @@ export function Lightbox({
                 image.ownerName.trim() && (
                   <p className="lightbox-owner">
                     Owner: {decodeHtmlEntities(image.ownerName.trim())}
+                  </p>
+                )}
+              {typeof image.photographer === "string" &&
+                image.photographer.trim() && (
+                  <p className="lightbox-photographer">
+                    Fotograf: {decodeHtmlEntities(image.photographer.trim())}
                   </p>
                 )}
               <div className="lightbox-details">

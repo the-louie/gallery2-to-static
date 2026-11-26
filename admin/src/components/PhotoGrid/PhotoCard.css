@@ -66,3 +66,26 @@
   font-size: 0.85em;
   margin: 0;
 }
+
+.photo-card {
+  position: relative;
+}
+
+.photo-card-select {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2px;
+  line-height: 0;
+}
+
+.photo-card-select input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+}

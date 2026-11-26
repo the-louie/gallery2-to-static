@@ -19,6 +19,9 @@ export interface PhotoCardProps {
   onHighlight: () => void;
   onChanged: (item: AdminItem) => void;
   onDeleted: () => void;
+  /** multi-select for the bulk photographer edit (omitted → no checkbox) */
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }
 
 /** One photo: thumbnail, inline title/description editor and its actions. */
@@ -27,6 +30,7 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(photo.title ?? "");
   const [description, setDescription] = useState(photo.description ?? "");
+  const [photographer, setPhotographer] = useState(photo.photographer ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const deleted = photo.deletedAt !== null;
@@ -34,16 +38,23 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
   function startEdit(): void {
     setTitle(photo.title ?? "");
     setDescription(photo.description ?? "");
+    setPhotographer(photo.photographer ?? "");
     setError(null);
     setEditing(true);
   }
 
   async function save(ev: FormEvent<HTMLFormElement>): Promise<void> {
     ev.preventDefault();
-    const patch: { title?: string; description?: string } = {};
+    const patch: {
+      title?: string;
+      description?: string;
+      photographer?: string;
+    } = {};
     if (title !== (photo.title ?? "")) patch.title = title;
     if (description !== (photo.description ?? ""))
       patch.description = description;
+    if (photographer !== (photo.photographer ?? ""))
+      patch.photographer = photographer;
     if (Object.keys(patch).length === 0) {
       setEditing(false);
       return;
@@ -106,6 +117,17 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
       className={`photo-card${deleted ? " is-deleted" : ""}${props.isHighlight ? " is-highlight" : ""}${photo.pending ? " is-pending" : ""}`}
       aria-label={name}
     >
+      {props.onToggleSelect && !deleted && (
+        <label className="photo-card-select">
+          <input
+            type="checkbox"
+            checked={props.selected ?? false}
+            onChange={props.onToggleSelect}
+            disabled={busy}
+            aria-label={`Select ${name}`}
+          />
+        </label>
+      )}
       <Thumb item={photo} size={140} />
       {editing ? (
         <form className="photo-card-edit" onSubmit={(ev) => void save(ev)}>
@@ -122,6 +144,14 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
             id={`photo-${photo.id}-description`}
             value={description}
             onChange={(ev) => setDescription(ev.target.value)}
+          />
+          <label htmlFor={`photo-${photo.id}-photographer`}>Fotograf</label>
+          <input
+            id={`photo-${photo.id}-photographer`}
+            type="text"
+            value={photographer}
+            onChange={(ev) => setPhotographer(ev.target.value)}
+            maxLength={255}
           />
           <div className="actions">
             <button type="submit" className="primary" disabled={disabled}>
@@ -144,6 +174,11 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
           {photo.description && (
             <div className="photo-card-description muted">
               {photo.description}
+            </div>
+          )}
+          {photo.photographer && (
+            <div className="photo-card-photographer muted">
+              Fotograf: {photo.photographer}
             </div>
           )}
         </>

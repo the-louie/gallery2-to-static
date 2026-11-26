@@ -14,6 +14,8 @@ export interface AdminItem {
   title: string | null;
   description: string | null;
   summary: string | null;
+  /** photos: the photographer credit ("Fotograf:"); null when unset */
+  photographer: string | null;
   urlSegment: string;
   urlLocked: boolean;
   path: string;
@@ -136,6 +138,14 @@ export interface PhotoPatch {
   title?: string;
   description?: string;
   eventAt?: number | null;
+  /** photographer credit; "" or null clears it */
+  photographer?: string | null;
+}
+
+/** Bulk photographer edit of several photos (the multi-select action): `PATCH /api/photos`. */
+export interface PhotosBulkPatch {
+  ids: number[];
+  photographer: string | null;
 }
 
 export interface ProfilePatch {

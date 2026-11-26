@@ -40,6 +40,7 @@ export interface ItemRow {
     title: string | null;
     description: string | null;
     summary: string | null;
+    photographer: string | null;
     path_component: string;
     url_segment: string;
     event_at: number | null;

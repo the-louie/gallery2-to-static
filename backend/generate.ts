@@ -82,6 +82,9 @@ function baseChild(r: ItemRow): Child {
     };
     if (r.order_weight != null) c.order = r.order_weight;
     if (r.view_count != null) c.viewCount = r.view_count;
+    // Emit the photographer credit only when it has content, so the public page shows the line only
+    // when set (empty/hidden by default; Glitched, 2026-11).
+    if (r.photographer != null && r.photographer.trim() !== '') c.photographer = r.photographer;
     return c;
 }
 

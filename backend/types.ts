@@ -89,6 +89,12 @@ export interface Child {
      */
     summary?: string | null;
     /**
+     * Photos only: the photographer's name, shown on the public photo page ("Fotograf:"). Set by the
+     * admin (our first hosting customer, Glitched, requires the credit). Emitted only when non-empty,
+     * so the public page shows the line only when it has content.
+     */
+    photographer?: string | null;
+    /**
      * Path-based URL path for this album (path-based routing). Only present for albums (GalleryAlbumItem) when backend emits path-based URLs.
      */
     path?: string | null;

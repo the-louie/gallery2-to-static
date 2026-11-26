@@ -26,7 +26,7 @@ Spec for THEME-01 (Sprint 11). The default theme (`classic`) reproduces Gallery 
 #gsFooter: badges XHTML 1.0, Gallery 2, "Unpossible" (80×15 each)
 ```
 
-Photo page: same frame. Header block: h2 photo title | 30%: Date, Owner, "Size:" select (we have one size), "Full size: 1200x1600" link. Navigator, `#gsImageView` with the image (Gallery 2 showed a 768px resize), navigator. Sidebar peer list lists the album's photos ("1. CIMG0053_.JPG" … "287. CIMG0056h.JPG").
+Photo page: same frame. Header block: h2 photo title | 30%: Date, Owner, "Fotograf:" (PHOTOG-01, only when set), "Size:" select (we have one size), "Full size: 1200x1600" link. The thumbnail grid cell (MatrixThumbMatrix) also shows "Fotograf:" under the Date when the photo has one. Navigator, `#gsImageView` with the image (Gallery 2 showed a 768px resize), navigator. Sidebar peer list lists the album's photos ("1. CIMG0053_.JPG" … "287. CIMG0056h.JPG").
 
 ## Peer list
 

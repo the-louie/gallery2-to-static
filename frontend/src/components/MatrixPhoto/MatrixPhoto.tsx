@@ -193,6 +193,11 @@ export function MatrixPhoto({ albumId, imageId }: MatrixPhotoProps) {
                       Owner: {photo.ownerName}
                     </span>
                   )}
+                  {photo.photographer?.trim() && (
+                    <span className="photographer summary">
+                      Fotograf: {photo.photographer.trim()}
+                    </span>
+                  )}
                 </div>
                 {full && (
                   <div className="block-core-PhotoSizes giInfo">

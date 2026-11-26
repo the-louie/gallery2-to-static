@@ -78,6 +78,24 @@ describe("MatrixPhoto (THEME-01)", () => {
     });
   });
 
+  it("shows the photographer after the owner when set, trimmed (Fotograf:)", () => {
+    vi.mocked(useAlbumData).mockReturnValue({
+      data: [
+        { ...photo(1, "CIMG0053_.JPG"), photographer: "  Jane Doe  " } as Child,
+      ],
+      metadata,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    show(1);
+    expect(
+      [...document.querySelectorAll(".block-core-ItemInfo .summary")].map(
+        (s) => s.textContent
+      )
+    ).toEqual(["Date: 26/11/2005", "Owner: Patrick", "Fotograf: Jane Doe"]);
+  });
+
   it("header as in the 2006 photo page: title, Date, Owner, Size select, Full size link", () => {
     show(1);
     expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(

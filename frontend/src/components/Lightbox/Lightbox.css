@@ -495,7 +495,8 @@
   opacity: 0.9;
 }
 
-.lightbox-owner {
+.lightbox-owner,
+.lightbox-photographer {
   font-size: 0.9375rem;
   line-height: 1.4;
   margin: 0 0 1rem 0;

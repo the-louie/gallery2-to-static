@@ -69,6 +69,16 @@ async function run(): Promise<void> {
         await generateAll(db, sorted, new Date('2026-10-26T12:00:00.000Z'));
         const dh = await readJson(path.join(sorted, '10.json'));
         assert.deepStrictEqual(dh.children.map((c: { title: string | null; type: string }) => c.title), ['', 'image', 'Lördag', 'Lördag'], 'albums A–Ö first (an empty title sorts first)');
+
+        // photographer (Glitched): emitted on the photo only when it has content
+        db.run("UPDATE items SET photographer = 'Lena Foto' WHERE id = 101");
+        const withPh = path.join(tmp, 'withph');
+        await generateAll(db, withPh, new Date('2026-10-26T12:00:00.000Z'));
+        assert.strictEqual((await readJson(path.join(withPh, '11.json'))).children.find((c: { id: number }) => c.id === 101).photographer, 'Lena Foto', 'emitted when set');
+        db.run("UPDATE items SET photographer = '   ' WHERE id = 101");
+        const noPh = path.join(tmp, 'noph');
+        await generateAll(db, noPh, new Date('2026-10-26T12:00:00.000Z'));
+        assert.strictEqual('photographer' in (await readJson(path.join(noPh, '11.json'))).children.find((c: { id: number }) => c.id === 101), false, 'omitted when empty/whitespace');
         db.close();
 
         // With derivatives (T-05): the extractor generates thumbnails and resizes; the media step

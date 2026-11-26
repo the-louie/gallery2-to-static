@@ -107,6 +107,57 @@ describe("PhotoGrid", () => {
     expect(props.onPhotoDeleted).toHaveBeenCalledWith(10);
   });
 
+  it("edits the photographer (Fotograf) field inline with PATCH", async () => {
+    const f = installFetchMock();
+    const updated = { ...items[1]!, photographer: "Jane Doe" };
+    f.on("PATCH /api/photos/10", { status: 200, body: updated });
+    const props = setup();
+    const card = screen.getByRole("listitem", { name: "One" });
+    await userEvent.click(within(card).getByRole("button", { name: "Edit" }));
+    await userEvent.type(within(card).getByLabelText("Fotograf"), "Jane Doe");
+    await userEvent.click(within(card).getByRole("button", { name: "Save" }));
+    expect(f.bodyOf("PATCH /api/photos/10")).toEqual({
+      photographer: "Jane Doe",
+    });
+    expect(props.onItemChanged).toHaveBeenCalledWith(updated);
+  });
+
+  it("bulk-sets the photographer on selected photos in one request", async () => {
+    const f = installFetchMock();
+    const updated = [
+      { ...items[1]!, photographer: "Crew" },
+      { ...items[2]!, photographer: "Crew" },
+    ];
+    f.on("PATCH /api/photos", { status: 200, body: updated });
+    const props = setup();
+    expect(
+      screen.queryByRole("group", { name: "Bulk edit" })
+    ).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("checkbox", { name: "Select One" }));
+    await userEvent.click(screen.getByRole("checkbox", { name: "Select Two" }));
+    const bar = screen.getByRole("group", { name: "Bulk edit" });
+    expect(within(bar).getByText("2 selected")).toBeInTheDocument();
+    await userEvent.type(within(bar).getByLabelText("Fotograf"), "Crew");
+    await userEvent.click(
+      within(bar).getByRole("button", { name: "Set photographer on 2" })
+    );
+    expect(f.bodyOf("PATCH /api/photos")).toEqual({
+      ids: [10, 11],
+      photographer: "Crew",
+    });
+    expect(props.onItemChanged).toHaveBeenCalledTimes(2);
+    expect(props.onItemChanged).toHaveBeenCalledWith(updated[0]);
+    expect(props.onItemChanged).toHaveBeenCalledWith(updated[1]);
+    expect(
+      screen.queryByRole("group", { name: "Bulk edit" })
+    ).not.toBeInTheDocument();
+  });
+
+  it("has no select checkboxes without write access", () => {
+    setup({ canWrite: false });
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+  });
+
   it("restores a deleted photo (admin)", async () => {
     const f = installFetchMock();
     const restored = { ...items[3]!, deletedAt: null };

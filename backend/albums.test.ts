@@ -115,6 +115,23 @@ async function run(): Promise<void> {
         // photos (T-03): edit, highlight, order, delete/restore
         const pe = await call(kalle, 'PATCH', '/api/photos/101', { title: 'Första bilden', eventAt: 1_150_000_000 });
         assert.deepStrictEqual([pe.status, pe.body.title, pe.body.eventAt], [200, 'Första bilden', 1_150_000_000]);
+
+        // photographer (Glitched): single edit trims, whitespace/'' clears; bulk sets many at once in one
+        // request, 403 if any id is outside the delegated subtree, 400 on a bad body.
+        const pph = await call(kalle, 'PATCH', '/api/photos/101', { photographer: '  Jane Doe  ' });
+        assert.deepStrictEqual([pph.status, pph.body.photographer], [200, 'Jane Doe'], 'trimmed');
+        assert.strictEqual((await call(kalle, 'PATCH', '/api/photos/101', { photographer: '   ' })).body.photographer, null, 'whitespace clears it');
+        const bulk = await call(kalle, 'PATCH', '/api/photos', { ids: [101, 102], photographer: 'Erik Foto' });
+        assert.strictEqual(bulk.status, 200);
+        assert.deepStrictEqual(
+            bulk.body.map((i: { id: number; photographer: string | null }) => [i.id, i.photographer]).sort(),
+            [[101, 'Erik Foto'], [102, 'Erik Foto']],
+            'both photos updated in one request',
+        );
+        assert.strictEqual((await call(kalle, 'PATCH', '/api/photos', { ids: [101, 301], photographer: 'x' })).status, 403, 'bulk 403 if any id is outside the subtree');
+        assert.strictEqual((await call(kalle, 'GET', '/api/albums/11')).body.children.find((c: { id: number }) => c.id === 101).photographer, 'Erik Foto', 'the 403 bulk wrote nothing: 101 unchanged');
+        assert.strictEqual((await call(kalle, 'PATCH', '/api/photos', { ids: [], photographer: 'x' })).status, 400, 'bulk needs a non-empty ids array');
+        assert.strictEqual((await call(kalle, 'PATCH', '/api/photos', { ids: [101] })).status, 400, 'bulk needs photographer');
         assert.strictEqual((await call(kalle, 'PATCH', '/api/photos/301', { title: 'x' })).status, 403, 'outside the delegated subtree');
         assert.strictEqual((await call(kalle, 'GET', '/api/albums/11')).body.album.currentHighlightPhotoId, 101, 'default highlight = the first photo');
         const hl = await call(kalle, 'PUT', '/api/albums/10/highlight', { photoId: 101 });

@@ -23,6 +23,8 @@ export interface AdminItem {
     title: string | null;
     description: string | null;
     summary: string | null;
+    /** photos: the photographer credit shown on the public site ("Fotograf:"); null when unset */
+    photographer: string | null;
     urlSegment: string;
     urlLocked: boolean;
     path: string;
@@ -51,12 +53,12 @@ export interface AlbumView {
 
 interface Row {
     id: number; type: 'album' | 'photo'; parent_id: number | null; position: number; title: string | null;
-    description: string | null; summary: string | null; path_component: string; url_segment: string; url_locked_at: string | null;
+    description: string | null; summary: string | null; photographer: string | null; path_component: string; url_segment: string; url_locked_at: string | null;
     event_at: number | null; width: number | null; height: number | null; owner_name: string | null; view_count: number | null;
     hidden: number; blocked: number; deleted_at: string | null; changed_at: string;
 }
 
-const SELECT = `SELECT i.id, i.type, i.parent_id, i.position, i.title, i.description, i.summary, i.path_component, i.url_segment,
+const SELECT = `SELECT i.id, i.type, i.parent_id, i.position, i.title, i.description, i.summary, i.photographer, i.path_component, i.url_segment,
     i.url_locked_at, i.event_at, i.width, i.height, CASE WHEN o.show_full_name = 1 AND o.full_name IS NOT NULL AND trim(o.full_name) <> '' THEN o.full_name ELSE o.nickname END AS owner_name, i.view_count, i.hidden, i.blocked, i.deleted_at, i.changed_at
     FROM items i LEFT JOIN owners o ON o.id = i.owner_id`;
 
@@ -131,7 +133,7 @@ export function toAdminItem(db: Db, r: Row, user: User): AdminItem {
     const chosen = r.type === 'album' ? db.get<{ photo_id: number }>('SELECT photo_id FROM highlights WHERE album_id = ? AND chosen = 1', r.id) : undefined;
     const item: AdminItem = {
         id: r.id, type: r.type, parentId: r.parent_id, position: r.position, title: r.title, description: r.description, summary: r.summary,
-        urlSegment: r.url_segment, urlLocked: r.url_locked_at !== null, path: publicPath(db, r), eventAt: r.event_at, width: r.width, height: r.height,
+        photographer: r.photographer, urlSegment: r.url_segment, urlLocked: r.url_locked_at !== null, path: publicPath(db, r), eventAt: r.event_at, width: r.width, height: r.height,
         owner: r.owner_name, viewCount: r.view_count, hidden: r.hidden === 1, deletedAt: r.deleted_at, pending: isPending(db, r),
         highlightPhotoId: chosen ? chosen.photo_id : null, thumbnailUrl: thumbnailUrl(db, r), canWrite: canWrite(db, user.id, r.id),
     };
@@ -184,6 +186,15 @@ function optTime(v: unknown): number | null | undefined {
     if (v === null) return null;
     if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 4102444800) throw new HttpError(400, 'eventAt must be unix seconds');
     return Math.floor(v);
+}
+
+/** Photographer credit: optional, trimmed; '' (or whitespace) and null both clear it. undefined = leave unchanged. */
+function optPhotographer(v: unknown): string | null | undefined {
+    const s = optText(v, 'photographer', 255);
+    if (s === undefined) return undefined;
+    if (s === null) return null;
+    const t = s.trim();
+    return t === '' ? null : t;
 }
 
 /** The user's owner row (created on first write; email links it to the account). */
@@ -308,8 +319,29 @@ export function updatePhoto(db: Db, photoId: number, input: Record<string, unkno
     if (d !== undefined) { sets.push('description = ?'); vals.push(d); }
     const t = optTime(input.eventAt);
     if (t !== undefined) { sets.push('event_at = ?'); vals.push(t); }
+    const ph = optPhotographer(input.photographer);
+    if (ph !== undefined) { sets.push('photographer = ?'); vals.push(ph); }
     if (sets.length) db.run(`UPDATE items SET ${sets.join(', ')} WHERE id = ?`, ...vals, photoId);
     return toAdminItem(db, getRow(db, photoId)!, user);
+}
+
+/**
+ * Set (or clear) the photographer on many photos at once, in one transaction (the bulk edit behind the
+ * admin multi-select). `photographer` is a string to set or null/'' to clear. Every id must be a photo;
+ * authorization (canWrite per id) is enforced by the route before this is called.
+ */
+export function setPhotographerBulk(db: Db, ids: unknown, photographer: unknown, user: User): AdminItem[] {
+    if (!Array.isArray(ids) || ids.length === 0 || !ids.every((v) => Number.isInteger(v))) {
+        throw new HttpError(400, 'ids must be a non-empty array of integers');
+    }
+    const ph = optPhotographer(photographer);
+    if (ph === undefined) throw new HttpError(400, 'photographer required (a string, or null to clear)');
+    const uniq = [...new Set(ids as number[])];
+    for (const id of uniq) mustGet(db, id, 'photo'); // 404 if any id is missing or not a photo
+    db.transaction(() => {
+        for (const id of uniq) db.run('UPDATE items SET photographer = ? WHERE id = ?', ph, id);
+    });
+    return uniq.map((id) => toAdminItem(db, getRow(db, id)!, user));
 }
 
 /** The album's direct children in the given order (every current child must be listed exactly once). */
