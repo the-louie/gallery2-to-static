@@ -92,8 +92,9 @@
 }
 
 /* Thumbnail grid (GRID-01, 2026-11-26): a width-driven grid that flows as many columns as the viewport
-   fits — was Gallery 2's fixed 3-column <table>. Modern screens are far wider than 2006's. */
-.g2-matrix .gsThumbMatrix {
+   fits — was Gallery 2's fixed 3-column <table>. Modern screens are far wider than 2006's. The 2013 root
+   list (MatrixAlbumList) reuses the gsThumbMatrix class on a real <table>, so it is excluded here. */
+.g2-matrix .gsThumbMatrix:not(.gsAlbumList) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 4px;
@@ -107,27 +108,27 @@
 }
 
 /* denser cells in the flowing grid (the 2013 list keeps the 1em above) */
-.g2-matrix .gsThumbMatrix .giItemCell,
-.g2-matrix .gsThumbMatrix .giAlbumCell {
+.g2-matrix .gsThumbMatrix:not(.gsAlbumList) .giItemCell,
+.g2-matrix .gsThumbMatrix:not(.gsAlbumList) .giAlbumCell {
   padding: 0.6em;
   min-width: 0; /* let the grid cell shrink so long titles wrap instead of overflowing (GRID-01 fix) */
   overflow: hidden;
 }
 
 /* long filename titles must wrap inside the narrower grid cell, not overflow into the neighbours */
-.g2-matrix .gsThumbMatrix .giTitle {
+.g2-matrix .gsThumbMatrix:not(.gsAlbumList) .giTitle {
   font-size: 1em;
   overflow-wrap: anywhere;
 }
 
-.g2-matrix .gsThumbMatrix .giThumbnail {
+.g2-matrix .gsThumbMatrix:not(.gsAlbumList) .giThumbnail {
   width: 100%;
   max-width: 150px;
   height: auto;
   aspect-ratio: 1 / 1;
 }
 
-.g2-matrix .gsThumbMatrix .giMissingThumbnail {
+.g2-matrix .gsThumbMatrix:not(.gsAlbumList) .giMissingThumbnail {
   width: 100%;
   max-width: 150px;
 }
