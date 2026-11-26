@@ -7,7 +7,7 @@ import type { Router } from '../http.ts';
 import { json, noContent, intParam, HttpError } from '../http.ts';
 import { requireUser, type AuthDeps, type AuthCtx } from '../auth/guard.ts';
 import { canWrite } from '../auth/users.ts';
-import { createAlbum, getAlbumView, getRootView, updateAlbum, setHidden, softDelete, restore, updatePhoto, setPhotographerBulk, reorderChildren, setHighlight } from '../albums.ts';
+import { createAlbum, getAlbumView, getRootView, updateAlbum, setHidden, softDelete, restore, updatePhoto, setPhotoFieldsBulk, reorderChildren, setHighlight } from '../albums.ts';
 import { readMultipart } from '../multipart.ts';
 import { processUpload, MAX_FILE_BYTES, MAX_REQUEST_BYTES } from '../upload.ts';
 import * as path from 'node:path';
@@ -124,16 +124,19 @@ export function registerAlbumRoutes(router: Router, deps: ContentDeps): void {
         return json(200, item);
     }));
 
-    // Bulk photographer edit behind the admin multi-select (one transaction). 403 before any write if
-    // the user may not write every id; then setPhotographerBulk 404s if any id is not a photo.
+    // Bulk edit behind the admin multi-select (one transaction): photographer and/or ownerOverride on
+    // many photos. 403 before any write if the user may not write every id; then setPhotoFieldsBulk 404s
+    // if any id is not a photo.
     router.patch('/api/photos', user((ctx) => {
-        const ids = body(ctx).ids;
+        const b = body(ctx);
+        const ids = b.ids;
         if (!Array.isArray(ids) || ids.length === 0 || !ids.every((v) => Number.isInteger(v))) {
             throw new HttpError(400, 'ids must be a non-empty array of integers');
         }
         for (const pid of ids as number[]) guard(ctx, pid, 'photo update (bulk)');
-        const items = setPhotographerBulk(ctx.db, ids, body(ctx).photographer, ctx.user);
-        audit(ctx, 'photo update', `items:${(ids as number[]).join(',')}`, 'ok', { fields: ['photographer'], count: items.length });
+        const items = setPhotoFieldsBulk(ctx.db, ids, { photographer: b.photographer, ownerOverride: b.ownerOverride }, ctx.user);
+        const fields = ['photographer', 'ownerOverride'].filter((f) => f in b);
+        audit(ctx, 'photo update', `items:${(ids as number[]).join(',')}`, 'ok', { fields, count: items.length });
         deps.onChange();
         return json(200, items);
     }));

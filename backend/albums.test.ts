@@ -140,7 +140,16 @@ async function run(): Promise<void> {
         assert.strictEqual((await call(kalle, 'PATCH', '/api/photos', { ids: [101, 301], photographer: 'x' })).status, 403, 'bulk 403 if any id is outside the subtree');
         assert.strictEqual((await call(kalle, 'GET', '/api/albums/11')).body.children.find((c: { id: number }) => c.id === 101).photographer, 'Erik Foto', 'the 403 bulk wrote nothing: 101 unchanged');
         assert.strictEqual((await call(kalle, 'PATCH', '/api/photos', { ids: [], photographer: 'x' })).status, 400, 'bulk needs a non-empty ids array');
-        assert.strictEqual((await call(kalle, 'PATCH', '/api/photos', { ids: [101] })).status, 400, 'bulk needs photographer');
+        assert.strictEqual((await call(kalle, 'PATCH', '/api/photos', { ids: [101] })).status, 400, 'bulk needs a field');
+        // per-photo owner override (OWNER-02): single and bulk, same mechanism as the photographer
+        assert.strictEqual((await call(kalle, 'PATCH', '/api/photos/101', { ownerOverride: '  Anton ' })).body.ownerOverride, 'Anton', 'single owner override, trimmed');
+        const bulkOv = await call(kalle, 'PATCH', '/api/photos', { ids: [101, 102], ownerOverride: 'Glitched' });
+        assert.strictEqual(bulkOv.status, 200);
+        assert.deepStrictEqual(
+            bulkOv.body.map((i: { id: number; ownerOverride: string | null }) => [i.id, i.ownerOverride]).sort(),
+            [[101, 'Glitched'], [102, 'Glitched']],
+            'bulk owner override on both photos',
+        );
         assert.strictEqual((await call(kalle, 'PATCH', '/api/photos/301', { title: 'x' })).status, 403, 'outside the delegated subtree');
         assert.strictEqual((await call(kalle, 'GET', '/api/albums/11')).body.album.currentHighlightPhotoId, 101, 'default highlight = the first photo');
         const hl = await call(kalle, 'PUT', '/api/albums/10/highlight', { photoId: 101 });

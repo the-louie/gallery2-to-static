@@ -13,7 +13,7 @@ interface AdminItem {               // one row of `items` as the UI sees it
   id: number; type: 'album' | 'photo'; parentId: number | null; position: number;
   title: string | null; description: string | null; summary: string | null;
   photographer: string | null;      // photos: the "Fotograf:" credit, null when unset
-  ownerOverride: string | null;     // albums: free-text owner override (cascades to the subtree), null when unset
+  ownerOverride: string | null;     // free-text owner override: on an album it cascades to the subtree, on a photo it wins (OWNER-01/02); null when unset
   urlSegment: string; urlLocked: boolean;      // albums: the public path segment, locked once published
   path: string;                                // albums: public URL path ('/dreamhack/dhw05/'), photos: album path + slug
   eventAt: number | null;                      // unix seconds ("Date:")
@@ -47,8 +47,8 @@ interface Profile { nickname: string | null; fullName: string | null; showFullNa
 | `PUT /api/albums/:id/highlight` | `{photoId}` | `AdminItem` | photo must be below the album; `{photoId: null}` = back to the first photo |
 | `PUT /api/albums/:id/order` | `{ids: number[]}` | `{ok: true}` | the album's direct children in the new order (all of them) |
 | `POST /api/albums/:id/photos` | multipart `files[]` (≤ 50 MB each, ≤ 500 MB) | `{created: AdminItem[], rejected: Array<{name, reason}>}` (201) | JPEG/PNG/GIF/WebP/HEIC by content; HEIC → JPEG; GPS stripped |
-| `PATCH /api/photos/:id` | any of `{title, description, eventAt, photographer}` | `AdminItem` | `photographer` trimmed; `""`/null clears it |
-| `PATCH /api/photos` | `{ids: number[], photographer}` | `AdminItem[]` | bulk photographer edit (the multi-select); one transaction, `canWrite` on every id (403 before any write), each id must be a photo |
+| `PATCH /api/photos/:id` | any of `{title, description, eventAt, photographer, ownerOverride}` | `AdminItem` | `photographer`/`ownerOverride` trimmed; `""`/null clears. A photo's `ownerOverride` wins over an album override over the account owner |
+| `PATCH /api/photos` | `{ids: number[], photographer?, ownerOverride?}` (≥1 field) | `AdminItem[]` | bulk edit (the multi-select); one transaction, `canWrite` on every id (403 before any write), each id must be a photo |
 | `PUT /api/photos/:id/hidden` | `{hidden: bool}` | `AdminItem` | a hidden photo is not listed publicly but may stay the album's chosen highlight |
 | `DELETE /api/photos/:id` | – | 204 | soft delete; file to `.trash/<id>/` |
 | `POST /api/photos/:id/restore` | – | `AdminItem` | admin |

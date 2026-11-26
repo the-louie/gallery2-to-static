@@ -114,9 +114,11 @@ export const api = {
     request<{ ok: true }>("PUT", `/api/albums/${albumId}/order`, { ids }),
   patchPhoto: (id: number, patch: PhotoPatch) =>
     request<AdminItem>("PATCH", `/api/photos/${id}`, patch),
-  /** Bulk photographer edit of several photos in one request (the multi-select action). */
-  setPhotographer: (ids: number[], photographer: string | null) =>
-    request<AdminItem[]>("PATCH", "/api/photos", { ids, photographer }),
+  /** Bulk edit of several photos in one request (the multi-select action): photographer and/or owner. */
+  patchPhotos: (
+    ids: number[],
+    fields: { photographer?: string | null; ownerOverride?: string | null }
+  ) => request<AdminItem[]>("PATCH", "/api/photos", { ids, ...fields }),
   setPhotoHidden: (id: number, hidden: boolean) =>
     request<AdminItem>("PUT", `/api/photos/${id}/hidden`, { hidden }),
   deletePhoto: (id: number) => request<void>("DELETE", `/api/photos/${id}`),

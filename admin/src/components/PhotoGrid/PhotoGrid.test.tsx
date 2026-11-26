@@ -158,6 +158,65 @@ describe("PhotoGrid", () => {
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
   });
 
+  it("edits a photo's owner override inline (OWNER-02)", async () => {
+    const f = installFetchMock();
+    const updated = { ...items[1]!, ownerOverride: "Anton" };
+    f.on("PATCH /api/photos/10", { status: 200, body: updated });
+    const props = setup();
+    const card = screen.getByRole("listitem", { name: "One" });
+    await userEvent.click(within(card).getByRole("button", { name: "Edit" }));
+    await userEvent.type(
+      within(card).getByLabelText("Owner (override)"),
+      "Anton"
+    );
+    await userEvent.click(within(card).getByRole("button", { name: "Save" }));
+    expect(f.bodyOf("PATCH /api/photos/10")).toEqual({
+      ownerOverride: "Anton",
+    });
+    expect(props.onItemChanged).toHaveBeenCalledWith(updated);
+  });
+
+  it("bulk-sets the owner on selected photos (OWNER-02)", async () => {
+    const f = installFetchMock();
+    const updated = [
+      { ...items[1]!, ownerOverride: "Glitched" },
+      { ...items[2]!, ownerOverride: "Glitched" },
+    ];
+    f.on("PATCH /api/photos", { status: 200, body: updated });
+    const props = setup();
+    await userEvent.click(screen.getByRole("checkbox", { name: "Select One" }));
+    await userEvent.click(screen.getByRole("checkbox", { name: "Select Two" }));
+    const bar = screen.getByRole("group", { name: "Bulk edit" });
+    await userEvent.type(within(bar).getByLabelText("Owner"), "Glitched");
+    await userEvent.click(
+      within(bar).getByRole("button", { name: "Set owner on 2" })
+    );
+    expect(f.bodyOf("PATCH /api/photos")).toEqual({
+      ids: [10, 11],
+      ownerOverride: "Glitched",
+    });
+    expect(props.onItemChanged).toHaveBeenCalledTimes(2);
+  });
+
+  it("toggles selection by clicking the thumbnail (UX-01)", async () => {
+    setup();
+    expect(
+      screen.queryByRole("group", { name: "Bulk edit" })
+    ).not.toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Select One (thumbnail)" })
+    );
+    const bar = screen.getByRole("group", { name: "Bulk edit" });
+    expect(within(bar).getByText("1 selected")).toBeInTheDocument();
+    // clicking again deselects
+    await userEvent.click(
+      screen.getByRole("button", { name: "Deselect One (thumbnail)" })
+    );
+    expect(
+      screen.queryByRole("group", { name: "Bulk edit" })
+    ).not.toBeInTheDocument();
+  });
+
   it("restores a deleted photo (admin)", async () => {
     const f = installFetchMock();
     const restored = { ...items[3]!, deletedAt: null };

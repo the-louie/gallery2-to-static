@@ -127,13 +127,13 @@ export class Tree {
     /** Visible photos and exported sub-albums, in order: what the album's file lists. */
     listed(id: number): ItemRow[] { return this.kids(id).filter((c) => c.type === 'photo' || (c.path_component !== '' && this.exported.has(c.id))); }
     /**
-     * The owner shown for an item (OWNER-01): the nearest ancestor-or-self album's non-empty
-     * `owner_override`, else the item's own account owner. So a free-text owner set on an album
-     * cascades to every item in its subtree.
+     * The owner shown for an item: the nearest non-empty `owner_override` on the item itself or an
+     * ancestor, else the item's account owner. A photo's own override wins (OWNER-02, bulk-settable),
+     * then an album override cascades to its subtree (OWNER-01), then the account owner.
      */
     effectiveOwner(r: ItemRow): string | null {
         for (let cur: ItemRow | undefined = r; cur; cur = cur.parent_id != null ? this.byId.get(cur.parent_id) : undefined) {
-            if (cur.type === 'album' && cur.owner_override != null && cur.owner_override.trim() !== '') return cur.owner_override.trim();
+            if (cur.owner_override != null && cur.owner_override.trim() !== '') return cur.owner_override.trim();
         }
         return r.owner_name;
     }

@@ -87,7 +87,12 @@ async function run(): Promise<void> {
         await generateAll(db, ownOv, new Date('2026-10-26T12:00:00.000Z'));
         assert.strictEqual((await readJson(path.join(ownOv, '10.json'))).metadata.ownerName, 'Glitched', 'album metadata uses the override');
         assert.strictEqual((await readJson(path.join(ownOv, '11.json'))).children.find((c: { id: number }) => c.id === 101).ownerName, 'Glitched', 'cascades to a descendant photo');
-        db.run('UPDATE items SET owner_override = NULL WHERE id = 10');
+        // a photo's own override (OWNER-02, bulk-settable) wins over the album cascade
+        db.run("UPDATE items SET owner_override = 'Anton' WHERE id = 101");
+        const photoOv = path.join(tmp, 'photoov');
+        await generateAll(db, photoOv, new Date('2026-10-26T12:00:00.000Z'));
+        assert.strictEqual((await readJson(path.join(photoOv, '11.json'))).children.find((c: { id: number }) => c.id === 101).ownerName, 'Anton', 'the photo override wins over the album override');
+        db.run('UPDATE items SET owner_override = NULL WHERE id IN (10, 101)');
         db.close();
 
         // With derivatives (T-05): the extractor generates thumbnails and resizes; the media step

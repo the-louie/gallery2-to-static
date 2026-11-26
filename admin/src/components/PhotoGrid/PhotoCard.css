@@ -89,3 +89,22 @@
   margin: 0;
   cursor: pointer;
 }
+
+/* UX-01: the thumbnail doubles as a select toggle when the photo is selectable */
+.photo-card-thumb-toggle {
+  display: block;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.photo-card-thumb-toggle.is-selected {
+  border-color: var(--accent, #2f6fed);
+}
+
+.photo-card-thumb-toggle[disabled] {
+  cursor: default;
+}

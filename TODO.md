@@ -35,7 +35,10 @@ In priority order, as the operator set them:
    only. Touches: migration (owner column on items), tree/generate (effective-owner resolution), admin
    UI (album form field), display already uses `ownerName`.
 
-1c. **OWNER-02: bulk per-photo owner override (operator 2026-11-26).** Let the operator set the owner on
+1c. ~~**OWNER-02: bulk per-photo owner override**~~ — **DONE 2026-11-26** (Sprint 4, with UX-01).
+   `Tree.effectiveOwner` now honours any item's own override (photo wins over album cascade over
+   account); `ownerOverride` added to `updatePhoto` and the bulk `PATCH /api/photos`; PhotoCard has an
+   Owner field and the bulk bar a "Set owner on N". No migration (column from 006). Original note:
    selected photos the same way the photographer is bulk-set (the PhotoGrid multi-select bar), and on a
    single photo in its editor. The `owner_override` column already exists on every item (migration 006),
    so no migration: generalise `Tree.effectiveOwner` to honour an item's OWN override (drop the
@@ -43,7 +46,9 @@ In priority order, as the operator set them:
    `ownerOverride` to `updatePhoto` and to the bulk `PATCH /api/photos` body; add an Owner field to
    PhotoCard and the bulk bar. Display is automatic (resolved into `ownerName`). Scheduled after GRID-01.
 
-1d. **UX-01: click the thumbnail to toggle select (operator 2026-11-26).** In the admin PhotoGrid, once
+1d. ~~**UX-01: click the thumbnail to toggle select**~~ — **DONE 2026-11-26** (Sprint 4). In the admin
+   PhotoGrid, a writable photo's thumbnail is a toggle button: clicking it selects/deselects the photo
+   for the bulk edit (the checkbox stays too). Original note:
    bulk-select is active (at least one photo selected, or a select-mode affordance), a click anywhere on
    a photo's thumbnail toggles its selection — not only the small checkbox. Admin-only UX. Pairs with
    OWNER-02 / the existing photographer bulk edit. Scheduled with OWNER-02.

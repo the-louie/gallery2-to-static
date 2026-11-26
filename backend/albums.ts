@@ -335,7 +335,7 @@ export function restore(db: Db, id: number, user: User, albumsRoot: string): Adm
     return toAdminItem(db, getRow(db, id)!, user);
 }
 
-/** Photo field edits (title, description, eventAt). */
+/** Photo field edits (title, description, eventAt, photographer, ownerOverride). */
 export function updatePhoto(db: Db, photoId: number, input: Record<string, unknown>, user: User): AdminItem {
     mustGet(db, photoId, 'photo');
     const sets: string[] = []; const vals: Array<string | number | null> = [];
@@ -346,25 +346,32 @@ export function updatePhoto(db: Db, photoId: number, input: Record<string, unkno
     if (t !== undefined) { sets.push('event_at = ?'); vals.push(t); }
     const ph = optPhotographer(input.photographer);
     if (ph !== undefined) { sets.push('photographer = ?'); vals.push(ph); }
+    const ov = optPhotographer(input.ownerOverride);
+    if (ov !== undefined) { sets.push('owner_override = ?'); vals.push(ov); }
     if (sets.length) db.run(`UPDATE items SET ${sets.join(', ')} WHERE id = ?`, ...vals, photoId);
     return toAdminItem(db, getRow(db, photoId)!, user);
 }
 
 /**
- * Set (or clear) the photographer on many photos at once, in one transaction (the bulk edit behind the
- * admin multi-select). `photographer` is a string to set or null/'' to clear. Every id must be a photo;
- * authorization (canWrite per id) is enforced by the route before this is called.
+ * Set (or clear) fields on many photos at once, in one transaction (the bulk edit behind the admin
+ * multi-select). Each of `photographer` / `ownerOverride` is a string to set, null/'' to clear, or
+ * absent to leave unchanged (at least one required). Every id must be a photo; authorization (canWrite
+ * per id) is enforced by the route before this is called.
  */
-export function setPhotographerBulk(db: Db, ids: unknown, photographer: unknown, user: User): AdminItem[] {
+export function setPhotoFieldsBulk(db: Db, ids: unknown, fields: { photographer?: unknown; ownerOverride?: unknown }, user: User): AdminItem[] {
     if (!Array.isArray(ids) || ids.length === 0 || !ids.every((v) => Number.isInteger(v))) {
         throw new HttpError(400, 'ids must be a non-empty array of integers');
     }
-    const ph = optPhotographer(photographer);
-    if (ph === undefined) throw new HttpError(400, 'photographer required (a string, or null to clear)');
+    const sets: string[] = []; const vals: Array<string | null> = [];
+    const ph = optPhotographer(fields.photographer);
+    if (ph !== undefined) { sets.push('photographer = ?'); vals.push(ph); }
+    const ov = optPhotographer(fields.ownerOverride);
+    if (ov !== undefined) { sets.push('owner_override = ?'); vals.push(ov); }
+    if (sets.length === 0) throw new HttpError(400, 'photographer or ownerOverride required (a string, or null to clear)');
     const uniq = [...new Set(ids as number[])];
     for (const id of uniq) mustGet(db, id, 'photo'); // 404 if any id is missing or not a photo
     db.transaction(() => {
-        for (const id of uniq) db.run('UPDATE items SET photographer = ? WHERE id = ?', ph, id);
+        for (const id of uniq) db.run(`UPDATE items SET ${sets.join(', ')} WHERE id = ?`, ...vals, id);
     });
     return uniq.map((id) => toAdminItem(db, getRow(db, id)!, user));
 }

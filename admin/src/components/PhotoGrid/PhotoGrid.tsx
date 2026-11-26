@@ -34,6 +34,7 @@ export function PhotoGrid(props: PhotoGridProps): ReactNode {
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [bulkPhotographer, setBulkPhotographer] = useState("");
+  const [bulkOwner, setBulkOwner] = useState("");
 
   if (photos.length === 0) return null;
 
@@ -54,18 +55,21 @@ export function PhotoGrid(props: PhotoGridProps): ReactNode {
     });
   }
 
-  async function applyPhotographer(): Promise<void> {
+  async function applyBulk(
+    field: "photographer" | "ownerOverride"
+  ): Promise<void> {
     const ids = [...selected].filter((id) => writablePhotoIds.has(id));
     if (ids.length === 0) return;
-    const value =
-      bulkPhotographer.trim() === "" ? null : bulkPhotographer.trim();
+    const raw = field === "photographer" ? bulkPhotographer : bulkOwner;
+    const value = raw.trim() === "" ? null : raw.trim();
     setBusy(true);
     setError(null);
     try {
-      const updated = await api.setPhotographer(ids, value);
+      const updated = await api.patchPhotos(ids, { [field]: value });
       for (const item of updated) props.onItemChanged(item);
       setSelected(new Set());
       setBulkPhotographer("");
+      setBulkOwner("");
     } catch (e) {
       setError(e instanceof ApiError ? e.message : String(e));
     } finally {
@@ -132,10 +136,28 @@ export function PhotoGrid(props: PhotoGridProps): ReactNode {
           <button
             type="button"
             className="primary"
-            onClick={() => void applyPhotographer()}
+            onClick={() => void applyBulk("photographer")}
             disabled={busy}
           >
             Set photographer on {selectedCount}
+          </button>
+          <label htmlFor="bulk-owner">Owner</label>
+          <input
+            id="bulk-owner"
+            type="text"
+            value={bulkOwner}
+            onChange={(ev) => setBulkOwner(ev.target.value)}
+            maxLength={255}
+            placeholder="(empty clears)"
+            disabled={busy}
+          />
+          <button
+            type="button"
+            className="primary"
+            onClick={() => void applyBulk("ownerOverride")}
+            disabled={busy}
+          >
+            Set owner on {selectedCount}
           </button>
           <button
             type="button"

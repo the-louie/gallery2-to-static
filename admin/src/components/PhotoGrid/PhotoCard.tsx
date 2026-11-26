@@ -31,6 +31,7 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
   const [title, setTitle] = useState(photo.title ?? "");
   const [description, setDescription] = useState(photo.description ?? "");
   const [photographer, setPhotographer] = useState(photo.photographer ?? "");
+  const [ownerOverride, setOwnerOverride] = useState(photo.ownerOverride ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const deleted = photo.deletedAt !== null;
@@ -39,6 +40,7 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
     setTitle(photo.title ?? "");
     setDescription(photo.description ?? "");
     setPhotographer(photo.photographer ?? "");
+    setOwnerOverride(photo.ownerOverride ?? "");
     setError(null);
     setEditing(true);
   }
@@ -49,12 +51,15 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
       title?: string;
       description?: string;
       photographer?: string;
+      ownerOverride?: string;
     } = {};
     if (title !== (photo.title ?? "")) patch.title = title;
     if (description !== (photo.description ?? ""))
       patch.description = description;
     if (photographer !== (photo.photographer ?? ""))
       patch.photographer = photographer;
+    if (ownerOverride !== (photo.ownerOverride ?? ""))
+      patch.ownerOverride = ownerOverride;
     if (Object.keys(patch).length === 0) {
       setEditing(false);
       return;
@@ -128,7 +133,21 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
           />
         </label>
       )}
-      <Thumb item={photo} size={140} />
+      {/* UX-01: when the photo is selectable, a click anywhere on the thumbnail toggles its selection. */}
+      {props.onToggleSelect && !deleted && !editing ? (
+        <button
+          type="button"
+          className={`photo-card-thumb-toggle${props.selected ? " is-selected" : ""}`}
+          aria-pressed={props.selected ?? false}
+          aria-label={`${props.selected ? "Deselect" : "Select"} ${name} (thumbnail)`}
+          disabled={busy}
+          onClick={props.onToggleSelect}
+        >
+          <Thumb item={photo} size={140} />
+        </button>
+      ) : (
+        <Thumb item={photo} size={140} />
+      )}
       {editing ? (
         <form className="photo-card-edit" onSubmit={(ev) => void save(ev)}>
           <label htmlFor={`photo-${photo.id}-title`}>Title</label>
@@ -151,6 +170,14 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
             type="text"
             value={photographer}
             onChange={(ev) => setPhotographer(ev.target.value)}
+            maxLength={255}
+          />
+          <label htmlFor={`photo-${photo.id}-owner`}>Owner (override)</label>
+          <input
+            id={`photo-${photo.id}-owner`}
+            type="text"
+            value={ownerOverride}
+            onChange={(ev) => setOwnerOverride(ev.target.value)}
             maxLength={255}
           />
           <div className="actions">
@@ -179,6 +206,11 @@ export function PhotoCard(props: PhotoCardProps): ReactNode {
           {photo.photographer && (
             <div className="photo-card-photographer muted">
               Fotograf: {photo.photographer}
+            </div>
+          )}
+          {photo.ownerOverride && (
+            <div className="photo-card-owner muted">
+              Owner: {photo.ownerOverride}
             </div>
           )}
         </>
