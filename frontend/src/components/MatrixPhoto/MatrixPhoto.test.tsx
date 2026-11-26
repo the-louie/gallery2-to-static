@@ -188,6 +188,39 @@ describe("MatrixPhoto (THEME-01)", () => {
     expect(screen.getByTestId("where")).toHaveTextContent(`${PATH}/small`);
   });
 
+  it("clicking the photo opens a fullscreen fit view and closes on click", async () => {
+    const user = userEvent.setup();
+    show(1);
+    expect(document.querySelector(".gsFullscreen")).toBeNull();
+    await user.click(screen.getByRole("img", { name: "CIMG0053_.JPG" }));
+    const fs = document.querySelector(".gsFullscreen");
+    expect(fs).not.toBeNull();
+    expect(fs).toHaveAttribute("role", "dialog");
+    expect(fs?.querySelector(".gsFsImage")).toBeInTheDocument();
+    await user.click(fs as Element);
+    expect(document.querySelector(".gsFullscreen")).toBeNull();
+  });
+
+  it("the fullscreen view has next/previous arrows that navigate", async () => {
+    const user = userEvent.setup();
+    show(2);
+    await user.click(screen.getByRole("img", { name: "CIMG0053h.JPG" }));
+    expect(
+      screen.getByRole("button", { name: "Previous image" })
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Next image" }));
+    expect(screen.getByTestId("where")).toHaveTextContent(`${PATH}/small`);
+  });
+
+  it("Escape closes the fullscreen view", async () => {
+    const user = userEvent.setup();
+    show(1);
+    await user.click(screen.getByRole("img", { name: "CIMG0053_.JPG" }));
+    expect(document.querySelector(".gsFullscreen")).not.toBeNull();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(document.querySelector(".gsFullscreen")).toBeNull();
+  });
+
   it("the thumbnail stands in, blurred, until the photo has loaded", () => {
     show(1);
     expect(document.querySelector(".gsImagePlaceholder")).toHaveAttribute(

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import type { Child, Image } from "@/types";
 import { useAlbumData } from "@/hooks/useAlbumData";
 import { getAlbumPath, getItemPath } from "@/utils/albumPath";
@@ -94,6 +96,10 @@ export function MatrixPhoto({ albumId, imageId }: MatrixPhotoProps) {
     refetch,
   } = useAlbumData(albumId);
   const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+  // Fullscreen "fit" view: click the photo to fill the screen, click again (or Esc)
+  // to return to the normal page. Kept across photo navigation so the arrows move
+  // through the album without leaving fullscreen.
+  const [fullscreen, setFullscreen] = useState(false);
 
   const ready =
     !isLoading &&
@@ -113,6 +119,10 @@ export function MatrixPhoto({ albumId, imageId }: MatrixPhotoProps) {
       : null;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && fullscreen) {
+        setFullscreen(false);
+        return;
+      }
       if (
         e.altKey ||
         e.ctrlKey ||
@@ -125,7 +135,17 @@ export function MatrixPhoto({ albumId, imageId }: MatrixPhotoProps) {
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [prevHref, nextHref, navigate]);
+  }, [prevHref, nextHref, navigate, fullscreen]);
+
+  // Lock the page scroll while the fullscreen overlay is up.
+  useEffect(() => {
+    if (!fullscreen) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [fullscreen]);
 
   if (error) {
     return (
@@ -256,11 +276,56 @@ export function MatrixPhoto({ albumId, imageId }: MatrixPhotoProps) {
             width={shown?.width}
             height={shown?.height}
             onLoad={() => setLoadedSrc(src)}
-            className={loadedSrc === src ? "gsImage" : "gsImage gsImageLoading"}
+            onClick={() => setFullscreen(true)}
+            title="View fullscreen"
+            className={
+              loadedSrc === src
+                ? "gsImage gsImageZoomable"
+                : "gsImage gsImageZoomable gsImageLoading"
+            }
           />
         </span>
       </div>
       <Navigator photos={photos} index={index} albumPath={albumPath} />
+      {fullscreen && (
+        <div
+          className="gsFullscreen"
+          role="dialog"
+          aria-modal="true"
+          aria-label={
+            photo.title ? displayTitle(photo.title) : "Fullscreen image"
+          }
+          onClick={() => setFullscreen(false)}
+        >
+          {prevHref && (
+            <button
+              type="button"
+              className="gsFsNav gsFsPrev"
+              aria-label="Previous image"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(prevHref);
+              }}
+            >
+              <FontAwesomeIcon icon={faChevronLeft} aria-hidden />
+            </button>
+          )}
+          <img className="gsFsImage" src={src} alt={photo.title ?? ""} />
+          {nextHref && (
+            <button
+              type="button"
+              className="gsFsNav gsFsNext"
+              aria-label="Next image"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(nextHref);
+              }}
+            >
+              <FontAwesomeIcon icon={faChevronRight} aria-hidden />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

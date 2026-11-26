@@ -50,3 +50,68 @@
 .g2-matrix .g2-matrix-photo .gbBlock {
   border-style: none;
 }
+
+/* Click the photo to view it fullscreen, fit to the viewport (a modern extra on
+   top of the 2006 page). */
+.g2-matrix .gsImageZoomable {
+  cursor: zoom-in;
+}
+
+.g2-matrix .gsFullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  /* Near-solid so the page behind does not show through the fit image's bars. */
+  background: rgba(0, 0, 0, 0.985);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+
+.g2-matrix .gsFullscreen .gsFsImage {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100vw;
+  max-height: 100vh;
+  object-fit: contain;
+}
+
+/* Prev/next arrows over the fullscreen image */
+.g2-matrix .gsFsNav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+.g2-matrix .gsFsPrev {
+  left: 1rem;
+}
+
+.g2-matrix .gsFsNext {
+  right: 1rem;
+}
+
+.g2-matrix .gsFsNav:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+.g2-matrix .gsFsNav:focus-visible {
+  outline: 2px solid #6b8cb7;
+  outline-offset: 2px;
+}
