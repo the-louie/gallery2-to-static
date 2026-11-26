@@ -22,7 +22,7 @@ describe('MatrixThumbMatrix (THEME-01)', () => {
     expect(img).toHaveAttribute('width', '150');
     expect(img).toHaveAttribute('src', expect.stringContaining('t__CIMG0053_.JPG'));
     expect(img.closest('a')).toHaveAttribute('href', '/dh/dhw05/cimg0053_');
-    expect(cell.querySelector('.giTitle')).toHaveTextContent('CIMG0053_.JPG');
+    expect(cell.querySelector('.giTitle')).toHaveTextContent('CIMG0053'); // TITLE-01: .JPG dropped, _ cleaned
     expect(info(cell)).toEqual(['Date: 26/11/2005', 'Views: 1074']);
   });
 

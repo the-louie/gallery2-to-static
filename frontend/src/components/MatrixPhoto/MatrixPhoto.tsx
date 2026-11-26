@@ -6,6 +6,7 @@ import { getAlbumPath, getItemPath } from "@/utils/albumPath";
 import { getImageUrl, getResizedImageUrl } from "@/utils/imageUrl";
 import { parseBBCodeDecoded } from "@/utils/bbcode";
 import { formatG2Date, resizedSize } from "@/utils/matrixPaging";
+import { displayTitle } from "@/utils/displayTitle";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 // Header, info and navigator styles are the album page's (same Gallery 2 blocks)
 import "../MatrixAlbum/MatrixAlbum.css";
@@ -174,7 +175,7 @@ export function MatrixPhoto({ albumId, imageId }: MatrixPhotoProps) {
           <tbody>
             <tr>
               <td>
-                {photo.title && <h2> {photo.title} </h2>}
+                {photo.title && <h2> {displayTitle(photo.title)} </h2>}
                 {description && (
                   <p className="giDescription">
                     {parseBBCodeDecoded(description)}

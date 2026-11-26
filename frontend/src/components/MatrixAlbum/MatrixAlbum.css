@@ -110,6 +110,14 @@
 .g2-matrix .gsThumbMatrix .giItemCell,
 .g2-matrix .gsThumbMatrix .giAlbumCell {
   padding: 0.6em;
+  min-width: 0; /* let the grid cell shrink so long titles wrap instead of overflowing (GRID-01 fix) */
+  overflow: hidden;
+}
+
+/* long filename titles must wrap inside the narrower grid cell, not overflow into the neighbours */
+.g2-matrix .gsThumbMatrix .giTitle {
+  font-size: 1em;
+  overflow-wrap: anywhere;
 }
 
 .g2-matrix .gsThumbMatrix .giThumbnail {

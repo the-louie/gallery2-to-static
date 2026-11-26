@@ -5,6 +5,7 @@ import { getAlbumThumbnailUrl, getImageUrl } from '@/utils/imageUrl';
 import { parseBBCodeDecoded } from '@/utils/bbcode';
 import { formatG2Date } from '@/utils/matrixPaging';
 import { truncateTitle } from '@/utils/matrixPeers';
+import { displayTitle } from '@/utils/displayTitle';
 
 /**
  * Props for the MatrixThumbMatrix component
@@ -43,7 +44,7 @@ function ItemCell({ item, albumPath }: { item: Child; albumPath: string }) {
           </Link>
         )}
       </div>
-      {item.title && <p className="giTitle">{item.title}</p>}
+      {item.title && <p className="giTitle">{isAlbum ? item.title : displayTitle(item.title)}</p>}
       {isAlbum && summary && <p className="giDescription">{parseBBCodeDecoded(truncateTitle(summary, 256))}</p>}
       <div className="block-core-ItemInfo giInfo">
         {item.timestamp != null && <span className="date summary">Date: {formatG2Date(item.timestamp)}</span>}

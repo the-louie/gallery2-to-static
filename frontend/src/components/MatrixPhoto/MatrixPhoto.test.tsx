@@ -99,7 +99,7 @@ describe("MatrixPhoto (THEME-01)", () => {
   it("header as in the 2006 photo page: title, Date, Owner, Size select, Full size link", () => {
     show(1);
     expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
-      "CIMG0053_.JPG"
+      "CIMG0053" // TITLE-01: filename cleaned for display
     );
     expect(
       [...document.querySelectorAll(".block-core-ItemInfo .summary")].map(

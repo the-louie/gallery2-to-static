@@ -72,6 +72,15 @@ In priority order, as the operator set them:
    allow up to **10 rows** per page instead of 4. Scoped before ROOTCAUSE-01. (Clarify which themes:
    classic Matrix grid and/or the modern AlbumGrid; and what the current "4 rows" cap is — pager page
    size vs a visible-rows limit.)
+3b. ~~**GRID-01 hotfix: long titles overflowed the dense cells**~~ — **DONE 2026-11-26.** The filename
+   titles were wider than the ~140px grid cells and overlapped neighbours (operator screenshot). Grid
+   cells get `min-width:0; overflow:hidden` and `.giTitle` gets `overflow-wrap:anywhere` + 1em.
+
+3c. ~~**TITLE-01: clean photo titles for display**~~ — **DONE 2026-11-26** (operator: drop known file
+   suffixes like `.jpg`, replace `_` with space). Frontend display util `displayTitle` applied to photo
+   titles in the classic grid, the classic photo page and the modern Lightbox; stored title and URL slug
+   unchanged. Albums left alone.
+
 4. **ROOTCAUSE-01: generation can leave a visible album with no page.** Found 2026-11-26: album 565659
    "Glitched 2025" (70 visible photos, in `index.json`) had no `data/565659.json` and was **not** in
    `dirty_albums`, so `--changed` never wrote it → the public page 404'd. Five albums were in this

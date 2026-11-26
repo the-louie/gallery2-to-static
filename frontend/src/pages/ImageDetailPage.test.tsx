@@ -124,7 +124,7 @@ describe('ImageDetailPage in the classic theme (THEME-01)', () => {
     });
     render(<ImageDetailPage resolvedAlbumId={4} resolvedImageId={5} />, { defaultTheme: 'classic' });
     expect(document.querySelector('.g2-matrix-photo')).not.toBeNull();
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('P.jpg');
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('P'); // TITLE-01: .jpg dropped
     expect(document.querySelector('[class*="lightbox"]')).toBeNull();
   });
 });

@@ -91,6 +91,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { parseBBCodeDecoded } from "@/utils/bbcode";
 import { decodeHtmlEntities } from "@/utils/decodeHtmlEntities";
+import { displayTitle } from "@/utils/displayTitle";
 import { useImageNavigation } from "@/hooks/useImageNavigation";
 import { useImagePreload } from "@/hooks/useImagePreload";
 import { useImageZoom } from "@/hooks/useImageZoom";
@@ -356,7 +357,8 @@ export function Lightbox({
     if (!imageTitle) {
       return null;
     }
-    return parseBBCodeDecoded(imageTitle);
+    // TITLE-01: photos are usually named by their filename; clean it for display.
+    return parseBBCodeDecoded(displayTitle(imageTitle));
   }, [imageTitle]);
 
   // Format date from timestamp
