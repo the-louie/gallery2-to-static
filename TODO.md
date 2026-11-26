@@ -20,8 +20,12 @@ In priority order, as the operator set them:
    caption below the date, only when set. Was put in the description by hand before; that text is left
    as-is. Backend (migration 005, types, generate, admin API incl. bulk `PATCH /api/photos`) done;
    admin UI multi-select + public display in progress.
-1b. **OWNER-01: per-album free-text owner override (operator 2026-11-26, priority TBD — likely alongside
-   PHOTOG-01).** The displayed "Owner:" comes from the uploading account (e.g. the operator), but the
+1b. ~~**OWNER-01: per-album free-text owner override**~~ — **DONE 2026-11-26** (Sprint 1 of the superloop).
+   Nullable `owner_override` on albums (migration 006, recreates the dirty trigger). Effective owner
+   resolved at generation (`Tree.effectiveOwner`: nearest ancestor-or-self album override, else the
+   account owner) and emitted as `ownerName`, so the frontend needed no change. Admin edits it on the
+   album form (`PATCH /api/albums/:id {ownerOverride}`), which marks the whole subtree dirty so the
+   cascade regenerates. Decision taken: cascade to subtree (matches intent). Original note: The displayed "Owner:" comes from the uploading account (e.g. the operator), but the
    operator only helps Glitched publish; the album is Glitched's. Add a nullable free-text `owner`
    override on albums that takes precedence over the account-resolved `ownerName` (set "Glitched",
    "Anton", …). Proposed semantics: the override applies to the album and **cascades to the photos in

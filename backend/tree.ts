@@ -41,6 +41,7 @@ export interface ItemRow {
     description: string | null;
     summary: string | null;
     photographer: string | null;
+    owner_override: string | null;
     path_component: string;
     url_segment: string;
     event_at: number | null;
@@ -125,6 +126,18 @@ export class Tree {
     kids(id: number): ItemRow[] { return this.children.get(id) ?? []; }
     /** Visible photos and exported sub-albums, in order: what the album's file lists. */
     listed(id: number): ItemRow[] { return this.kids(id).filter((c) => c.type === 'photo' || (c.path_component !== '' && this.exported.has(c.id))); }
+    /**
+     * The owner shown for an item (OWNER-01): the nearest ancestor-or-self album's non-empty
+     * `owner_override`, else the item's own account owner. So a free-text owner set on an album
+     * cascades to every item in its subtree.
+     */
+    effectiveOwner(r: ItemRow): string | null {
+        for (let cur: ItemRow | undefined = r; cur; cur = cur.parent_id != null ? this.byId.get(cur.parent_id) : undefined) {
+            if (cur.type === 'album' && cur.owner_override != null && cur.owner_override.trim() !== '') return cur.owner_override.trim();
+        }
+        return r.owner_name;
+    }
+
     /** root → … → item (excluding the root for `chain`), as the ancestor albums */
     ancestors(id: number): ItemRow[] {
         const out: ItemRow[] = [];

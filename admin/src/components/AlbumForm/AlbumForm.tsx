@@ -40,6 +40,9 @@ export function AlbumForm(props: AlbumFormProps): ReactNode {
     eventAtToDateInput(album?.eventAt ?? null)
   );
   const [urlSegment, setUrlSegment] = useState(album?.urlSegment ?? "");
+  const [ownerOverride, setOwnerOverride] = useState(
+    album?.ownerOverride ?? ""
+  );
   const [force, setForce] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +78,8 @@ export function AlbumForm(props: AlbumFormProps): ReactNode {
         if (description !== (a.description ?? ""))
           patch.description = description;
         if (summary !== (a.summary ?? "")) patch.summary = summary;
+        if (ownerOverride !== (a.ownerOverride ?? ""))
+          patch.ownerOverride = ownerOverride;
         if (eventDate !== eventAtToDateInput(a.eventAt))
           patch.eventAt = dateInputToEventAt(eventDate);
         if (canEditSegment && urlSegment.trim() !== a.urlSegment) {
@@ -152,6 +157,23 @@ export function AlbumForm(props: AlbumFormProps): ReactNode {
           onChange={(ev) => setEventDate(ev.target.value)}
         />
       </div>
+      {album && (
+        <div className="field">
+          <label htmlFor={`${idp}-owner-override`}>Owner (override)</label>
+          <input
+            id={`${idp}-owner-override`}
+            type="text"
+            value={ownerOverride}
+            onChange={(ev) => setOwnerOverride(ev.target.value)}
+            maxLength={255}
+            placeholder={album.owner ?? "(account owner)"}
+          />
+          <p className="muted">
+            Shown as the owner for this album and every photo below it. Leave
+            empty to use the account owner.
+          </p>
+        </div>
+      )}
       {album && (
         <div className="field">
           <label htmlFor={`${idp}-segment`}>URL segment</label>

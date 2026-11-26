@@ -63,8 +63,12 @@ function truncateDescriptionToWords(text: string, maxWords: number): string {
     return words.slice(0, maxWords).join(' ') + '...';
 }
 
-/** The Child as sqlUtils.getChildren produced it, before the extractor's additions. */
-function baseChild(r: ItemRow): Child {
+/**
+ * The Child as sqlUtils.getChildren produced it, before the extractor's additions. `ownerName` is the
+ * effective owner (OWNER-01: an album owner override cascades down), passed in by the caller which has
+ * the tree.
+ */
+function baseChild(r: ItemRow, ownerName: string | null): Child {
     const c: Child = {
         id: r.id,
         type: r.type === 'album' ? 'GalleryAlbumItem' : 'GalleryPhotoItem',
@@ -77,7 +81,7 @@ function baseChild(r: ItemRow): Child {
         height: r.height,
         thumb_width: r.thumb_width,
         thumb_height: r.thumb_height,
-        ownerName: r.owner_name,
+        ownerName,
         summary: r.summary,
     };
     if (r.order_weight != null) c.order = r.order_weight;
@@ -132,7 +136,7 @@ export function buildAlbumFile(t: Tree, albumId: number, memo = new Map<number, 
             const thumbFailed = Boolean(m?.thumb_failed);
             const hasThumb = Boolean(m?.thumb_at) && !thumbFailed;
             return {
-                ...baseChild(r),
+                ...baseChild(r, t.effectiveOwner(r)),
                 thumb_width: hasThumb ? m!.thumb_w : null,
                 thumb_height: hasThumb ? m!.thumb_h : null,
                 ...(m?.resize_at && !thumbFailed ? { resizeUrlPath: urlPath } : {}),
@@ -159,7 +163,7 @@ export function buildAlbumFile(t: Tree, albumId: number, memo = new Map<number, 
             const { thumbnailUrlPath } = buildPathsFromPathComponent([...chain, r.path_component, direct.path_component], t.thumbPrefix);
             // the extractor copied the first photo's Gallery 2 derivative size here, not the generated thumbnail's
             return {
-                ...baseChild(r),
+                ...baseChild(r, t.effectiveOwner(r)),
                 path: childPath,
                 thumbnailPathComponent: [...chain, r.path_component, direct.path_component].join('/'),
                 thumbnailPhotoId: direct.id,
@@ -172,7 +176,7 @@ export function buildAlbumFile(t: Tree, albumId: number, memo = new Map<number, 
             };
         }
         return {
-            ...baseChild(r),
+            ...baseChild(r, t.effectiveOwner(r)),
             path: childPath,
             ...(chosen && hlPaths ? { thumbnailUrlPath: hlPaths.thumbnailUrlPath } : {}),
             ...highlightSpread,
@@ -197,7 +201,7 @@ export function buildAlbumFile(t: Tree, albumId: number, memo = new Map<number, 
         albumTitle: album.title,
         albumDescription: album.description,
         albumTimestamp: album.event_at,
-        ownerName: album.owner_name,
+        ownerName: t.effectiveOwner(album),
         breadcrumbPath,
     };
     const own = chosenHighlight(t, albumId) ?? firstPhotoRecursive(t, albumId);

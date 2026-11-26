@@ -23,6 +23,8 @@ export interface AdminItem {
   width: number | null;
   height: number | null;
   owner: string | null;
+  /** albums: free-text owner override set on this album (null = none); cascades to the subtree */
+  ownerOverride: string | null;
   viewCount: number | null;
   hidden: boolean;
   deletedAt: string | null;
@@ -132,6 +134,8 @@ export interface AlbumPatch {
   eventAt?: number | null;
   urlSegment?: string;
   force?: boolean;
+  /** free-text owner override; "" or null clears it (cascades to the subtree) */
+  ownerOverride?: string | null;
 }
 
 export interface PhotoPatch {

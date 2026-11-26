@@ -82,6 +82,31 @@ describe("AlbumForm", () => {
     expect(onSaved).toHaveBeenCalled();
   });
 
+  it("edits the free-text owner override (OWNER-01)", async () => {
+    const f = installFetchMock();
+    const album = item({ id: 7, type: "album", title: "Glitched 2025" });
+    f.on("PATCH /api/albums/7", {
+      status: 200,
+      body: { ...album, ownerOverride: "Glitched" },
+    });
+    const onSaved = vi.fn();
+    render(
+      <AlbumForm
+        mode="edit"
+        album={album}
+        isAdmin={false}
+        onSaved={onSaved}
+        onCancel={vi.fn()}
+      />
+    );
+    await userEvent.type(screen.getByLabelText("Owner (override)"), "Glitched");
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(f.bodyOf("PATCH /api/albums/7")).toEqual({
+      ownerOverride: "Glitched",
+    });
+    expect(onSaved).toHaveBeenCalled();
+  });
+
   it("disables a locked segment for users; admins can force it", async () => {
     const f = installFetchMock();
     const album = item({

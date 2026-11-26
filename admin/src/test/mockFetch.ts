@@ -84,6 +84,7 @@ export function item(over: Partial<AdminItem> & { id: number }): AdminItem {
     width: type === "photo" ? 800 : null,
     height: type === "photo" ? 600 : null,
     owner: null,
+    ownerOverride: null,
     viewCount: 0,
     hidden: false,
     deletedAt: null,

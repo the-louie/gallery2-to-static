@@ -79,6 +79,15 @@ async function run(): Promise<void> {
         const edited = await call(kalle, 'PATCH', `/api/albums/${a.id}`, { title: 'Testlan 2026 (bilder)', summary: 's', urlSegment: 'testlan-2026' });
         assert.strictEqual(edited.status, 200);
         assert.deepStrictEqual([edited.body.title, edited.body.summary, edited.body.urlSegment], ['Testlan 2026 (bilder)', 's', 'testlan-2026']);
+
+        // owner override (OWNER-01): set on album 10 — trimmed, and marks the whole subtree dirty so it
+        // cascades; whitespace/'' clears it.
+        db.run('DELETE FROM dirty_albums');
+        const ov = await call(kalle, 'PATCH', '/api/albums/10', { ownerOverride: '  Glitched ' });
+        assert.deepStrictEqual([ov.status, ov.body.ownerOverride], [200, 'Glitched'], 'set + trimmed');
+        const dirty = db.all<{ album_id: number }>('SELECT album_id FROM dirty_albums').map((d) => d.album_id);
+        assert.ok(dirty.includes(10) && dirty.includes(11), 'owner override cascades dirty to the subtree');
+        assert.strictEqual((await call(kalle, 'PATCH', '/api/albums/10', { ownerOverride: '   ' })).body.ownerOverride, null, 'whitespace clears');
         db.run("UPDATE items SET url_locked_at = '2026-10-26T00:00:00.000Z' WHERE id = ?", a.id);
         assert.strictEqual((await call(kalle, 'PATCH', `/api/albums/${a.id}`, { urlSegment: 'other' })).status, 409, 'locked for a user');
         assert.strictEqual((await call(admin, 'PATCH', `/api/albums/${a.id}`, { urlSegment: 'other' })).status, 409, 'admin needs force');

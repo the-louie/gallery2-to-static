@@ -13,6 +13,7 @@ interface AdminItem {               // one row of `items` as the UI sees it
   id: number; type: 'album' | 'photo'; parentId: number | null; position: number;
   title: string | null; description: string | null; summary: string | null;
   photographer: string | null;      // photos: the "Fotograf:" credit, null when unset
+  ownerOverride: string | null;     // albums: free-text owner override (cascades to the subtree), null when unset
   urlSegment: string; urlLocked: boolean;      // albums: the public path segment, locked once published
   path: string;                                // albums: public URL path ('/dreamhack/dhw05/'), photos: album path + slug
   eventAt: number | null;                      // unix seconds ("Date:")
@@ -39,7 +40,7 @@ interface Profile { nickname: string | null; fullName: string | null; showFullNa
 | `GET /api/albums/:id` | – | `AlbumView` | hidden and soft-deleted children included when `canWrite`; `id` = root id gives the root; children: sub-albums first (alphabetically, Swedish collation), then photos in order |
 | `GET /api/albums/root` | – | `AlbumView` | the root album (admins) or a synthetic list of the user's delegated albums (`album: null`, `children` = delegated albums) |
 | `POST /api/albums` | `{parentId, title, description?, summary?, eventAt?}` | `AdminItem` (201) | admin anywhere; user only under a delegated album. Starts `hidden: true`. `urlSegment` derived from the title |
-| `PATCH /api/albums/:id` | any of `{title, description, summary, eventAt, urlSegment}` | `AdminItem` | `urlSegment` only while `!urlLocked` (admin override: `{urlSegment, force: true}` writes the old path into `legacy_paths`) |
+| `PATCH /api/albums/:id` | any of `{title, description, summary, eventAt, urlSegment, ownerOverride}` | `AdminItem` | `urlSegment` only while `!urlLocked` (admin override: `{urlSegment, force: true}` writes the old path into `legacy_paths`); `ownerOverride` trimmed, `""`/null clears, marks the subtree dirty (cascades) |
 | `PUT /api/albums/:id/hidden` | `{hidden: bool}` | `AdminItem` | |
 | `DELETE /api/albums/:id` | – | 204 | soft delete; files to `.trash/<id>/` |
 | `POST /api/albums/:id/restore` | – | `AdminItem` | admin |

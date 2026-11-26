@@ -79,6 +79,15 @@ async function run(): Promise<void> {
         const noPh = path.join(tmp, 'noph');
         await generateAll(db, noPh, new Date('2026-10-26T12:00:00.000Z'));
         assert.strictEqual('photographer' in (await readJson(path.join(noPh, '11.json'))).children.find((c: { id: number }) => c.id === 101), false, 'omitted when empty/whitespace');
+
+        // owner override (OWNER-01): set on album 10 cascades to its whole subtree (photo 101 is under
+        // album 11 under album 10) and to the album's own metadata, trimmed.
+        db.run("UPDATE items SET owner_override = '  Glitched ' WHERE id = 10");
+        const ownOv = path.join(tmp, 'ownerov');
+        await generateAll(db, ownOv, new Date('2026-10-26T12:00:00.000Z'));
+        assert.strictEqual((await readJson(path.join(ownOv, '10.json'))).metadata.ownerName, 'Glitched', 'album metadata uses the override');
+        assert.strictEqual((await readJson(path.join(ownOv, '11.json'))).children.find((c: { id: number }) => c.id === 101).ownerName, 'Glitched', 'cascades to a descendant photo');
+        db.run('UPDATE items SET owner_override = NULL WHERE id = 10');
         db.close();
 
         // With derivatives (T-05): the extractor generates thumbnails and resizes; the media step

@@ -31,7 +31,10 @@ export interface AdminItem {
     eventAt: number | null;
     width: number | null;
     height: number | null;
+    /** the account-resolved owner display name (not the override) */
     owner: string | null;
+    /** albums: the free-text owner override set on THIS album (null = none); cascades to the subtree and takes precedence publicly */
+    ownerOverride: string | null;
     viewCount: number | null;
     hidden: boolean;
     deletedAt: string | null;
@@ -53,12 +56,12 @@ export interface AlbumView {
 
 interface Row {
     id: number; type: 'album' | 'photo'; parent_id: number | null; position: number; title: string | null;
-    description: string | null; summary: string | null; photographer: string | null; path_component: string; url_segment: string; url_locked_at: string | null;
+    description: string | null; summary: string | null; photographer: string | null; owner_override: string | null; path_component: string; url_segment: string; url_locked_at: string | null;
     event_at: number | null; width: number | null; height: number | null; owner_name: string | null; view_count: number | null;
     hidden: number; blocked: number; deleted_at: string | null; changed_at: string;
 }
 
-const SELECT = `SELECT i.id, i.type, i.parent_id, i.position, i.title, i.description, i.summary, i.photographer, i.path_component, i.url_segment,
+const SELECT = `SELECT i.id, i.type, i.parent_id, i.position, i.title, i.description, i.summary, i.photographer, i.owner_override, i.path_component, i.url_segment,
     i.url_locked_at, i.event_at, i.width, i.height, CASE WHEN o.show_full_name = 1 AND o.full_name IS NOT NULL AND trim(o.full_name) <> '' THEN o.full_name ELSE o.nickname END AS owner_name, i.view_count, i.hidden, i.blocked, i.deleted_at, i.changed_at
     FROM items i LEFT JOIN owners o ON o.id = i.owner_id`;
 
@@ -134,7 +137,7 @@ export function toAdminItem(db: Db, r: Row, user: User): AdminItem {
     const item: AdminItem = {
         id: r.id, type: r.type, parentId: r.parent_id, position: r.position, title: r.title, description: r.description, summary: r.summary,
         photographer: r.photographer, urlSegment: r.url_segment, urlLocked: r.url_locked_at !== null, path: publicPath(db, r), eventAt: r.event_at, width: r.width, height: r.height,
-        owner: r.owner_name, viewCount: r.view_count, hidden: r.hidden === 1, deletedAt: r.deleted_at, pending: isPending(db, r),
+        owner: r.owner_name, ownerOverride: r.owner_override, viewCount: r.view_count, hidden: r.hidden === 1, deletedAt: r.deleted_at, pending: isPending(db, r),
         highlightPhotoId: chosen ? chosen.photo_id : null, thumbnailUrl: thumbnailUrl(db, r), canWrite: canWrite(db, user.id, r.id),
     };
     if (r.type === 'album') {
@@ -245,6 +248,12 @@ export function updateAlbum(db: Db, albumId: number, input: Record<string, unkno
     }
     const t = optTime(input.eventAt);
     if (t !== undefined) { sets.push('event_at = ?'); vals.push(t); }
+    let ownerOverrideChanged = false;
+    const ownerOv = optPhotographer(input.ownerOverride); // same shape: trimmed, ''/null clears, max 255
+    if (ownerOv !== undefined) {
+        ownerOverrideChanged = ownerOv !== (r.owner_override ?? null);
+        sets.push('owner_override = ?'); vals.push(ownerOv);
+    }
     if (input.position !== undefined) {
         if (typeof input.position !== 'number' || !Number.isInteger(input.position)) throw new HttpError(400, 'position must be an integer');
         sets.push('position = ?'); vals.push(input.position);
@@ -263,7 +272,23 @@ export function updateAlbum(db: Db, albumId: number, input: Record<string, unkno
         sets.push('url_segment = ?'); vals.push(seg);
     }
     if (sets.length) db.run(`UPDATE items SET ${sets.join(', ')} WHERE id = ?`, ...vals, albumId);
+    // The owner override cascades to the subtree, so every descendant album must regenerate (the trigger
+    // marks only this album and its parent). OWNER-01.
+    if (ownerOverrideChanged) markSubtreeDirty(db, albumId);
     return toAdminItem(db, getRow(db, albumId)!, user);
+}
+
+/** Mark an album and all its (non-deleted) descendant albums dirty, so a cascading change regenerates them. */
+function markSubtreeDirty(db: Db, albumId: number): void {
+    db.run(
+        `WITH RECURSIVE sub(id) AS (
+            SELECT ?
+            UNION ALL
+            SELECT i.id FROM items i JOIN sub ON i.parent_id = sub.id WHERE i.type = 'album' AND i.deleted_at IS NULL
+        )
+        INSERT INTO dirty_albums (album_id) SELECT id FROM sub WHERE id NOT IN (SELECT album_id FROM dirty_albums)`,
+        albumId,
+    );
 }
 
 export function setHidden(db: Db, id: number, hidden: boolean, user: User): AdminItem {
