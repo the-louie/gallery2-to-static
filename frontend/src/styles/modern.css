@@ -909,7 +909,9 @@
 
 :is([data-theme="light"], [data-theme="dark"]) .lightbox-overlay {
   z-index: 2000; /* above the sticky header */
-  background: rgba(5, 8, 15, 0.92);
+  /* Near-solid: the full-bleed immersive viewer must not show the page behind
+     through a non-filling image's letterbox bars (VIEW-01). */
+  background: rgba(5, 8, 15, 0.985);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }

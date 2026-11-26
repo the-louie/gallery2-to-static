@@ -2207,4 +2207,88 @@ describe("Lightbox", () => {
       expect(title).toBeInTheDocument();
     });
   });
+
+  describe("Immersive chrome toggle", () => {
+    it("chrome is visible by default", () => {
+      const { container } = render(
+        <Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />
+      );
+      const containerEl = container.querySelector(".lightbox-container");
+      expect(containerEl).not.toHaveClass("lightbox-chrome-hidden");
+    });
+
+    it("clicking the image area hides the chrome, clicking again shows it", async () => {
+      const user = userEvent.setup();
+      const { container } = render(
+        <Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />
+      );
+      const containerEl = container.querySelector(".lightbox-container");
+      const imageArea = container.querySelector(".lightbox-image-container");
+      if (!imageArea) {
+        throw new Error("Image container not found");
+      }
+
+      await user.click(imageArea);
+      expect(containerEl).toHaveClass("lightbox-chrome-hidden");
+
+      await user.click(imageArea);
+      expect(containerEl).not.toHaveClass("lightbox-chrome-hidden");
+    });
+
+    it("does not close the lightbox when toggling chrome", async () => {
+      const user = userEvent.setup();
+      const { container } = render(
+        <Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />
+      );
+      const imageArea = container.querySelector(".lightbox-image-container");
+      if (!imageArea) {
+        throw new Error("Image container not found");
+      }
+      await user.click(imageArea);
+      expect(mockOnClose).not.toHaveBeenCalled();
+    });
+
+    it("Escape exits focus mode (shows chrome) instead of closing", async () => {
+      const user = userEvent.setup();
+      const { container } = render(
+        <Lightbox isOpen={true} image={mockPhoto} onClose={mockOnClose} />
+      );
+      const containerEl = container.querySelector(".lightbox-container");
+      const imageArea = container.querySelector(".lightbox-image-container");
+      if (!imageArea) {
+        throw new Error("Image container not found");
+      }
+
+      // Enter focus mode, then Escape should only exit focus mode.
+      await user.click(imageArea);
+      expect(containerEl).toHaveClass("lightbox-chrome-hidden");
+      await user.keyboard("{Escape}");
+      expect(containerEl).not.toHaveClass("lightbox-chrome-hidden");
+      expect(mockOnClose).not.toHaveBeenCalled();
+
+      // With chrome visible, Escape closes as before.
+      await user.keyboard("{Escape}");
+      expect(mockOnClose).toHaveBeenCalledTimes(1);
+    });
+
+    it("clicking a control button does not toggle the chrome", async () => {
+      const user = userEvent.setup();
+      const image1: Image = { ...mockPhoto, id: 1 };
+      const image2: Image = { ...mockPhoto, id: 2 };
+      const { container } = render(
+        <Lightbox
+          isOpen={true}
+          image={image1}
+          albumContext={[image1, image2]}
+          onClose={mockOnClose}
+          onNext={vi.fn()}
+          onPrevious={vi.fn()}
+        />
+      );
+      const containerEl = container.querySelector(".lightbox-container");
+      const zoomIn = screen.getByLabelText("Zoom in");
+      await user.click(zoomIn);
+      expect(containerEl).not.toHaveClass("lightbox-chrome-hidden");
+    });
+  });
 });

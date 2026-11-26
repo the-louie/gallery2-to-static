@@ -152,6 +152,15 @@ export function Lightbox({
   const fullImgRef = useRef<HTMLImageElement>(null);
   const [domFullImageLoaded, setDomFullImageLoaded] = useState(false);
 
+  // Immersive view: a click on the image hides all chrome (breadcrumb, nav, zoom,
+  // metadata, counter, close) so the full-bleed image fills the viewport; clicking
+  // again brings it back. Persisted across image navigation so arrow keys keep the
+  // same view style.
+  const [chromeHidden, setChromeHidden] = useState(false);
+  // Tracks whether a pointer moved (pan drag / touch move) between press and release,
+  // so the click that ends a drag or swipe does not toggle the chrome.
+  const pointerMovedRef = useRef(false);
+
   // Visual feedback state for swipe gestures
   const [swipeFeedback, setSwipeFeedback] = useState<{
     translateX: number;
@@ -429,7 +438,7 @@ export function Lightbox({
       return undefined;
     return {
       aspectRatio: `${image.width} / ${image.height}`,
-      width: `min(100%, ${shownWidth}px, calc((90vh - 200px) * ${image.width / image.height}))`,
+      width: `min(100%, ${shownWidth}px, calc(100vh * ${image.width / image.height}))`,
       height: "auto",
     };
   }, [image?.width, image?.height, shownWidth]);
@@ -442,7 +451,7 @@ export function Lightbox({
     )
       return undefined;
     return {
-      width: `min(100%, ${shownWidth}px, calc((90vh - 200px) * ${image.width / image.height}))`,
+      width: `min(100%, ${shownWidth}px, calc(100vh * ${image.width / image.height}))`,
       height: "auto",
     };
   }, [image?.width, image?.height, shownWidth]);
@@ -481,6 +490,15 @@ export function Lightbox({
   if (stateImageKey !== imageKey) {
     setStateImageKey(imageKey);
     if (imageKey !== null) setDomFullImageLoaded(false);
+  }
+
+  // Reset the immersive chrome state when the lightbox opens (kept across image
+  // navigation so adjacent images show in the same view style). Done in render,
+  // not an effect, so a reopen never paints one frame with the previous state.
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) setChromeHidden(false);
   }
 
   // Reset zoom when image ID changes (separate effect to avoid dependency issues)
@@ -589,7 +607,13 @@ export function Lightbox({
     const handleKeyboard = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        onClose();
+        // In focus mode (chrome hidden), Escape exits focus mode and brings the
+        // chrome back instead of closing the viewer and returning to the album.
+        if (chromeHidden) {
+          setChromeHidden(false);
+        } else {
+          onClose();
+        }
       } else if (event.key === "ArrowRight" && onNext && navigation.hasNext) {
         event.preventDefault();
         onNext();
@@ -615,6 +639,7 @@ export function Lightbox({
     onPrevious,
     navigation.hasNext,
     navigation.hasPrevious,
+    chromeHidden,
   ]);
 
   // Handle mouse wheel zoom (Ctrl/Cmd + scroll)
@@ -675,6 +700,7 @@ export function Lightbox({
       }
 
       event.preventDefault();
+      pointerMovedRef.current = false;
       dragStateRef.current = {
         isDragging: true,
         startX: event.clientX,
@@ -701,6 +727,9 @@ export function Lightbox({
 
       const deltaX = event.clientX - dragStateRef.current.startX;
       const deltaY = event.clientY - dragStateRef.current.startY;
+      if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+        pointerMovedRef.current = true;
+      }
 
       zoom.setPan(
         dragStateRef.current.startPanX + deltaX,
@@ -796,6 +825,10 @@ export function Lightbox({
 
       // Call swipe handler for visual feedback (handles progress internally)
       swipeHandlers.onTouchMove(event);
+
+      // Any finger movement means this gesture is a drag/swipe, not a tap, so the
+      // synthetic click that may follow must not toggle the immersive chrome.
+      pointerMovedRef.current = true;
 
       if (touches.length === 1 && dragStateRef.current.isDragging) {
         // Single touch pan
@@ -922,6 +955,22 @@ export function Lightbox({
     [onClose]
   );
 
+  // Handle a click on the image area: toggle the immersive chrome (unless the click
+  // ended a pan/swipe, or landed on a control such as the counter).
+  const handleImageAreaClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if ((event.target as HTMLElement).closest("button")) {
+        return;
+      }
+      if (pointerMovedRef.current) {
+        pointerMovedRef.current = false;
+        return;
+      }
+      setChromeHidden((hidden) => !hidden);
+    },
+    []
+  );
+
   // Handle close button click
   const handleClose = useCallback(() => {
     onClose();
@@ -970,7 +1019,10 @@ export function Lightbox({
             swipeFeedback.opacity !== 1 ? "opacity 0.2s ease-out" : undefined,
         }}
       >
-        <div className="lightbox-container" ref={modalRef}>
+        <div
+          className={`lightbox-container${chromeHidden ? " lightbox-chrome-hidden" : ""}`}
+          ref={modalRef}
+        >
           {/* Close Button – first in DOM for focus order (Close → Breadcrumbs → Nav) */}
           <button
             ref={closeButtonRef}
@@ -1079,6 +1131,7 @@ export function Lightbox({
           <div
             className="lightbox-image-container"
             ref={imageContainerRef}
+            onClick={handleImageAreaClick}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
