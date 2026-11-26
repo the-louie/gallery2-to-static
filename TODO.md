@@ -76,6 +76,12 @@ In priority order, as the operator set them:
    titles were wider than the ~140px grid cells and overlapped neighbours (operator screenshot). Grid
    cells get `min-width:0; overflow:hidden` and `.giTitle` gets `overflow-wrap:anywhere` + 1em.
 
+3b2. ~~**GRID-01 hotfix P1: the 2013 root list broke**~~ — **DONE 2026-11-26** (commit `6d8cca9`).
+   `MatrixAlbumList` renders `<table class="gsThumbMatrix gsAlbumList">`, so GRID-01's `display:grid` and
+   `.giThumbnail{width:100%}` rules collapsed the root list's table and shrank its thumbnails to nothing.
+   Scoped every grid rule to `.gsThumbMatrix:not(.gsAlbumList)`. (Caught by the operator, not tests — CSS
+   layout isn't covered by the unit tests.)
+
 3c. ~~**TITLE-01: clean photo titles for display**~~ — **DONE 2026-11-26** (operator: drop known file
    suffixes like `.jpg`, replace `_` with space). Frontend display util `displayTitle` applied to photo
    titles in the classic grid, the classic photo page and the modern Lightbox; stored title and URL slug
