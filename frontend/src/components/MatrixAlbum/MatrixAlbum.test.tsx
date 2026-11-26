@@ -42,11 +42,6 @@ const show = (url: string) =>
     { initialEntries: [url] },
   );
 
-const navTexts = () =>
-  [...document.querySelectorAll('.gbNavigator')].map((n) =>
-    [...n.querySelectorAll('a')].map((a) => `${a.className}:${a.getAttribute('href')}`).join(' '),
-  );
-
 describe('MatrixAlbum (THEME-01)', () => {
   beforeEach(() => at(photos(287)));
 
@@ -62,41 +57,12 @@ describe('MatrixAlbum (THEME-01)', () => {
     ]);
   });
 
-  it('page 1 of 24: next/last only, 12 items, pager "1 2 3 4 5 6 ... 24"', () => {
-    show(`${PATH}/`);
-    expect(navTexts()).toEqual([
-      `next:${PATH}/?page=2 last:${PATH}/?page=24`,
-      `next:${PATH}/?page=2 last:${PATH}/?page=24`,
-    ]);
-    expect(document.querySelector('.next-and-last')).toHaveClass('no-previous');
-    expect(document.querySelectorAll('.giItemCell')).toHaveLength(12);
-    expect(screen.getByRole('navigation', { name: 'Pages' })).toHaveTextContent(/^Page: 123456...24$/);
-    expect(screen.getByRole('link', { name: '24' })).toHaveAttribute('href', `${PATH}/?page=24`);
-  });
-
-  it('a middle page has first/previous too; the last page has no next/last', () => {
-    show(`${PATH}/?page=2`);
-    expect(navTexts()[0]).toBe(`next:${PATH}/?page=3 last:${PATH}/?page=24 first:${PATH}/ previous:${PATH}/`);
-    expect(document.querySelector('.next-and-last')).not.toHaveClass('no-previous');
-    expect(screen.getByText('CIMG12.JPG')).toBeInTheDocument();
-  });
-
-  it('the last page', () => {
-    show(`${PATH}/?page=24`);
-    expect(navTexts()[0]).toBe(`first:${PATH}/ previous:${PATH}/?page=23`);
-    expect(document.querySelectorAll('.giItemCell')).toHaveLength(11);
-  });
-
-  it('a page past the end goes to the last page; a bad page number is page 1', () => {
+  it('all items on one page, no pager or navigator; a legacy ?page is harmless (GRID-01)', () => {
     show(`${PATH}/?page=99`);
-    expect(screen.getByTestId('where')).toHaveTextContent(`${PATH}/?page=24`);
-  });
-
-  it('one page: no navigator, pager "Page: 1"', () => {
-    at(photos(5));
-    show(`${PATH}/?page=x`);
+    expect(document.querySelectorAll('.giItemCell')).toHaveLength(287);
     expect(document.querySelector('.gbNavigator')).toBeNull();
-    expect(screen.getByRole('navigation', { name: 'Pages' })).toHaveTextContent(/^Page: 1$/);
+    expect(screen.queryByRole('navigation', { name: 'Pages' })).toBeNull();
+    expect(screen.getByTestId('where')).toHaveTextContent(`${PATH}/?page=99`); // no redirect
   });
 
   it('an album with sub-albums shows the items total', () => {

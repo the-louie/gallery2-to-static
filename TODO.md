@@ -35,6 +35,19 @@ In priority order, as the operator set them:
    only. Touches: migration (owner column on items), tree/generate (effective-owner resolution), admin
    UI (album form field), display already uses `ownerName`.
 
+1c. **OWNER-02: bulk per-photo owner override (operator 2026-11-26).** Let the operator set the owner on
+   selected photos the same way the photographer is bulk-set (the PhotoGrid multi-select bar), and on a
+   single photo in its editor. The `owner_override` column already exists on every item (migration 006),
+   so no migration: generalise `Tree.effectiveOwner` to honour an item's OWN override (drop the
+   album-only check) so a photo-level override wins over the album cascade over the account owner; add
+   `ownerOverride` to `updatePhoto` and to the bulk `PATCH /api/photos` body; add an Owner field to
+   PhotoCard and the bulk bar. Display is automatic (resolved into `ownerName`). Scheduled after GRID-01.
+
+1d. **UX-01: click the thumbnail to toggle select (operator 2026-11-26).** In the admin PhotoGrid, once
+   bulk-select is active (at least one photo selected, or a select-mode affordance), a click anywhere on
+   a photo's thumbnail toggles its selection — not only the small checkbox. Admin-only UX. Pairs with
+   OWNER-02 / the existing photographer bulk edit. Scheduled with OWNER-02.
+
 2. ~~**HILITE-01: highlight selector for subalbum-only albums**~~ — **DONE 2026-11-26** (Sprint 2).
    Admin-only: new `AlbumHighlightPicker` shown on an album with sub-albums and no direct photos (e.g.
    the root), offering each sub-album's current highlight image plus "Default (first photo)". Picking
@@ -44,7 +57,11 @@ In priority order, as the operator set them:
    direct sub-albums' highlight images instead. Backend `setHighlight` already stores any descendant
    photo; the gap is the admin UI (no picker when the album has no direct photos) and perhaps a route
    to list the candidate sub-album highlights.
-3. **GRID-01: responsive thumbnail grid (operator 2026-11-26).** The thumbnail/album grid uses a fixed
+3. ~~**GRID-01: responsive thumbnail grid**~~ — **DONE 2026-11-26** (Sprint 3). The classic album grid
+   (`MatrixThumbMatrix`) is now a width-driven CSS grid (`repeat(auto-fill, minmax(140px,1fr))`, dense)
+   instead of the fixed 3-column table, and the classic pager is removed — all items on one page,
+   lazy-loaded (operator chose "always flow denser" + "no pager"). Modern grid (react-virtuoso) left
+   as-is (already responsive). Doc: `frontend/docs/theme-matrix.md` GRID-01 section. Original note: The thumbnail/album grid uses a fixed
    column count; modern screens are much wider than the 2006 layout. Make the available width dictate
    the number of columns and let the images flow freely (auto-fill/`minmax`, not a fixed count), and
    allow up to **10 rows** per page instead of 4. Scoped before ROOTCAUSE-01. (Clarify which themes:

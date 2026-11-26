@@ -1,9 +1,8 @@
-import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import type { AlbumMetadata, Child } from '@/types';
 import { useAlbumData } from '@/hooks/useAlbumData';
 import { parseBBCodeDecoded } from '@/utils/bbcode';
 import { getAlbumPath } from '@/utils/albumPath';
-import { formatG2Date, jumpRange, MATRIX_PER_PAGE, pageHref, parsePage } from '@/utils/matrixPaging';
+import { formatG2Date } from '@/utils/matrixPaging';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { MatrixThumbMatrix } from './MatrixThumbMatrix';
 import { MatrixAlbumList } from './MatrixAlbumList';
@@ -35,65 +34,12 @@ function getSize(metadata: AlbumMetadata, children: Child[]): { count: number; t
   return { count: children.length, total };
 }
 
-/** Gallery 2's album navigator: first/previous on the left, next/last on the right (markup of 2006). */
-function Navigator({ path, page, totalPages }: { path: string; page: number; totalPages: number }) {
-  const hasPrevious = page > 1;
-  const hasNext = page < totalPages;
-  return (
-    <div className="gbBlock gcBackground2 gbNavigator">
-      <div className="block-core-Navigator">
-        <div className={hasPrevious ? 'next-and-last' : 'next-and-last no-previous'}>
-          {hasNext && (
-            <>
-              <Link to={pageHref(path, page + 1)} className="next">next</Link>
-              <Link to={pageHref(path, totalPages)} className="last">last</Link>
-            </>
-          )}
-        </div>
-        <div className="first-and-previous">
-          {hasPrevious && (
-            <>
-              <Link to={pageHref(path, 1)} className="first">first</Link>
-              <Link to={pageHref(path, page - 1)} className="previous">previous</Link>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** "Page: 1 2 3 4 5 6 ... 24": a gap of one page shows that page, a longer gap "...". */
-function Pager({ path, page, totalPages }: { path: string; page: number; totalPages: number }) {
-  const range = jumpRange(page, totalPages);
-  const items: React.ReactNode[] = [];
-  let last = 0;
-  for (const p of range) {
-    if (p - last >= 2) {
-      items.push(
-        <span key={`gap-${p}`}>{p - last === 2 ? <Link to={pageHref(path, p - 1)}>{p - 1}</Link> : '...'}</span>,
-      );
-    }
-    items.push(
-      <span key={p}>{p === page ? <span aria-current="page">{p}</span> : <Link to={pageHref(path, p)}>{p}</Link>}</span>,
-    );
-    last = p;
-  }
-  return (
-    <div className="gsPages gbBlock gcBackground1">
-      <nav className="block-core-Pager" aria-label="Pages">
-        Page: {items}
-      </nav>
-    </div>
-  );
-}
-
 /**
- * An album page in Gallery 2's Matrix theme (classic theme, THEME-01; spec
- * `frontend/docs/theme-matrix.md`): header block with title, description, Date / Owner / Size,
- * the navigator, the thumbnail matrix (12 per page, `?page=N`), the navigator again and the pager.
- * The navigator shows only with more than one page, as in Gallery 2. With `list` (the root album in
- * the classic theme) the items are the 2013 one-row-per-album list, all on one page, no pager.
+ * An album page in the classic (Matrix) theme (THEME-01; spec `frontend/docs/theme-matrix.md`):
+ * header block with title, description, Date / Owner / Size, then the thumbnails. Since GRID-01
+ * (operator 2026-11-26) all items are on one page in a width-driven grid (no pager; thumbnails are
+ * lazy-loaded). With `list` (the root album in the classic theme) the items are the 2013
+ * one-row-per-album list instead.
  *
  * @example
  * ```tsx
@@ -101,7 +47,6 @@ function Pager({ path, page, totalPages }: { path: string; page: number; totalPa
  * ```
  */
 export function MatrixAlbum({ albumId, list = false }: MatrixAlbumProps) {
-  const [searchParams] = useSearchParams();
   const { data: children, metadata, isLoading, error, refetch } = useAlbumData(albumId);
 
   if (error) {
@@ -121,12 +66,6 @@ export function MatrixAlbum({ albumId, list = false }: MatrixAlbumProps) {
   }
 
   const path = getAlbumPath(metadata.breadcrumbPath ?? []);
-  const totalPages = list ? 1 : Math.max(Math.ceil(children.length / MATRIX_PER_PAGE), 1);
-  const page = parsePage(searchParams.get('page'));
-  // Gallery 2 sent a page past the end to the last page
-  if (page > totalPages) return <Navigate to={pageHref(path, totalPages)} replace />;
-
-  const pageChildren = list ? children : children.slice((page - 1) * MATRIX_PER_PAGE, page * MATRIX_PER_PAGE);
   const size = getSize(metadata, children);
   const description = metadata.albumDescription?.trim();
 
@@ -158,18 +97,15 @@ export function MatrixAlbum({ albumId, list = false }: MatrixAlbumProps) {
           </tbody>
         </table>
       </div>
-      {totalPages > 1 && <Navigator path={path} page={page} totalPages={totalPages} />}
       {children.length === 0 ? (
         <div className="gbBlock giDescription gbEmptyAlbum">
           <h3 className="emptyAlbum">This album is empty.</h3>
         </div>
       ) : list ? (
-        <MatrixAlbumList albumPath={path} items={pageChildren} />
+        <MatrixAlbumList albumPath={path} items={children} />
       ) : (
-        <MatrixThumbMatrix albumPath={path} items={pageChildren} />
+        <MatrixThumbMatrix albumPath={path} items={children} />
       )}
-      {totalPages > 1 && <Navigator path={path} page={page} totalPages={totalPages} />}
-      {!list && <Pager path={path} page={page} totalPages={totalPages} />}
     </div>
   );
 }

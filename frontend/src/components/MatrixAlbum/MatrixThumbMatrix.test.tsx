@@ -17,7 +17,7 @@ const info = (cell: Element) => [...cell.querySelectorAll('.summary')].map((s) =
 describe('MatrixThumbMatrix (THEME-01)', () => {
   it('photo cell as in the 2006 dhphotos page: 150px thumbnail, title, Date, Views', () => {
     render(<MatrixThumbMatrix albumPath="/dh/dhw05/" items={[photo]} />);
-    const cell = document.querySelector('td.giItemCell')!;
+    const cell = document.querySelector('.giItemCell')!;
     const img = screen.getByRole('img', { name: 'CIMG0053_.JPG' });
     expect(img).toHaveAttribute('width', '150');
     expect(img).toHaveAttribute('src', expect.stringContaining('t__CIMG0053_.JPG'));
@@ -28,26 +28,26 @@ describe('MatrixThumbMatrix (THEME-01)', () => {
 
   it('shows the photographer below the date on a photo cell, trimmed (Fotograf:)', () => {
     render(<MatrixThumbMatrix albumPath="/dh/dhw05/" items={[{ ...photo, photographer: '  Jane Doe ' } as Child]} />);
-    const cell = document.querySelector('td.giItemCell')!;
+    const cell = document.querySelector('.giItemCell')!;
     expect(info(cell)).toEqual(['Date: 26/11/2005', 'Fotograf: Jane Doe', 'Views: 1074']);
   });
 
   it('album cell as in the 2006 dhw05 page: grey cell, summary, Size with total, Views', () => {
     render(<MatrixThumbMatrix albumPath="/dh/" items={[album]} />);
-    const cell = document.querySelector('td.giAlbumCell.gcBackground1')!;
+    const cell = document.querySelector('.giAlbumCell.gcBackground1')!;
     expect(cell.querySelector('.giTitle')).toHaveTextContent(/^DH-Photo$/);
     expect(cell.querySelector('.giDescription')).toHaveTextContent('OFFICIELLA BILDER');
     expect(info(cell)).toEqual(['Date: 09/06/2005', 'Size: 9 items (878 items total)', 'Views: 65057']);
     expect(screen.getByRole('img', { name: 'DH-Photo' }).closest('a')).toHaveAttribute('href', '/dreamhack/dreamhack_winter_05/dh-photo/');
   });
 
-  it('rows of three; a short last row is filled with empty cells', () => {
+  it('a width-driven grid: one cell per item, no table or filler cells (GRID-01)', () => {
     const items = Array.from({ length: 4 }, (_, i) => ({ ...photo, id: i, title: `P${i}`, pathComponent: `p${i}.jpg` })) as Child[];
     render(<MatrixThumbMatrix albumPath="/" items={items} />);
-    const rows = document.querySelectorAll('.gsThumbMatrix tr');
-    expect(rows).toHaveLength(2);
-    expect(rows[1].querySelectorAll('td')).toHaveLength(3);
-    expect(rows[1].querySelectorAll('td.giItemCell')).toHaveLength(1);
+    const grid = document.querySelector('.gsThumbMatrix')!;
+    expect(grid.tagName).toBe('DIV'); // not a <table>
+    expect(grid.querySelectorAll(':scope > .giItemCell')).toHaveLength(4);
+    expect(grid.querySelectorAll('td')).toHaveLength(0);
   });
 
   it('no views line without a count; "no thumbnail" for a photo without one', () => {

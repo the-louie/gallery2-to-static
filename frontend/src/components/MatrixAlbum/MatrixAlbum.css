@@ -91,22 +91,37 @@
   padding: 0;
 }
 
-/* Thumbnail matrix: Gallery 2's <table id="gsThumbMatrix" width="100%">, 3 cells of 33% */
+/* Thumbnail grid (GRID-01, 2026-11-26): a width-driven grid that flows as many columns as the viewport
+   fits — was Gallery 2's fixed 3-column <table>. Modern screens are far wider than 2006's. */
 .g2-matrix .gsThumbMatrix {
-  width: 100%;
-  border-spacing: 2px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 4px;
+  align-items: start;
 }
 
-.g2-matrix .gsThumbMatrix td {
-  width: 33%;
-  padding: 1px;
-  vertical-align: top;
-}
-
-.g2-matrix td.giItemCell,
-.g2-matrix td.giAlbumCell {
+.g2-matrix .giItemCell,
+.g2-matrix .giAlbumCell {
   padding: 1em;
   text-align: center;
+}
+
+/* denser cells in the flowing grid (the 2013 list keeps the 1em above) */
+.g2-matrix .gsThumbMatrix .giItemCell,
+.g2-matrix .gsThumbMatrix .giAlbumCell {
+  padding: 0.6em;
+}
+
+.g2-matrix .gsThumbMatrix .giThumbnail {
+  width: 100%;
+  max-width: 150px;
+  height: auto;
+  aspect-ratio: 1 / 1;
+}
+
+.g2-matrix .gsThumbMatrix .giMissingThumbnail {
+  width: 100%;
+  max-width: 150px;
 }
 
 /* The 2013 root list (the classic root, QA-09 / THEME-02): Gallery 2's Classic theme.css for the one-column
@@ -156,27 +171,7 @@
 
 /* Phones (theme-matrix.md "Phones", Sprint 11 T-11): 2 columns, stacked header, 44px tap targets */
 @media (max-width: 699px) {
-  .g2-matrix .gsThumbMatrix {
-    display: block;
-  }
-
-  /* The rows of three flow as one wrapping row of 2-per-line cells (operator, 2026-10-26, QA-06:
-     a flex row per <tr> left every third cell alone on its own line) */
-  .g2-matrix .gsThumbMatrix tbody {
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  .g2-matrix .gsThumbMatrix tr {
-    display: contents;
-  }
-
-  .g2-matrix .gsThumbMatrix td {
-    display: block;
-    box-sizing: border-box;
-    width: 50%;
-    padding: 0.7em 0.3em;
-  }
+  /* The thumbnail grid needs no phone override: auto-fill already drops to ~2 columns at phone width. */
 
   /* the 2013 list on phones: thumbnail and info side by side, the sub-album tree on its own line */
   .g2-matrix .gsAlbumList tr {
@@ -199,11 +194,6 @@
   .g2-matrix .gsAlbumList td.tree {
     flex: 1 1 100%;
     width: 100%;
-  }
-
-  /* the cells Gallery 2 used to fill a short row */
-  .g2-matrix .gsThumbMatrix td:not(.giItemCell):not(.giAlbumCell) {
-    display: none;
   }
 
   /* the list's info and tree cells are real cells */

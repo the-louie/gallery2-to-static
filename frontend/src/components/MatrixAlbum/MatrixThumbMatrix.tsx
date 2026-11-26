@@ -3,7 +3,7 @@ import type { Album, Child, Image } from '@/types';
 import { getItemPath } from '@/utils/albumPath';
 import { getAlbumThumbnailUrl, getImageUrl } from '@/utils/imageUrl';
 import { parseBBCodeDecoded } from '@/utils/bbcode';
-import { formatG2Date, MATRIX_COLUMNS } from '@/utils/matrixPaging';
+import { formatG2Date } from '@/utils/matrixPaging';
 import { truncateTitle } from '@/utils/matrixPeers';
 
 /**
@@ -31,7 +31,7 @@ function ItemCell({ item, albumPath }: { item: Child; albumPath: string }) {
   const count = item.childCount ?? 0;
   const summary = item.summary?.trim();
   return (
-    <td className={isAlbum ? 'giAlbumCell gcBackground1' : 'giItemCell'}>
+    <div className={isAlbum ? 'giAlbumCell gcBackground1' : 'giItemCell'}>
       <div>
         {src ? (
           <Link to={href}>
@@ -59,39 +59,29 @@ function ItemCell({ item, albumPath }: { item: Child; albumPath: string }) {
         )}
         {(item.viewCount ?? 0) > 0 && <span className="viewCount summary">Views: {item.viewCount}</span>}
       </div>
-    </td>
+    </div>
   );
 }
 
 /**
- * Gallery 2's `gsThumbMatrix` (classic theme, THEME-01): the page's items in rows of three,
- * albums on the grey `giAlbumCell` background, photos in `giItemCell`; a short last row is filled
- * with empty cells like Gallery 2's "flush" section.
+ * The album's thumbnails (classic theme). Originally Gallery 2's fixed 3-column `gsThumbMatrix` table;
+ * since GRID-01 (operator 2026-11-26) a width-driven grid that flows as many columns as the viewport
+ * fits (modern screens are far wider than 2006's), albums on the grey `giAlbumCell` background, photos
+ * in `giItemCell`. All items on one page, thumbnails lazy-loaded (no pager).
  *
  * @example
  * ```tsx
- * <MatrixThumbMatrix albumPath="/dreamhack/" items={pageChildren} />
+ * <MatrixThumbMatrix albumPath="/dreamhack/" items={children} />
  * ```
  */
 export function MatrixThumbMatrix({ albumPath, items }: MatrixThumbMatrixProps) {
-  const rows: Child[][] = [];
-  for (let i = 0; i < items.length; i += MATRIX_COLUMNS) rows.push(items.slice(i, i + MATRIX_COLUMNS));
   return (
     <div className="gbBlock">
-      <table className="gsThumbMatrix">
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row[0].id}>
-              {row.map((item) => (
-                <ItemCell key={item.id} item={item} albumPath={albumPath} />
-              ))}
-              {Array.from({ length: MATRIX_COLUMNS - row.length }, (_, k) => (
-                <td key={`flush-${k}`}>&nbsp;</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="gsThumbMatrix">
+        {items.map((item) => (
+          <ItemCell key={item.id} item={item} albumPath={albumPath} />
+        ))}
+      </div>
     </div>
   );
 }
